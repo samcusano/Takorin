@@ -34,11 +34,11 @@ export function StatCell({ label, value, sub, fill, tone = 'ok' }) {
 }
 
 // ── Section header
-export function SecHd({ tag, title, badge, icon: Icon }) {
+export function SecHd({ tag, title, badge, icon: Icon, accent }) {
   return (
     <div className="flex items-baseline gap-3 px-4 py-3 border-b border-rule2">
       <div className="flex items-center gap-1.5 font-body italic text-muted text-[11px]">
-        {Icon && <Icon size={11} strokeWidth={2} className="text-muted" />}
+        {Icon && <Icon size={11} strokeWidth={2} style={accent ? { color: accent } : undefined} />}
         {tag}
       </div>
       <div className="flex-1 font-body text-ink text-[13px] font-medium">{title}</div>
@@ -89,14 +89,17 @@ export function SPRow({ label, sub, value, valueColor = 'text-ink' }) {
 }
 
 // ── Action banner
-export function ActionBanner({ color = '#C17D2A', headline, body, children }) {
+export function ActionBanner({ color = '#C17D2A', headline, body, children, footer }) {
   return (
-    <div className="px-5 py-3.5 flex items-start gap-4" style={{ background: color }}>
-      <div className="flex-1">
-        <div className="font-display font-bold italic text-stone text-base leading-tight">{headline}</div>
-        <div className="font-body italic text-stone/80 text-[12px] mt-1 leading-relaxed">{body}</div>
+    <div className="flex-shrink-0" style={{ background: color }}>
+      <div className="px-5 py-3.5 flex items-start gap-4">
+        <div className="flex-1">
+          <div className="font-display font-bold italic text-stone text-base leading-tight">{headline}</div>
+          <div className="font-body italic text-stone/80 text-[12px] mt-1 leading-relaxed">{body}</div>
+        </div>
+        <div className="flex gap-2 flex-shrink-0 items-start mt-0.5">{children}</div>
       </div>
-      <div className="flex gap-2 flex-shrink-0 items-start mt-0.5">{children}</div>
+      {footer && <div className="px-5 pb-3">{footer}</div>}
     </div>
   )
 }
@@ -151,12 +154,34 @@ export function Dot({ level = 'empty' }) {
   return <div className={`w-2 h-2 rounded-sm flex-shrink-0 ${cls}`} />
 }
 
+// ── Score ring — circular progress indicator
+export function ScoreRing({ pct = 0, size = 32, color }) {
+  const r = size * 0.38
+  const sw = size * 0.11
+  const fs = Math.round(size * 0.28)
+  const circ = 2 * Math.PI * r
+  const cx = size / 2, cy = size / 2
+  const c = color || (pct >= 75 ? '#3A8A5A' : pct >= 50 ? '#C4920A' : '#D94F2A')
+  return (
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden="true" className="flex-shrink-0">
+      <circle cx={cx} cy={cy} r={r} fill="none" stroke="#D8D2C8" strokeWidth={sw} />
+      <circle cx={cx} cy={cy} r={r} fill="none" stroke={c} strokeWidth={sw}
+        strokeDasharray={circ} strokeDashoffset={circ - (pct / 100) * circ}
+        transform={`rotate(-90 ${cx} ${cy})`} strokeLinecap="butt" />
+      <text x={cx} y={cy + fs * 0.44} textAnchor="middle"
+        style={{ fontFamily:'Georgia,serif', fontWeight:800, fontStyle:'italic', fontSize:fs, fill:c }}>
+        {pct}
+      </text>
+    </svg>
+  )
+}
+
 // ── Page header
 export function PageHead({ over, title, accent = '#C17D2A', meta = [], children }) {
   return (
-    <div className="px-5 py-4 border-b border-rule2 bg-stone2">
+    <div className="px-5 py-4 border-b border-rule2 bg-stone2" style={{ borderLeft: `3px solid ${accent}` }}>
       <div className="font-body italic text-muted text-[11px] mb-1">{over}</div>
-      <div className="font-display font-bold italic text-2xl text-ink leading-tight" style={{ '--accent': accent }}>
+      <div className="font-display font-bold italic text-2xl text-ink leading-tight">
         {title}
         {children && <span className="font-light text-ochre"> {children}</span>}
       </div>

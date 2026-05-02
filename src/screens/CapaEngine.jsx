@@ -3,7 +3,7 @@ import { FileText } from 'lucide-react'
 import StatBar from '../components/StatBar.jsx'
 import PatternMatrix from '../components/PatternMatrix.jsx'
 import BenchmarkBlock from '../components/BenchmarkBlock.jsx'
-import { Urg, SecHd } from '../components/UI'
+import { Urg, SecHd, SP, ActionBanner, Btn } from '../components/UI'
 import { openCases, patternRows, benchmarks } from '../data/capa.js'
 import { supplierData, haccpData, goalsData } from '../data'
 import { useAppState } from '../context/AppState'
@@ -170,28 +170,12 @@ export default function CapaEngine() {
         />
       )}
 
-      {/* Action banner */}
-      <div className="flex flex-wrap items-start gap-4 px-5 py-3.5 flex-shrink-0" style={{ background: '#C4920A' }}>
-        <div className="flex-1 min-w-0">
-          <div className="font-display text-base font-bold italic text-stone mb-0.5">2 cases overdue — FDA inspection in 18 days</div>
-          <div className="font-body italic text-stone/80 text-[12px]">CAPA Engine · Salina Campus · April 16, 2026 · CAPA-2604-001 and CAPA-2604-002 past due.</div>
-        </div>
-        <div className="flex gap-2 flex-shrink-0 flex-wrap">
-          <button
-            onClick={() => setEscalated(true)}
-            className="px-3 py-1.5 text-xs font-body font-medium bg-white text-[#C4920A] hover:bg-white/90 transition-colors"
-          >
-            {escalated ? 'All overdue escalated ✓' : 'Escalate all overdue'}
-          </button>
-          <button
-            onClick={() => setShowReassign(p => !p)}
-            className="px-3 py-1.5 text-xs font-body font-medium bg-white/20 text-white hover:bg-white/30 transition-colors"
-          >
-            {reassignDone ? 'Reassigned ✓' : 'Bulk reassign'}
-          </button>
-        </div>
-        {showReassign && !reassignDone && (
-          <div className="flex items-center gap-2 w-full mt-2">
+      <ActionBanner
+        color="#C4920A"
+        headline="2 cases overdue — FDA inspection in 18 days"
+        body="CAPA Engine · Salina Campus · April 16, 2026 · CAPA-2604-001 and CAPA-2604-002 past due."
+        footer={showReassign && !reassignDone ? (
+          <div className="flex items-center gap-2">
             <select
               value={reassignTarget}
               onChange={e => setReassignTarget(e.target.value)}
@@ -210,8 +194,21 @@ export default function CapaEngine() {
               Confirm
             </button>
           </div>
-        )}
-      </div>
+        ) : null}
+      >
+        <button
+          onClick={() => setEscalated(true)}
+          className="px-3 py-1.5 text-xs font-body font-medium bg-white text-[#C4920A] hover:bg-white/90 transition-colors"
+        >
+          {escalated ? 'All overdue escalated ✓' : 'Escalate all overdue'}
+        </button>
+        <button
+          onClick={() => setShowReassign(p => !p)}
+          className="px-3 py-1.5 text-xs font-body font-medium bg-white/20 text-white hover:bg-white/30 transition-colors"
+        >
+          {reassignDone ? 'Reassigned ✓' : 'Bulk reassign'}
+        </button>
+      </ActionBanner>
 
       <StatBar cells={statCells} />
 
@@ -414,12 +411,10 @@ export default function CapaEngine() {
         </div>
 
         {/* Side rail */}
-        <div className="w-64 flex-shrink-0 border-l border-rule bg-stone2 overflow-y-auto hidden lg:block divide-y divide-rule">
-          {/* Pending review */}
-          <div>
-            <div className="px-4 py-2.5 border-b border-rule"><span className="text-[10px] font-body font-medium uppercase tracking-widest text-ghost">Pending my review</span></div>
+        <div className="w-64 flex-shrink-0 border-l border-rule2 bg-stone2 overflow-y-auto hidden lg:block">
+          <SP title="Pending my review">
             {[{name:'Sanitation log — Line 6',sub:'CAPA-2604-003 · 4 files · action required',st:'Review',stC:'text-warn'},{name:'Oven temp deviation — Line 3',sub:'CAPA-2604-005 · 2 files',st:'Review',stC:'text-warn'},{name:'Pack Line QA pre-check',sub:'CAPA-2604-006 · evidence file missing',st:'Incomplete',stC:'text-danger'}].map(r=>(
-              <div key={r.name} className="flex items-start gap-2 px-4 py-2.5 border-b border-rule last:border-0 hover:bg-stone3 transition-colors">
+              <div key={r.name} className="flex items-start gap-2 px-4 py-2.5 border-b border-rule2 last:border-b-0 hover:bg-stone3 transition-colors">
                 <div className="flex-1 min-w-0">
                   <div className="font-body text-xs font-medium text-ink">{r.name}</div>
                   <div className="font-body text-[9px] italic text-ghost">{r.sub}</div>
@@ -427,15 +422,11 @@ export default function CapaEngine() {
                 <span className={`font-body text-[9px] font-semibold flex-shrink-0 ${r.stC}`}>{r.st}</span>
               </div>
             ))}
-          </div>
+          </SP>
 
-          {/* Supplier compliance */}
-          <div>
-            <div className="px-4 py-2.5 border-b border-rule">
-              <span className="text-[10px] font-body font-medium uppercase tracking-widest text-ghost">Supplier compliance</span>
-            </div>
+          <SP title="Supplier compliance">
             {supplierData.suppliers.map(s => (
-              <div key={s.rank} className="flex items-center gap-2 px-4 py-2.5 border-b border-rule last:border-0">
+              <div key={s.rank} className="flex items-center gap-2 px-4 py-2.5 border-b border-rule2 last:border-b-0">
                 <span className="display-num text-[11px] text-ghost w-4">{s.rank}</span>
                 <span className="font-body font-medium text-ink text-[12px] flex-1">{s.name}</span>
                 <span className={`font-body italic font-medium text-[9px] px-1.5 py-0.5 ${
@@ -444,35 +435,31 @@ export default function CapaEngine() {
                 <span className={`display-num text-sm w-6 text-right ${s.scoreColor}`}>{s.score}</span>
               </div>
             ))}
-          </div>
+          </SP>
 
-          {/* Regulatory mapping */}
-          <div>
-            <div className="px-4 py-2.5 border-b border-rule"><span className="text-[10px] font-body font-medium uppercase tracking-widest text-ghost">Regulatory mapping</span></div>
+          <SP title="Regulatory mapping">
             {[{name:'FSMA 204',sub:'21 CFR Part 1 Subpart S',v:'5',c:'text-warn'},{name:'HACCP',sub:'21 CFR 120.7',v:'4',c:'text-warn'},{name:'GMP — Personnel',sub:'21 CFR 110.10',v:'4',c:'text-warn'},{name:'Sanitation',sub:'21 CFR 110.35',v:'3',c:'text-danger'}].map(r=>(
-              <div key={r.name} className="flex items-center gap-2 px-4 py-2.5 border-b border-rule last:border-0">
+              <div key={r.name} className="flex items-center gap-2 px-4 py-2.5 border-b border-rule2 last:border-b-0">
                 <div className="flex-1 min-w-0"><div className="font-body text-xs font-medium text-ink">{r.name}</div><div className="font-body text-[9px] italic text-ghost">{r.sub}</div></div>
                 <span className={`font-display text-base font-black italic ${r.c}`}>{r.v}</span>
               </div>
             ))}
-          </div>
+          </SP>
 
-          {/* Evidence coverage */}
-          <div className="p-4">
-            <div className="font-body text-[10px] font-medium uppercase tracking-widest text-ghost mb-3">Evidence coverage</div>
-            <div className="flex justify-between items-baseline mb-1.5">
-              <span className="font-body text-xs italic text-ghost">14 closed · all evidence-gated</span>
-              <span className="font-display text-xl font-black italic text-ok">100%</span>
+          <SP title="Evidence coverage">
+            <div className="px-4 py-3">
+              <div className="flex justify-between items-baseline mb-1.5">
+                <span className="font-body text-xs italic text-ghost">14 closed · all evidence-gated</span>
+                <span className="font-display text-xl font-black italic text-ok">100%</span>
+              </div>
+              <div className="h-0.5 bg-rule2"><div className="h-full bg-ok w-full"/></div>
+              <div className="font-body text-[10px] italic text-ghost mt-2">No CAPA closed without evidence since deployment.</div>
             </div>
-            <div className="h-0.5 bg-rule"><div className="h-full bg-ok w-full"/></div>
-            <div className="font-body text-[10px] italic text-ghost mt-2">No CAPA closed without evidence since deployment.</div>
-          </div>
+          </SP>
 
-          {/* QA tech queue */}
-          <div>
-            <div className="px-4 py-2.5 border-b border-rule"><span className="text-[10px] font-body font-medium uppercase tracking-widest text-ghost">T. Osei — my assignments</span></div>
+          <SP title="T. Osei — my assignments">
             {openCases.filter(c => c.assigned?.includes('Osei')).map(c => (
-              <div key={c.id} className="flex items-start gap-2 px-4 py-2.5 border-b border-rule last:border-b-0">
+              <div key={c.id} className="flex items-start gap-2 px-4 py-2.5 border-b border-rule2 last:border-b-0">
                 <div className={`w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0 ${c.type === 'cu' ? 'bg-danger' : c.type === 'ca' ? 'bg-ok' : 'bg-warn'}`} />
                 <div className="flex-1 min-w-0">
                   <div className="font-body font-medium text-ink text-[11px] truncate">{c.capaId}</div>
@@ -487,22 +474,17 @@ export default function CapaEngine() {
             {openCases.filter(c => c.assigned?.includes('Osei')).length === 0 && (
               <div className="px-4 py-3 font-body italic text-ghost text-[11px]">No open assignments</div>
             )}
-          </div>
+          </SP>
 
-          {/* Quarterly goals */}
-          <div>
-            <div className="px-4 py-2.5 border-b border-rule"><span className="text-[10px] font-body font-medium uppercase tracking-widest text-ghost">Quarterly goals · Q2 2026</span></div>
+          <SP title="Quarterly goals" sub="Q2 2026">
             {goalsData.map(g => {
-              const pct = g.direction === 'reduce'
-                ? Math.round(Math.max(0, (g.current - g.target) / (g.current) * 100))
-                : Math.round(Math.max(0, (g.current - (g.target * 0.5)) / (g.target * 0.5) * 100))
               const progress = g.direction === 'reduce'
                 ? Math.round((1 - (g.current - g.target) / Math.max(1, g.current)) * 100)
                 : Math.round((g.current / g.target) * 100)
               const color = progress >= 80 ? 'bg-ok' : progress >= 50 ? 'bg-warn' : 'bg-danger'
               const textColor = progress >= 80 ? 'text-ok' : progress >= 50 ? 'text-warn' : 'text-danger'
               return (
-                <div key={g.id} className="px-4 py-2.5 border-b border-rule last:border-b-0">
+                <div key={g.id} className="px-4 py-2.5 border-b border-rule2 last:border-b-0">
                   <div className="flex items-baseline justify-between mb-1">
                     <span className="font-body italic text-muted text-[10px] flex-1 mr-2 leading-tight">{g.label}</span>
                     <span className={`display-num text-sm ${textColor}`}>{g.current}{g.unit !== 'cases' ? g.unit : ''}</span>
@@ -517,13 +499,11 @@ export default function CapaEngine() {
                 </div>
               )
             })}
-          </div>
+          </SP>
 
-          {/* Activity log */}
-          <div>
-            <div className="px-4 py-2.5 border-b border-rule"><span className="text-[10px] font-body font-medium uppercase tracking-widest text-ghost">Activity log · today</span></div>
+          <SP title="Activity log" sub="today">
             {activityLog.map((e, i) => (
-              <div key={i} className="flex gap-2 px-4 py-2 border-b border-rule last:border-b-0">
+              <div key={i} className="flex gap-2 px-4 py-2 border-b border-rule2 last:border-b-0">
                 <span className="font-body italic text-ghost text-[9px] w-9 flex-shrink-0 mt-0.5">{e.time}</span>
                 <div className="flex-1 min-w-0">
                   <div className="font-body italic text-ghost text-[9px]">{e.actor}</div>
@@ -537,13 +517,11 @@ export default function CapaEngine() {
                 }`} />
               </div>
             ))}
-          </div>
+          </SP>
 
-          {/* Benchmark */}
-          <div>
-            <div className="px-4 py-2.5 border-b border-rule"><span className="text-[10px] font-body font-medium uppercase tracking-widest text-ghost">Industry benchmark · 68 plants</span></div>
+          <SP title="Industry benchmark" sub="68 plants">
             {benchmarks.map((b, i) => <BenchmarkBlock key={i} {...b} />)}
-          </div>
+          </SP>
         </div>
       </div>
     </div>
