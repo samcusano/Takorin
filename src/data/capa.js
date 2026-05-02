@@ -1,0 +1,93 @@
+export const openCases = [
+  {
+    id: 'c1', type: 'cu', ordinal: '!', capaId: 'CAPA-2604-001',
+    badge: 'Overdue', badgeColor: 'text-danger',
+    title: 'Line 4 Conveyor Bearing Failure — Sensor A-7 threshold breach',
+    assigned: 'D. Kowalski', rootCause: 'Equipment — Preventive maintenance gap',
+    due: 'Apr 9 — 7 days overdue', dueColor: 'text-danger',
+    source: 'Auto-created from ShiftIQ',
+    description: 'Sensor A-7 variance count reached 8. Conveyor jam occurred at 09:22. 47 minutes unplanned downtime. ~$14,200 production loss. Corrective measure not yet submitted.',
+    primaryLabel: 'Escalate to director',
+    secondaryLabel: 'Reassign',
+    evidenceFiles: [],
+    activity: [
+      { time: 'Apr 16 · 14:02', text: 'Escalation notification sent to D. Kowalski (2nd notice)' },
+      { time: 'Apr 14 · 09:15', text: 'Escalation notification sent (1st notice). No response.' },
+      { time: 'Apr 9 · 23:59', text: 'Case due date passed. Auto-escalated to overdue status.' },
+      { time: 'Apr 7 · 14:22', text: 'Case auto-created by ShiftIQ. Assigned to D. Kowalski. Due: Apr 9.' },
+      { time: 'Apr 7 · 09:22', text: 'Sensor A-7 variance count reached 8. Conveyor jam. 47 min downtime. $14,200 loss.' },
+    ],
+    regulatory: ['FSMA 204', 'GMP 21 CFR 110', 'HACCP CCP-3'],
+    rootCauseTags: ['Equipment', 'Preventive maintenance', 'Conveyor system'],
+  },
+  {
+    id: 'c2', type: 'ca', ordinal: '§', capaId: 'CAPA-2604-003',
+    badge: 'Awaiting closure', badgeColor: 'text-warn',
+    title: 'Sanitation log gap — Line 6 PM shift, April 9',
+    assigned: 'QA Tech T. Osei', rootCause: 'Process — Documentation gap',
+    due: 'Apr 14 · submitted', dueColor: 'text-ok',
+    source: 'Auto-created from Compliance',
+    description: 'Updated SOP (v2.1) uploaded. Line 6 PM QA coverage schedule revised. Training session completed Apr 13. 5 subsequent PM logs filed on time. Evidence package complete.',
+    primaryLabel: 'Approve & close case',
+    secondaryLabel: 'Return — insufficient evidence',
+    evidenceFiles: ['SOP_v2.1.pdf', 'Training_Apr13.pdf', 'PM_logs_Apr14-18.pdf', 'Coverage_schedule.pdf'],
+    activity: [
+      { time: 'Apr 14 · 11:30', text: 'Evidence package submitted by T. Osei — 4 files attached.' },
+      { time: 'Apr 13 · 14:00', text: 'Training session completed. All QA staff signed attendance.' },
+      { time: 'Apr 11 · 09:00', text: 'SOP v2.1 uploaded. Coverage schedule revised.' },
+      { time: 'Apr 9 · 22:00', text: 'Case created. Sanitation log missing for Line 6 PM shift.' },
+    ],
+    regulatory: ['FSMA 204', 'Sanitation 21 CFR 110.35'],
+    rootCauseTags: ['Process', 'Documentation', 'Sanitation'],
+  },
+  {
+    id: 'c3', type: 'cw', ordinal: 'III.', capaId: 'CAPA-2604-007',
+    badge: 'In progress', badgeColor: 'text-warn',
+    title: 'Supplier COA rejection — Tomato Sauce Lot TS-8811, ConAgra',
+    assigned: 'A. Novotny', rootCause: 'Supplier — Documentation error',
+    due: 'Apr 23', dueColor: 'text-muted',
+    source: 'Auto-created from SupplierIQ',
+    description: 'COA submitted with incorrect test date (March vs. April batch). Rejected. Corrected version requested. ConAgra QA rep contacted at 13:45. Response pending. Production start currently blocked.',
+    primaryLabel: 'Follow up — ConAgra',
+    secondaryLabel: 'Log update',
+    evidenceFiles: ['COA_rejected_TS-8811.pdf'],
+    activity: [
+      { time: 'Apr 16 · 13:45', text: 'ConAgra QA rep contacted via phone. Corrected COA expected by 18:00.' },
+      { time: 'Apr 16 · 10:30', text: 'COA rejected — incorrect test date. CAPA auto-created by SupplierIQ.' },
+    ],
+    regulatory: ['FSMA 204', 'HACCP CCP-1'],
+    rootCauseTags: ['Supplier', 'Documentation', 'COA'],
+  },
+]
+
+export const patternRows = [
+  { label: 'Skill / Cert mismatch', sub: '7 of 9 at Sauce Dosing · Lines 4 & 6', dots: ['d4','d4','d4','d4','d4','d4','d4','d3','d2'], count: 9, critical: true, trend: 'up',   trendLabel: '+3 vs 90d ago', closedCount: 2 },
+  { label: 'PM gap · Equipment',    sub: 'Oven B recurring · Lines 4 & 3',        dots: ['d4','d4','d4','d3','d3','d2','d1','empty','empty'], count: 7, critical: true, trend: 'flat', trendLabel: 'stable',       closedCount: 4 },
+  { label: 'Documentation lag',     sub: 'CAPA closed without evidence',           dots: ['w4','w3','w3','w2','w1','empty','empty','empty','empty'], count: 5, warn: true, trend: 'down', trendLabel: '−2 vs 90d ago', closedCount: 8 },
+  { label: 'Supplier non-conformance', sub: 'ConAgra · 3 of 4 cases',             dots: ['w4','w3','w2','w1','empty','empty','empty','empty','empty'], count: 4, warn: true, trend: 'up',   trendLabel: '+1 vs 90d ago', closedCount: 1 },
+  { label: 'Sanitation gap',        sub: 'Line 6',                                 dots: ['w3','w2','w1','empty','empty','empty','empty','empty','empty'], count: 3, trend: 'down', trendLabel: '−2 vs 90d ago', closedCount: 3 },
+  { label: 'Checklist omission',    sub: 'Startup · various lines',                dots: ['w2','w1','empty','empty','empty','empty','empty','empty','empty'], count: 2, trend: 'flat', trendLabel: 'stable',       closedCount: 5 },
+  { label: 'Foreign material · Allergen', sub: '1 case each · resolved',           dots: ['ok','ok','empty','empty','empty','empty','empty','empty','empty'], count: 2, trend: 'down', trendLabel: 'resolved',     closedCount: 2 },
+]
+
+export const benchmarks = [
+  {
+    metric: 'OEE — Line 4, 30-day trailing', rank: 68, total: 100,
+    score: '82%', delta: '2.1% vs last period', deltaDir: 'up', percentile: 68,
+    peers: [{ name: 'Plant KS-02', value: '94%' }, { name: 'Plant MN-07', value: '91%' }, { name: 'Plant TX-11', value: '89%' }],
+    zones: [{ pct: '30%', mark: 30, label: 'Below', range: '0–70%', color: '#D94F2A' }, { pct: '60%', mark: 60, label: 'Watch', range: '70–80%', color: '#C4920A' }, { pct: '100%', label: 'Target', range: '80–95%', color: '#3A8A5A' }],
+  },
+  {
+    metric: 'CAPA on-time closure', rank: 44, total: 100,
+    score: '78%', delta: 'below median', deltaDir: 'down', percentile: 44,
+    peers: [{ name: 'Plant KS-02', value: '100%' }, { name: 'Plant OH-03', value: '98%' }, { name: 'Plant TX-11', value: '96%' }],
+    zones: [{ pct: '30%', mark: 30, label: 'Risk', range: '0–60%', color: '#D94F2A' }, { pct: '60%', mark: 60, label: 'Watch', range: '60–80%', color: '#C4920A' }, { pct: '100%', label: 'Target', range: '80–100%', color: '#3A8A5A' }],
+    insight: 'Resolving 2 overdue cases would move you to the 71st percentile.',
+  },
+  {
+    metric: 'Shifts above risk threshold', rank: 72, total: 100,
+    score: '12%', delta: 'top quartile nearby', deltaDir: 'up', percentile: 72,
+    peers: [],
+    zones: [{ pct: '30%', mark: 30, label: 'High risk', range: '>25%', color: '#D94F2A' }, { pct: '60%', mark: 60, label: 'Watch', range: '10–25%', color: '#C4920A' }, { pct: '100%', label: 'Target', range: '<10%', color: '#3A8A5A' }],
+  },
+]
