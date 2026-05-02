@@ -3,7 +3,7 @@ import { Activity, Clock, FlaskConical } from 'lucide-react'
 import { shiftData, haccpData, productionRate, crewHoursData } from '../data'
 import {
   Urg, StatCell, SecHd, CaseCard, Layout,
-  Btn, ConsequenceNotice, PageHead, ActionBanner, MetricCard
+  Btn, ConsequenceNotice, PageHead, ActionBanner, MetricCard, ScoreRing
 } from '../components/UI'
 import { useAppState } from '../context/AppState'
 
@@ -75,22 +75,10 @@ function AgentTimeline({ timeline, sparkline, score }) {
 }
 
 function SignalCard({ sig }) {
-  const ringPct = sig.score
   const c = sig.tone === 'danger' ? '#D94F2A' : sig.tone === 'warn' ? '#C4920A' : '#3A8A5A'
-  const circ = 2 * Math.PI * 14
-  const offset = circ - (ringPct / 100) * circ
   return (
     <div className="flex items-center gap-3 px-4 py-2.5 border-b border-rule2 last:border-b-0">
-      <svg width="36" height="36" viewBox="0 0 36 36" aria-hidden="true" className="flex-shrink-0">
-        <circle cx="18" cy="18" r="14" fill="none" stroke="#D8D2C8" strokeWidth="4" />
-        <circle cx="18" cy="18" r="14" fill="none" stroke={c} strokeWidth="4"
-          strokeDasharray={circ} strokeDashoffset={offset}
-          transform="rotate(-90 18 18)" strokeLinecap="butt" />
-        <text x="18" y="22" textAnchor="middle"
-          style={{ fontFamily:'Georgia,serif', fontWeight:800, fontStyle:'italic', fontSize:10, fill:c }}>
-          {sig.score}
-        </text>
-      </svg>
+      <ScoreRing pct={sig.score} size={36} color={c} />
       <div className="flex-1 min-w-0">
         <div className={`font-body text-[12px] font-medium truncate ${sig.tone === 'danger' ? 'text-danger' : 'text-ink'}`}>{sig.name}</div>
         <div className="font-body italic text-ghost text-[10px]">{sig.sub}</div>

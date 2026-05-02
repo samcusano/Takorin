@@ -2,11 +2,10 @@ import { useState, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import { readinessData } from '../data'
 import { useAppState } from '../context/AppState'
-import { Urg, StatCell, SP, SecHd, Btn, Layout, ActionBanner } from '../components/UI'
+import { Urg, StatCell, SP, SecHd, ScoreRing, Btn, Layout, ActionBanner } from '../components/UI'
 
 function SourceRow({ s }) {
   const c = s.tone === 'ok' ? '#3A8A5A' : s.tone === 'danger' ? '#D94F2A' : '#C4920A'
-  const circ = 2 * Math.PI * 14
   return (
     <div className={`grid border-b border-rule2 last:border-b-0 hover:bg-stone2 transition-colors ${
       s.tone === 'danger' ? 'bg-danger/[0.03]' : s.tone === 'warn' ? 'bg-warn/[0.02]' : ''
@@ -17,16 +16,7 @@ function SourceRow({ s }) {
       </div>
       {/* Score with mini ring */}
       <div className="flex items-center justify-center">
-        <svg width="32" height="32" viewBox="0 0 32 32">
-          <circle cx="16" cy="16" r="12" fill="none" stroke="#D8D2C8" strokeWidth="3.5" />
-          <circle cx="16" cy="16" r="12" fill="none" stroke={c} strokeWidth="3.5"
-            strokeDasharray={circ} strokeDashoffset={circ - (s.score / 100) * circ}
-            transform="rotate(-90 16 16)" strokeLinecap="butt" />
-          <text x="16" y="20" textAnchor="middle"
-            style={{ fontFamily:'Georgia,serif', fontWeight:800, fontStyle:'italic', fontSize:9, fill:c }}>
-            {s.score}
-          </text>
-        </svg>
+        <ScoreRing pct={s.score} size={32} color={c} />
       </div>
       {/* Freshness */}
       <div className="flex items-center px-2">
