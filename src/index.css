@@ -1,0 +1,88 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: Georgia, 'Times New Roman', serif;
+    background: #F5F0E8;
+    color: #100F0D;
+    -webkit-font-smoothing: antialiased;
+  }
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #C8C0B4; border-radius: 0; }
+}
+
+@layer utilities {
+  .font-italic { font-style: italic; }
+  .tabular-nums { font-variant-numeric: tabular-nums; }
+  /* Display type — large numbers, headings */
+  .display-num {
+    font-family: Georgia, serif;
+    font-weight: 800;
+    font-style: italic;
+    letter-spacing: -0.02em;
+    line-height: 1;
+  }
+  /* Live dot — continuous pulse, reduced-motion safe */
+  @keyframes beat {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.75); }
+  }
+  .beat { animation: beat 2.4s ease-in-out infinite; }
+
+  /* Element entering from above (notices, banners, dropdowns) */
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .slide-in { animation: slideIn 0.28s cubic-bezier(.16,1,.3,1) both; }
+
+  /* Panel entering from right (drawers, detail panels) */
+  @keyframes slideRight {
+    from { opacity: 0; transform: translateX(16px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+  .slide-right { animation: slideRight 0.28s cubic-bezier(.16,1,.3,1) both; }
+
+  /* Waveform bars growing from baseline */
+  @keyframes waveformReveal {
+    from { opacity: 0; transform: scaleY(0.3); }
+    to   { opacity: 1; transform: scaleY(1); }
+  }
+  .waveform-reveal {
+    animation: waveformReveal 0.3s cubic-bezier(.16,1,.3,1) both;
+    transform-origin: bottom;
+  }
+
+  /* Opacity-only fade for reduced-motion contexts */
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  /* Undo toast countdown bar — shrinks left to right over the undo window */
+  @keyframes undoCountdown {
+    from { width: 100%; }
+    to   { width: 0%; }
+  }
+  .undo-countdown {
+    animation: undoCountdown 6s linear forwards;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .undo-countdown { animation: none; width: 0%; }
+  }
+
+  /* Reduced-motion: strip movement, keep informational fades */
+  @media (prefers-reduced-motion: reduce) {
+    .beat          { animation: none; opacity: 0.65; }
+    .slide-in      { animation: fadeIn 0.15s ease both; }
+    .slide-right   { animation: fadeIn 0.15s ease both; }
+    .waveform-reveal { animation: none; }
+  }
+}
