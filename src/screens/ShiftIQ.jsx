@@ -4,7 +4,7 @@ import { shiftData, haccpData, productionRate, crewHoursData } from '../data'
 import {
  Urg, StatCell, SecHd, CaseCard, Layout,
  Btn, ConsequenceNotice, PageHead, ActionBanner, MetricCard, ScoreRing,
- PersonAvatar
+ PersonAvatar, Modal
 } from '../components/UI'
 import { useAppState } from '../context/AppState'
 
@@ -371,9 +371,11 @@ export default function ShiftIQ() {
  const [showTaskForm, setShowTaskForm] = useState(false)
  const [taskForm, setTaskForm] = useState({ assignee:'', label:'', dueTime:'' })
  const [viewingOperator, setViewingOperator] = useState(null)
+ const [col1Tab, setCol1Tab] = useState('orders')
 
  const skuContextReady = readinessResolved?.['ctx-0'] && (readinessScore ?? 64) >= 75
  const allergenSigned = !!checklistSigned['allergen'] || !!allergenOverride
+ const pendingTaskCount = Object.values(taskAssignments).flat().filter(t => !t.done).length
  const signedCount = 7 + Object.keys(checklistSigned).length
  const startupPct = Math.round((signedCount / CHECKLIST_TOTAL) * 100)
  const [countdown, setCountdown] = useState(d.countdown)
@@ -399,6 +401,9 @@ export default function ShiftIQ() {
  ? 'Director notified — escalation logged. Act on findings before the window closes.'
  : 'Risk score 78 — above intervention threshold. Two actionable findings. Act before the window closes.'}
  >
+ <Btn variant="ghost" onClick={() => { setCol1Tab('tasks'); setShowNearMiss(true) }}>
+ + Near miss
+ </Btn>
  <Btn variant="ghost" onClick={() => setEscalatedShift(true)}>
  {escalatedShift ? 'Escalated ✓' : 'Escalate to director'}
  </Btn>
@@ -434,7 +439,7 @@ export default function ShiftIQ() {
  </div>
 
  {/* Mid-shift production strip */}
- <div className="flex items-center gap-5 px-5 py-2.5 border-b border-rule2 bg-stone2 flex-shrink-0 flex-wrap">
+ <div className="flex items-center gap-5 px-5 py-2.5 border-b border-rule2 bg-stone2 flex-shrink-0 overflow-x-auto">
  <div className="flex items-baseline gap-2">
  <span className="display-num text-xl text-ink">{productionRate.unitsProduced.toLocaleString()}</span>
  <span className="font-body text-ghost text-[11px]">of {productionRate.unitsTarget.toLocaleString()} units · T+{Math.round(productionRate.hoursElapsed * 60)}m</span>
@@ -463,46 +468,62 @@ export default function ShiftIQ() {
  {/* 3-column layout */}
  <div className="flex flex-1 min-h-0 overflow-hidden">
 
+ {/* Pre-shift safety briefing modal */}
+ {!briefingAcknowledged && (
+ <Modal>
+  <div className="flex items-center justify-between px-4 pt-3 pb-2 border-b border-rule2">
+  <div className="font-body font-medium text-ink text-[13px]">Pre-shift safety briefing</div>
+  <span className="font-body text-ghost text-[10px]">Acknowledge before proceeding</span>
+  </div>
+  <div className="overflow-y-auto flex-1">
+  {[
+   { icon: haccpData.allergenChangeover.required ? '⚠' : '✓', color: haccpData.allergenChangeover.required ? 'text-danger' : 'text-ok',
+   text: `Allergen changeover required: ${haccpData.allergenChangeover.from} → ${haccpData.allergenChangeover.to}. Full flush before start.` },
+   { icon: '⚑', color: 'text-warn', text: 'HACCP CCP-3 active — Oven B minimum 185°F for GF-Flatbread. Log any deviation immediately.' },
+   { icon: '↷', color: 'text-warn', text: 'Carry-forward: Sensor A-7 variance at count 4. Escalate at 5.' },
+   { icon: '⚠', color: 'text-warn', text: 'Cert gap: Reyes (L1) assigned to Sauce Dosing (L2 required). Reassign before production.' },
+  ].map((item, i) => (
+   <div key={i} className="flex gap-2.5 px-4 py-3 border-b border-rule2">
+   <span className={`font-body ${item.color} text-[12px] flex-shrink-0 mt-px`}>{item.icon}</span>
+   <span className="font-body text-ink2 text-[12px] leading-relaxed">{item.text}</span>
+   </div>
+  ))}
+  </div>
+  <div className="px-4 py-3 border-t border-rule2 flex-shrink-0">
+  <button type="button"
+   onClick={() => setBriefingAcknowledged(true)}
+   className="w-full font-body font-medium text-[11px] px-3 py-2.5 bg-brass text-stone hover:opacity-90 transition-opacity"
+  >
+   I've reviewed this shift's safety context — D. Kowalski · {new Date().toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' })}
+  </button>
+  </div>
+ </Modal>
+ )}
+
  {/* COL 1: Findings */}
  <div className="flex-1 overflow-y-auto border-r border-rule2">
- <div className="px-4 py-2 border-b border-rule2 bg-stone2 sticky top-0 z-10 font-body uppercase tracking-widest text-ghost text-[10px] font-medium">
- Corrective orders
+ <div className="border-b border-rule2 bg-stone2 sticky top-0 z-10">
+  <div className="flex">
+  {[
+   { id: 'orders', label: 'Orders' },
+   { id: 'tasks', label: pendingTaskCount > 0 ? `Tasks \u00b7 ${pendingTaskCount}` : 'Tasks' },
+  ].map(tab => (
+   <button key={tab.id} type="button"
+   onClick={() => setCol1Tab(tab.id)}
+   className={`px-4 py-2 font-body text-[10px] uppercase tracking-widest font-medium border-b-2 transition-colors cursor-pointer ${
+    col1Tab === tab.id
+    ? 'border-b-ochre text-ink'
+    : 'border-b-transparent text-ghost hover:text-muted'
+   }`}>
+   {tab.label}
+   </button>
+  ))}
+  </div>
  </div>
  {hasLiveData ? (
  <>
- {/* Pre-shift safety briefing */}
- {!briefingAcknowledged && (
- <div className="border-b-2 border-b-brass bg-brass/[0.04]">
- <div className="flex items-center justify-between px-4 pt-3 pb-2">
- <div className="font-body font-medium text-ink text-[12px]">Pre-shift safety briefing</div>
- <span className="font-body text-ghost text-[10px]">Acknowledge before proceeding</span>
- </div>
- {[
- { icon: haccpData.allergenChangeover.required ? '⚠' : '✓', color: haccpData.allergenChangeover.required ? 'text-danger' : 'text-ok',
- text: `Allergen changeover required: ${haccpData.allergenChangeover.from} → ${haccpData.allergenChangeover.to}. Full flush before start.` },
- { icon: '⚑', color: 'text-warn',
- text: 'HACCP CCP-3 active — Oven B minimum 185°F for GF-Flatbread. Log any deviation immediately.' },
- { icon: '↷', color: 'text-warn',
- text: 'Carry-forward: Sensor A-7 variance at count 4. Escalate at 5.' },
- { icon: '⚠', color: 'text-warn',
- text: 'Cert gap: Reyes (L1) assigned to Sauce Dosing (L2 required). Reassign before production.' },
- ].map((item, i) => (
- <div key={i} className="flex gap-2.5 px-4 py-2 border-t border-rule2">
- <span className={`font-body ${item.color} text-[12px] flex-shrink-0 mt-px`}>{item.icon}</span>
- <span className="font-body text-ink2 text-[11px] leading-relaxed">{item.text}</span>
- </div>
- ))}
- <div className="px-4 py-3 border-t border-rule2">
- <button type="button"
- onClick={() => setBriefingAcknowledged(true)}
- className="w-full font-body font-medium text-[11px] px-3 py-2 bg-brass text-stone hover:opacity-90 transition-opacity"
- >
- I've reviewed this shift's safety context — D. Kowalski · {new Date().toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' })}
- </button>
- </div>
- </div>
- )}
-
+ {col1Tab === 'orders' && (
+ <>
  {/* Allergen changeover hard block */}
  {!allergenSigned && (
  <div className="border-b-2 border-b-danger bg-danger/[0.04] px-4 py-3">
@@ -574,7 +595,11 @@ export default function ShiftIQ() {
  {d.findings.map(f => (
  <Finding key={f.id} f={f} onAct={(id) => setActed(p => ({ ...p, [id]: true }))} />
  ))}
+ </>
+ )}
 
+ {col1Tab === 'tasks' && (
+ <>
  {/* Task assignment */}
  <div className="border-t border-rule2 px-4 py-3">
  <div className="flex items-center justify-between mb-2">
@@ -664,13 +689,15 @@ export default function ShiftIQ() {
  )}
  </div>
  </>
+ )}
+ </>
  ) : (
  <EmptyLine name={activeLined.name} />
  )}
  </div>
 
  {/* COL 2: Crew + Startup */}
- <div className="w-[220px] flex-shrink-0 overflow-y-auto border-r border-rule2 bg-stone2">
+ <div className="w-[240px] flex-shrink-0 overflow-y-auto border-r border-rule2 bg-stone2">
  <div className="px-4 py-2 border-b border-rule2 bg-stone2 sticky top-0 z-10 font-body uppercase tracking-widest text-ghost text-[10px] font-medium">
  {activeLined.name} context
  </div>
@@ -716,7 +743,7 @@ export default function ShiftIQ() {
  </div>
  </div>
  <div className="flex items-center gap-1.5 mb-2">
- <div className={`w-2 h-2${allergenSigned ? 'bg-warn' : 'bg-danger'}`} />
+ <div className={`w-2 h-2 ${allergenSigned ? 'bg-warn' : 'bg-danger'}`} />
  <span className={`font-body text-[10px] font-medium ${allergenSigned ? 'text-warn' : 'text-danger'}`}>
  {CHECKLIST_ITEMS.filter(it => !checklistSigned[it.key]).length} remaining
  </span>
@@ -818,7 +845,7 @@ export default function ShiftIQ() {
  </div>
 
  {/* COL 3: Agent reasoning */}
- <div className="w-[220px] flex-shrink-0 overflow-y-auto bg-stone2">
+ <div className="w-[264px] flex-shrink-0 overflow-y-auto bg-stone2">
  <div className="px-4 py-2 border-b border-rule2 bg-stone2 sticky top-0 z-10 font-body uppercase tracking-widest text-ghost text-[10px] font-medium">
  Agent reasoning
  </div>
