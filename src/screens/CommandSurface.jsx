@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { commandData, facility, shiftData } from '../data'
-import { benchmarks } from '../data/capa'
 import { ActionBanner, SP, SPRow, MetricCard } from '../components/UI'
 import { useAppState } from '../context/AppState'
 
@@ -247,14 +246,6 @@ export default function CommandSurface() {
  return parts.join(' · ') || 'All clear — no pending actions'
  })()
 
- const moduleCounts = allVisible
- .filter(i => i.urgency !== 'watch' && !pendingIds.has(i.id))
- .reduce((acc, item) => {
- if (!acc[item.moduleLabel]) acc[item.moduleLabel] = { count: 0, accent: item.moduleAccent, module: item.module }
- acc[item.moduleLabel].count++
- return acc
- }, {})
-
  const zone = shiftData.score >= 75 ? 'AT RISK' : shiftData.score >= 60 ? 'WATCH' : 'CLEAR'
 
  const bannerColor = visibleCritCount > 0 ? '#D94F2A' : visibleWarnCount > 0 ? '#C4920A' : '#3A8A5A'
@@ -292,42 +283,6 @@ export default function CommandSurface() {
  />
  <SPRow label="Into shift" value="42 min" />
  <SPRow label="Remaining" value="5h 18m" valueColor="text-muted" />
- </SP>
-
- <SP title="By module">
- {Object.entries(moduleCounts).length === 0 ? (
- <div className="px-4 py-3 font-body text-muted text-[11px]">No active items</div>
- ) : (
- Object.entries(moduleCounts).map(([label, { count, accent, module }]) => (
- <div key={label} className="flex items-center justify-between px-4 py-2.5 border-b border-rule2 last:border-b-0">
- <Link to={`/${module}`} className="font-body text-[12px] hover:underline" style={{ color: accent }}>
- {label}
- </Link>
- <span className="display-num text-sm text-muted">{count}</span>
- </div>
- ))
- )}
- </SP>
-
- <SP title="Network standing" sub="vs. 68 plants">
- {benchmarks.map((b, i) => {
- const pctColor = b.percentile >= 70 ? 'text-ok' : b.percentile >= 50 ? 'text-warn' : 'text-danger'
- return (
- <div key={i} className="px-4 py-2.5 border-b border-rule2 last:border-b-0">
- <div className="font-body text-ghost text-[10px] mb-1 leading-snug">{b.metric}</div>
- <div className="flex items-baseline gap-1.5">
- <span className={`display-num text-xl ${pctColor}`}>{b.percentile}</span>
- <span className="font-body text-ghost text-[10px]">th pct.</span>
- </div>
- {b.insight && (
- <div className="font-body text-int text-[10px] mt-0.5 leading-tight">{b.insight}</div>
- )}
- </div>
- )
- })}
- <div className="px-4 py-2 font-body text-ghost text-[9px] border-t border-rule2">
- Salina Campus vs. 68 plants · Takorin network
- </div>
  </SP>
 
  <AcknowledgedHistory ids={permanentlyGone} />

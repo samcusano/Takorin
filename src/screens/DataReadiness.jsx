@@ -118,21 +118,6 @@ export default function DataReadiness() {
  </div>
  ))}
  </SP>
-
- {/* Industry context */}
- <SP title="Industry context" sub="Why this matters">
- <div className="px-4 py-3 space-y-3">
- <blockquote className="font-body text-ink2 text-[12px] leading-relaxed border-l-2 border-ochre pl-3">
- "AI fails not because the algorithms are wrong but because the data is incoherent. The prerequisite is data that speaks the same language."
- </blockquote>
- <div className="font-body text-ghost text-[10px]">— Chao Yi, Food Engineering · April 2026</div>
- <div className="h-px bg-rule2" />
- <div className="font-body text-muted text-[11px] leading-relaxed">
- 36% of CPG manufacturers cite lack of contextualized operational data as their primary AI barrier.
- </div>
- <div className="font-body text-ghost text-[10px]">— Schneider Electric CPG AI Survey, 2026</div>
- </div>
- </SP>
  </>
  )
 
