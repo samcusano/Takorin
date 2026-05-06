@@ -48,7 +48,7 @@ export function SecHd({ tag, title, badge, icon: Icon, accent }) {
  {Icon && <Icon size={11} strokeWidth={2} style={accent ? { color: accent } : undefined} />}
  {tag}
  </div>
- <div className="flex-1 font-body text-ink text-[13px] font-medium">{title}</div>
+ <div className="flex-1 font-display text-ink text-[13px] font-medium">{title}</div>
  {badge}
  </div>
  )
@@ -74,7 +74,7 @@ export function SP({ title, sub, children }) {
  return (
  <div className="border-b border-rule2 last:border-b-0">
  <div className="px-4 py-2.5 border-b border-rule2 flex items-baseline justify-between">
- <span className="font-body font-medium text-ink text-[12px]">{title}</span>
+ <span className="font-display font-medium text-ink text-[12px]">{title}</span>
  {sub && <span className="font-body text-ghost text-[10px]">{sub}</span>}
  </div>
  <div>{children}</div>
@@ -112,7 +112,7 @@ export function ActionBanner({ color = '#C17D2A', headline, body, children, foot
 }
 
 // ── Button variants
-export function Btn({ variant = 'primary', onClick, disabled, children, className = '' }) {
+export function Btn({ variant = 'primary', onClick, disabled, children, className = '', style }) {
  const base = 'font-body font-medium text-[11px] px-3 py-1.5 transition-all duration-100 active:scale-[0.97] cursor-pointer border-0 disabled:opacity-50 disabled:cursor-not-allowed'
  const cls = {
  primary: 'bg-stone text-ink hover:opacity-90',
@@ -122,10 +122,10 @@ export function Btn({ variant = 'primary', onClick, disabled, children, classNam
  warn: 'bg-warn text-white hover:opacity-90',
  ghost: 'bg-stone/20 text-stone hover:bg-stone/30',
  danger: 'bg-danger text-white hover:opacity-90',
- muted: 'bg-stone3 text-muted cursor-not-allowed',
+ muted: 'bg-stone3 text-muted hover:bg-stone2',
  }[variant]
  return (
- <button type="button" className={`${base} ${cls} ${className}`} onClick={onClick} disabled={disabled}>
+ <button type="button" className={`${base} ${cls} ${className}`} onClick={onClick} disabled={disabled} style={style}>
  {children}
  </button>
  )
@@ -264,6 +264,18 @@ export function MetricCard({ title, value, valueColor = 'text-ink', waveformData
  </div>
  )}
  </div>
+ )
+}
+
+// ── Modal overlay (critical one-time flows, safety briefings)
+export function Modal({ onClose, children }) {
+ return (
+  <div className="fixed inset-0 z-50 flex items-center justify-center">
+   <div className="absolute inset-0 bg-ink/40" onClick={onClose} />
+   <div className="relative z-10 bg-stone border border-rule2 w-full max-w-[480px] mx-4 flex flex-col max-h-[90vh] overflow-hidden" style={{ borderTop: '3px solid #D94F2A' }}>
+    {children}
+   </div>
+  </div>
  )
 }
 

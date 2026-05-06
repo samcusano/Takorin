@@ -215,8 +215,13 @@ export default function HandoffIQ() {
  {/* Incoming briefing */}
  <SP title="Incoming supervisor" sub="PM shift · 14:02">
  <div className="px-4 py-3 space-y-1.5">
+ <div className="flex items-center gap-2">
+ <PersonAvatar name="M. Santos" size={24} />
+ <div>
  <div className="font-body text-ink font-medium text-[13px]">M. Santos</div>
  <div className="font-body text-ghost text-[10px]">14:00–22:00 · Line 4</div>
+ </div>
+ </div>
  <div className="h-px bg-rule2 my-2" />
  <div className="font-body text-ink2 text-[11px] leading-relaxed">
  Review Sensor A-7 watch — count is at 4, threshold is 5. TS-8811 COA gap carries forward — request immediately if not resolved.
@@ -291,10 +296,8 @@ export default function HandoffIQ() {
  { name: 'P. Okonkwo', accent: 'ok', safetyNote: 'Oven Station B: today\'s SKU (GF-Flatbread) has a CCP-3 minimum of 185°F — higher than Pepperoni Classic. Log any reading below this as a CCP deviation, not a watch.' },
  ].map((op, i) => (
  <div key={i} className={`flex gap-3 px-4 py-3.5 border-b border-rule2 last:border-b-0 border-l-2 ${i === 0 ? 'border-l-brass bg-brass/[0.03]' : 'border-l-ok bg-ok/[0.02]'}`}>
- <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 ${i === 0 ? 'bg-brass/20' : 'bg-ok/20'}`}>
- <svg className={`w-3 h-3 ${i === 0 ? 'stroke-brass' : 'stroke-ok'}`} fill="none" strokeWidth={2} viewBox="0 0 24 24">
- <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
- </svg>
+ <div className="flex-shrink-0 mt-0.5">
+ <PersonAvatar name={op.name} size={24} />
  </div>
  <div>
  <div className="font-body font-medium text-ink text-[12px] mb-1">{op.name}</div>
