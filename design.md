@@ -111,13 +111,22 @@ sidebar active: bg-ochre/10, border-l-ochre
 
 ## 4. Typography
 
-**One typeface family throughout: Georgia (serif)**
-This is an intentional differentiation. Every B2B SaaS competitor uses
-geometric sans-serif (Inter, DM Sans, etc.). Takorin uses Georgia.
+**Two typefaces: IBM Plex Mono (body) + Georgia (display numbers)**
+
+- `font-body` → IBM Plex Mono, monospace. All body text, labels, pills,
+  descriptions, timestamps. Self-hosted via `@fontsource/ibm-plex-mono`
+  (imported in main.jsx — no CDN dependency).
+- `font-display` / `display-num` → Georgia, serif. Large bold-italic numbers
+  only: scores, OEE%, counts, case numerals.
+
+Rationale: Takorin is a compliance and operations instrument. Monospace signals
+precision — the same visual register as SCADA readouts, lab reports, lot numbers.
+IBM Plex Mono was designed for enterprise data interfaces, not code editors.
+It has a true italic and reads cleanly at 10–13px.
 
 ### Type scale
 ```
-display-num class:
+display-num class (Georgia only):
   font-family: Georgia
   font-weight: 800 (bold)
   font-style: italic
@@ -125,14 +134,14 @@ display-num class:
   line-height: 1
   Use for: large numbers (scores, counts, OEE), risk scores, case numbers
 
-Headings (font-display font-bold italic):
+Headings (font-display font-bold italic = Georgia):
   text-base (16px)  — action banners
   text-xl (20px)    — page-level display numbers
   text-2xl (24px)   — hero numbers
   text-3xl (30px)   — score rings
   text-4xl (36px)   — countdown numbers
 
-Body (font-body):
+Body (font-body = IBM Plex Mono):
   text-[13px] font-medium  — primary content labels
   text-[12px]              — body text
   text-[11px] italic       — descriptions, metadata

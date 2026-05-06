@@ -22,7 +22,7 @@ export default {
       },
       fontFamily: {
         display: ['Georgia', 'Times New Roman', 'serif'],
-        body:    ['Georgia', 'Times New Roman', 'serif'],
+        body:    [['IBM Plex Mono'], 'ui-monospace', 'monospace'],
       },
       fontSize: {
         '10': '10px',

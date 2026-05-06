@@ -4,13 +4,26 @@
 
 @layer base {
   * { box-sizing: border-box; }
+
+  /* Global focus ring — ochre on stone background, keyboard-only via :focus-visible */
+  :focus-visible {
+    outline: 2px solid #C17D2A;
+    outline-offset: 2px;
+  }
+  /* Elements that manage their own focus style suppress the default ring */
+  [data-no-ring]:focus-visible { outline: none; }
+
   body {
     margin: 0;
-    font-family: Georgia, 'Times New Roman', serif;
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
     background: #F5F0E8;
     color: #100F0D;
     -webkit-font-smoothing: antialiased;
+    line-height: 1.45;
   }
+  /* All buttons are interactive — cursor signals this */
+  button { cursor: pointer; }
+  button:disabled { cursor: not-allowed; }
   /* Scrollbar */
   ::-webkit-scrollbar { width: 5px; height: 5px; }
   ::-webkit-scrollbar-track { background: transparent; }
@@ -18,13 +31,12 @@
 }
 
 @layer utilities {
-  .font-italic { font-style: italic; }
-  .tabular-nums { font-variant-numeric: tabular-nums; }
+.tabular-nums { font-variant-numeric: tabular-nums; }
   /* Display type — large numbers, headings */
   .display-num {
     font-family: Georgia, serif;
     font-weight: 800;
-    font-style: italic;
+    font-style: normal;
     letter-spacing: -0.02em;
     line-height: 1;
   }
@@ -87,8 +99,8 @@
   }
 
   /* Locked typography scale — use these instead of ad-hoc text-[Npx] classes */
-  .type-label { font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; color: #A8A098; font-style: italic; }
-  .type-body  { font-size: 11px; font-style: italic; color: #100F0D; }
+  .type-label { font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; color: #A8A098; }
+  .type-body  { font-size: 11px; color: #100F0D; }
   .type-value { font-size: 12px; font-family: Georgia, serif; color: #100F0D; }
   .type-head  { font-size: 13px; font-weight: 600; color: #100F0D; }
 }
