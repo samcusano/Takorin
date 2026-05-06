@@ -11,6 +11,7 @@ export const shiftData = {
   line: 'Line 4',
   score: 78,
   confidence: 61,
+  rawConfidence: 84,
   time: '06:42 AM',
   countdown: 27 * 60 + 48,
   lines: [
@@ -28,6 +29,7 @@ export const shiftData = {
   findings: [
     {
       id:'sf1', num:'I.', urgency:'danger',
+      source:'Checklists · Live',
       title:'Complete startup checklists — Oven Station B + Topping Line',
       desc:'4 of 11 startup checklists remain open at T+42 min. Incomplete checklists at 60 minutes correlate with 18% elevated scrap rate on Pepperoni Classic runs across 340 comparable shifts.',
       evidence:'Precedent: Line 4 · Apr 2 — same 3-signal pattern → 61% OEE final outcome',
@@ -36,6 +38,7 @@ export const shiftData = {
     },
     {
       id:'sf2', num:'II.', urgency:'warn',
+      source:'HR · Roster',
       title:'Reassign Martinez (L3) to Sauce Dosing — Reyes (L1) is a mismatch',
       desc:'Sauce Dosing requires Level 3 at today\'s production volume. Martinez is available. Swap raises qualified staffing 72% → 83%.',
       evidence:'Precedent: Skill mismatch at Sauce Dosing in 3 of last 8 substandard shifts on Line 4',
@@ -43,11 +46,13 @@ export const shiftData = {
       consequence:'Martinez reassigned to Sauce Dosing · Qualified staffing updating: 72% → 83% · Risk score updates in 4 min',
     },
     {
-      id:'sf3', num:'III.', urgency:'muted',
-      title:'Watch order — Sensor A-7 micro-variance',
-      desc:'3 readings outside normal range in 20 min. Below threshold (5 required). Pattern matches pre-jam signature from 2–3 shifts before the April 2nd incident.',
-      evidence:'Watch: 3-shift leading indicator only — escalate if count reaches 5',
-      actions:['Log inspection task','Alert at 5'],
+      id:'sf3', num:'III.', urgency:'warn',
+      source:'Sensor A-7 · Live',
+      title:'Sensor A-7 — projected threshold breach',
+      desc:'4 of 5 variance readings · Projected breach ∼2 shifts at current trend. Bearing inspection required before next shift.',
+      evidence:'Pattern matches Apr 2 bearing failure — same micro-variance signature 3 shifts prior',
+      actions:['Create inspection task','Alert at count 5'],
+      consequence:'Inspection task created · Ticket MT-001 open · Alert fires at count 5',
     },
   ],
   crew: [

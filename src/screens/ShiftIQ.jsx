@@ -4,7 +4,7 @@ import { shiftData, haccpData, productionRate, crewHoursData } from '../data'
 import {
  Urg, StatCell, SecHd, CaseCard, Layout,
  Btn, ConsequenceNotice, PageHead, ActionBanner, MetricCard, ScoreRing,
- PersonAvatar, Modal
+ PersonAvatar, Modal, WaveformSparkline, Chip
 } from '../components/UI'
 import { useAppState } from '../context/AppState'
 
@@ -281,6 +281,11 @@ function Finding({ f, onAct }) {
  <p className="font-body text-ink font-medium text-[13px] leading-snug">{f.title}</p>
  <p className="font-body text-ink2 text-[12px] leading-relaxed">{f.desc}</p>
  <p className="font-body text-ghost text-[11px]">▸ {f.evidence}</p>
+ {f.source && (
+  <div className="flex gap-1.5">
+   <Chip tone="muted">{f.source}</Chip>
+  </div>
+ )}
  <div className="flex gap-2 pt-1">
  {f.actions.map((a, i) => (
  <Btn key={i} variant={i === 0 ? 'accent' : 'ghost'} onClick={() => handleAct(a)}>
@@ -426,6 +431,9 @@ export default function ShiftIQ() {
  {line.score >= 75 ? 'AT RISK' : line.score >= 60 ? 'WATCH' : 'CLEAR'}
  </span>
  <span className={`display-num text-xl leading-none ${sc}`}>{line.score}</span>
+ {active && d.confidence < d.rawConfidence && (
+  <span className="font-body text-warn text-[9px]">adj.</span>
+ )}
  </div>
  <div className="font-body text-ghost text-[10px] mt-0.5">{line.supervisor}</div>
  </button>
@@ -436,6 +444,25 @@ export default function ShiftIQ() {
  {/* Stat bar */}
  <div className="grid grid-cols-4 border-b border-rule2 bg-stone flex-shrink-0">
  {d.stats.map((s, i) => <StatCell key={i} {...s} />)}
+ </div>
+
+ {/* Risk trend strip */}
+ <div className="flex items-center gap-4 px-5 py-3 border-b border-rule2 bg-stone flex-shrink-0">
+  <div className="flex items-baseline gap-2 flex-shrink-0">
+  <span className={`font-body font-medium text-[10px] uppercase tracking-widest ${scoreColor}`}>
+   {d.score >= 75 ? 'AT RISK' : d.score >= 60 ? 'WATCH' : 'CLEAR'}
+  </span>
+  <span className={`display-num text-2xl leading-none ${scoreColor}`}>{d.score}</span>
+  </div>
+  <div className="flex-1 min-w-[80px]">
+  <WaveformSparkline data={d.sparkline} color={d.score >= 75 ? '#D94F2A' : d.score >= 60 ? '#C4920A' : '#3A8A5A'} height={28} />
+  </div>
+  <div className="flex-shrink-0 text-right">
+  <div className="font-body text-ghost text-[10px]">Rising · 06:12–06:42</div>
+  {d.confidence < d.rawConfidence && (
+   <div className="font-body text-warn text-[10px] mt-0.5">Confidence {d.confidence}% · Oven B SCADA stale 3d</div>
+  )}
+  </div>
  </div>
 
  {/* Mid-shift production strip */}
@@ -593,13 +620,43 @@ export default function ShiftIQ() {
  <Urg level="critical">3 pending · 27 min</Urg>
  </div>
  {d.findings.map(f => (
- <Finding key={f.id} f={f} onAct={(id) => setActed(p => ({ ...p, [id]: true }))} />
+ <Finding key={f.id} f={f} onAct={(id) => {
+  setActed(p => ({ ...p, [id]: true }))
+  if (id === 'sf3') {
+   setPredActioned(true)
+   setMaintenanceTickets(p => [...p.filter(t => t.id !== 'MT-001'), { id:'MT-001', equipment:'Sensor A-7 · Conveyor Line 4', issue:'Micro-variance count 4/5 — bearing inspection before next shift', urgency:'warn', status:'open', requestedBy:'D. Kowalski', createdAt:'13:40' }])
+  }
+ }} />
  ))}
  </>
  )}
 
  {col1Tab === 'tasks' && (
  <>
+ {/* Maintenance tickets */}
+  {maintenanceTickets.length > 0 && (
+  <>
+   <div className="px-4 py-2 border-b border-rule2 bg-stone2 font-body uppercase tracking-widest text-ghost text-[10px] font-medium">Maintenance tickets</div>
+   {maintenanceTickets.map((t, i) => (
+   <div key={i} className="flex items-start gap-2 px-4 py-2.5 border-b border-rule2">
+    <div className={`w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0 ${t.urgency === 'danger' ? 'bg-danger' : 'bg-warn'}`} />
+    <div className="flex-1 min-w-0">
+    <div className="font-body font-medium text-ink text-[11px] truncate">{t.equipment}</div>
+    <div className="font-body text-ghost text-[10px]">{t.issue}</div>
+    <div className="flex items-center gap-2 mt-1">
+     <span className={`font-body font-medium text-[10px] px-1.5 py-px ${t.status === 'open' ? 'bg-warn/10 text-warn' : 'bg-ok/10 text-ok'}`}>{t.status}</span>
+     <span className="font-body text-ghost text-[10px]">{t.createdAt} · {t.requestedBy}</span>
+    </div>
+    </div>
+    {t.status === 'open' && (
+    <button type="button" onClick={() => setMaintenanceTickets(p => p.map((x,j) => j===i ? {...x, status:'closed'} : x))}
+     className="font-body text-[10px] px-1.5 py-0.5 bg-stone3 text-muted hover:bg-ok/10 hover:text-ok transition-colors flex-shrink-0">Close</button>
+    )}
+   </div>
+   ))}
+  </>
+  )}
+
  {/* Task assignment */}
  <div className="border-t border-rule2 px-4 py-3">
  <div className="flex items-center justify-between mb-2">
@@ -843,95 +900,6 @@ export default function ShiftIQ() {
  <EmptyLine name={activeLined.name} />
  )}
  </div>
-
- {/* COL 3: Agent reasoning */}
- <div className="w-[264px] flex-shrink-0 overflow-y-auto bg-stone2">
- <div className="px-4 py-2 border-b border-rule2 bg-stone2 sticky top-0 z-10 font-body uppercase tracking-widest text-ghost text-[10px] font-medium">
- Agent reasoning
- </div>
- {hasLiveData ? (
- <>
- <AgentTimeline timeline={d.agentTimeline} sparkline={d.sparkline} score={d.score} />
- {/* Confidence callout */}
- <div className="flex items-start gap-2 px-4 py-3 bg-warn/10 border-b border-rule2">
- <svg className="w-3.5 h-3.5 stroke-warn flex-shrink-0 mt-0.5" fill="none" strokeWidth={2} viewBox="0 0 24 24">
- <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
- </svg>
- <p className="font-body text-ink2 text-[11px] leading-relaxed flex-1">
- Score adjusted <strong className="text-warn font-semibold not-italic">84% → 61%</strong> — Oven B SCADA stale 3 days.
- </p>
- <span className="display-num text-lg text-warn flex-shrink-0">61%</span>
- </div>
- {/* Signal health */}
- <div className="px-4 py-2 border-b border-rule2 font-body uppercase tracking-widest text-ghost text-[10px] font-medium">Signal sources</div>
- {d.signals.map((s, i) => (
- <div key={i}>
- <SignalCard sig={s} />
- {s.name === 'Oven B · SCADA' && (
- <div className={`px-4 py-2 border-b border-rule2 ${skuContextReady ? 'bg-ok/5' : 'bg-stone3/50'}`}>
- {skuContextReady
- ? <div className="font-body text-ok text-[10px]">SKU context active — 182°F is normal for Pepperoni Classic (currently running). Alert fires if GF-Flatbread scheduled.</div>
- : <div className="font-body text-ghost text-[10px]">SKU-specific thresholds <span className="text-brass">locked</span> — resolve Oven B context gap in Data Readiness to enable product-aware alerts.</div>
- }
- </div>
- )}
- </div>
- ))}
-
- {/* Maintenance tickets */}
- {maintenanceTickets.length > 0 && (
- <>
- <div className="px-4 py-2 border-b border-rule2 font-body uppercase tracking-widest text-ghost text-[10px] font-medium">Maintenance tickets</div>
- {maintenanceTickets.map((t, i) => (
- <div key={i} className="flex items-start gap-2 px-4 py-2.5 border-b border-rule2">
- <div className={`w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0 ${t.urgency === 'danger' ? 'bg-danger' : 'bg-warn'}`} />
- <div className="flex-1 min-w-0">
- <div className="font-body font-medium text-ink text-[11px] truncate">{t.equipment}</div>
- <div className="font-body text-ghost text-[10px]">{t.issue}</div>
- <div className="flex items-center gap-2 mt-1">
- <span className={`font-body font-medium text-[10px] px-1.5 py-px ${t.status === 'open' ? 'bg-warn/10 text-warn' : 'bg-ok/10 text-ok'}`}>{t.status}</span>
- <span className="font-body text-ghost text-[10px]">{t.createdAt} · {t.requestedBy}</span>
- </div>
- </div>
- {t.status === 'open' && (
- <button type="button" onClick={() => setMaintenanceTickets(p => p.map((x,j) => j===i ? {...x, status:'closed'} : x))}
- className="font-body text-[10px] px-1.5 py-0.5 bg-stone3 text-muted hover:bg-ok/10 hover:text-ok transition-colors flex-shrink-0">Close</button>
- )}
- </div>
- ))}
- </>
- )}
-
- {/* Predictive maintenance */}
- <div className="px-4 py-2 border-b border-rule2 font-body uppercase tracking-widest text-ghost text-[10px] font-medium">Predictive alert</div>
- <div className="px-4 py-3 border-b border-rule2 bg-warn/[0.04]">
- <div className="flex items-start gap-2 mb-2">
- <svg className="w-3.5 h-3.5 stroke-warn flex-shrink-0 mt-0.5" fill="none" strokeWidth={2} viewBox="0 0 24 24">
- <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
- </svg>
- <div>
- <div className="font-body font-medium text-ink text-[12px]">Sensor A-7 — projected breach</div>
- <div className="font-body text-warn text-[10px] mt-0.5">4 of 5 variance readings · Projected threshold breach: ~2 shifts at current trend</div>
- <div className="font-body text-ghost text-[10px] mt-0.5">Pattern matches Apr 2 bearing failure 3 shifts before jam</div>
- </div>
- </div>
- {predActioned
- ? <div className="font-body text-ok text-[10px] slide-in">Inspection task created · Ticket MT-001 open · Alert fires at count 5</div>
- : <div className="flex gap-1.5">
- <button type="button" onClick={() => {
- setPredActioned(true)
- setMaintenanceTickets(p => [...p.filter(t => t.id !== 'MT-001'), { id:'MT-001', equipment:'Sensor A-7 · Conveyor Line 4', issue:'Micro-variance count 4/5 — bearing inspection before next shift', urgency:'warn', status:'open', requestedBy:'D. Kowalski', createdAt:'13:40' }])
- }} className="font-body font-medium text-[10px] px-2.5 py-1 bg-warn/10 text-warn hover:bg-warn/20 transition-colors">Create inspection task</button>
- <button type="button" onClick={() => setPredActioned(true)} className="font-body text-[10px] px-2 py-1 bg-stone3 text-muted">Alert at 5</button>
- </div>
- }
- </div>
- </>
- ) : (
- <EmptyLine name={activeLined.name} />
- )}
- </div>
-
  </div>
 
  {/* Full-width secondary — 48hr forecast + pilot */}
