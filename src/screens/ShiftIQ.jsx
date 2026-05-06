@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-import { Activity, Clock, FlaskConical } from 'lucide-react'
 import { shiftData, haccpData, productionRate, crewHoursData } from '../data'
 import {
  Urg, StatCell, SecHd, CaseCard, Layout,
@@ -320,34 +319,6 @@ function Finding({ f, onAct }) {
  )
 }
 
-function ForecastRow({ row, onStaffingAction, staffingActioned }) {
- const scoreColor = row.score >= 75 ? 'text-danger' : row.score >= 60 ? 'text-warn' : 'text-ok'
- const hasConflict = row.signals?.some(s => s.t === 'bad' || s.t === 'danger')
- return (
- <div className={`flex border-b border-rule2 last:border-b-0 min-h-[46px] ${row.critical ? 'bg-danger/[0.03]' : ''}`}>
- <div className="w-[72px] flex-shrink-0 px-3 py-2.5 border-r border-rule2 font-body text-ghost text-[10px] leading-relaxed whitespace-pre-line">{row.time}</div>
- <div className={`w-10 flex-shrink-0 px-2 pt-2.5 display-num text-lg ${scoreColor}`}>{row.score}</div>
- <div className="flex-1 px-3 py-2.5">
- <div className="font-body font-medium text-ink text-[12px] mb-1">{row.name}</div>
- <div className="flex gap-1.5 flex-wrap mb-1">
- {(row.signals || []).map((s, i) => {
- const cls = s.t === 'ok' ? 'text-ok bg-ok/10' : (s.t === 'bad' || s.t === 'danger') ? 'text-danger bg-danger/10' : 'text-warn bg-warn/10'
- return <span key={i} className={`font-body text-[10px] px-1.5 py-px ${cls}`}>{s.l}</span>
- })}
- </div>
- {row.action && <p className={`font-body text-[10px] ${row.critical ? 'text-warn' : 'text-ghost'}`}>{row.action}</p>}
- {hasConflict && !staffingActioned && (
- <div className="flex gap-1.5 mt-1.5 flex-wrap">
- <button type="button" onClick={() => onStaffingAction('reassign')} className="font-body font-medium text-[10px] px-2 py-0.5 bg-danger/10 text-danger hover:bg-danger/20 transition-colors">Reassign backup</button>
- <button type="button" onClick={() => onStaffingAction('sku')} className="font-body text-[10px] px-2 py-0.5 bg-stone2 text-muted hover:bg-stone3 transition-colors">Adjust SKU mix</button>
- </div>
- )}
- {staffingActioned && <div className="font-body text-ok text-[10px] mt-1 slide-in">Conflict resolved · Shift forecast updated</div>}
- </div>
- </div>
- )
-}
-
 export default function ShiftIQ() {
  const d = shiftData
  const [activeLine, setActiveLine] = useState('l4')
@@ -365,7 +336,6 @@ export default function ShiftIQ() {
  logActivity,
  } = useAppState()
  const [predActioned, setPredActioned] = useState(false)
- const [staffingActioned, setStaffingActioned] = useState({})
  const [overrideMode, setOverrideMode] = useState(false)
  const [overrideReason, setOverrideReason] = useState('')
  const [showNearMiss, setShowNearMiss] = useState(false)
@@ -385,7 +355,6 @@ export default function ShiftIQ() {
  const startupPct = Math.round((signedCount / CHECKLIST_TOTAL) * 100)
  const [countdown, setCountdown] = useState(d.countdown)
  const [escalatedShift, setEscalatedShift] = useState(false)
- const [pilotExpanded, setPilotExpanded] = useState(false)
 
  useEffect(() => {
  const id = setInterval(() => setCountdown(s => Math.max(0, s - 1)), 1000)
@@ -447,15 +416,9 @@ export default function ShiftIQ() {
  </div>
 
  {/* Risk trend strip */}
- <div className="flex items-center gap-4 px-5 py-3 border-b border-rule2 bg-stone flex-shrink-0">
-  <div className="flex items-baseline gap-2 flex-shrink-0">
-  <span className={`font-body font-medium text-[10px] uppercase tracking-widest ${scoreColor}`}>
-   {d.score >= 75 ? 'AT RISK' : d.score >= 60 ? 'WATCH' : 'CLEAR'}
-  </span>
-  <span className={`display-num text-2xl leading-none ${scoreColor}`}>{d.score}</span>
-  </div>
+ <div className="flex items-center gap-4 px-5 py-2.5 border-b border-rule2 bg-stone flex-shrink-0">
   <div className="flex-1 min-w-[80px]">
-  <WaveformSparkline data={d.sparkline} color={d.score >= 75 ? '#D94F2A' : d.score >= 60 ? '#C4920A' : '#3A8A5A'} height={28} />
+  <WaveformSparkline data={d.sparkline} color={d.score >= 75 ? '#D94F2A' : d.score >= 60 ? '#C4920A' : '#3A8A5A'} height={24} />
   </div>
   <div className="flex-shrink-0 text-right">
   <div className="font-body text-ghost text-[10px]">Rising · 06:12–06:42</div>
@@ -902,89 +865,9 @@ export default function ShiftIQ() {
  </div>
  </div>
 
- {/* Full-width secondary — 48hr forecast + pilot */}
- <div className="flex-shrink-0 border-t border-rule2 overflow-y-auto" style={{ maxHeight: '360px' }}>
- <div className="grid grid-cols-2 divide-x divide-rule2">
-
- {/* 48hr forecast */}
- <div>
- <SecHd tag="48-hour forecast" title="Upcoming shifts — readiness by line"
- icon={Clock} badge={<Urg level="warn">1 intervention required</Urg>} />
- {d.forecast.map((row, i) => (
- <ForecastRow key={i} row={row}
- onStaffingAction={(type) => setStaffingActioned(p => ({ ...p, [i]: type }))}
- staffingActioned={!!staffingActioned[i]} />
- ))}
- </div>
-
- {/* Pilot validation */}
- <div>
- <SecHd tag="Pilot validation" title="Prediction accuracy — Line 4"
- icon={FlaskConical} badge={<Urg level="ok">82% — expand recommended</Urg>} />
- {/* Gauge + stats */}
- <div className="flex items-center gap-4 px-4 py-3 border-b border-rule2">
- <div className="flex-shrink-0 flex flex-col gap-1.5" style={{ width:80 }}>
- <span style={{ fontFamily:'Georgia,serif', fontWeight:800, fontStyle:'', fontSize:24, color:'#3A8A5A', letterSpacing:'-0.02em', lineHeight:1 }}>82%</span>
- <div style={{ height:6, background:'#D8D2C8' }}>
- <div style={{ height:'100%', width:'82%', background:'#3A8A5A' }} />
- </div>
- <span style={{ fontFamily:'Georgia,serif', fontStyle:'', fontSize:9, color:'#78706A' }}>accuracy</span>
- </div>
- <div className="flex-1">
- {d.pilotStats.map((s, i) => (
- <div key={i} className="flex justify-between py-1 border-b border-rule last:border-b-0 font-body text-[11px]">
- <span className=" text-muted">{s.label}</span>
- <span className={`display-num text-[13px] ${s.color}`}>{s.val}</span>
- </div>
- ))}
- </div>
- <Btn
- onClick={() => setPilotExpanded(true)}
- style={{ background:'#C17D2A', color:'#F5F0E8', alignSelf:'center', whiteSpace:'nowrap' }}
- >
- {pilotExpanded ? 'Expansion requested ✓' : 'Expand to all lines'}
- </Btn>
- </div>
- {pilotExpanded && (
- <div className="flex items-center gap-2 px-4 py-2.5 bg-ok/10 border-b border-rule2 font-body text-ok text-[11px] slide-in">
- <div className="w-1.5 h-1.5 rounded-full bg-ok flex-shrink-0" />
- Expansion request submitted — Lines 6, 3, and 2 will enter monitoring mode next shift cycle.
- </div>
- )}
- {/* Commit log — shape + color so status is readable without color vision */}
- <div className="flex flex-wrap gap-1 px-4 py-3">
- {d.pilotLog.map((status, i) => (
- <div key={i} title={`Shift ${i + 1}: ${status === 'ok' ? 'Correct' : status === 'miss' ? 'Miss' : status === 'part' ? 'Partial' : '—'}`}
- aria-label={`Shift ${i + 1}: ${status}`}
- className={`w-3 h-3 flex-shrink-0 flex items-center justify-center ${
- status === 'ok' ? 'bg-ok' :
- status === 'miss' ? 'border border-danger bg-danger/10' :
- status === 'part' ? 'bg-warn/40 border border-warn' :
- 'bg-rule2'
- }`}>
- {status === 'miss' && <svg className="w-2 h-2 stroke-danger" viewBox="0 0 8 8" fill="none" strokeWidth={1.5} aria-hidden="true"><path d="M1 1l6 6M7 1L1 7"/></svg>}
- {status === 'part' && <svg className="w-2 h-2 stroke-warn" viewBox="0 0 8 8" fill="none" strokeWidth={1.5} aria-hidden="true"><path d="M4 1v6"/></svg>}
- </div>
- ))}
- <div className="flex gap-3 ml-2 items-center flex-wrap">
- {[
- ['ok', 'Correct', 'w-3 h-3 bg-ok'],
- ['part', 'Partial', 'w-3 h-3 bg-warn/40 border border-warn'],
- ['miss', 'Miss', 'w-3 h-3 border border-danger bg-danger/10'],
- ].map(([s, l, cls]) => (
- <div key={s} className="flex items-center gap-1">
- <div className={cls} aria-hidden="true" />
- <span className="font-body text-ghost text-[10px]">{l}</span>
- </div>
- ))}
- </div>
- </div>
- </div>
-
- </div>
- </div>
  {viewingOperator && (
- <OperatorPanel name={viewingOperator} onClose={() => setViewingOperator(null)} />
+  <OperatorPanel name={viewingOperator} onClose={() => setViewingOperator(null)} />
+ )}
  )}
  </div>
  )

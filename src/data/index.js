@@ -54,6 +54,15 @@ export const shiftData = {
       actions:['Create inspection task','Alert at count 5'],
       consequence:'Inspection task created · Ticket MT-001 open · Alert fires at count 5',
     },
+    {
+      id:'sf4', num:'IV.', urgency:'warn',
+      source:'HR · Roster + Schedule',
+      title:'Tomorrow AM staffing gap — act before tonight',
+      desc:'Line 4 AM (Kowalski) will have 12 of 18 qualified operators. Lindqvist L3 cert expires tonight — drops below 72% staffing threshold.',
+      evidence:'Lindqvist cert expires 22:00 tonight. No backup cross-trained. Tomorrow AM risk score: 54.',
+      actions:['Schedule backup cert','Flag for HR'],
+      consequence:'HR flagged · Backup cert scheduled · Tomorrow AM risk score will update',
+    },
   ],
   crew: [
     { name:'D. Kowalski', role:'Supervisor · L4', dots:[1,1,1,1,0] },
@@ -91,6 +100,12 @@ export const shiftData = {
 }
 
 export const handoffData = {
+  forecast: [
+    { time:'Today\n14:00 PM', score:88, name:'Line 4 · PM — M. Santos', signals:['Staffing 95%:ok','COA 80%:warn','Certs clear:ok'], action:'TS-8811 COA gap carries into PM — resolve before 14:00' },
+    { time:'Tomorrow\n06:00 AM', score:54, name:'Line 4 · AM — Kowalski', signals:['Staffing 67%:danger','COA 80%:warn','Certs clear:ok'], action:'Lindqvist cert expires tonight — Line 4 AM will have 12 of 18 qualified.', urgent:true },
+    { time:'Tomorrow\n06:00 AM', score:91, name:'Line 6 · AM — Petrov', signals:['Staffing 94%:ok','COA 100%:ok','Certs clear:ok'] },
+    { time:'Tomorrow\n14:00 PM', score:68, name:'Line 3 · PM — Chen', signals:['Staffing 78%:warn','COA 100%:ok','1 cert expiring:warn'], action:'Adeyemi cert expires in 35 days' },
+  ],
   id:'HO-2604161', line:'Line 4', date:'April 16, 2026', time:'14:02',
   outgoing:'D. Kowalski · L4', incoming:'M. Santos · L4',
   oee:'81%', units:'38,420 of 42,000',

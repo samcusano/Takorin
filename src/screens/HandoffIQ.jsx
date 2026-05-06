@@ -34,22 +34,44 @@ function ShiftTimeline({ events }) {
  )
 }
 
+
+function ForecastRow({ row }) {
+ const scoreColor = row.score >= 75 ? 'text-danger' : row.score >= 60 ? 'text-warn' : 'text-ok'
+ const hasConflict = row.urgent
+ const signals = (row.signals || []).map(s => {
+  const [label, tone] = s.split(':')
+  return { label, tone }
+ })
+ return (
+  <div className={`flex border-b border-rule2 last:border-b-0 min-h-[46px] ${hasConflict ? 'bg-danger/[0.03]' : ''}`}>
+  <div className="w-[72px] flex-shrink-0 px-3 py-2.5 border-r border-rule2 font-body text-ghost text-[10px] leading-relaxed whitespace-pre-line">{row.time}</div>
+  <div className={`w-10 flex-shrink-0 px-2 pt-2.5 display-num text-lg ${scoreColor}`}>{row.score}</div>
+  <div className="flex-1 px-3 py-2.5">
+   <div className="font-body font-medium text-ink text-[12px] mb-1">{row.name}</div>
+   <div className="flex gap-1.5 flex-wrap mb-1">
+   {signals.map((s, i) => {
+    const cls = s.tone === 'ok' ? 'text-ok bg-ok/10' : (s.tone === 'bad' || s.tone === 'danger') ? 'text-danger bg-danger/10' : 'text-warn bg-warn/10'
+    return <span key={i} className={`font-body text-[10px] px-1.5 py-px ${cls}`}>{s.label}</span>
+   })}
+   </div>
+   {row.action && <p className={`font-body text-[10px] ${hasConflict ? 'text-warn' : 'text-ghost'}`}>{row.action}</p>}
+  </div>
+  </div>
+ )
+}
+
 export default function HandoffIQ() {
  const d = handoffData
  const { handoffSigned: signed, setHandoffSigned: setSigned,
  handoffNominated: nominated, setHandoffNominated: setNominated,
  trainingPlans, setTrainingPlans,
  trainingCompletions, setTrainingCompletions,
- nearMisses, setNearMisses,
  sanitationEntries, setSanitationEntries,
  operatorAcknowledgments, setOperatorAcknowledgments,
  logActivity } = useAppState()
  const [handoffAccepted, setHandoffAccepted] = useState(false)
  const [completionForms, setCompletionForms] = useState({})
  const [trainingForms, setTrainingForms] = useState({})
- const [showNearMiss, setShowNearMiss] = useState(false)
- const [nearMissForm, setNearMissForm] = useState({ station:'', what:'', action:'', atRisk: false })
- const [nearMissSubmitted, setNearMissSubmitted] = useState(false)
  const [showSanitationForm, setShowSanitationForm] = useState(false)
  const [sanitationForm, setSanitationForm] = useState({ line:'', shift:'', checks:'7', total:'7', notes:'', tech:'T. Osei' })
  const [timeToShift, setTimeToShift] = useState('')
@@ -329,37 +351,6 @@ export default function HandoffIQ() {
  </div>
  </div>
  ))}
- {/* Near-miss entry */}
- <div className="px-4 py-3 border-t border-rule2">
- {!showNearMiss && !nearMissSubmitted && (
- <button type="button" onClick={() => setShowNearMiss(true)} className="font-body text-ghost text-[11px] hover:text-muted transition-colors">+ Log a near-miss</button>
- )}
- {showNearMiss && !nearMissSubmitted && (
- <div className="slide-in space-y-2">
- <div className="font-body text-ghost text-[9px] uppercase tracking-widest">Near-miss report</div>
- <select value={nearMissForm.station} onChange={e => setNearMissForm(p => ({...p, station: e.target.value}))}
- className="w-full font-body text-ink text-[11px] bg-stone border border-rule px-2 py-1 cursor-pointer">
- <option value="">Station…</option>
- <option>Sauce Dosing</option><option>Oven Station B</option><option>Pack Line</option><option>Topping Line</option>
- </select>
- <textarea placeholder="What happened?" value={nearMissForm.what} onChange={e => setNearMissForm(p => ({...p, what: e.target.value}))}
- className="w-full font-body text-ink text-[11px] bg-stone border border-rule px-2 py-1 h-14 resize-none" />
- <input placeholder="Corrective step taken" value={nearMissForm.action} onChange={e => setNearMissForm(p => ({...p, action: e.target.value}))}
- className="w-full font-body text-ink text-[11px] bg-stone border border-rule px-2 py-1" />
- <div className="flex gap-2">
- <button type="button" disabled={!nearMissForm.station || !nearMissForm.what}
- onClick={() => { setNearMisses(p => [...p, { ...nearMissForm, time: '14:02' }]); setNearMissSubmitted(true); setShowNearMiss(false) }}
- className="font-body font-medium text-[11px] px-3 py-1.5 bg-warn/10 text-warn disabled:opacity-40 disabled:cursor-not-allowed hover:bg-warn/20 transition-colors">
- Submit — auto-CAPA created
- </button>
- <button type="button" onClick={() => setShowNearMiss(false)} className="font-body text-[11px] px-2 py-1 text-ghost">Cancel</button>
- </div>
- </div>
- )}
- {nearMissSubmitted && (
- <div className="font-body text-ok text-[11px] slide-in">Near-miss logged · CAPA created and assigned to supervisor</div>
- )}
- </div>
  </div>
 
  {/* Shift record */}
@@ -397,152 +388,25 @@ export default function HandoffIQ() {
  <ShiftTimeline events={shiftEvents} />
  </div>
 
- {/* Sanitation logs */}
- <div>
- <div className="flex items-center border-b border-rule2">
- <div className="flex-1">
- <SecHd tag="Sanitation logs" title="Today's checklist completion by line"
- badge={<Urg level={sanitationLogs.some(l => l.status === 'gap') ? 'warn' : 'ok'}>
- {sanitationLogs.filter(l => l.status === 'complete').length + sanitationEntries.length} of {sanitationLogs.length} complete
- </Urg>} />
- </div>
- <button type="button" onClick={() => setShowSanitationForm(p => !p)}
- className="px-4 font-body text-ghost text-[10px] hover:text-muted transition-colors flex-shrink-0">+ Log entry</button>
- </div>
- {showSanitationForm && (
- <div className="px-4 py-3 border-b border-rule2 bg-stone2 space-y-2 slide-in">
- <div className="font-body text-ghost text-[9px] uppercase tracking-widest">New sanitation log</div>
- <div className="flex gap-2">
- <select value={sanitationForm.line} onChange={e => setSanitationForm(p => ({...p, line: e.target.value}))}
- className="flex-1 font-body text-ink text-[11px] bg-stone border border-rule px-2 py-1 cursor-pointer">
- <option value="">Line…</option>
- <option>Line 4</option><option>Line 6</option><option>Line 3</option><option>Line 2</option>
- </select>
- <select value={sanitationForm.shift} onChange={e => setSanitationForm(p => ({...p, shift: e.target.value}))}
- className="w-20 font-body text-ink text-[11px] bg-stone border border-rule px-2 py-1 cursor-pointer">
- <option value="">Shift</option><option>AM</option><option>PM</option>
- </select>
- <div className="flex items-center gap-1 font-body text-ghost text-[11px]">
- <input type="number" value={sanitationForm.checks} onChange={e => setSanitationForm(p => ({...p, checks: e.target.value}))}
- className="w-10 font-body text-ink text-[11px] bg-stone border border-rule px-2 py-1 text-center" />
- <span>/</span>
- <span>{sanitationForm.total}</span>
- </div>
- </div>
- <input placeholder="Notes (if partial)" value={sanitationForm.notes} onChange={e => setSanitationForm(p => ({...p, notes: e.target.value}))}
- className="w-full font-body text-ink text-[11px] bg-stone border border-rule px-2 py-1" />
- <div className="flex gap-2">
- <button type="button" disabled={!sanitationForm.line || !sanitationForm.shift}
- onClick={() => {
- const entry = { ...sanitationForm, time: new Date().toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' }), status: sanitationForm.checks === sanitationForm.total ? 'complete' : 'partial' }
- setSanitationEntries(p => [...p, entry])
- logActivity({ actor: sanitationForm.tech, action: `Logged sanitation: ${sanitationForm.line} ${sanitationForm.shift} — ${sanitationForm.checks}/${sanitationForm.total} checks`, item: `${sanitationForm.line} ${sanitationForm.shift}`, type: 'sanitation' })
- setShowSanitationForm(false)
- setSanitationForm({ line:'', shift:'', checks:'7', total:'7', notes:'', tech:'T. Osei' })
- }}
- className="font-body font-medium text-[11px] px-3 py-1.5 bg-ok text-white disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90 transition-opacity">
- Sign &amp; submit — T. Osei
- </button>
- <button type="button" onClick={() => setShowSanitationForm(false)} className="font-body text-[11px] text-ghost px-2">Cancel</button>
- </div>
- </div>
- )}
- {sanitationEntries.map((e, i) => (
- <div key={i} className="grid border-b border-rule2 bg-ok/[0.02]" style={{ gridTemplateColumns:'1fr 80px 80px 80px 120px' }}>
- <div className="px-4 py-2.5">
- <div className="font-body font-medium text-ink text-[13px]">{e.line} · {e.shift}</div>
- <div className="font-body text-ghost text-[11px]">{e.tech} — {e.time}</div>
- </div>
- <div className="flex items-center justify-center font-body text-ghost text-[11px]">{e.checks}/{e.total}</div>
- <div className="flex items-center px-2 font-body text-ghost text-[11px]">{e.time}</div>
- <div className="flex items-center px-2 font-body text-ghost text-[11px]">100%</div>
- <div className="flex items-center justify-center">
- <span className="font-body font-medium text-[10px] px-2 py-0.5 bg-ok/10 text-ok">Complete</span>
- </div>
- </div>
- ))}
- <div className="overflow-x-auto">
- <table className="w-full text-[11px]">
- <thead>
- <tr className="border-b border-rule2 bg-stone2">
- {['Line · Shift','Tech','Status','Checks',''].map(h => (
- <th key={h} className="px-4 py-2 text-left font-body text-ghost text-[9px] font-normal">{h}</th>
- ))}
- </tr>
- </thead>
- <tbody>
- {sanitationLogs.map((log, i) => (
- <tr key={i} className={`border-b border-rule2 last:border-b-0 ${log.status === 'gap' ? 'bg-danger/[0.03]' : ''}`}>
- <td className="px-4 py-2.5 font-body font-medium text-ink">{log.line} · {log.shift}</td>
- <td className="px-4 py-2.5 font-body text-ghost">{log.tech}</td>
- <td className="px-4 py-2.5">
- <span className={`font-body font-medium text-[10px] px-2 py-0.5 ${
- log.status === 'complete' ? 'bg-ok/10 text-ok' : 'bg-danger/10 text-danger'
- }`}>
- {log.status === 'complete' ? 'Complete' : 'Gap — logged'}
- </span>
- </td>
- <td className="px-4 py-2.5 font-body text-ghost">{log.checks}/{log.total}</td>
- <td className="px-4 py-2.5">
- {log.capaId && (
- <span className="font-body text-warn text-[10px]">{log.capaId}</span>
- )}
- </td>
- </tr>
- ))}
- </tbody>
- </table>
- </div>
- <div className="px-4 py-2 font-body text-ghost text-[10px] border-t border-rule2">
- Line 6 PM · Apr 9 gap → CAPA-2604-003 awaiting closure. All AM shift logs current.
- </div>
- </div>
 
- {/* Shift schedule */}
+ {/* Upcoming shifts */}
  <div>
- <SecHd tag="Shift schedule" title="3-day crew view — conflicts flagged"
- badge={<Urg level="danger">1 coverage gap Apr 17</Urg>} />
- {scheduleData.days.flatMap(day => day.conflicts.map((issue, j) => ({ date: day.date, issue, key: `${day.date}-${j}` }))).map(c => (
- <div key={c.key} className="flex items-start gap-2 px-4 py-2 border-b border-rule2 bg-danger/[0.03]">
- <svg className="w-3.5 h-3.5 flex-shrink-0 mt-0.5 stroke-danger" fill="none" strokeWidth={2} viewBox="0 0 24 24">
- <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
- </svg>
- <div>
- <span className="font-body font-medium text-[12px] text-danger">{c.date}</span>
- <div className="font-body text-ghost text-[10px] mt-0.5">{c.issue}</div>
- </div>
- </div>
- ))}
- {scheduleData.days.map((day, di) => (
- <div key={di} className="border-b border-rule2 last:border-b-0">
- <div className="flex items-center gap-2 px-4 py-2 bg-stone2 border-b border-rule2">
- <span className="font-body font-medium text-ink text-[12px]">{day.date}</span>
- <span className="font-body text-ghost text-[10px]">{day.label}</span>
- {day.conflicts.length > 0 && <span className="ml-auto font-body text-danger text-[9px]">⚠ conflict</span>}
- </div>
- {day.shifts.map((sh, si) => (
- <div key={si} className="flex gap-3 px-4 py-2.5 border-b border-rule last:border-b-0">
- <div className="w-28 flex-shrink-0">
- <div className="font-body text-ghost text-[10px]">{sh.time}</div>
- <div className="font-body font-medium text-ink text-[11px]">{sh.supervisor}</div>
- </div>
- <div className="flex flex-wrap gap-1">
- {sh.crew.map(c => {
- const name = c.split(' · ')[0]
- const hrs = crewHoursData[name]
- const fatigued = hrs && hrs.hoursThisWeek >= 48
- const conflict = day.conflicts.some(conf => conf.includes(name))
- return (
- <span key={c} className={`font-body text-[10px] px-1.5 py-0.5 ${conflict ? 'bg-danger/10 text-danger' : fatigued ? 'bg-warn/10 text-warn' : 'bg-stone3 text-muted'}`}>
- {c}{fatigued && !conflict ? ` · ${hrs.hoursThisWeek}h` : ''}
- </span>
- )
- })}
- </div>
- </div>
- ))}
- </div>
- ))}
+  <SecHd tag="Upcoming shifts" title="Next 48 hours — readiness and crew conflicts"
+  badge={<Urg level="warn">1 intervention required</Urg>} />
+  {scheduleData.days.flatMap(day => day.conflicts.map((issue, j) => ({ date: day.date, issue, key: `${day.date}-${j}` }))).map(c => (
+  <div key={c.key} className="flex items-start gap-2 px-4 py-2 border-b border-rule2 bg-danger/[0.03]">
+   <svg className="w-3.5 h-3.5 flex-shrink-0 mt-0.5 stroke-danger" fill="none" strokeWidth={2} viewBox="0 0 24 24">
+   <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+   </svg>
+   <div>
+   <span className="font-body font-medium text-[12px] text-danger">{c.date}</span>
+   <div className="font-body text-ghost text-[10px] mt-0.5">{c.issue}</div>
+   </div>
+  </div>
+  ))}
+  {handoffData.forecast.map((row, i) => (
+  <ForecastRow key={i} row={row} />
+  ))}
  </div>
 
  {/* Attestation — outgoing signature */}
