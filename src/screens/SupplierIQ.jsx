@@ -38,7 +38,7 @@ function CoaPanel({ lot, onClose }) {
  ))}
  </div>
  <div className="px-5 py-3 border-t border-rule2 bg-stone2 flex-shrink-0">
- <button type="button" onClick={onClose} className="font-body text-[11px] px-3 py-1.5 bg-stone3 text-muted">Close</button>
+ <Btn variant="secondary" onClick={onClose}>Close</Btn>
  </div>
  </aside>
  </>
@@ -199,11 +199,11 @@ export default function SupplierIQ() {
  <div className="flex flex-col h-full overflow-hidden">
  <CoaPanel lot={coaViewLot} onClose={() => setCoaViewLot(null)} />
  <ActionBanner
- color="#8A6A3A"
+ tone="warn"
  headline="1 COA missing — production start blocked"
  body="ConAgra Lot TS-8811 · FDA inspection in 18 days · 2 lots expiring in 14 days"
  >
- <Btn variant="ghost" onClick={handleExport} disabled={exportState === 'loading'}>
+ <Btn variant="secondary" onClick={handleExport} disabled={exportState === 'loading'}>
  {exportState === 'loading' ? 'Preparing…' : exportState === 'done' ? 'Exported ✓' : 'Export audit package'}
  </Btn>
  </ActionBanner>
@@ -258,8 +258,8 @@ export default function SupplierIQ() {
  </div>
  {audit?.needsAction && (
  <div className="px-4 pb-3 flex gap-2">
- <button className="font-body font-medium text-[10px] px-3 py-1.5 bg-ink text-stone hover:opacity-90 transition-opacity">Schedule re-audit</button>
- <button className="font-body text-[10px] px-3 py-1.5 text-muted hover:text-ink transition-colors">View audit history</button>
+ <Btn variant="primary">Schedule re-audit</Btn>
+ <Btn variant="secondary">View audit history</Btn>
  </div>
  )}
  </div>
@@ -305,10 +305,7 @@ export default function SupplierIQ() {
         {/* Action */}
         <div className="flex flex-col justify-center items-end">
         {lot.urgent && !coaRequested
-         ? <button type="button" onClick={() => setCoaRequested(true)}
-          className="font-body font-medium text-[10px] px-2.5 py-1 bg-danger text-white hover:opacity-90 transition-opacity">
-          Request COA
-         </button>
+         ? <Btn variant="primary" onClick={() => setCoaRequested(true)}>Request COA</Btn>
          : lot.urgent && coaRequested
          ? <span className="font-body text-ok text-[11px] flex items-center gap-1"><Check size={11} strokeWidth={2} /> Requested</span>
          : <button type="button" onClick={() => setCoaViewLot(lot)}
@@ -384,12 +381,7 @@ export default function SupplierIQ() {
  {r.rfq && (
  rfqSent
  ? <div className="font-body text-ok text-[10px] mt-2">RFQ sent to ADM + Sysco · Response expected 48h</div>
- : <button
- onClick={() => { setRfqSent(true); setRfqOpen(false) }}
- className="mt-2 font-body font-medium text-[10px] px-2.5 py-1 bg-warn/10 text-warn hover:bg-warn/20 transition-colors border border-warn/20"
- >
- Request alternatives — contract expires May 12
- </button>
+ : <Btn variant="primary" className="mt-2" onClick={() => { setRfqSent(true); setRfqOpen(false) }}>Request alternatives — contract expires May 12</Btn>
  )}
  </div>
  ))}

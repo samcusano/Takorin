@@ -111,17 +111,15 @@ export default function HandoffIQ() {
  <div className="font-body text-ink font-medium text-[12px]">{op.name}</div>
  <div className="font-body text-ghost text-[10px]">{op.role}</div>
  </div>
- <button type="button"
- onClick={() => !nominated[op.name] && op.badgeTone === 'warn' && setNominated(p => ({ ...p, [op.name]: true }))}
- className={`font-body font-medium text-[10px] px-2 py-0.5 flex-shrink-0 transition-colors ${
- plan?.submitted ? 'bg-ok/10 text-ok cursor-default'
- : nominated[op.name] ? 'bg-warn/10 text-warn cursor-default'
- : op.badgeTone === 'warn' ? 'bg-warn/10 text-warn cursor-pointer hover:bg-warn/20'
- : op.badgeTone === 'ok' ? 'bg-ok/10 text-ok cursor-default'
- : 'bg-stone3 text-muted cursor-default'
+ <span className={`font-body text-[10px] flex-shrink-0 ${
+ plan?.submitted ? 'text-ok'
+ : nominated[op.name] ? 'text-ok'
+ : op.badgeTone === 'warn' ? 'text-warn'
+ : op.badgeTone === 'ok' ? 'text-ok'
+ : 'text-ghost'
  }`}>
  {plan?.submitted ? 'Plan set ✓' : nominated[op.name] ? 'Nominated ✓' : op.badge}
- </button>
+ </span>
  </div>
  <div className="flex items-center gap-2">
  <div className="flex-1 h-1 bg-rule2"><div className={`h-full ${op.color}`} style={{ width: op.pct + '%' }} /></div>
@@ -158,13 +156,7 @@ export default function HandoffIQ() {
  <option>D. Kowalski · Supervisor</option>
  <option>P. Okonkwo · L2</option>
  </select>
- <button type="button"
- disabled={!form.level || !form.startDate || !form.trainer}
- onClick={() => setTrainingPlans(p => ({ ...p, [op.name]: { ...form, submitted: true } }))}
- className="w-full font-body font-medium text-[10px] px-2 py-1.5 bg-ok text-white disabled:opacity-40 disabled:cursor-not-allowed transition-opacity"
- >
- Submit training plan
- </button>
+ <Btn variant="primary" className="w-full" disabled={!form.level || !form.startDate || !form.trainer} onClick={() => setTrainingPlans(p => ({ ...p, [op.name]: { ...form, submitted: true } }))}>Submit training plan</Btn>
  </div>
  )}
  {plan?.submitted && !trainingCompletions[op.name] && (
@@ -174,8 +166,7 @@ export default function HandoffIQ() {
  {op.name} — {plan.level} with {plan.trainer} · starts {plan.startDate}
  </div>
  {!completionForms[op.name] ? (
- <button type="button" onClick={() => setCompletionForms(p => ({...p, [op.name]: { outcome:'', date:'', hours:'' }}))}
- className="font-body text-int text-[10px] hover:underline flex items-center gap-1">Mark complete <ArrowRight size={10} /></button>
+ <Btn variant="secondary" onClick={() => setCompletionForms(p => ({...p, [op.name]: { outcome:'', date:'', hours:'' }}))}>Mark complete</Btn>
  ) : (
  <div className="space-y-1.5 slide-in">
  <select value={completionForms[op.name]?.outcome || ''} onChange={e => setCompletionForms(p => ({...p, [op.name]: {...p[op.name], outcome: e.target.value}}))}
@@ -189,14 +180,10 @@ export default function HandoffIQ() {
  <input placeholder="Hours" type="number" value={completionForms[op.name]?.hours || ''} onChange={e => setCompletionForms(p => ({...p, [op.name]: {...p[op.name], hours: e.target.value}}))}
  className="w-16 font-body text-ink text-[11px] bg-stone border border-rule px-2 py-1" />
  </div>
- <button type="button" disabled={!completionForms[op.name]?.outcome || !completionForms[op.name]?.date}
- onClick={() => {
+ <Btn variant="primary" disabled={!completionForms[op.name]?.outcome || !completionForms[op.name]?.date} onClick={() => {
  setTrainingCompletions(p => ({...p, [op.name]: completionForms[op.name]}))
  setCompletionForms(p => { const n={...p}; delete n[op.name]; return n })
- }}
- className="font-body font-medium text-[10px] px-2.5 py-1 bg-ok text-white disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90 transition-opacity">
- Record completion
- </button>
+ }}>Record completion</Btn>
  </div>
  )}
  </div>
@@ -273,18 +260,18 @@ export default function HandoffIQ() {
  {/* Step 1 — outgoing signs */}
  {!signed && (
  <ActionBanner
- color="#3A8A5A"
+ tone="ok"
  headline="Shift handoff awaiting outgoing signature — Line 4"
  body="D. Kowalski signing off · Incoming: M. Santos · April 16, 14:02"
  >
- <Btn variant="ghost" onClick={() => setSigned(true)}>Sign handoff — Kowalski</Btn>
+ <Btn variant="secondary" onClick={() => setSigned(true)}>Sign handoff — Kowalski</Btn>
  </ActionBanner>
  )}
 
  {/* Step 2 — incoming pending */}
  {signed && !handoffAccepted && (
  <ActionBanner
- color="#3A8A5A"
+ tone="ok"
  headline="D. Kowalski signed off — waiting for M. Santos to accept"
  body="Scroll to bottom to review carry-forward items and confirm the shift"
  />
@@ -358,11 +345,7 @@ export default function HandoffIQ() {
  <div key={i} className={`border-l-2 border-b border-rule2 last:border-b-0 ${
  c.urgency === 'ok' ? 'border-l-ok' : c.urgency === 'warn' ? 'border-l-warn' : 'border-l-danger'
  }`}>
- <div className="grid grid-cols-[28px_1fr]">
- <div className={`pt-4 pl-3 display-num text-[13px] ${c.urgency === 'ok' ? 'text-ok' : c.urgency === 'warn' ? 'text-warn' : 'text-danger'}`}>
- {c.num}
- </div>
- <div className="p-4 pl-2 space-y-1.5">
+ <div className="p-4 space-y-1.5">
  <p className="font-body text-ink font-medium text-[13px]">{c.title}</p>
  <p className="font-body text-ink2 text-[12px] leading-relaxed">{c.desc}</p>
  {c.evidence && <p className="font-body text-ghost text-[11px] flex items-start gap-1"><ChevronRight size={11} className="flex-shrink-0 mt-px" />{c.evidence}</p>}
@@ -372,7 +355,6 @@ export default function HandoffIQ() {
  <span className="text-ink2">{e.val}</span>
  </div>
  ))}
- </div>
  </div>
  </div>
  ))}
@@ -435,15 +417,7 @@ export default function HandoffIQ() {
  <div className="font-body text-ink2 text-[12px] mb-3 leading-relaxed">
  By accepting, M. Santos acknowledges these carry-forwards and takes responsibility for Line 4 from 14:00.
  </div>
- <button type="button"
- onClick={() => {
- setHandoffAccepted(true)
- logActivity({ actor: 'M. Santos', action: 'Accepted shift handoff from D. Kowalski', item: 'Line 4 · Apr 16 PM', type: 'acknowledgment' })
- }}
- className="font-body font-medium text-[11px] px-4 py-2 bg-ok text-white hover:opacity-90 transition-opacity"
- >
- Accept shift — M. Santos
- </button>
+ <Btn variant="primary" onClick={() => { setHandoffAccepted(true); logActivity({ actor: 'M. Santos', action: 'Accepted shift handoff from D. Kowalski', item: 'Line 4 · Apr 16 PM', type: 'acknowledgment' }) }}>Accept shift — M. Santos</Btn>
  </div>
  </div>
  )}

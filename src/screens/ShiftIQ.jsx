@@ -262,12 +262,9 @@ function Finding({ f, onAct }) {
  const borderColor = f.urgency === 'danger' ? 'border-l-danger' : f.urgency === 'warn' ? 'border-l-warn' : 'border-l-rule'
 
  return (
+ <>
  <div className={`border-l-2 ${borderColor} border-b border-rule2 ${dismissed ? 'opacity-50' : ''}`}>
- <div className="grid grid-cols-[28px_1fr]">
- <div className={`pt-4 pl-3 display-num text-[13px] ${
- f.urgency === 'danger' ? 'text-danger' : f.urgency === 'warn' ? 'text-warn' : 'text-muted'
- }`}>{f.num}</div>
- <div className="p-4 pl-2 space-y-2">
+ <div className="p-4 space-y-2">
  <p className="font-body text-ink font-medium text-[13px] leading-snug">{f.title}</p>
  <p className="font-body text-ink2 text-[12px] leading-relaxed">{f.desc}</p>
  <p className="font-body text-ghost text-[11px] flex items-start gap-1"><ChevronRight size={11} className="flex-shrink-0 mt-px" />{f.evidence}</p>
@@ -278,11 +275,11 @@ function Finding({ f, onAct }) {
  )}
  <div className="flex gap-2 pt-1">
  {f.actions.map((a, i) => (
- <Btn key={i} variant={i === 0 ? 'accent' : 'ghost'} onClick={() => handleAct(a)}>
+ <Btn key={i} variant={i === 0 ? 'primary' : 'secondary'} onClick={() => handleAct(a)}>
  {a}
  </Btn>
  ))}
- <Btn variant="muted" onClick={() => setShowDismiss(!showDismiss)}>Dismiss</Btn>
+ <Btn variant="secondary" onClick={() => setShowDismiss(!showDismiss)}>Dismiss</Btn>
  </div>
  {showDismiss && !dismissed && (
  <div className="flex gap-2 pt-1 slide-in">
@@ -292,7 +289,7 @@ function Finding({ f, onAct }) {
  <option>Not applicable — SKU change in progress</option>
  <option>Assessment is incorrect — false positive</option>
  </select>
- <Btn variant="muted" onClick={() => { setDismissed(true); setShowDismiss(false) }}>Confirm</Btn>
+ <Btn variant="secondary" onClick={() => { setDismissed(true); setShowDismiss(false) }}>Confirm</Btn>
  </div>
  )}
  {acked && (
@@ -306,14 +303,14 @@ function Finding({ f, onAct }) {
  <ConsequenceNotice show={showed && f.consequence}>
  {f.consequence}
  </ConsequenceNotice>
- </div>
+ </>
  )
 }
 
 
 // ── CrewAvatarStack ────────────────────────────────────────────────────────────
 
-function CrewAvatarStack({ crew, onSelect }) {
+function CrewAvatarStack({ crew, onSelect, size = 34 }) {
  const MAX_SHOWN = 4
  const shown = crew.slice(0, MAX_SHOWN)
  const extra = crew.length - MAX_SHOWN
@@ -326,12 +323,12 @@ function CrewAvatarStack({ crew, onSelect }) {
      className={`relative hover:z-10 transition-transform hover:scale-110 cursor-pointer ${i > 0 ? '-ml-2' : ''}`}
     >
      <div className="rounded-full border-2 border-stone2">
-      <PersonAvatar name={m.name} size={34} />
+      <PersonAvatar name={m.name} size={size} />
      </div>
     </button>
    ))}
    {extra > 0 && (
-    <div className="-ml-2 w-[34px] h-[34px] rounded-full border-2 border-stone2 bg-stone3 flex items-center justify-center">
+    <div className="-ml-2 rounded-full border-2 border-stone2 bg-stone3 flex items-center justify-center" style={{ width: size, height: size }}>
      <span className="font-body text-ghost text-[10px] font-medium">+{extra}</span>
     </div>
    )}
@@ -457,16 +454,16 @@ export default function ShiftIQ() {
  return (
  <div className="flex flex-col h-full overflow-hidden">
  <ActionBanner
- color="#D94F2A"
+ tone="warn"
  headline={`3 interventions pending · Line 4 · ${countdownFmt} remaining`}
  body={escalatedShift
  ? 'Director notified — escalation logged. Act on findings before the window closes.'
  : 'Risk score 78 — above intervention threshold. Two actionable findings. Act before the window closes.'}
  >
- <Btn variant="ghost" onClick={() => { setCol1Tab('tasks'); setShowNearMiss(true) }}>
+ <Btn variant="secondary" onClick={() => { setCol1Tab('tasks'); setShowNearMiss(true) }}>
  + Near miss
  </Btn>
- <Btn variant="ghost" onClick={() => setEscalatedShift(true)}>
+ <Btn variant="secondary" onClick={() => setEscalatedShift(true)}>
  {escalatedShift ? 'Escalated ✓' : 'Escalate to director'}
  </Btn>
  </ActionBanner>
@@ -495,6 +492,10 @@ export default function ShiftIQ() {
     </button>
     <span className="font-body text-ghost/50 text-[11px]">·</span>
     <span className="font-body text-ghost text-[11px]">{lineSupervisor} · {al.supervisor} shift</span>
+    <div className="ml-auto flex items-center gap-2">
+     <CrewAvatarStack crew={lineD.crew} onSelect={setViewingOperator} size={22} />
+     <span className="font-body text-ghost text-[10px]">18 workers</span>
+    </div>
    </div>
    {lineDropOpen && (
     <LineDropdown
@@ -513,20 +514,6 @@ export default function ShiftIQ() {
  <div className="grid grid-cols-4 border-b border-rule2 bg-stone flex-shrink-0">
  {lineD.stats.map((s, i) => <StatCell key={i} {...s} />)}
  </div>
-
- {/* Risk trend strip */}
- <div className="flex items-center gap-4 px-5 py-2.5 border-b border-rule2 bg-stone flex-shrink-0">
-  <div className="flex-1 min-w-[80px]">
-  <WaveformSparkline data={lineD.sparkline} color={lineScore >= 75 ? '#D94F2A' : d.score >= 60 ? '#C4920A' : '#3A8A5A'} height={24} />
-  </div>
-  <div className="flex-shrink-0 text-right">
-  <div className="font-body text-ghost text-[10px]">Rising · 06:12–06:42</div>
-  {d.confidence < d.rawConfidence && (
-   <div className="font-body text-warn text-[10px] mt-0.5">Confidence {d.confidence}% · Oven B SCADA stale 3d</div>
-  )}
-  </div>
- </div>
-
 
  {/* 3-column layout */}
  <div className="flex flex-1 min-h-0 overflow-hidden">
@@ -558,12 +545,9 @@ export default function ShiftIQ() {
   ))}
   </div>
   <div className="px-4 py-3 border-t border-rule2 flex-shrink-0">
-  <button type="button"
-   onClick={() => setBriefingAcknowledged(true)}
-   className="w-full font-body font-medium text-[11px] px-3 py-2.5 bg-brass text-stone hover:opacity-90 transition-opacity"
-  >
+  <Btn variant="primary" className="w-full py-2.5" onClick={() => setBriefingAcknowledged(true)}>
    I've reviewed this shift's safety context — D. Kowalski · {new Date().toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' })}
-  </button>
+  </Btn>
   </div>
  </Modal>
  )}
@@ -608,18 +592,8 @@ export default function ShiftIQ() {
  </div>
  {!overrideMode ? (
  <div className="flex gap-2">
- <button type="button"
- onClick={() => setChecklistSigned(p => ({ ...p, allergen: new Date().toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' }) }))}
- className="font-body font-medium text-[11px] px-3 py-1.5 bg-danger text-white hover:opacity-90 transition-opacity"
- >
- Sign log now — Okonkwo
- </button>
- <button type="button"
- onClick={() => setOverrideMode(true)}
- className="font-body text-[11px] px-3 py-1.5 bg-stone2 text-muted hover:bg-stone3 transition-colors"
- >
- Override — log reason
- </button>
+ <Btn variant="primary" onClick={() => setChecklistSigned(p => ({ ...p, allergen: new Date().toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' }) }))}>Sign log now — Okonkwo</Btn>
+ <Btn variant="secondary" onClick={() => setOverrideMode(true)}>Override — log reason</Btn>
  </div>
  ) : (
  <div className="space-y-2 slide-in">
@@ -631,13 +605,7 @@ export default function ShiftIQ() {
  autoFocus
  />
  <div className="flex gap-2">
- <button type="button"
- disabled={!overrideReason.trim()}
- onClick={() => { setAllergenOverride(overrideReason); setOverrideMode(false); logActivity({ actor:'D. Kowalski', action:`Allergen override: "${overrideReason}"`, item:'Allergen changeover log', type:'override' }) }}
- className="font-body font-medium text-[11px] px-3 py-1.5 bg-danger/80 text-white disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90 transition-opacity"
- >
- Confirm override — auto-CAPA created
- </button>
+ <Btn variant="primary" disabled={!overrideReason.trim()} onClick={() => { setAllergenOverride(overrideReason); setOverrideMode(false); logActivity({ actor:'D. Kowalski', action:`Allergen override: "${overrideReason}"`, item:'Allergen changeover log', type:'override' }) }}>Confirm override — auto-CAPA created</Btn>
  <button type="button" onClick={() => setOverrideMode(false)} className="font-body text-[11px] px-2 py-1.5 text-ghost">Cancel</button>
  </div>
  </div>
@@ -726,15 +694,11 @@ export default function ShiftIQ() {
  <input placeholder="Due time (e.g. 09:00)" value={taskForm.dueTime} onChange={e => setTaskForm(p => ({...p, dueTime: e.target.value}))}
  className="w-full font-body text-ink text-[11px] bg-stone border border-rule px-2 py-1" />
  <div className="flex gap-1.5">
- <button type="button" disabled={!taskForm.assignee || !taskForm.label}
- onClick={() => {
+ <Btn variant="primary" disabled={!taskForm.assignee || !taskForm.label} onClick={() => {
  const { assignee, label, dueTime } = taskForm
  setTaskAssignments(p => ({...p, [assignee]: [...(p[assignee]||[]), { label, dueTime, done: false, id: Date.now() }]}))
  setTaskForm({ assignee:'', label:'', dueTime:'' }); setShowTaskForm(false)
- }}
- className="font-body font-medium text-[10px] px-2.5 py-1 bg-ochre text-white disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90 transition-opacity">
- Assign task
- </button>
+ }}>Assign task</Btn>
  <button type="button" onClick={() => setShowTaskForm(false)} className="font-body text-[10px] text-ghost px-2">Cancel</button>
  </div>
  </div>
@@ -768,16 +732,10 @@ export default function ShiftIQ() {
  Anyone at risk of injury?
  </label>
  <div className="flex gap-2">
- <button type="button"
- disabled={!nearMissForm.station || !nearMissForm.what}
- onClick={() => {
+ <Btn variant="primary" disabled={!nearMissForm.station || !nearMissForm.what} onClick={() => {
  setNearMisses(p => [...p, { ...nearMissForm, time: new Date().toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' }) }])
  setNearMissSubmitted(true); setShowNearMiss(false)
- }}
- className="font-body font-medium text-[11px] px-3 py-1.5 bg-warn/10 text-warn disabled:opacity-40 disabled:cursor-not-allowed hover:bg-warn/20 transition-colors"
- >
- Submit — auto-CAPA created
- </button>
+ }}>Submit — auto-CAPA created</Btn>
  <button type="button" onClick={() => setShowNearMiss(false)} className="font-body text-[11px] px-2 py-1 text-ghost">Cancel</button>
  </div>
  </div>
@@ -815,14 +773,8 @@ export default function ShiftIQ() {
     <p className="font-body text-ghost text-[11px] mb-2">{item.operator}</p>
     {!signed && !flag && (
     <div className="flex gap-2">
-     <button type="button"
-     onClick={() => setChecklistSigned(p => ({...p, [item.key]: new Date().toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' })}))}
-     className={`font-body font-medium text-[10px] px-2.5 py-1 ${item.isAllergen ? 'bg-danger text-white hover:opacity-90' : 'bg-ink text-stone hover:bg-ink2'} transition-colors`}
-     >Sign</button>
-     <button type="button"
-     onClick={() => setFlagForm(p => ({...p, [item.key]: { reason:'', note:'' }}))}
-     className="font-body text-[10px] px-2 py-1 border border-rule2 text-muted hover:border-ghost transition-colors"
-     >Flag</button>
+     <Btn variant="primary" onClick={() => setChecklistSigned(p => ({...p, [item.key]: new Date().toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' })}))}>Sign</Btn>
+     <Btn variant="secondary" onClick={() => setFlagForm(p => ({...p, [item.key]: { reason:'', note:'' }}))}>Flag</Btn>
     </div>
     )}
    </div>
@@ -844,14 +796,11 @@ export default function ShiftIQ() {
      )}
     </div>
     {empForm[item.key]?.result && (
-     <button type="button"
-     onClick={() => {
+     <Btn variant="primary" onClick={() => {
       const r = empForm[item.key]
       setEmpSessionResults(p => ({...p, [item.key]: { result: r.result, cfu: r.cfu, time: checklistSigned[item.key] }}))
       if (r.result === 'positive') setMaintenanceTickets(p => [...p, { id:`MT-EMP-${Date.now()}`, equipment:'Zone 1 — Sauce Dosing', issue:`Positive EMP swab${r.cfu ? ` · ${r.cfu} CFU` : ''} — deep clean required before next production run`, urgency:'danger', status:'open', requestedBy:'T. Osei', createdAt: checklistSigned[item.key] }])
-     }}
-     className="font-body font-medium text-[10px] px-2.5 py-1 bg-ok text-white hover:opacity-90 transition-opacity"
-     >Log result {empForm[item.key]?.result === 'positive' ? '— auto-CAPA created' : ''}</button>
+     }}>Log result {empForm[item.key]?.result === 'positive' ? '— auto-CAPA created' : ''}</Btn>
     )}
     </div>
    )}
@@ -866,16 +815,12 @@ export default function ShiftIQ() {
      <option>Other</option>
     </select>
     <div className="flex gap-1.5">
-     <button type="button" disabled={!flagForm[item.key]?.reason}
-     onClick={() => {
+     <Btn variant="primary" disabled={!flagForm[item.key]?.reason} onClick={() => {
       const f = flagForm[item.key]
       setFlaggedItems(p => ({...p, [item.key]: f}))
       if (f.reason === 'Equipment malfunction') setMaintenanceTickets(p => [...p, { id:`MT-${Date.now()}`, equipment: item.label, issue: f.reason, urgency:'warn', status:'open', requestedBy: item.operator, createdAt: new Date().toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' }) }])
       setFlagForm(p => { const n = {...p}; delete n[item.key]; return n })
-     }}
-     className="font-body font-medium text-[10px] px-2.5 py-1 bg-warn text-white disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90 transition-opacity">
-     Flag item
-     </button>
+     }}>Flag item</Btn>
      <button type="button" onClick={() => setFlagForm(p => { const n = {...p}; delete n[item.key]; return n })} className="font-body text-[10px] text-ghost px-2">Cancel</button>
     </div>
     </div>
@@ -891,36 +836,10 @@ export default function ShiftIQ() {
  )}
  </div>
 
- {/* COL 2: Crew + Startup */}
- <div className="w-[240px] flex-shrink-0 overflow-y-auto border-r border-rule2 bg-stone2">
- <div className="px-4 py-2 border-b border-rule2 bg-stone2 sticky top-0 z-10 font-body uppercase tracking-widest text-ghost text-[10px] font-medium">
- {activeLined.name} context
- </div>
- {hasLiveData ? (
- <>
- {/* Crew */}
- <div className="border-b border-rule2">
- <div className="px-4 pt-3 pb-2">
-  <div className="flex justify-between items-baseline mb-3">
-   <span className="font-body font-medium text-ink text-[12px]">Crew</span>
-   <span className="font-body text-ghost text-[10px]">18 workers</span>
-  </div>
-  <CrewAvatarStack crew={lineD.crew} onSelect={setViewingOperator} />
- </div>
- {lineD.crew.map((m, i) => (
- <CrewRow key={i} m={m} onView={() => setViewingOperator(m.name)} />
- ))}
- </div>
- </>
- ) : (
- <EmptyLine name={activeLined.name} />
- )}
- </div>
  </div>
 
  {viewingOperator && (
   <OperatorPanel name={viewingOperator} onClose={() => setViewingOperator(null)} />
- )}
  )}
  </div>
  )

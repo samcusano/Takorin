@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { Check } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { commandData, facility, shiftData } from '../data'
-import { ActionBanner, StatCell } from '../components/UI'
+import { ActionBanner, StatCell, Btn, Chip } from '../components/UI'
 import { useAppState } from '../context/AppState'
 
 const prefersReducedMotion =
@@ -13,12 +13,8 @@ const UNDO_WINDOW_MS = 6000
 
 // ── ModulePill ────────────────────────────────────────────────────────────────
 
-function ModulePill({ label, accent }) {
- return (
- <span className="font-body text-[10px] px-2 py-0.5" style={{ color: accent, background: accent + '18' }}>
- {label}
- </span>
- )
+function ModulePill({ label }) {
+ return <Chip tone="muted">{label}</Chip>
 }
 
 // ── CommandCell ───────────────────────────────────────────────────────────────
@@ -72,9 +68,6 @@ function CommandCell({ item, isPending, onAcknowledge }) {
  >
  {item.title}
  </p>
- <span className="display-num text-[11px] text-ghost flex-shrink-0 mt-0.5" aria-hidden="true">
- {String(item.priority).padStart(2, '0')}
- </span>
  </div>
  <p className={`font-body text-[10px] leading-snug truncate ${actionColorCls}`}>
  <span className="text-ghost text-[11px]">—</span> {item.action}
@@ -82,31 +75,13 @@ function CommandCell({ item, isPending, onAcknowledge }) {
  {confirming ? (
  <div className="flex items-center gap-2 pt-1.5 border-t border-rule2">
  <p className="font-body text-ink2 text-[10px] flex-1">Acknowledge and remove? You have 6 seconds to undo.</p>
- <button type="button"
- onClick={() => setConfirming(false)}
- className="font-body text-[10px] px-2 py-1 border border-rule2 text-ink2 hover:border-ghost transition-colors"
- aria-label="Cancel (Escape)"
- >
- Cancel
- </button>
- <button type="button"
- onClick={handleClick}
- className="font-body font-medium text-[10px] px-2.5 py-1 bg-danger text-white hover:opacity-90 transition-opacity"
- >
- Confirm
- </button>
+ <Btn variant="secondary" onClick={() => setConfirming(false)}>Cancel</Btn>
+ <Btn variant="primary" onClick={handleClick}>Confirm</Btn>
  </div>
  ) : (
  <div className="flex items-center justify-between pt-1.5 border-t border-rule2">
  <span className="font-body text-ghost text-[10px]">{item.owner.name}</span>
- <button type="button"
- onClick={handleClick}
- className={`font-body font-medium text-[10px] px-2.5 py-1 min-h-[36px] transition-colors ${
- isWatch ? 'border border-rule2 text-muted hover:border-ghost' : 'bg-ink text-stone hover:bg-ink2'
- }`}
- >
- {isWatch ? 'Noted' : 'Acknowledge'}
- </button>
+ <Btn variant={isWatch ? 'outline' : 'ink'} className="min-h-[36px]" onClick={handleClick}>{isWatch ? 'Noted' : 'Acknowledge'}</Btn>
  </div>
  )}
  </div>
@@ -215,12 +190,12 @@ export default function CommandSurface() {
 
  const zone = shiftData.score >= 75 ? 'AT RISK' : shiftData.score >= 60 ? 'WATCH' : 'CLEAR'
 
- const bannerColor = visibleCritCount > 0 ? '#D94F2A' : visibleWarnCount > 0 ? '#C4920A' : '#3A8A5A'
+ const bannerTone = visibleCritCount > 0 ? 'danger' : visibleWarnCount > 0 ? 'warn' : 'ok'
 
  return (
  <div className="flex flex-col h-full overflow-hidden">
  <ActionBanner
- color={bannerColor}
+ tone={bannerTone}
  headline={bannerHeadline}
  body={`${facility.name} · ${facility.user.name} · ${shiftData.time}`}
  />
