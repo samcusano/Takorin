@@ -154,12 +154,12 @@ export default function OperatorView({ role }) {
  <span className="font-body font-medium text-ink text-[12px]">{plan.startDate}</span>
  </div>
  {completion ? (
- <div className={`flex items-center gap-1 pt-2 border-t border-rule font-body text-[11px] ${completion.outcome === 'Passed' ? 'text-ok' : 'text-warn'}`}>
+ <div className={`flex items-center gap-1 pt-2 border-t border-rule2 font-body text-[11px] ${completion.outcome === 'Passed' ? 'text-ok' : 'text-warn'}`}>
  <svg className="w-3 h-3 stroke-current flex-shrink-0" fill="none" strokeWidth={2} viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
  {completion.outcome} · {completion.date} · {completion.hours}h
  </div>
  ) : (
- <div className="flex items-center gap-1 pt-2 border-t border-rule font-body text-ghost text-[10px]">
+ <div className="flex items-center gap-1 pt-2 border-t border-rule2 font-body text-ghost text-[10px]">
  <div className="w-1.5 h-1.5 rounded-full bg-warn" />
  In progress
  </div>

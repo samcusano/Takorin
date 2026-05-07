@@ -104,7 +104,7 @@ export default function HandoffIQ() {
  const plan = trainingPlans[op.name]
  const form = trainingForms[op.name] || {}
  return (
- <div key={i} className="px-4 py-3 border-b border-rule last:border-b-0">
+ <div key={i} className="px-4 py-3 border-b border-rule2 last:border-b-0">
  <div className="flex items-start gap-2 mb-2">
  <PersonAvatar name={op.name} size={28} />
  <div className="flex-1 min-w-0">
@@ -132,7 +132,7 @@ export default function HandoffIQ() {
  <select
  value={form.level || ''}
  onChange={e => setTrainingForms(p => ({ ...p, [op.name]: { ...p[op.name], level: e.target.value } }))}
- className="w-full font-body text-ink text-[11px] bg-stone border border-rule px-2 py-1 cursor-pointer"
+ className="w-full font-body text-ink text-[11px] bg-stone border border-rule2 px-2 py-1 cursor-pointer"
  >
  <option value="">Target cert level…</option>
  <option>L2 Sauce Dosing</option>
@@ -144,12 +144,12 @@ export default function HandoffIQ() {
  type="text" placeholder="Start date (e.g. Apr 22)"
  value={form.startDate || ''}
  onChange={e => setTrainingForms(p => ({ ...p, [op.name]: { ...p[op.name], startDate: e.target.value } }))}
- className="w-full font-body text-ink text-[11px] bg-stone border border-rule px-2 py-1"
+ className="w-full font-body text-ink text-[11px] bg-stone border border-rule2 px-2 py-1"
  />
  <select
  value={form.trainer || ''}
  onChange={e => setTrainingForms(p => ({ ...p, [op.name]: { ...p[op.name], trainer: e.target.value } }))}
- className="w-full font-body text-ink text-[11px] bg-stone border border-rule px-2 py-1 cursor-pointer"
+ className="w-full font-body text-ink text-[11px] bg-stone border border-rule2 px-2 py-1 cursor-pointer"
  >
  <option value="">Assign trainer…</option>
  <option>A. Martinez · L3</option>
@@ -170,15 +170,15 @@ export default function HandoffIQ() {
  ) : (
  <div className="space-y-1.5 slide-in">
  <select value={completionForms[op.name]?.outcome || ''} onChange={e => setCompletionForms(p => ({...p, [op.name]: {...p[op.name], outcome: e.target.value}}))}
- className="w-full font-body text-ink text-[11px] bg-stone border border-rule px-2 py-1 cursor-pointer">
+ className="w-full font-body text-ink text-[11px] bg-stone border border-rule2 px-2 py-1 cursor-pointer">
  <option value="">Outcome…</option>
  <option>Passed</option><option>Failed — repeat required</option><option>Needs supervisor review</option>
  </select>
  <div className="flex gap-1.5">
  <input placeholder="Completion date" value={completionForms[op.name]?.date || ''} onChange={e => setCompletionForms(p => ({...p, [op.name]: {...p[op.name], date: e.target.value}}))}
- className="flex-1 font-body text-ink text-[11px] bg-stone border border-rule px-2 py-1" />
+ className="flex-1 font-body text-ink text-[11px] bg-stone border border-rule2 px-2 py-1" />
  <input placeholder="Hours" type="number" value={completionForms[op.name]?.hours || ''} onChange={e => setCompletionForms(p => ({...p, [op.name]: {...p[op.name], hours: e.target.value}}))}
- className="w-16 font-body text-ink text-[11px] bg-stone border border-rule px-2 py-1" />
+ className="w-16 font-body text-ink text-[11px] bg-stone border border-rule2 px-2 py-1" />
  </div>
  <Btn variant="primary" disabled={!completionForms[op.name]?.outcome || !completionForms[op.name]?.date} onClick={() => {
  setTrainingCompletions(p => ({...p, [op.name]: completionForms[op.name]}))
@@ -205,7 +205,7 @@ export default function HandoffIQ() {
  const color = c.tone === 'danger' ? 'text-danger' : c.tone === 'warn' ? 'text-warn' : 'text-ok'
  const bg = c.tone === 'danger' ? 'bg-danger/[0.03] border-l-danger' : c.tone === 'warn' ? 'border-l-warn' : 'border-l-ok'
  return (
- <div key={i} className={`flex items-start gap-2.5 px-4 py-2.5 border-b border-rule last:border-b-0 border-l-2 ${bg}`}>
+ <div key={i} className={`flex items-start gap-2.5 px-4 py-2.5 border-b border-rule2 last:border-b-0 border-l-2 ${bg}`}>
  <div className="flex-1 min-w-0">
  <div className={`font-body font-medium text-[12px] ${color}`}>{c.name}</div>
  <div className="font-body text-ghost text-[10px]">{c.cert} · {c.line}</div>
@@ -246,7 +246,7 @@ export default function HandoffIQ() {
  {/* Last 5 handoffs */}
  <SP title="Recent handoffs" sub="Line 4">
  {d.lastHandoffs.map((h, i) => (
- <div key={i} className="flex justify-between px-4 py-2 border-b border-rule last:border-b-0 font-body text-[11px]">
+ <div key={i} className="flex justify-between px-4 py-2 border-b border-rule2 last:border-b-0 font-body text-[11px]">
  <span className=" text-muted">{h.shift}</span>
  <span className={`display-num text-[13px] ${h.tone}`}>{h.oee}</span>
  </div>
@@ -279,7 +279,7 @@ export default function HandoffIQ() {
 
  {/* Complete — both parties signed */}
  {signed && handoffAccepted && (
- <div className="flex items-center gap-3 px-5 py-3 bg-ok/10 border-b border-ok/20 flex-shrink-0">
+ <div className="flex items-center gap-3 px-4 py-3 bg-ok/10 border-b border-ok/20 flex-shrink-0">
  <Check size={12} strokeWidth={2} className="text-ok flex-shrink-0" />
  <span className="font-body text-ok text-[12px]">
  Handoff complete · Signed: D. Kowalski (outgoing) · M. Santos (incoming) · 14:02 · April 16, 2026
@@ -388,7 +388,7 @@ export default function HandoffIQ() {
 
  {/* Attestation — outgoing signature */}
  {!signed && (
- <div className="px-5 py-4 bg-stone3/50 border-t border-rule2">
+ <div className="px-4 py-4 bg-stone3/50 border-t border-rule2">
  <div className="font-body text-ink2 text-[12px] mb-3 leading-relaxed">
  D. Kowalski: sign off to confirm all carry-forward items have been documented and the incoming supervisor has been briefed.
  </div>
@@ -401,7 +401,7 @@ export default function HandoffIQ() {
  {/* Attestation — incoming acceptance */}
  {signed && !handoffAccepted && (
  <div className="border-t border-rule2">
- <div className="px-5 py-4 bg-stone2">
+ <div className="px-4 py-4 bg-stone2">
  <div className="font-body text-[9px] font-medium uppercase tracking-widest text-ghost mb-3">
  Carry-forward items — M. Santos must acknowledge before accepting
  </div>
@@ -424,7 +424,7 @@ export default function HandoffIQ() {
 
  {/* Complete */}
  {signed && handoffAccepted && (
- <div className="px-5 py-3 bg-ok/10 border-t border-rule2 flex items-center gap-3">
+ <div className="px-4 py-3 bg-ok/10 border-t border-rule2 flex items-center gap-3">
  <div className="w-8 h-8 flex items-center justify-center flex-shrink-0 bg-ok/20">
  <Check size={12} strokeWidth={2} className="text-ok flex-shrink-0" />
  </div>

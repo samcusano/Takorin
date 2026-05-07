@@ -157,7 +157,7 @@ export default function NotificationCenter({ onClose }) {
 
  const content = (
  <div className="flex flex-col h-full overflow-hidden">
- <div className="flex items-center justify-between px-5 py-3.5 flex-shrink-0 bg-ink">
+ <div className="flex items-center justify-between px-4 py-3.5 flex-shrink-0 bg-ink">
  <div className="flex-1">
  <div className="font-display font-bold text-stone text-base leading-tight">{`Notification center — ${pending} pending`}</div>
  <div className="font-body text-stone/80 text-[12px] mt-1">J. Crocker · Plant Director · April 16, 2026</div>

@@ -52,7 +52,7 @@ function AgentTimeline({ timeline, sparkline, score }) {
  />
  {/* Timeline rows */}
  {timeline.map((row, i) => (
- <div key={i} className="flex gap-2.5 px-4 py-3 border-b border-rule last:border-b-0">
+ <div key={i} className="flex gap-2.5 px-4 py-3 border-b border-rule2 last:border-b-0">
  <div className="font-body text-ghost text-[10px] w-11 flex-shrink-0 mt-0.5">{row.time}</div>
  <div className={`w-2 h-2 rounded-full flex-shrink-0 mt-1.5 ${
  row.level === 'now' ? 'bg-ochre' : row.level === 'warn' ? 'bg-warn' : row.level === 'ok' ? 'bg-ok' : 'bg-rule'
@@ -126,7 +126,7 @@ function OperatorPanel({ name, onClose }) {
  <div className="font-body text-ghost text-[11px]">{meta.station}</div>
  </div>
  <button type="button" onClick={onClose} aria-label="Close operator panel" className="text-ghost hover:text-ink transition-colors p-1 cursor-pointer">
- <X size={14} strokeWidth={2.5} aria-hidden="true" />
+ <X size={14} strokeWidth={2} aria-hidden="true" />
  </button>
  </div>
 
@@ -152,7 +152,7 @@ function OperatorPanel({ name, onClose }) {
  ) : myTasks.map((t, i) => (
  <div key={i} className={`flex items-center gap-3 px-4 py-3 border-b border-rule2 last:border-b-0 ${t.done ? 'opacity-50' : ''}`}>
  <div className={`w-4 h-4 rounded-full flex-shrink-0 flex items-center justify-center ${t.done ? 'bg-ok' : 'border-2 border-rule2'}`}>
- {t.done && <Check size={10} strokeWidth={3} className="text-white" />}
+ {t.done && <Check size={10} strokeWidth={2} className="text-white" />}
  </div>
  <div className="flex-1">
  <div className={`font-body font-medium text-[12px] ${t.done ? 'line-through text-ghost' : 'text-ink'}`}>{t.label}</div>
@@ -204,12 +204,12 @@ function OperatorPanel({ name, onClose }) {
  </div>
  ))}
  {completion ? (
- <div className={`flex items-center gap-1 pt-2 border-t border-rule font-body text-[11px] ${completion.outcome === 'Passed' ? 'text-ok' : 'text-warn'}`}>
+ <div className={`flex items-center gap-1 pt-2 border-t border-rule2 font-body text-[11px] ${completion.outcome === 'Passed' ? 'text-ok' : 'text-warn'}`}>
  <Check size={12} strokeWidth={2} className="stroke-current flex-shrink-0" />
  {completion.outcome} · {completion.date} · {completion.hours}h
  </div>
  ) : (
- <div className="flex items-center gap-1 pt-2 border-t border-rule font-body text-ghost text-[10px]">
+ <div className="flex items-center gap-1 pt-2 border-t border-rule2 font-body text-ghost text-[10px]">
  <div className="w-1.5 h-1.5 rounded-full bg-warn" />
  In progress
  </div>
@@ -227,7 +227,7 @@ function CrewRow({ m, onView }) {
  const hrs = crewHoursData[m.name]
  const fatigue = hrs ? (hrs.hoursThisWeek >= 60 ? 'danger' : hrs.hoursThisWeek >= 48 ? 'warn' : null) : null
  return (
- <div className={`flex items-center gap-3 px-4 py-2.5 border-b border-rule last:border-b-0 ${fatigue === 'danger' ? 'bg-danger/[0.02]' : ''}`}>
+ <div className={`flex items-center gap-3 px-4 py-2.5 border-b border-rule2 last:border-b-0 ${fatigue === 'danger' ? 'bg-danger/[0.02]' : ''}`}>
  <div className="flex-1 min-w-0">
  <div className={`font-body text-[12px] font-medium ${m.flag ? 'text-danger' : 'text-ink'}`}>{m.name}</div>
  <div className={`font-body text-[10px] ${m.flag ? 'text-danger' : 'text-ghost'}`}>{m.role}</div>
@@ -283,7 +283,7 @@ function Finding({ f, onAct }) {
  </div>
  {showDismiss && !dismissed && (
  <div className="flex gap-2 pt-1 slide-in">
- <select className="font-body text-ink text-[11px] bg-stone border border-rule px-2 py-1 flex-1 cursor-pointer">
+ <select className="font-body text-ink text-[11px] bg-stone border border-rule2 px-2 py-1 flex-1 cursor-pointer">
  <option>Reason for dismissing…</option>
  <option>Already handled by outgoing supervisor</option>
  <option>Not applicable — SKU change in progress</option>
@@ -673,7 +673,7 @@ export default function ShiftIQ() {
  <button type="button" onClick={() => setShowTaskForm(p => !p)} className="font-body text-ghost text-[10px] hover:text-muted transition-colors">+ Assign</button>
  </div>
  {Object.entries(taskAssignments).flatMap(([op, tasks]) => tasks.map((t,i) => (
- <div key={op+i} className={`flex items-center gap-2 py-1.5 border-b border-rule last:border-b-0 ${t.done ? 'opacity-50' : ''}`}>
+ <div key={op+i} className={`flex items-center gap-2 py-1.5 border-b border-rule2 last:border-b-0 ${t.done ? 'opacity-50' : ''}`}>
  <button type="button" onClick={() => setTaskAssignments(p => ({...p, [op]: p[op].map((x,j) => j===i ? {...x, done:true} : x)}))}
  className={`w-3.5 h-3.5 flex-shrink-0 border ${t.done ? 'bg-ok border-ok' : 'border-rule2 hover:border-ok'} transition-colors`} />
  <div className="flex-1 min-w-0">
@@ -685,14 +685,14 @@ export default function ShiftIQ() {
  {showTaskForm && (
  <div className="mt-2 space-y-1.5 slide-in">
  <select value={taskForm.assignee} onChange={e => setTaskForm(p => ({...p, assignee: e.target.value}))}
- className="w-full font-body text-ink text-[11px] bg-stone border border-rule px-2 py-1 cursor-pointer">
+ className="w-full font-body text-ink text-[11px] bg-stone border border-rule2 px-2 py-1 cursor-pointer">
  <option value="">Assign to…</option>
  {['A. Martinez','C. Reyes','P. Okonkwo','F. Adeyemi','T. Osei'].map(n => <option key={n}>{n}</option>)}
  </select>
  <input placeholder="Task description" value={taskForm.label} onChange={e => setTaskForm(p => ({...p, label: e.target.value}))}
- className="w-full font-body text-ink text-[11px] bg-stone border border-rule px-2 py-1" />
+ className="w-full font-body text-ink text-[11px] bg-stone border border-rule2 px-2 py-1" />
  <input placeholder="Due time (e.g. 09:00)" value={taskForm.dueTime} onChange={e => setTaskForm(p => ({...p, dueTime: e.target.value}))}
- className="w-full font-body text-ink text-[11px] bg-stone border border-rule px-2 py-1" />
+ className="w-full font-body text-ink text-[11px] bg-stone border border-rule2 px-2 py-1" />
  <div className="flex gap-1.5">
  <Btn variant="primary" disabled={!taskForm.assignee || !taskForm.label} onClick={() => {
  const { assignee, label, dueTime } = taskForm
@@ -716,7 +716,7 @@ export default function ShiftIQ() {
  <div className="slide-in space-y-2">
  <div className="font-body text-ghost text-[10px] uppercase tracking-widest">Near-miss report</div>
  <select value={nearMissForm.station} onChange={e => setNearMissForm(p => ({...p, station: e.target.value}))}
- className="w-full font-body text-ink text-[11px] bg-stone border border-rule px-2 py-1 cursor-pointer">
+ className="w-full font-body text-ink text-[11px] bg-stone border border-rule2 px-2 py-1 cursor-pointer">
  <option value="">Station…</option>
  <option>Sauce Dosing</option>
  <option>Oven Station B</option>
@@ -724,9 +724,9 @@ export default function ShiftIQ() {
  <option>Topping Line</option>
  </select>
  <textarea placeholder="What happened?" value={nearMissForm.what} onChange={e => setNearMissForm(p => ({...p, what: e.target.value}))}
- className="w-full font-body text-ink text-[11px] bg-stone border border-rule px-2 py-1 h-16 resize-none" />
+ className="w-full font-body text-ink text-[11px] bg-stone border border-rule2 px-2 py-1 h-16 resize-none" />
  <input placeholder="Corrective step taken" value={nearMissForm.action} onChange={e => setNearMissForm(p => ({...p, action: e.target.value}))}
- className="w-full font-body text-ink text-[11px] bg-stone border border-rule px-2 py-1" />
+ className="w-full font-body text-ink text-[11px] bg-stone border border-rule2 px-2 py-1" />
  <label className="flex items-center gap-2 font-body text-muted text-[11px] cursor-pointer">
  <input type="checkbox" checked={nearMissForm.atRisk} onChange={e => setNearMissForm(p => ({...p, atRisk: e.target.checked}))} />
  Anyone at risk of injury?
@@ -763,12 +763,12 @@ export default function ShiftIQ() {
     <div className="flex items-start justify-between gap-2 mb-1.5">
     <p className={`font-body font-medium text-[13px] leading-snug ${signed ? 'line-through text-ghost' : item.isAllergen && !allergenSigned ? 'text-danger' : 'text-ink'}`}>
      {item.label}
-     {item.isAllergen && !allergenSigned && <span className="ml-1.5 inline-flex items-center gap-0.5 text-[10px] font-medium"><AlertTriangle size={9} strokeWidth={2.5} /> BLOCKING</span>}
-     {flag && <span className="ml-1.5 inline-flex items-center gap-0.5 text-[10px] text-warn font-medium"><Flag size={9} strokeWidth={2.5} /> flagged</span>}
+     {item.isAllergen && !allergenSigned && <span className="ml-1.5 inline-flex items-center gap-0.5 text-[10px] font-medium"><AlertTriangle size={9} strokeWidth={2} /> BLOCKING</span>}
+     {flag && <span className="ml-1.5 inline-flex items-center gap-0.5 text-[10px] text-warn font-medium"><Flag size={9} strokeWidth={2} /> flagged</span>}
     </p>
-    {signed && !empResult && item.key !== 'emp' && <span className="font-body text-ok text-[10px] flex items-center gap-0.5 flex-shrink-0"><Check size={10} strokeWidth={2.5} /> {signed}</span>}
-    {signed && item.key === 'emp' && empResult && <span className="font-body text-ok text-[10px] flex items-center gap-0.5 flex-shrink-0"><Check size={10} strokeWidth={2.5} /> {empResult.result === 'negative' ? 'Neg' : 'Pos'} · {signed}</span>}
-    {flag && !signed && <span className="font-body text-warn text-[10px] flex items-center gap-0.5 flex-shrink-0"><Flag size={9} strokeWidth={2.5} /> {flag.reason}</span>}
+    {signed && !empResult && item.key !== 'emp' && <span className="font-body text-ok text-[10px] flex items-center gap-0.5 flex-shrink-0"><Check size={10} strokeWidth={2} /> {signed}</span>}
+    {signed && item.key === 'emp' && empResult && <span className="font-body text-ok text-[10px] flex items-center gap-0.5 flex-shrink-0"><Check size={10} strokeWidth={2} /> {empResult.result === 'negative' ? 'Neg' : 'Pos'} · {signed}</span>}
+    {flag && !signed && <span className="font-body text-warn text-[10px] flex items-center gap-0.5 flex-shrink-0"><Flag size={9} strokeWidth={2} /> {flag.reason}</span>}
     </div>
     <p className="font-body text-ghost text-[11px] mb-2">{item.operator}</p>
     {!signed && !flag && (
@@ -792,7 +792,7 @@ export default function ShiftIQ() {
      <input placeholder="CFU count" type="number"
       value={empForm[item.key]?.cfu || ''}
       onChange={e => setEmpForm(p => ({...p, [item.key]: {...p[item.key], cfu: e.target.value}}))}
-      className="w-20 font-body text-ink text-[10px] bg-stone border border-rule px-2 py-0.5" />
+      className="w-20 font-body text-ink text-[10px] bg-stone border border-rule2 px-2 py-0.5" />
      )}
     </div>
     {empForm[item.key]?.result && (
@@ -807,7 +807,7 @@ export default function ShiftIQ() {
    {showFlagForm && !flag && (
     <div className="pb-2 px-1 space-y-1.5 slide-in">
     <select value={flagForm[item.key]?.reason || ''} onChange={e => setFlagForm(p => ({...p, [item.key]: {...p[item.key], reason: e.target.value}}))}
-     className="w-full font-body text-ink text-[10px] bg-stone border border-rule px-2 py-1 cursor-pointer">
+     className="w-full font-body text-ink text-[10px] bg-stone border border-rule2 px-2 py-1 cursor-pointer">
      <option value="">Reason for flag…</option>
      <option>Equipment malfunction</option>
      <option>Kit or supplies missing</option>
