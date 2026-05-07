@@ -22,11 +22,6 @@ const foundation = [
  { id:'notifications', label:'Notifications', path:'/notifications', icon:Bell, badge:null, dynamic:true },
 ]
 
-const accentMap = {
- command:'#C17D2A',
- shift:'#D94F2A', handoff:'#3A8A5A',
- supplier:'#8A6A3A', capa:'#C4920A', readiness:'#C17D2A', network:'#C17D2A', notifications:'#C17D2A',
-}
 
 function Badge({ badge, badgeType }) {
  if (!badge) return null
@@ -70,7 +65,7 @@ function SideItem({ to, icon: Icon, label, badge, badgeType, disabled, id, onDis
  size={15}
  strokeWidth={1.75}
  className="flex-shrink-0"
- style={isActive && id ? { color: accentMap[id] } : {}}
+ style={isActive ? { color: 'white' } : {}}
  />
  <span className="font-body">{label}</span>
  <Badge badge={badge} badgeType={badgeType} />
@@ -104,7 +99,7 @@ function CommandSurfaceItem() {
  size={15}
  strokeWidth={1.75}
  className="flex-shrink-0"
- style={isActive ? { color: '#C17D2A' } : {}}
+ style={isActive ? { color: 'white' } : {}}
  />
  <span className="font-body flex-1">Command</span>
  {activeCount > 0 && (
@@ -412,7 +407,7 @@ export default function Sidebar() {
  notifPanelOpen ? 'border-ochre bg-ochre/10 text-stone font-medium' : 'border-transparent text-[#A8A098] hover:bg-sidebar2 hover:text-white'
  }`}
  >
- <m.icon size={15} strokeWidth={1.75} className="flex-shrink-0" style={notifPanelOpen ? { color: accentMap[m.id] } : {}} />
+ <m.icon size={15} strokeWidth={1.75} className="flex-shrink-0" style={notifPanelOpen ? { color: 'white' } : {}} />
  <span className="font-body flex-1">{m.label}</span>
  {notifCount > 0 && <span className="ml-auto text-[10px] font-semibold px-1.5 py-0.5 bg-danger text-white">{notifCount}</span>}
  </button>
