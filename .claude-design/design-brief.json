@@ -1,0 +1,43 @@
+{
+  "scope": "page",
+  "isRedesign": true,
+  "targetPath": "src/screens/SupplierIQ.jsx",
+  "targetName": "SupplierIQ",
+  "jtbd": "Unblock production — arrive, instantly see what's holding up the line, act on it",
+  "painPoints": [
+    "Too much in one scroll",
+    "Right sidebar feels disconnected",
+    "Data density vs scannability",
+    "Unclear primary action"
+  ],
+  "redesignScope": ["Main content area", "Urgency/action hierarchy"],
+  "outOfScope": ["ActionBanner", "Stats bar", "Right sidebar (FDA audit, open gaps, EMP)"],
+  "brand": {
+    "adjectives": ["utilitarian", "minimal", "trustworthy"],
+    "density": "compact",
+    "darkMode": false
+  },
+  "persona": {
+    "primary": "Plant director / QA supervisor",
+    "context": "desktop-first",
+    "keyTasks": [
+      "Identify what is blocking production",
+      "Request missing COA or documentation",
+      "Confirm FDA readiness before inspection"
+    ]
+  },
+  "constraints": {
+    "mustKeep": ["Existing data structures from ../data", "Right sidebar unchanged"],
+    "technical": ["Use existing UI components from ../components/UI", "No new dependencies"]
+  },
+  "variants": {
+    "A": "Urgency-First Stream — no tabs, single list grouped by resolve/monitor/reference",
+    "B": "Score-Led Tabs — supplier scorecard with bar visualization, lots with status-first columns, FSMA as third tab",
+    "C": "Priority Action Cards — blocking hero card up top, expiring lots as 2-col cards, supplier standings compact",
+    "D": "Expandable Master List — combined supplier+lot list, expand ConAgra to see lots and audit inline",
+    "E": "Timeline Feed — alert strip up top, chronological Now/Today/This week/Before FDA sections"
+  },
+  "framework": "vite",
+  "packageManager": "npm",
+  "stylingSystem": "tailwind"
+}

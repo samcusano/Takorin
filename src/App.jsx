@@ -10,6 +10,7 @@ import DataReadiness from './screens/DataReadiness'
 import NetworkView from './screens/NetworkView'
 import NotificationCenter from './screens/NotificationCenter'
 import OperatorView from './screens/OperatorView'
+import DesignLabPage from './__design_lab/DesignLabPage'
 import { useAppState } from './context/AppState'
 
 const ROLE_LABELS = {
@@ -52,6 +53,7 @@ export default function App() {
  <Route path="/readiness" element={<ErrorBoundary><DataReadiness /></ErrorBoundary>} />
  <Route path="/network" element={<ErrorBoundary><NetworkView /></ErrorBoundary>} />
  <Route path="/operator" element={<ErrorBoundary><OperatorView role={viewingRole} /></ErrorBoundary>} />
+ <Route path="/__design_lab" element={<DesignLabPage />} />
  </Routes>
  </main>
  {notifPanelOpen && (
