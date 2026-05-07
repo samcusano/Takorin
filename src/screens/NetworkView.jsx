@@ -5,7 +5,7 @@ import {
 } from 'lucide-react'
 import { networkData } from '../data'
 import { useAppState } from '../context/AppState'
-import { SecHd, Urg, ActionBanner, PersonAvatar } from '../components/UI'
+import { SecHd, Urg, ActionBanner, PersonAvatar, Btn } from '../components/UI'
 
 const plantMeta = {
  sl: { director: 'J. Crocker', region: 'Salina, KS', initials: 'JC' },
@@ -172,19 +172,9 @@ function ExposureActions({ exposure, actions, onAction }) {
  </div>
  ) : (
  <>
- <button type="button" onClick={() => onAction(exposure.lotId, 'hold')}
- className="inline-flex items-center gap-1 font-body font-medium text-[10px] px-2.5 py-1 bg-danger/10 text-danger hover:bg-danger/20 transition-colors">
- <AlertTriangle size={9} strokeWidth={2} />
- Issue hold — all plants
- </button>
- <button type="button" onClick={() => onAction(exposure.lotId, 'notify')}
- className="font-body text-[10px] px-2.5 py-1 bg-stone2 text-muted hover:bg-stone3 transition-colors">
- Notify TX-11 director
- </button>
- <button type="button" onClick={() => onAction(exposure.lotId, 'capa')}
- className="font-body text-[10px] px-2.5 py-1 bg-stone2 text-muted hover:bg-stone3 transition-colors">
- Share CAPA to TX-11
- </button>
+ <Btn variant="primary" className="inline-flex items-center gap-1" onClick={() => onAction(exposure.lotId, 'hold')}><AlertTriangle size={9} strokeWidth={2} />Issue hold — all plants</Btn>
+ <Btn variant="secondary" onClick={() => onAction(exposure.lotId, 'notify')}>Notify TX-11 director</Btn>
+ <Btn variant="secondary" onClick={() => onAction(exposure.lotId, 'capa')}>Share CAPA to TX-11</Btn>
  </>
  )}
  </div>
@@ -204,7 +194,7 @@ export default function NetworkView() {
  return (
  <div className="flex flex-col h-full overflow-hidden">
  <ActionBanner
- color="#C17D2A"
+ tone="muted"
  headline={isUnlocked
  ? 'Network view — cross-plant risk correlation active'
  : 'Network view — locked until Data Readiness ≥ 70'}

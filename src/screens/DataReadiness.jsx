@@ -124,11 +124,11 @@ export default function DataReadiness() {
  return (
  <div className="flex flex-col h-full overflow-hidden">
  <ActionBanner
- color="#C17D2A"
+ tone="warn"
  headline={`AI confidence: ${score}/100 — before acting on a $50K call, know how certain the system is`}
  body="3 gaps prevent cross-plant correlation and constrain recommendation accuracy across ShiftIQ and SupplierIQ"
  >
- <Btn variant="ghost" onClick={handleExport} disabled={exportState === 'loading'}>
+ <Btn variant="secondary" onClick={handleExport} disabled={exportState === 'loading'}>
  {exportState === 'loading' ? 'Preparing…' : exportState === 'done' ? 'Exported ✓' : 'Export readiness report'}
  </Btn>
  </ActionBanner>
@@ -207,12 +207,12 @@ export default function DataReadiness() {
  </div>
  <div className="flex gap-2">
  <Btn
- variant="accent"
+ variant="primary"
  disabled={resolved[`conflict-${i}`]}
  onClick={() => resolveItem(`conflict-${i}`, c.points)}>
  {resolved[`conflict-${i}`] ? 'Canonical name set ✓' : 'Set canonical name'}
  </Btn>
- <Btn variant="muted">View affected records</Btn>
+ <Btn variant="secondary">View affected records</Btn>
  </div>
  </div>
  ))}
@@ -239,7 +239,7 @@ export default function DataReadiness() {
  Impact: Both false positives and false negatives are possible.
  </div>
  <Btn
- variant="accent"
+ variant="primary"
  disabled={resolved['ctx-0']}
  onClick={() => resolveItem('ctx-0', 12)}>
  {resolved['ctx-0'] ? 'Profile added ✓' : 'Add SKU profiles'}

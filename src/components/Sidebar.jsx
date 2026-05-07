@@ -3,7 +3,7 @@ import { NavLink, useNavigate } from 'react-router-dom'
 import {
  Activity, Handshake, Truck, ClipboardCheck,
  Gauge, BarChart2, FileText, Users, Settings,
- Building2, ChevronRight, Globe2, Bell,
+ Building2, ChevronDown, Globe2, Bell,
  LayoutDashboard, MapPin, ShieldCheck, AlertTriangle,
 } from 'lucide-react'
 import { useAppState } from '../context/AppState'
@@ -134,7 +134,7 @@ function PlantDropdown({ triggerRef, onClose, complianceState }) {
  useEffect(() => {
   if (triggerRef.current) {
    const r = triggerRef.current.getBoundingClientRect()
-   setPos({ top: r.top })
+   setPos({ top: r.bottom })
   }
  }, [triggerRef])
 
@@ -163,10 +163,10 @@ function PlantDropdown({ triggerRef, onClose, complianceState }) {
   <div
    ref={dropRef}
    className="fixed z-50 plant-drop-in"
-   style={{ left: 248, top: Math.max(8, pos.top) }}
+   style={{ left: 0, top: Math.max(8, pos.top) }}
   >
    {/* Card */}
-   <div className="w-[296px] bg-[#1e1a14] border border-[#3A342E] rounded-2xl shadow-[0_24px_60px_rgba(0,0,0,0.5)] overflow-hidden">
+   <div className="w-[240px] bg-[#1e1a14] border border-[#3A342E] rounded-2xl shadow-[0_24px_60px_rgba(0,0,0,0.5)] overflow-hidden">
     <div className="plant-drop-in-content">
 
      {/* Header */}
@@ -228,10 +228,7 @@ function UserDropdown({ triggerRef, onClose, viewingRole, setViewingRole }) {
   if (triggerRef.current) {
    const r = triggerRef.current.getBoundingClientRect()
    const estimatedH = 350
-   const top = r.top + estimatedH > window.innerHeight - 8
-    ? Math.max(8, r.bottom - estimatedH)
-    : r.top
-   setPos({ top })
+   setPos({ top: Math.max(8, r.top - estimatedH) })
   }
  }, [triggerRef])
 
@@ -262,9 +259,9 @@ function UserDropdown({ triggerRef, onClose, viewingRole, setViewingRole }) {
   <div
    ref={dropRef}
    className="fixed z-50 plant-drop-in"
-   style={{ left: 248, top: Math.max(8, pos.top) }}
+   style={{ left: 0, top: Math.max(8, pos.top) }}
   >
-   <div className="w-[280px] bg-[#1e1a14] border border-[#3A342E] rounded-2xl shadow-[0_24px_60px_rgba(0,0,0,0.5)] overflow-hidden" style={{ maxHeight: 'calc(100vh - 24px)' }}>
+   <div className="w-[240px] bg-[#1e1a14] border border-[#3A342E] rounded-2xl shadow-[0_24px_60px_rgba(0,0,0,0.5)] overflow-hidden" style={{ maxHeight: 'calc(100vh - 24px)' }}>
     <div className="plant-drop-in-content">
 
      {/* Header */}
@@ -359,9 +356,9 @@ export default function Sidebar() {
   <div className="font-body text-stone text-[13px] font-medium truncate">Salina Campus</div>
   <div className="font-body text-ghost text-[10px]">Plant ID SL-04</div>
   </div>
-  <ChevronRight
+  <ChevronDown
   size={13}
-  className={`text-ghost flex-shrink-0 transition-transform duration-200 ${plantOpen ? 'rotate-90' : ''}`}
+  className={`text-ghost flex-shrink-0 transition-transform duration-200 ${plantOpen ? 'rotate-180' : ''}`}
   />
  </button>
 
@@ -438,7 +435,7 @@ export default function Sidebar() {
    {viewingRole === 'supervisor' ? <span className="text-ochre">Viewing as Kowalski</span> : viewingRole === 'operator-reyes' ? <span className="text-ochre">Viewing as C. Reyes</span> : viewingRole === 'operator-okonkwo' ? <span className="text-ochre">Viewing as P. Okonkwo</span> : 'Plant Director'}
   </div>
   </div>
-  <ChevronRight size={13} className={`text-ghost flex-shrink-0 transition-transform duration-200 ${userOpen ? 'rotate-90' : ''}`} />
+  <ChevronDown size={13} className={`text-ghost flex-shrink-0 transition-transform duration-200 ${userOpen ? 'rotate-180' : ''}`} />
  </button>
  {userOpen && (
   <UserDropdown

@@ -48,7 +48,7 @@ export function SecHd({ tag, title, badge, icon: Icon, accent }) {
  {Icon && <Icon size={11} strokeWidth={2} style={accent ? { color: accent } : undefined} />}
  {tag}
  </div>
- <div className="flex-1 font-display text-ink text-[13px] font-medium">{title}</div>
+ <div className="flex-1 font-body font-medium text-ink text-[13px]">{title}</div>
  {badge}
  </div>
  )
@@ -74,7 +74,7 @@ export function SP({ title, sub, children }) {
  return (
  <div className="border-b border-rule2 last:border-b-0">
  <div className="px-4 py-2.5 border-b border-rule2 flex items-baseline justify-between">
- <span className="font-display font-medium text-ink text-[12px]">{title}</span>
+ <span className="font-body font-medium text-ink text-[12px]">{title}</span>
  {sub && <span className="font-body text-ghost text-[10px]">{sub}</span>}
  </div>
  <div>{children}</div>
@@ -95,16 +95,22 @@ export function SPRow({ label, sub, value, valueColor = 'text-ink' }) {
  )
 }
 
-// ── Action banner
-export function ActionBanner({ color = '#C17D2A', headline, body, children, footer }) {
+// ── Action banner — muted tonal style
+export function ActionBanner({ tone = 'warn', headline, body, children, footer }) {
+ const s = {
+ danger: 'bg-danger/[0.05] border-b-2 border-b-danger',
+ warn:   'bg-warn/[0.05] border-b-2 border-b-warn',
+ ok:     'bg-ok/[0.05] border-b-2 border-b-ok',
+ muted:  'bg-stone3 border-b border-rule2',
+ }[tone] || 'bg-warn/[0.05] border-b-2 border-b-warn'
  return (
- <div className="flex-shrink-0" style={{ background: color }}>
- <div className="px-5 py-3.5 flex items-start gap-4">
+ <div className={`flex-shrink-0 ${s}`}>
+ <div className="px-5 py-3 flex items-start gap-4">
  <div className="flex-1">
- <div className="font-display font-bold text-stone text-base leading-tight">{headline}</div>
- <div className="font-body text-stone/80 text-[12px] mt-1 leading-relaxed">{body}</div>
+ <div className="font-body font-medium text-ink text-[12px] leading-tight">{headline}</div>
+ {body && <div className="font-body text-muted text-[11px] mt-0.5 leading-relaxed">{body}</div>}
  </div>
- <div className="flex gap-2 flex-shrink-0 items-start mt-0.5">{children}</div>
+ {children && <div className="flex gap-2 flex-shrink-0 items-start">{children}</div>}
  </div>
  {footer && <div className="px-5 pb-3">{footer}</div>}
  </div>
@@ -115,14 +121,8 @@ export function ActionBanner({ color = '#C17D2A', headline, body, children, foot
 export function Btn({ variant = 'primary', onClick, disabled, children, className = '', style }) {
  const base = 'font-body font-medium text-[11px] px-3 py-1.5 transition-all duration-100 active:scale-[0.97] cursor-pointer border-0 disabled:opacity-50 disabled:cursor-not-allowed'
  const cls = {
- primary: 'bg-stone text-ink hover:opacity-90',
- ink: 'bg-ink text-stone hover:bg-ink2',
- accent: 'bg-ochre text-stone hover:opacity-90',
- ok: 'bg-ok text-white hover:opacity-90',
- warn: 'bg-warn text-white hover:opacity-90',
- ghost: 'bg-stone/20 text-stone hover:bg-stone/30',
- danger: 'bg-danger text-white hover:opacity-90',
- muted: 'bg-stone3 text-muted hover:bg-stone2',
+ primary: 'bg-ink text-stone hover:bg-ink2',
+ secondary: 'border border-rule2 text-muted hover:border-ghost',
  }[variant]
  return (
  <button type="button" className={`${base} ${cls} ${className}`} onClick={onClick} disabled={disabled} style={style}>
@@ -218,29 +218,35 @@ export function Layout({ children, side }) {
  )
 }
 
-// ── Waveform sparkline with playhead marker
+// ── Mini spark plot — smooth bezier curve, Google Finance style
 export function WaveformSparkline({ data, color = '#C17D2A', height = 44 }) {
- const max = Math.max(...data, 1)
- const nowIdx = data.length - 1
+ if (!data || data.length < 2) return null
+ const W = 100
+ const pad = 3
+ const max = Math.max(...data)
+ const min = Math.min(...data)
+ const range = max - min || 1
+ const points = data.map((v, i) => ({
+  x: pad + (i / (data.length - 1)) * (W - pad * 2),
+  y: height - pad - ((v - min) / range) * (height - pad * 2),
+ }))
+ // Catmull-Rom → cubic bezier for smooth curve through all points
+ const d = points.reduce((acc, p, i) => {
+  if (i === 0) return `M${p.x},${p.y}`
+  const prev = points[i - 1]
+  const cp1x = prev.x + (p.x - (points[i - 2]?.x ?? prev.x)) / 6
+  const cp1y = prev.y + (p.y - (points[i - 2]?.y ?? prev.y)) / 6
+  const cp2x = p.x - ((points[i + 1]?.x ?? p.x) - prev.x) / 6
+  const cp2y = p.y - ((points[i + 1]?.y ?? p.y) - prev.y) / 6
+  return `${acc} C${cp1x},${cp1y} ${cp2x},${cp2y} ${p.x},${p.y}`
+ }, '')
+ const last = points.at(-1)
+ const fillPath = `${d} L${last.x},${height} L${points[0].x},${height} Z`
  return (
- <div className="flex items-end gap-0.5 waveform-reveal" style={{ height }}>
- {data.map((v, i) => {
- const barH = Math.max(2, Math.round((v / max) * height))
- const isNow = i === nowIdx
- const isPast = i < nowIdx
- return (
- <div key={i} className="relative flex-1 flex flex-col justify-end" style={{ height }}>
- {isNow && (
- <div
- className="absolute rounded-full"
- style={{ width: 6, height: 6, background: '#100F0D', bottom: barH + 3, left: '50%', transform: 'translateX(-50%)' }}
- />
- )}
- <div style={{ height: barH, background: isNow ? '#100F0D' : isPast ? color : '#DDD8CF', opacity: isPast ? 0.65 : 1 }} />
- </div>
- )
- })}
- </div>
+  <svg viewBox={`0 0 ${W} ${height}`} style={{ width: '100%', height }} preserveAspectRatio="none">
+   <path d={fillPath} fill={color} fillOpacity="0.08" stroke="none" />
+   <path d={d} fill="none" stroke={color} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
  )
 }
 

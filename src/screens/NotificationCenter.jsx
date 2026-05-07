@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react'
 import { useAppState } from '../context/AppState'
-import { SecHd, Urg, ActionBanner } from '../components/UI'
+import { SecHd, Urg, ActionBanner, Btn } from '../components/UI'
 
 const TYPE_COLOR = {
  override: { bg: 'bg-danger/[0.04] border-l-danger', dot: 'bg-danger', label: 'Override' },
@@ -81,18 +81,15 @@ function NotifRow({ notif, onAction, indent }) {
  {confirmingDismiss && (
  <div className="flex items-center gap-2 mt-2 pt-2 border-t border-rule2 slide-in">
  <span className="font-body text-danger text-[10px] flex-1">Dismissing a safety override is logged. Confirm?</span>
- <button type="button" onClick={() => setConfirmingDismiss(false)} className="font-body text-[10px] px-2 py-1 text-muted hover:text-ink transition-colors">Cancel</button>
- <button type="button" onClick={() => { setConfirmingDismiss(false); onAction(notif.id, 'dismiss') }} className="font-body font-medium text-[10px] px-2.5 py-1 bg-danger/10 text-danger hover:bg-danger/20 transition-colors">Dismiss anyway</button>
+ <Btn variant="secondary" onClick={() => setConfirmingDismiss(false)}>Cancel</Btn>
+ <Btn variant="primary" onClick={() => { setConfirmingDismiss(false); onAction(notif.id, 'dismiss') }}>Dismiss anyway</Btn>
  </div>
  )}
  </div>
  {!notif.dismissed && !confirmingDismiss ? (
  <div className="flex flex-col gap-1 flex-shrink-0">
  {notif.actionLabel && (
- <button type="button" onClick={() => onAction(notif.id, 'act')}
- className="font-body font-medium text-[10px] px-2.5 py-1 bg-stone2 text-ink hover:bg-stone3 transition-colors whitespace-nowrap">
- {notif.actionLabel}
- </button>
+ <Btn variant="primary" className="whitespace-nowrap" onClick={() => onAction(notif.id, 'act')}>{notif.actionLabel}</Btn>
  )}
  <button type="button" onClick={handleDismiss}
  className="font-body text-[10px] px-2.5 py-1 text-ghost hover:text-muted transition-colors text-center">
