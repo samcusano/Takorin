@@ -43,10 +43,10 @@ export function StatCell({ label, value, sub, fill, tone = 'ok' }) {
 // ── Section header
 export function SecHd({ tag, title, badge, icon: Icon, accent }) {
  return (
- <div className="flex items-baseline gap-3 px-4 py-3 border-b border-rule2">
- <div className="flex items-center gap-1.5 font-body text-muted text-[11px]">
+ <div className="flex items-center gap-3 px-4 py-3 border-b border-rule2">
+ <div className="flex items-center gap-1.5 flex-shrink-0">
+ {tag && <Urg level="muted">{tag}</Urg>}
  {Icon && <Icon size={11} strokeWidth={2} style={accent ? { color: accent } : undefined} />}
- {tag}
  </div>
  <div className="flex-1 font-body font-medium text-ink text-[13px]">{title}</div>
  {badge}
@@ -85,7 +85,7 @@ export function SP({ title, sub, children }) {
 // ── SP row (label + value)
 export function SPRow({ label, sub, value, valueColor = 'text-ink' }) {
  return (
- <div className="flex items-center justify-between px-4 py-2.5 border-b border-rule last:border-b-0">
+ <div className="flex items-center justify-between px-4 py-2.5 border-b border-rule2 last:border-b-0">
  <div>
  <div className="font-body text-ink text-[12px] font-medium">{label}</div>
  {sub && <div className="font-body text-ghost text-[10px] mt-0.5">{sub}</div>}
@@ -105,14 +105,14 @@ export function ActionBanner({ tone = 'warn', headline, body, children, footer }
  }[tone] || 'bg-warn/[0.05] border-b-2 border-b-warn'
  return (
  <div className={`flex-shrink-0 ${s}`}>
- <div className="px-5 py-3 flex items-start gap-4">
+ <div className="px-4 py-3 flex items-start gap-4">
  <div className="flex-1">
  <div className="font-body font-medium text-ink text-[12px] leading-tight">{headline}</div>
  {body && <div className="font-body text-muted text-[11px] mt-0.5 leading-relaxed">{body}</div>}
  </div>
  {children && <div className="flex gap-2 flex-shrink-0 items-start">{children}</div>}
  </div>
- {footer && <div className="px-5 pb-3">{footer}</div>}
+ {footer && <div className="px-4 pb-3">{footer}</div>}
  </div>
  )
 }
@@ -184,7 +184,7 @@ export function ScoreRing({ pct = 0, size = 32, color }) {
 // ── Page header
 export function PageHead({ over, title, accent = '#C17D2A', meta = [], children }) {
  return (
- <div className="px-5 py-4 border-b border-rule2 bg-stone2" style={{ borderLeft: `3px solid ${accent}` }}>
+ <div className="px-4 py-4 border-b border-rule2 bg-stone2" style={{ borderLeft: `3px solid ${accent}` }}>
  <div className="font-body text-muted text-[11px] mb-1">{over}</div>
  <div className="font-display font-bold text-2xl text-ink leading-tight">
  {title}

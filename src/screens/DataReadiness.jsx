@@ -88,7 +88,7 @@ export default function DataReadiness() {
  {/* Readiness by module */}
  <SP title="Readiness by module" sub="How each product is affected">
  {moduleRows.map((r,i)=>(
- <div key={i} className="flex items-center justify-between px-4 py-2.5 border-b border-rule last:border-b-0">
+ <div key={i} className="flex items-center justify-between px-4 py-2.5 border-b border-rule2 last:border-b-0">
  <div>
  <div className="font-body font-medium text-ink text-[12px]">{r.n}</div>
  <div className="font-body text-ghost text-[10px]">{r.s}</div>
@@ -109,7 +109,7 @@ export default function DataReadiness() {
  {/* Unlocks at 90+ */}
  <SP title="What happens at 90+" sub="Readiness unlocks">
  {readinessData.unlocks.map((u, i) => (
- <div key={i} className="flex gap-2 px-4 py-3 border-b border-rule last:border-b-0">
+ <div key={i} className="flex gap-2 px-4 py-3 border-b border-rule2 last:border-b-0">
  <svg className="w-3.5 h-3.5 stroke-ok flex-shrink-0 mt-0.5" fill="none" strokeWidth={2} viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
  <div>
  <div className="font-body font-medium text-ink text-[12px]">{u.title}</div>
@@ -224,7 +224,7 @@ export default function DataReadiness() {
  <SecHd tag="Context gaps" title="Sensor readings without product context — a number without meaning"
  badge={<Urg level="critical">1 critical gap</Urg>} />
  <div className="px-4 py-3 space-y-3">
- <div className="flex gap-3 py-3 border-b border-rule">
+ <div className="flex gap-3 py-3 border-b border-rule2">
  <div className="w-7 h-7 rounded-full bg-warn/20 flex items-center justify-center flex-shrink-0 mt-0.5">
  <svg className="w-3.5 h-3.5 stroke-warn" fill="none" strokeWidth={2} viewBox="0 0 24 24">
  <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
@@ -248,7 +248,7 @@ export default function DataReadiness() {
  </div>
  {/* Resolved items */}
  {[{t:'Sauce Dosing Station — product context mapped',s:'Flow rate targets mapped to 4 active SKUs.'},{t:'Freeze tunnel — temperature thresholds mapped per SKU',s:'All active SKUs covered.'}].map((item,i)=>(
- <div key={i} className="flex gap-3 py-3 border-b border-rule last:border-b-0">
+ <div key={i} className="flex gap-3 py-3 border-b border-rule2 last:border-b-0">
  <div className="w-7 h-7 rounded-full bg-ok/20 flex items-center justify-center flex-shrink-0 mt-0.5">
  <svg className="w-3.5 h-3.5 stroke-ok" fill="none" strokeWidth={2.5} viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
  </div>
@@ -266,7 +266,7 @@ export default function DataReadiness() {
  <SecHd tag="Resolution roadmap" title="Three steps to full data readiness" />
  <div className="px-4 py-3 space-y-4">
  {readinessData.steps.map((step, i) => (
- <div key={i} className="flex gap-3 pb-4 border-b border-rule last:border-b-0">
+ <div key={i} className="flex gap-3 pb-4 border-b border-rule2 last:border-b-0">
  <div className="font-display font-light text-3xl text-ghost flex-shrink-0 leading-none">{step.num}</div>
  <div>
  <div className="font-display font-bold text-ink text-[14px] mb-1 leading-snug">{step.title}</div>

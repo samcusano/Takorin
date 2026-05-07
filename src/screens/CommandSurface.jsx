@@ -32,7 +32,7 @@ function CommandCell({ item, isPending, onAcknowledge }) {
  if (isPending) {
  return (
  <div className="border-b border-rule2 border-l-2 border-l-ok px-3 py-2.5 bg-ok/5 flex items-center gap-2">
- <Check size={12} strokeWidth={2.5} className="text-ok flex-shrink-0" />
+ <Check size={12} strokeWidth={2} className="text-ok flex-shrink-0" />
  <span className="font-body text-ok text-[10px]">Acknowledged</span>
  </div>
  )

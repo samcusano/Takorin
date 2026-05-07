@@ -17,7 +17,7 @@ function CoaPanel({ lot, onClose }) {
  <div className="font-display font-bold text-ink text-base">{lot.ing}</div>
  </div>
  <button type="button" onClick={onClose} aria-label="Close COA panel" className="p-1 text-ghost hover:text-ink transition-colors cursor-pointer">
- <X size={14} strokeWidth={2.5} aria-hidden="true" />
+ <X size={14} strokeWidth={2} aria-hidden="true" />
  </button>
  </div>
  <div className="flex-1 overflow-y-auto p-5">
@@ -62,12 +62,12 @@ function ShelfPill({ days, tone, useFirst }) {
 
 function TraceNode({ label, name, detail, tone, gapMsg, onResolve }) {
  return (
- <div className="flex items-start gap-3 py-3 border-b border-rule last:border-b-0">
+ <div className="flex items-start gap-3 py-3 border-b border-rule2 last:border-b-0">
  <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 ${
  tone === 'ok' ? 'bg-ok/20' : tone === 'gap' ? 'bg-danger/20' : 'bg-stone3'
  }`}>
- {tone === 'ok' && <Check size={12} strokeWidth={2.5} className="text-ok" />}
- {tone === 'gap' && <AlertTriangle size={12} strokeWidth={2.5} className="text-danger" />}
+ {tone === 'ok' && <Check size={12} strokeWidth={2} className="text-ok" />}
+ {tone === 'gap' && <AlertTriangle size={12} strokeWidth={2} className="text-danger" />}
  {tone === 'pending' && <div className="w-2 h-2 rounded-full bg-ghost" />}
  </div>
  <div className="flex-1">
@@ -136,12 +136,12 @@ export default function SupplierIQ() {
  </div>
  <div className="mx-4 mb-3 h-1 bg-rule2"><div className="h-full bg-warn" style={{ width:'62%' }} /></div>
  {d.fdaSteps.map((s, i) => (
- <div key={i} className="flex items-start gap-2.5 px-4 py-2.5 border-b border-rule last:border-b-0">
+ <div key={i} className="flex items-start gap-2.5 px-4 py-2.5 border-b border-rule2 last:border-b-0">
  <div className={`w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 ${
  s.tone === 'ok' ? 'bg-ok/20' : s.tone === 'gap' ? 'bg-danger/20' : 'bg-stone3'
  }`}>
- {s.tone === 'ok' && <Check size={10} strokeWidth={2.5} className="text-ok" />}
- {s.tone === 'gap' && <X size={10} strokeWidth={2.5} className="text-danger" />}
+ {s.tone === 'ok' && <Check size={10} strokeWidth={2} className="text-ok" />}
+ {s.tone === 'gap' && <X size={10} strokeWidth={2} className="text-danger" />}
  {s.tone === 'pend' && <div className="w-1.5 h-1.5 rounded-full bg-ghost" />}
  </div>
  <div className="flex-1 min-w-0">
@@ -156,7 +156,7 @@ export default function SupplierIQ() {
  {/* Open gaps */}
  <SP title="Open gaps" sub="3 active">
  {d.gaps.map((g, i) => (
- <div key={i} className={`px-4 py-2.5 border-b border-rule last:border-b-0 border-l-2 ${
+ <div key={i} className={`px-4 py-2.5 border-b border-rule2 last:border-b-0 border-l-2 ${
  g.tone === 'block' ? 'border-l-danger bg-danger/[0.02]' : g.tone === 'warn' ? 'border-l-warn' : 'border-l-ok'
  }`}>
  <div className="flex justify-between items-start">
@@ -179,7 +179,7 @@ export default function SupplierIQ() {
  ))}
  </div>
  {empResultsHistory.map((r, i) => (
- <div key={i} className={`flex items-center gap-2 px-4 py-2 border-b border-rule last:border-b-0 ${r.result === 'positive' ? 'bg-danger/[0.03]' : ''}`}>
+ <div key={i} className={`flex items-center gap-2 px-4 py-2 border-b border-rule2 last:border-b-0 ${r.result === 'positive' ? 'bg-danger/[0.03]' : ''}`}>
  <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${r.result === 'positive' ? 'bg-danger' : 'bg-ok'}`} />
  <div className="flex-1">
  <span className="font-body font-medium text-ink text-[11px]">{r.date}</span>
@@ -282,7 +282,7 @@ export default function SupplierIQ() {
         {/* Name + supplier */}
         <div>
         <div className={`flex items-center gap-1.5 font-body font-medium text-[13px] ${lot.urgent ? 'text-danger' : 'text-ink'}`}>
-         {(() => { const I = FOOD_ICONS[lot.ing]; return I ? <I size={12} strokeWidth={1.75} className="flex-shrink-0 opacity-50" /> : null })()}
+         {(() => { const I = FOOD_ICONS[lot.ing]; return I ? <I size={12} strokeWidth={2} className="flex-shrink-0 opacity-50" /> : null })()}
          {lot.ing}
         </div>
         <div className="font-body text-ghost text-[10px] mt-0.5">{lot.supplier}</div>
@@ -334,8 +334,8 @@ export default function SupplierIQ() {
  {[{t:'ok',l:'CTE 1'},{t: namingResolved ? 'ok' : 'gap',l:'CTE 2'},{t:'pend',l:'CTE 3'},{t:'pend',l:'CTE 4'}].map((n,i) => (
  <div key={i} className="flex flex-col items-center gap-0.5">
  <div className={`w-4 h-4 rounded-full flex items-center justify-center ${n.t==='ok'?'bg-ok/20':n.t==='gap'?'bg-danger/20':'bg-stone3'}`}>
- {n.t==='ok' && <Check size={8} strokeWidth={3} className="text-ok" />}
- {n.t==='gap' && <X size={8} strokeWidth={3} className="text-danger" />}
+ {n.t==='ok' && <Check size={8} strokeWidth={2} className="text-ok" />}
+ {n.t==='gap' && <X size={8} strokeWidth={2} className="text-danger" />}
  {n.t==='pend' && <div className="w-1.5 h-1.5 rounded-full bg-ghost" />}
  </div>
  <span className="font-body text-ghost text-[8px]">{n.l}</span>

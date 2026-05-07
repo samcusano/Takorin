@@ -31,18 +31,18 @@ function CaseDetailPanel({ caseData, onClose }) {
  return (
  <>
  <div className="fixed inset-0 bg-ink/30 z-40" onClick={onClose} />
- <aside className="fixed top-0 right-0 bottom-0 w-full max-w-[480px] bg-stone border-l border-rule z-50 flex flex-col slide-right">
- <div className="flex items-start justify-between px-5 py-4 border-b border-rule bg-stone2 flex-shrink-0">
+ <aside className="fixed top-0 right-0 bottom-0 w-full max-w-[480px] bg-stone border-l border-rule2 z-50 flex flex-col slide-right">
+ <div className="flex items-start justify-between px-4 py-4 border-b border-rule2 bg-stone2 flex-shrink-0">
  <div>
  <div className="font-body text-[10px] text-muted mb-1">{caseData.capaId}</div>
  <div className="font-display text-base font-black text-ink">{caseData.title}</div>
  </div>
  <button type="button" onClick={onClose} aria-label="Close case detail" className="p-1 text-ghost hover:text-ink transition-colors flex-shrink-0">
- <X size={14} strokeWidth={2.5} aria-hidden="true" />
+ <X size={14} strokeWidth={2} aria-hidden="true" />
  </button>
  </div>
  <div className="flex-1 overflow-y-auto">
- <div className="grid grid-cols-2 gap-px bg-rule border-b border-rule">
+ <div className="grid grid-cols-2 gap-px bg-rule border-b border-rule2">
  {[{l:'Status',v:caseData.badge,vc:caseData.badgeColor},{l:'Assigned',v:caseData.assigned},{l:'Due date',v:caseData.due,vc:caseData.dueColor},{l:'Source',v:caseData.source}].map(m=>(
  <div key={m.l} className="bg-stone2 px-4 py-3">
  <div className="font-body text-[10px] text-muted mb-1">{m.l}</div>
@@ -50,19 +50,19 @@ function CaseDetailPanel({ caseData, onClose }) {
  </div>
  ))}
  </div>
- <div className="px-5 py-3 border-b border-rule">
+ <div className="px-4 py-3 border-b border-rule2">
  <div className="font-body text-[10px] text-muted mb-2">Root cause</div>
  <div className="flex gap-1.5 flex-wrap">
  {caseData.rootCauseTags.map(t=><Chip key={t} tone="warn">{t}</Chip>)}
  </div>
  </div>
- <div className="px-5 py-3 border-b border-rule">
+ <div className="px-4 py-3 border-b border-rule2">
  <div className="font-body text-[10px] text-muted mb-2">Regulatory mapping</div>
  <div className="flex gap-1.5 flex-wrap">
  {caseData.regulatory.map(r=><Chip key={r} tone="int">{r}</Chip>)}
  </div>
  </div>
- <div className="px-5 py-3 border-b border-rule">
+ <div className="px-4 py-3 border-b border-rule2">
  <div className="flex items-center justify-between mb-2">
  <div className="font-body text-[10px] text-muted">Evidence files</div>
  <Urg level={allFiles.length > 0 ? 'ok' : 'critical'}>{allFiles.length > 0 ? `${allFiles.length} attached` : '0 of 1 required'}</Urg>
@@ -71,7 +71,7 @@ function CaseDetailPanel({ caseData, onClose }) {
  {allFiles.length > 0 ? (
  <div className="space-y-1">
  {allFiles.map(f=>(
- <div key={f} className="flex items-center gap-2 py-1.5 border-b border-rule last:border-0">
+ <div key={f} className="flex items-center gap-2 py-1.5 border-b border-rule2 last:border-0">
  <FileText size={12} className="text-muted flex-shrink-0" />
  <span className="font-body text-[11px] text-muted">{f}</span>
  </div>
@@ -86,10 +86,10 @@ function CaseDetailPanel({ caseData, onClose }) {
  </div>
  )}
  </div>
- <div className="px-5 py-3">
+ <div className="px-4 py-3">
  <div className="font-body text-[10px] text-muted mb-3">Activity log</div>
  {caseData.activity.map((a,i)=>(
- <div key={i} className="py-2 border-b border-rule last:border-0">
+ <div key={i} className="py-2 border-b border-rule2 last:border-0">
  <div className="font-body text-[10px] text-muted mb-0.5">{a.time}</div>
  <div className="font-body text-xs text-muted leading-relaxed">{a.text}</div>
  </div>
@@ -97,11 +97,11 @@ function CaseDetailPanel({ caseData, onClose }) {
  </div>
  </div>
  {actionTaken ? (
- <div className="px-5 py-3 border-t border-rule bg-ok/10 font-body text-ok text-xs slide-in flex-shrink-0">
+ <div className="px-4 py-3 border-t border-rule2 bg-ok/10 font-body text-ok text-xs slide-in flex-shrink-0">
  {actionTaken==='escalate' ? 'Escalated to director.' : 'Reassignment request sent.'}
  </div>
  ) : (
- <div className="flex gap-2 px-5 py-3 border-t border-rule bg-stone2 flex-shrink-0">
+ <div className="flex gap-2 px-4 py-3 border-t border-rule2 bg-stone2 flex-shrink-0">
  <Btn variant="primary" onClick={()=>setActionTaken('escalate')}>Escalate to director</Btn>
  <Btn variant="secondary" onClick={()=>setActionTaken('reassign')}>Reassign</Btn>
  </div>
@@ -142,7 +142,7 @@ function CollapsibleSection({ label, isOpen, onToggle, children }) {
  return (
  <div className="border-b border-rule2 last:border-b-0">
  <button type="button" onClick={onToggle}
- className="w-full flex items-center justify-between px-6 py-2.5 hover:bg-stone2 transition-colors">
+ className="w-full flex items-center justify-between px-4 py-2.5 hover:bg-stone2 transition-colors">
  <span className="font-body text-ghost text-[9px] uppercase tracking-widest">{label}</span>
  <span className={`text-ghost text-[10px] transition-transform ${isOpen ? 'rotate-180' : ''}`}>▾</span>
  </button>
@@ -228,7 +228,7 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
  return (
  <div className="flex flex-col h-full overflow-hidden">
  {/* Case header */}
- <div className="px-6 py-4 border-b border-rule2 bg-stone2 flex-shrink-0">
+ <div className="px-4 py-4 border-b border-rule2 bg-stone2 flex-shrink-0">
  <div className="flex items-center gap-2 mb-1">
  <span className="font-body text-muted text-[10px]">{c.capaId}</span>
  <Chip tone={c.badgeColor === 'text-danger' ? 'danger' : c.badgeColor === 'text-ok' ? 'ok' : 'warn'}>{c.badge}</Chip>
@@ -242,7 +242,7 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
  <div className="flex-1 overflow-y-auto">
  {/* ── Recommended action (the operative section) ── */}
  {!isClosed && !actionTaken && (
- <div className="px-6 py-5 border-b border-rule2 bg-stone3">
+ <div className="px-4 py-5 border-b border-rule2 bg-stone3">
  <div className="font-body text-muted text-[10px] mb-3">
  Recommended action
  </div>
@@ -301,7 +301,7 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
 
  {/* Success confirmation */}
  {actionTaken && (
- <div className="px-6 py-5 bg-ok/10 border-b border-ok/20 slide-in">
+ <div className="px-4 py-5 bg-ok/10 border-b border-ok/20 slide-in">
  <div className="flex items-center gap-2 mb-1">
  <Check size={12} strokeWidth={2} className="text-ok flex-shrink-0" />
  <span className="font-body font-medium text-ok text-[13px]">
@@ -324,7 +324,7 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
  ].map(tab => (
   <button key={tab.id} type="button"
   onClick={() => setDetailTab(tab.id)}
-  className={`px-5 py-2 font-body text-[10px] uppercase tracking-widest font-medium border-b-2 transition-colors cursor-pointer ${
+  className={`px-4 py-2 font-body text-[10px] uppercase tracking-widest font-medium border-b-2 transition-colors cursor-pointer ${
    detailTab === tab.id ? 'border-b-ochre text-ink' : 'border-b-transparent text-ghost hover:text-muted'
   }`}>
   {tab.label}
@@ -334,7 +334,7 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
 
  {/* Details tab */}
  {detailTab === 'details' && (
- <div className="px-6 py-4 space-y-4 border-b border-rule2">
+ <div className="px-4 py-4 space-y-4 border-b border-rule2">
   {[{l:'Root cause',v:c.rootCause},{l:'Assigned',v:c.assigned},{l:'Due',v:c.due,vc:c.dueColor},{l:'Source',v:c.source}].map(m => (
   <div key={m.l} className="flex items-start gap-3">
    <span className="font-body text-muted text-[10px] w-24 flex-shrink-0 mt-0.5">{m.l}</span>
@@ -369,7 +369,7 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
   </div>
   <input ref={fileInputRef} type="file" className="hidden" onChange={e=>{const f=e.target.files[0];if(f)setLocalFiles(p=>[...p,f.name]);e.target.value=''}} />
   {allFiles.length > 0 ? allFiles.map(f => (
-   <div key={f} className="flex items-center gap-2 py-1.5 border-b border-rule last:border-0">
+   <div key={f} className="flex items-center gap-2 py-1.5 border-b border-rule2 last:border-0">
    <FileText size={11} className="text-muted flex-shrink-0" />
    <span className="font-body text-[11px] text-muted">{f}</span>
    </div>
@@ -385,9 +385,9 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
 
  {/* Activity tab */}
  {detailTab === 'activity' && (
- <div className="px-6 py-2">
+ <div className="px-4 py-2">
   {(c.activity||[]).map((a, i) => (
-  <div key={i} className="py-2.5 border-b border-rule last:border-0">
+  <div key={i} className="py-2.5 border-b border-rule2 last:border-0">
    <div className="font-body text-[10px] text-muted mb-0.5">{a.time}</div>
    <div className="font-body text-[11px] text-ink2 leading-relaxed">{a.text}</div>
   </div>
@@ -473,7 +473,7 @@ function LayoutQueue({ visibleCases, blockingEvidenceUploaded, setBlockingEviden
  ))}
 
  {sortedQueue.length === 0 && (
- <div className="flex-1 flex items-center justify-center px-6 text-center">
+ <div className="flex-1 flex items-center justify-center px-4 text-center">
  <div>
  <div className="font-display font-bold text-ok text-2xl mb-1">All clear</div>
  <div className="font-body text-ghost text-[11px]">No open cases.</div>
@@ -528,7 +528,7 @@ function QueueItem({ item, priority, onSelectCase, onShowBlockingCase, blockingE
  if (!isBlocking && closedCases.includes(item.id)) return null
 
  return (
- <div className={`flex gap-5 px-6 py-5 border-b border-rule2 border-l-2 ${leftBorder} ${rowBg}`}>
+ <div className={`flex gap-5 px-4 py-5 border-b border-rule2 border-l-2 ${leftBorder} ${rowBg}`}>
  <div className={`display-num text-2xl flex-shrink-0 w-8 text-right leading-none pt-0.5 ${numColor}`}>
  {String(priority).padStart(2,'0')}
  </div>

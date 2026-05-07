@@ -24,7 +24,7 @@ function PlantCard({ plant, sharedLots }) {
  <div className="px-3.5 pt-3 pb-2.5 border-b border-rule2">
  <div className="flex items-start justify-between gap-2 mb-1">
  <div className="flex items-center gap-1.5">
- <Building2 size={12} strokeWidth={1.75} className="text-muted flex-shrink-0 mt-px" />
+ <Building2 size={12} strokeWidth={2} className="text-muted flex-shrink-0 mt-px" />
  <span className="font-body font-medium text-ink text-[13px]">{plant.name}</span>
  </div>
  <div className="flex items-center gap-1 flex-shrink-0">
@@ -35,7 +35,7 @@ function PlantCard({ plant, sharedLots }) {
  </div>
  </div>
  <div className="flex items-center gap-1.5">
- <MapPin size={9} strokeWidth={1.5} className="text-ghost" />
+ <MapPin size={9} strokeWidth={2} className="text-ghost" />
  <span className="font-body text-ghost text-[10px]">{meta.region}</span>
  {plant.active && (
  <span className="font-body text-[9px] px-1.5 py-px bg-ochre/20 text-ochre ml-1">This plant</span>
@@ -96,7 +96,7 @@ function ContactCard({ plant }) {
    <div className="font-body font-medium text-ink text-[13px]">{meta.director}</div>
    <div className="font-body text-ghost text-[11px]">Plant Director</div>
    <div className="flex items-center gap-1 mt-1">
-   <MapPin size={9} strokeWidth={1.5} className="text-ghost" />
+   <MapPin size={9} strokeWidth={2} className="text-ghost" />
    <span className="font-body text-ghost text-[10px]">{meta.region}</span>
    </div>
   </div>
@@ -124,18 +124,18 @@ function ExposureRow({ exposure }) {
  <div className="grid px-4 py-3" style={{ gridTemplateColumns: '1fr 130px 110px' }}>
  <div>
  <div className="flex items-center gap-1.5 mb-0.5">
- <Package size={11} strokeWidth={1.75} className={riskColor} />
+ <Package size={11} strokeWidth={2} className={riskColor} />
  <span className={`font-body font-medium text-[13px] ${riskColor}`}>{exposure.ingredient}</span>
  </div>
  <div className="flex items-center gap-1 mb-1">
- <Truck size={9} strokeWidth={1.5} className="text-ghost" />
+ <Truck size={9} strokeWidth={2} className="text-ghost" />
  <span className="font-body text-ghost text-[10px]">{exposure.supplier} · Lot {exposure.lotId}</span>
  </div>
  <div className={`font-body text-[10px] ${riskColor}`}>{exposure.note}</div>
  </div>
  <div className="flex flex-col justify-center">
  <div className="flex items-center gap-1 mb-1.5">
- <Users size={9} strokeWidth={1.75} className="text-ghost" />
+ <Users size={9} strokeWidth={2} className="text-ghost" />
  <span className="font-body text-ghost text-[10px] uppercase tracking-widest">Plants</span>
  </div>
  <div className="flex gap-1 flex-wrap">
@@ -204,9 +204,9 @@ export default function NetworkView() {
  />
 
  {!isUnlocked && (
- <div className="flex items-center gap-3 px-5 py-4 bg-stone3/60 border-b border-rule2 flex-shrink-0">
+ <div className="flex items-center gap-3 px-4 py-4 bg-stone3/60 border-b border-rule2 flex-shrink-0">
  <div className="w-8 h-8 bg-stone3 border border-rule2 flex items-center justify-center flex-shrink-0">
- <Lock size={14} strokeWidth={1.75} className="text-ghost" />
+ <Lock size={14} strokeWidth={2} className="text-ghost" />
  </div>
  <div className="flex-1">
  <div className="font-body font-medium text-ink text-[13px]">Cross-plant correlation requires Data Readiness ≥ 70</div>
@@ -240,7 +240,7 @@ export default function NetworkView() {
  ].map(({ v, l, Icon, tone }, i) => (
  <div key={i} className="px-4 py-3 border-r border-rule2 last:border-r-0">
  <div className="flex items-center gap-1 mb-1">
- <Icon size={10} strokeWidth={1.75} className="text-ghost" />
+ <Icon size={10} strokeWidth={2} className="text-ghost" />
  <span className="font-body text-ghost text-[10px] uppercase tracking-widest">{l}</span>
  </div>
  <div className={`display-num text-2xl ${tone}`}>{v}</div>
@@ -304,7 +304,7 @@ export default function NetworkView() {
  ].map(({ v, l, Icon }, i) => (
  <div key={i} className="px-4 py-3 border-r border-rule2 last:border-r-0">
  <div className="flex items-center gap-1 mb-1">
- <Icon size={9} strokeWidth={1.75} className="text-ghost" />
+ <Icon size={9} strokeWidth={2} className="text-ghost" />
  <span className="font-body text-ghost text-[10px]">{l}</span>
  </div>
  <div className="display-num text-2xl text-danger">{v}</div>
