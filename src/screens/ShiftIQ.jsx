@@ -19,12 +19,6 @@ const CHECKLIST_ITEMS = [
 
 const CHECKLIST_TOTAL = 13
 
-const HACCP_BY_STATION = {
- 'Supervisor': null,
- 'Operator · L3': { station: 'Sauce Dosing', ccp: 'CCP-1', limit: '60°C hold temp' },
- 'Operator · L1 — Mismatch ⚠': { station: 'Sauce Dosing', ccp: 'CCP-1', limit: '60°C hold temp — L2 cert required' },
- 'Operator · L2': { station: 'Oven Station B', ccp: 'CCP-3', limit: '185°F for GF-Flatbread' },
-}
 
 function EmptyLine({ name }) {
  return (
@@ -913,19 +907,9 @@ export default function ShiftIQ() {
   </div>
   <CrewAvatarStack crew={lineD.crew} onSelect={setViewingOperator} />
  </div>
- {lineD.crew.map((m, i) => {
- const haccp = HACCP_BY_STATION[m.role]
- return (
- <div key={i}>
- <CrewRow m={m} onView={() => setViewingOperator(m.name)} />
- {haccp && (
- <div className="px-4 pb-2 font-body text-ghost text-[10px] leading-relaxed border-b border-rule last:border-b-0">
- {haccp.station} · {haccp.ccp}: {haccp.limit}
- </div>
- )}
- </div>
- )
- })}
+ {lineD.crew.map((m, i) => (
+ <CrewRow key={i} m={m} onView={() => setViewingOperator(m.name)} />
+ ))}
  </div>
  </>
  ) : (

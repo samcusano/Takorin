@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { Check } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { commandData, facility, shiftData } from '../data'
-import { ActionBanner, StatCell, PersonAvatar } from '../components/UI'
+import { ActionBanner, StatCell } from '../components/UI'
 import { useAppState } from '../context/AppState'
 
 const prefersReducedMotion =
@@ -144,38 +144,6 @@ function MatrixColumn({ label, urgency, count, items, pendingIds, onAcknowledge 
  )
 }
 
-// ── AcknowledgedHistory ───────────────────────────────────────────────────────
-
-function AcknowledgedHistory({ ids }) {
- const [open, setOpen] = useState(false)
- const items = [...ids].map(id => commandData.items.find(i => i.id === id)).filter(Boolean)
- if (items.length === 0) return null
- return (
- <div className="border-t border-rule2">
- <button type="button"
- onClick={() => setOpen(o => !o)}
- className="w-full flex items-center justify-between px-4 py-3 bg-stone2 hover:bg-stone3 transition-colors"
- aria-expanded={open}
- >
- <span className="font-body text-[10px] font-medium uppercase tracking-widest text-muted">
- Acknowledged
- </span>
- <span className="font-body text-[10px] text-muted">
- {items.length} {open ? '▴' : '▾'}
- </span>
- </button>
- {open && items.map(item => (
- <div key={item.id} className="px-4 py-2.5 border-b border-rule2 last:border-b-0 opacity-50">
- <div className="flex items-center gap-2 mb-0.5">
- <ModulePill label={item.moduleLabel} accent={item.moduleAccent} />
- </div>
- <p className="font-body text-ink2 text-[11px] leading-snug">{item.title}</p>
- </div>
- ))}
- </div>
- )
-}
-
 // ── UndoToast ─────────────────────────────────────────────────────────────────
 
 function UndoToast({ entries, onUndo }) {
@@ -279,30 +247,6 @@ export default function CommandSurface() {
  <MatrixColumn label="Critical" urgency="danger" count={critItems.filter(i => !pendingIds.has(i.id)).length} items={critItems} pendingIds={pendingIds} onAcknowledge={handleAcknowledge} />
  <MatrixColumn label="Warning" urgency="warn" count={warnItems.filter(i => !pendingIds.has(i.id)).length} items={warnItems} pendingIds={pendingIds} onAcknowledge={handleAcknowledge} />
  <MatrixColumn label="Watching" urgency="watch" count={watchItems.filter(i => !pendingIds.has(i.id)).length} items={watchItems} pendingIds={pendingIds} onAcknowledge={handleAcknowledge} />
- </div>
-
- {/* ── Acknowledged rail ── */}
- <div className="w-[200px] flex-shrink-0 border-l border-rule2 overflow-y-auto bg-stone2 flex flex-col">
- <div className="px-4 py-2 border-b border-rule2 bg-stone2 sticky top-0 z-10 font-body uppercase tracking-widest text-ghost text-[10px] font-medium">
-  Current shift
- </div>
- <div className={`px-4 py-3 border-b border-rule2 border-l-2 ${zone === 'AT RISK' ? 'border-l-danger bg-danger/[0.02]' : zone === 'WATCH' ? 'border-l-warn' : 'border-l-ok'}`}>
-  <div className="flex items-center gap-2.5 mb-2">
-   <PersonAvatar name="D. Kowalski" size={30} />
-   <div className="min-w-0">
-    <div className="font-body font-medium text-ink text-[12px]">D. Kowalski</div>
-    <div className="font-body text-ghost text-[10px]">Supervisor · Line 4</div>
-   </div>
-  </div>
-  <div className="flex items-center gap-1.5">
-   <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${zone === 'AT RISK' ? 'bg-danger beat' : zone === 'WATCH' ? 'bg-warn' : 'bg-ok'}`} />
-   <span className={`font-body font-medium text-[11px] ${zone === 'AT RISK' ? 'text-danger' : zone === 'WATCH' ? 'text-warn' : 'text-ok'}`}>
-    {zone} · {shiftData.score}
-   </span>
-   <span className="font-body text-ghost text-[10px]">· {shiftData.time}</span>
-  </div>
- </div>
- <AcknowledgedHistory ids={permanentlyGone} />
  </div>
  </div>
 
