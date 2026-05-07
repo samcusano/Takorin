@@ -1,5 +1,5 @@
 import React from 'react'
-import { BarChart2 } from 'lucide-react'
+import { BarChart2, TrendingUp, TrendingDown } from 'lucide-react'
 
 export default function BenchmarkBlock({ metric, rank, total, score, delta, deltaDir, percentile, peers, zones, insight }) {
  return (
@@ -21,7 +21,7 @@ export default function BenchmarkBlock({ metric, rank, total, score, delta, delt
  </span>
  {delta && (
  <span className={`font-body text-xs flex items-center gap-0.5 ${deltaDir === 'up' ? 'text-ok' : 'text-danger'}`}>
- {deltaDir === 'up' ? '↑' : '↓'} {delta}
+ {deltaDir === 'up' ? <TrendingUp size={11} className="inline" /> : <TrendingDown size={11} className="inline" />} {delta}
  </span>
  )}
  </div>
@@ -45,7 +45,7 @@ export default function BenchmarkBlock({ metric, rank, total, score, delta, delt
  <div className="text-[9px] font-body uppercase tracking-wide text-ghost mb-2">Top plants · comparable category</div>
  {peers.map((p, i) => (
  <div key={i} className="flex items-center gap-2 py-1 border-b border-rule last:border-0">
- <span className="text-xs">{['🥇','🥈','🥉'][i]}</span>
+ <span className="display-num text-[11px] text-ghost w-4 flex-shrink-0">{i + 1}</span>
  <span className="flex-1 font-body text-[11px] text-muted">{p.name}</span>
  <span className="font-display text-xs font-bold text-ink">{p.value}</span>
  </div>

@@ -28,6 +28,7 @@ export function AppStateProvider({ children }) {
  const [operatorAcknowledgments, setOperatorAcknowledgments] = useState({})
  const [notifPanelOpen, setNotifPanelOpen] = useState(false)
  const [commandAcknowledged, setCommandAcknowledged] = useState(new Set())
+ const [viewingRole, setViewingRole] = useState('director')
  const acknowledgeCommand = (id) => setCommandAcknowledged(prev => new Set([...prev, id]))
  const [activityLog, setActivityLog] = useState([
  { time:'14:02', actor:'M. Santos', action:'Signed shift handoff', item:'HO-2604161', type:'handoff' },
@@ -67,6 +68,7 @@ export function AppStateProvider({ children }) {
  notifPanelOpen, setNotifPanelOpen,
  commandAcknowledged, acknowledgeCommand,
  activityLog, logActivity,
+ viewingRole, setViewingRole,
  }}>
  {children}
  </Ctx.Provider>

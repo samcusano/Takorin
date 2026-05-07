@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { FileText, BarChart2 } from 'lucide-react'
 import StatBar from '../components/StatBar.jsx'
+import { Check, X, AlertTriangle, ArrowRight, TrendingUp, ChevronRight } from 'lucide-react'
 import { Urg, SecHd, SP, ActionBanner, Btn } from '../components/UI'
 import { openCases, patternRows, benchmarks } from '../data/capa.js'
 import { haccpData, goalsData } from '../data'
@@ -37,7 +38,7 @@ function CaseDetailPanel({ caseData, onClose }) {
  <div className="font-display text-base font-black text-ink">{caseData.title}</div>
  </div>
  <button type="button" onClick={onClose} aria-label="Close case detail" className="p-1 text-ghost hover:text-ink transition-colors flex-shrink-0">
- <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+ <X size={14} strokeWidth={2.5} aria-hidden="true" />
  </button>
  </div>
  <div className="flex-1 overflow-y-auto">
@@ -195,6 +196,7 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
  const [confirming, setConfirming] = useState(false)
  const [actionTaken, setActionTaken] = useState(null)
  const [localFiles, setLocalFiles] = useState([])
+ const [detailTab, setDetailTab] = useState('details')
  const fileInputRef = useRef(null)
 
  const isBlocking = c.id === 'c-blocking'
@@ -256,7 +258,7 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
  <button type="button" onClick={() => fileInputRef.current?.click()}
  className={`w-full font-body font-medium text-[12px] px-4 py-3 hover:opacity-90 transition-opacity text-left flex items-center justify-between mb-4 ${actionBtnCls}`}>
  <span>{c.recommendedAction}</span>
- <span className="opacity-60 text-sm">↑</span>
+ <TrendingUp size={13} strokeWidth={2} className="opacity-60" />
  </button>
  </>
  ) : c.type === 'ca' ? (
@@ -270,14 +272,14 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
  <button type="button" onClick={() => setConfirming(true)}
  className={`w-full font-body font-medium text-[12px] px-4 py-3 hover:opacity-90 transition-opacity text-left flex items-center justify-between mb-4 ${actionBtnCls}`}>
  <span>{c.recommendedAction || 'Approve & close case'}</span>
- <span className="opacity-60 text-sm">→</span>
+ <ChevronRight size={13} strokeWidth={2} className="opacity-60" />
  </button>
  )
  ) : (
  <button type="button" onClick={handleEscalate}
  className={`w-full font-body font-medium text-[12px] px-4 py-3 hover:opacity-90 transition-opacity text-left flex items-center justify-between mb-4 ${actionBtnCls}`}>
  <span>{c.recommendedAction || c.primaryLabel}</span>
- <span className="opacity-60 text-sm">→</span>
+ <ChevronRight size={13} strokeWidth={2} className="opacity-60" />
  </button>
  )}
 
@@ -285,7 +287,7 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
  <div className="space-y-2">
  {c.expectedImpact && (
  <div className="flex items-start gap-2.5">
- <span className="font-body font-medium text-ok text-[11px] flex-shrink-0 mt-0.5">✓</span>
+ <Check size={13} strokeWidth={2.5} className="text-ok flex-shrink-0 mt-0.5" />
  <div className="min-w-0">
  <span className="font-body font-medium text-ghost text-[9px] uppercase tracking-widest mr-2">If you act</span>
  <span className="font-body text-ink2 text-[11px]">{c.expectedImpact}</span>
@@ -294,7 +296,7 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
  )}
  {c.riskIfIgnored && (
  <div className="flex items-start gap-2.5">
- <span className="font-body font-medium text-warn text-[11px] flex-shrink-0 mt-0.5">↑</span>
+ <TrendingUp size={13} strokeWidth={2.5} className="text-warn flex-shrink-0 mt-0.5" />
  <div className="min-w-0">
  <span className="font-body font-medium text-ghost text-[9px] uppercase tracking-widest mr-2">If you delay</span>
  <span className="font-body text-warn text-[11px]">{c.riskIfIgnored}</span>
@@ -309,7 +311,7 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
  {actionTaken && (
  <div className="px-6 py-5 bg-ok/10 border-b border-ok/20 slide-in">
  <div className="flex items-center gap-2 mb-1">
- <svg className="w-4 h-4 stroke-ok flex-shrink-0" fill="none" strokeWidth={2} viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+ <Check size={12} strokeWidth={2} className="text-ok flex-shrink-0" />
  <span className="font-body font-medium text-ok text-[13px]">
  {actionTaken === 'closed' ? 'Case closed.' : actionTaken === 'uploaded' ? 'Evidence uploaded.' : 'Action delegated.'}
  </span>
@@ -322,90 +324,85 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
  </div>
  )}
 
- {/* Evidence snapshot */}
- <div className="px-6 py-3.5 border-b border-rule2">
- <div className="flex items-center justify-between mb-2">
- <span className="font-body text-ghost text-[9px] uppercase tracking-widest">Evidence</span>
- <Urg level={allFiles.length > 0 ? 'ok' : c.type === 'ca' ? 'warn' : 'info'}>
- {allFiles.length > 0 ? `${allFiles.length} filed` : 'None attached'}
- </Urg>
- </div>
- {allFiles.length > 0 ? (
- <div className="flex flex-wrap gap-1.5 mb-2">
- {allFiles.map(f => (
- <span key={f} className="font-body text-[10px] px-2 py-0.5 bg-stone3 text-muted flex items-center gap-1">
- <FileText size={9} className="flex-shrink-0" />
- {f.split('/').pop()}
- </span>
+ {/* Tab bar */}
+ <div className="flex border-b border-rule2 bg-stone2 flex-shrink-0">
+ {[
+  { id: 'details', label: 'Details' },
+  { id: 'activity', label: `Activity · ${c.activity?.length || 0}` },
+ ].map(tab => (
+  <button key={tab.id} type="button"
+  onClick={() => setDetailTab(tab.id)}
+  className={`px-5 py-2 font-body text-[10px] uppercase tracking-widest font-medium border-b-2 transition-colors cursor-pointer ${
+   detailTab === tab.id ? 'border-b-ochre text-ink' : 'border-b-transparent text-ghost hover:text-muted'
+  }`}>
+  {tab.label}
+  </button>
  ))}
  </div>
- ) : (
- <div className="font-body text-ghost text-[11px]">No evidence files attached.</div>
- )}
- {c.activity?.[0] && (
- <div className="mt-1.5 font-body text-ghost text-[10px] leading-snug">
- {c.activity[0].time} — {c.activity[0].text}
- </div>
- )}
- </div>
 
- {/* Collapsible: Case details */}
- <CollapsibleSection label="Case details" isOpen={openSection === 'details'} onToggle={() => toggleSection('details')}>
- <div className="px-6 py-3 space-y-2.5">
- {[{l:'Root cause',v:c.rootCause},{l:'Assigned',v:c.assigned},{l:'Due',v:c.due,vc:c.dueColor},{l:'Source',v:c.source}].map(m => (
- <div key={m.l} className="flex items-start gap-3">
- <span className="font-body text-ghost text-[10px] w-24 flex-shrink-0 mt-0.5">{m.l}</span>
- <span className={`font-body text-[12px] ${m.vc || 'text-ink'}`}>{m.v}</span>
+ {/* Details tab */}
+ {detailTab === 'details' && (
+ <div className="px-6 py-4 space-y-4 border-b border-rule2">
+  {[{l:'Root cause',v:c.rootCause},{l:'Assigned',v:c.assigned},{l:'Due',v:c.due,vc:c.dueColor},{l:'Source',v:c.source}].map(m => (
+  <div key={m.l} className="flex items-start gap-3">
+   <span className="font-body text-ghost text-[10px] w-24 flex-shrink-0 mt-0.5">{m.l}</span>
+   <span className={`font-body text-[12px] ${m.vc || 'text-ink'}`}>{m.v}</span>
+  </div>
+  ))}
+  <div>
+  <div className="font-body text-ghost text-[10px] mb-1.5">Regulatory</div>
+  <div className="flex gap-1.5 flex-wrap">
+   {(c.regulatory||[]).map(r => <span key={r} className="font-body text-[10px] px-2 py-0.5 bg-int/10 text-int">{r}</span>)}
+  </div>
+  </div>
+  <div>
+  <div className="font-body text-ghost text-[10px] mb-1.5">Root cause tags</div>
+  <div className="flex gap-1.5 flex-wrap">
+   {(c.rootCauseTags||[]).map(t => <span key={t} className="font-body text-[10px] px-2 py-0.5 bg-warn/10 text-warn">{t}</span>)}
+  </div>
+  </div>
+  {c.description && (
+  <div>
+   <div className="font-body text-ghost text-[10px] mb-0.5">Description</div>
+   <p className="font-body text-muted text-[11px] leading-relaxed">{c.description}</p>
+  </div>
+  )}
+  {/* Evidence files */}
+  <div>
+  <div className="flex items-center justify-between mb-2">
+   <div className="font-body text-ghost text-[10px]">Evidence files</div>
+   <Urg level={allFiles.length > 0 ? 'ok' : c.type === 'ca' ? 'warn' : 'info'}>
+   {allFiles.length > 0 ? `${allFiles.length} filed` : 'None attached'}
+   </Urg>
+  </div>
+  <input ref={fileInputRef} type="file" className="hidden" onChange={e=>{const f=e.target.files[0];if(f)setLocalFiles(p=>[...p,f.name]);e.target.value=''}} />
+  {allFiles.length > 0 ? allFiles.map(f => (
+   <div key={f} className="flex items-center gap-2 py-1.5 border-b border-rule last:border-0">
+   <FileText size={11} className="text-muted flex-shrink-0" />
+   <span className="font-body text-[11px] text-muted">{f}</span>
+   </div>
+  )) : (
+   <div className="font-body text-ghost text-[11px] mb-2">No files attached.</div>
+  )}
+  <button type="button" className="font-body font-medium text-[10px] px-2.5 py-1 mt-2 bg-stone3 text-muted hover:bg-stone2 transition-colors" onClick={() => fileInputRef.current?.click()}>
+   {allFiles.length > 0 ? 'Add file' : 'Upload evidence'}
+  </button>
+  </div>
  </div>
- ))}
- <div>
- <div className="font-body text-ghost text-[10px] mb-1.5">Regulatory</div>
- <div className="flex gap-1.5 flex-wrap">
- {(c.regulatory||[]).map(r => <span key={r} className="font-body text-[10px] px-2 py-0.5 bg-int/10 text-int">{r}</span>)}
- </div>
- </div>
- <div>
- <div className="font-body text-ghost text-[10px] mb-1.5">Root cause tags</div>
- <div className="flex gap-1.5 flex-wrap">
- {(c.rootCauseTags||[]).map(t => <span key={t} className="font-body text-[10px] px-2 py-0.5 bg-warn/10 text-warn">{t}</span>)}
- </div>
- </div>
- <div>
- <div className="font-body text-ghost text-[10px] mb-0.5">Description</div>
- <p className="font-body text-muted text-[11px] leading-relaxed">{c.description}</p>
- </div>
- </div>
- </CollapsibleSection>
-
- {/* Collapsible: Evidence files (if any) */}
- {allFiles.length > 0 && (
- <CollapsibleSection label={`Evidence files · ${allFiles.length}`} isOpen={openSection === 'evidence'} onToggle={() => toggleSection('evidence')}>
- <div className="px-6 py-3">
- <input ref={fileInputRef} type="file" className="hidden" onChange={e=>{const f=e.target.files[0];if(f)setLocalFiles(p=>[...p,f.name]);e.target.value=''}} />
- {allFiles.map(f => (
- <div key={f} className="flex items-center gap-2 py-1.5 border-b border-rule last:border-0">
- <FileText size={11} className="text-muted flex-shrink-0" />
- <span className="font-body text-[11px] text-muted">{f}</span>
- </div>
- ))}
- <button type="button" className="font-body font-medium text-[10px] px-2.5 py-1 mt-2 bg-stone3 text-muted hover:bg-stone2 transition-colors" onClick={() => fileInputRef.current?.click()}>
- Add file
- </button>
- </div>
- </CollapsibleSection>
  )}
 
- {/* Collapsible: Activity log */}
- <CollapsibleSection label={`Activity · ${c.activity?.length || 0} entries`} isOpen={openSection === 'activity'} onToggle={() => toggleSection('activity')}>
+ {/* Activity tab */}
+ {detailTab === 'activity' && (
  <div className="px-6 py-2">
- {(c.activity||[]).map((a, i) => (
- <div key={i} className="py-2 border-b border-rule last:border-0">
- <div className="font-body text-[10px] text-ghost mb-0.5">{a.time}</div>
- <div className="font-body text-[11px] text-muted leading-relaxed">{a.text}</div>
+  {(c.activity||[]).map((a, i) => (
+  <div key={i} className="py-2.5 border-b border-rule last:border-0">
+   <div className="font-body text-[10px] text-ghost mb-0.5">{a.time}</div>
+   <div className="font-body text-[11px] text-ink2 leading-relaxed">{a.text}</div>
+  </div>
+  ))}
  </div>
- ))}
- </div>
- </CollapsibleSection>
+ )}
+
  </div>
  </div>
  )
@@ -582,7 +579,7 @@ function QueueItem({ item, priority, onSelectCase, onShowBlockingCase, blockingE
  <input ref={blockingFileRef} type="file" className="hidden"
  onChange={() => { setBlockingEvidenceUploaded(true); logActivity({actor:'J. Crocker',action:'Uploaded evidence for CAPA-2604-006',item:'CAPA-2604-006',type:'evidence'}) }} />
  <button type="button" onClick={() => blockingFileRef.current?.click()} className="font-body font-medium text-[11px] px-3 py-1.5 bg-danger text-white hover:opacity-90 transition-opacity">Upload evidence</button>
- <button type="button" onClick={onShowBlockingCase} className="font-body text-[11px] px-3 py-1.5 text-muted hover:text-ink transition-colors">View case →</button>
+ <button type="button" onClick={onShowBlockingCase} className="font-body text-[11px] px-3 py-1.5 text-muted hover:text-ink transition-colors" className="flex items-center gap-1">View case <ArrowRight size={10} /></button>
  </>
  ) : isAwaiting ? (
  confirming ? (
@@ -604,7 +601,7 @@ function QueueItem({ item, priority, onSelectCase, onShowBlockingCase, blockingE
  ? <span className="font-body text-ok text-[11px]">Escalated to director ✓</span>
  : <button type="button" onClick={()=>setEscalated(true)} className="font-body font-medium text-[11px] px-3 py-1.5 bg-ink text-stone hover:opacity-90 transition-opacity">{item.primaryLabel}</button>
  }
- <button type="button" onClick={()=>onSelectCase(item)} className="font-body text-[11px] px-3 py-1.5 text-muted hover:text-ink transition-colors">Open case file →</button>
+ <button type="button" onClick={()=>onSelectCase(item)} className="font-body text-[11px] px-3 py-1.5 text-muted hover:text-ink transition-colors" className="flex items-center gap-1">Open case file <ArrowRight size={10} /></button>
  </>
  )}
  </div>
@@ -707,9 +704,7 @@ export default function CapaEngine() {
  {/* Evidence blocker banner */}
  {!blockingEvidenceUploaded && (
  <div className="flex items-center gap-3 px-4 py-2.5 bg-danger/10 border-b border-danger/30 flex-shrink-0">
- <svg className="w-4 h-4 stroke-danger flex-shrink-0" fill="none" strokeWidth={2} viewBox="0 0 24 24">
- <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
- </svg>
+ <AlertTriangle size={16} strokeWidth={2} className="text-danger flex-shrink-0" />
  <div className="flex-1 min-w-0">
  <div className="font-body text-[12px] font-medium text-danger">CAPA-2604-006 missing evidence — FDA audit export blocked</div>
  <div className="font-body text-danger/80 text-[10px] mt-0.5">Pack Line QA pre-check log has no attached file. Upload to unblock the FSMA 204 audit package.</div>
@@ -724,7 +719,7 @@ export default function CapaEngine() {
  )}
  {blockingEvidenceUploaded && (
  <div className="flex items-center gap-2 px-4 py-2.5 bg-ok/10 border-b border-ok/20 font-body text-ok text-[11px] slide-in flex-shrink-0">
- <svg className="w-3 h-3 stroke-ok flex-shrink-0" fill="none" strokeWidth={2} viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+ <Check size={12} strokeWidth={2} className="text-ok flex-shrink-0" />
  CAPA-2604-006 evidence uploaded · FDA audit package unblocked · Export now available
  </div>
  )}

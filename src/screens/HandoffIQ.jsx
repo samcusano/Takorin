@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { handoffData, sanitationLogs, certExpiry, haccpData, scheduleData, crewHoursData } from '../data'
 import { Urg, StatCell, SP, SPRow, SecHd, Btn, ConsequenceNotice, Layout, ActionBanner, PersonAvatar } from '../components/UI'
+import { ChevronRight, ArrowRight, Check, AlertTriangle } from 'lucide-react'
 import { useAppState } from '../context/AppState'
 
 const shiftEvents = [
@@ -96,9 +97,7 @@ export default function HandoffIQ() {
  {/* Workforce dev */}
  <SP title="Workforce development" sub="CAPA-driven">
  <div className="px-4 py-2 font-body text-warn text-[11px] border-b border-rule2 flex items-center gap-1.5">
- <svg className="w-3 h-3 stroke-warn flex-shrink-0" fill="none" strokeWidth={2} viewBox="0 0 24 24">
- <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
- </svg>
+ <AlertTriangle size={14} strokeWidth={2} className="text-warn flex-shrink-0" />
  Skill mismatch = 29% of 90-day CAPAs
  </div>
  {d.operators.map((op, i) => {
@@ -176,7 +175,7 @@ export default function HandoffIQ() {
  </div>
  {!completionForms[op.name] ? (
  <button type="button" onClick={() => setCompletionForms(p => ({...p, [op.name]: { outcome:'', date:'', hours:'' }}))}
- className="font-body text-int text-[10px] hover:underline">Mark complete →</button>
+ className="font-body text-int text-[10px] hover:underline flex items-center gap-1">Mark complete <ArrowRight size={10} /></button>
  ) : (
  <div className="space-y-1.5 slide-in">
  <select value={completionForms[op.name]?.outcome || ''} onChange={e => setCompletionForms(p => ({...p, [op.name]: {...p[op.name], outcome: e.target.value}}))}
@@ -204,7 +203,7 @@ export default function HandoffIQ() {
  )}
  {trainingCompletions[op.name] && (
  <div className="flex items-center gap-1 mt-2 font-body text-ok text-[10px] slide-in">
- <svg className="w-3 h-3 stroke-ok flex-shrink-0" fill="none" strokeWidth={2} viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+ <Check size={12} strokeWidth={2} className="text-ok flex-shrink-0" />
  {trainingCompletions[op.name].outcome} · {trainingCompletions[op.name].date} · {trainingCompletions[op.name].hours}h
  </div>
  )}
@@ -294,9 +293,7 @@ export default function HandoffIQ() {
  {/* Complete — both parties signed */}
  {signed && handoffAccepted && (
  <div className="flex items-center gap-3 px-5 py-3 bg-ok/10 border-b border-ok/20 flex-shrink-0">
- <svg className="w-3.5 h-3.5 stroke-ok flex-shrink-0" fill="none" strokeWidth={2.5} viewBox="0 0 24 24">
- <polyline points="20 6 9 17 4 12" />
- </svg>
+ <Check size={12} strokeWidth={2} className="text-ok flex-shrink-0" />
  <span className="font-body text-ok text-[12px]">
  Handoff complete · Signed: D. Kowalski (outgoing) · M. Santos (incoming) · 14:02 · April 16, 2026
  </span>
@@ -344,7 +341,7 @@ export default function HandoffIQ() {
  </button>
  ) : (
  <div className="flex items-center gap-1 font-body text-ok text-[10px] slide-in">
- <svg className="w-3 h-3 stroke-ok flex-shrink-0" fill="none" strokeWidth={2} viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+ <Check size={12} strokeWidth={2} className="text-ok flex-shrink-0" />
  Acknowledged by {op.name} · {operatorAcknowledgments[op.name].time}
  </div>
  )}
@@ -368,7 +365,7 @@ export default function HandoffIQ() {
  <div className="p-4 pl-2 space-y-1.5">
  <p className="font-body text-ink font-medium text-[13px]">{c.title}</p>
  <p className="font-body text-ink2 text-[12px] leading-relaxed">{c.desc}</p>
- {c.evidence && <p className="font-body text-ghost text-[11px]">▸ {c.evidence}</p>}
+ {c.evidence && <p className="font-body text-ghost text-[11px] flex items-start gap-1"><ChevronRight size={11} className="flex-shrink-0 mt-px" />{c.evidence}</p>}
  {c.events && c.events.map((e, j) => (
  <div key={j} className="flex gap-2 font-body text-[11px]">
  <span className=" text-ghost flex-shrink-0">{e.time}</span>
@@ -395,9 +392,7 @@ export default function HandoffIQ() {
   badge={<Urg level="warn">1 intervention required</Urg>} />
   {scheduleData.days.flatMap(day => day.conflicts.map((issue, j) => ({ date: day.date, issue, key: `${day.date}-${j}` }))).map(c => (
   <div key={c.key} className="flex items-start gap-2 px-4 py-2 border-b border-rule2 bg-danger/[0.03]">
-   <svg className="w-3.5 h-3.5 flex-shrink-0 mt-0.5 stroke-danger" fill="none" strokeWidth={2} viewBox="0 0 24 24">
-   <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
-   </svg>
+   <AlertTriangle size={14} strokeWidth={2} className="text-warn flex-shrink-0" />
    <div>
    <span className="font-body font-medium text-[12px] text-danger">{c.date}</span>
    <div className="font-body text-ghost text-[10px] mt-0.5">{c.issue}</div>
@@ -433,7 +428,7 @@ export default function HandoffIQ() {
  { tone: 'danger', text: 'TS-8811 COA gap unresolved — production start remains blocked. Request COA from ConAgra immediately on shift start.' },
  ].map((item, i) => (
  <div key={i} className={`flex items-start gap-2 px-3 py-2 mb-2 border-l-2 ${item.tone === 'danger' ? 'border-l-danger bg-danger/[0.03]' : 'border-l-warn bg-warn/[0.02]'}`}>
- <span className={`font-body text-[11px] flex-shrink-0 mt-px ${item.tone === 'danger' ? 'text-danger' : 'text-warn'}`}>▸</span>
+ <ChevronRight size={11} className={`flex-shrink-0 mt-px ${item.tone === 'danger' ? 'text-danger' : 'text-warn'}`} />
  <span className="font-body text-ink2 text-[11px] leading-relaxed">{item.text}</span>
  </div>
  ))}
@@ -457,7 +452,7 @@ export default function HandoffIQ() {
  {signed && handoffAccepted && (
  <div className="px-5 py-3 bg-ok/10 border-t border-rule2 flex items-center gap-3">
  <div className="w-8 h-8 flex items-center justify-center flex-shrink-0 bg-ok/20">
- <svg className="w-4 h-4 stroke-ok" fill="none" strokeWidth={2.5} viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+ <Check size={12} strokeWidth={2} className="text-ok flex-shrink-0" />
  </div>
  <div className="font-body text-ok text-[12px]">
  Handoff complete · D. Kowalski signed off · M. Santos accepted · 14:02 · April 16, 2026

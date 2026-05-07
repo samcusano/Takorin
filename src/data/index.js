@@ -99,6 +99,56 @@ export const shiftData = {
   pilotLog: ['ok','ok','miss','ok','ok','ok','part','ok','ok','ok','miss','ok','ok','ok','part','ok','ok','miss','ok','ok','ok','ok','ok','miss','ok','ok','ok','part'],
 }
 
+export const line6Data = {
+  line: 'Line 6',
+  score: 42,
+  supervisor: 'B. Petrov',
+  stats: [
+    { label:'Checklist completion', value:'100%', sub:'11 of 11 cleared', fill:100, tone:'ok' },
+    { label:'Qualified staffing', value:'89%', sub:'16 of 18 certified', fill:89, tone:'ok' },
+    { label:'Machine readiness', value:'97%', sub:'All stations checked', fill:97, tone:'ok' },
+    { label:'Current OEE', value:'—', sub:'Shift in progress', fill:0, tone:'muted' },
+  ],
+  findings: [
+    {
+      id:'l6f1', num:'I.', urgency:'warn',
+      source:'HR · Schedule',
+      title:'Novak L2 cert expiry in 8 days — no backup cross-trained',
+      desc:'K. Novak L2 Topping cert expires April 24. No operator on Line 6 is cross-trained at this station. Affects PM crew coverage next week.',
+      evidence:'No scheduling conflict today. Renewal window: 7 days.',
+      actions:['Schedule renewal','Flag for HR'],
+      consequence:'HR flagged · Renewal scheduled · Line 6 PM crew updated',
+    },
+    {
+      id:'l6f2', num:'II.', urgency:'watch',
+      source:'Sensor C-2 · Live',
+      title:'Conveyor C-2 belt tension — monitor this shift',
+      desc:'Belt tension reading 2.4% below baseline for the last 30 min. Within spec, but trending. Flag if it crosses 5%.',
+      evidence:'Same pattern observed 3 weeks prior — resolved with re-tensioning at end of shift.',
+      actions:['Log and monitor','Create maintenance note'],
+      consequence:'Maintenance note created · Flagged for end-of-shift inspection',
+    },
+  ],
+  crew: [
+    { name:'B. Petrov', role:'Supervisor · L4', dots:[1,1,1,1,0] },
+    { name:'K. Novak', role:'Operator · L2', dots:[1,1,0,0,0] },
+    { name:'J. Patel', role:'Operator · L2', dots:[1,1,0,0,0] },
+    { name:'T. Osei', role:'Operator · L1', dots:[1,0,0,0,0] },
+  ],
+  sparkline: [38, 40, 41, 40, 43, 42],
+  signals: [
+    { name:'Oven A · SCADA', sub:'1 min ago', score:97, status:'Healthy', tone:'ok' },
+    { name:'MES · Schedule', sub:'8 min ago', score:94, status:'Healthy', tone:'ok' },
+    { name:'HR · Roster', sub:'06:00 today', score:89, status:'Healthy', tone:'ok' },
+    { name:'Checklists', sub:'Live', score:100, status:'Complete', tone:'ok' },
+  ],
+  agentTimeline: [
+    { time:'06:42', level:'now', event:'Score 42 · shift running clean. All checklists cleared at T+30. No active risk signals.', delta:'0', deltaColor:'text-ok' },
+    { time:'06:30', level:'ok', event:'Score 42. Checklists 11 of 11 cleared. Staffing 89%. Machine readiness 97%.', delta:'0', deltaColor:'text-ok' },
+    { time:'06:12', level:'normal', event:'Score 42. Shift started normally. All pre-conditions met.' },
+  ],
+}
+
 export const handoffData = {
   forecast: [
     { time:'Today\n14:00 PM', score:88, name:'Line 4 · PM — M. Santos', signals:['Staffing 95%:ok','COA 80%:warn','Certs clear:ok'], action:'TS-8811 COA gap carries into PM — resolve before 14:00' },

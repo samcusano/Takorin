@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Check, X, AlertTriangle, Clock, ArrowRight, Wheat, Soup, Milk, Beef, Droplets } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { supplierData, supplierAudits, empResultsHistory } from '../data'
 import { useAppState } from '../context/AppState'
@@ -16,7 +17,7 @@ function CoaPanel({ lot, onClose }) {
  <div className="font-display font-bold text-ink text-base">{lot.ing}</div>
  </div>
  <button type="button" onClick={onClose} aria-label="Close COA panel" className="p-1 text-ghost hover:text-ink transition-colors cursor-pointer">
- <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"/></svg>
+ <X size={14} strokeWidth={2.5} aria-hidden="true" />
  </button>
  </div>
  <div className="flex-1 overflow-y-auto p-5">
@@ -65,8 +66,8 @@ function TraceNode({ label, name, detail, tone, gapMsg, onResolve }) {
  <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 ${
  tone === 'ok' ? 'bg-ok/20' : tone === 'gap' ? 'bg-danger/20' : 'bg-stone3'
  }`}>
- {tone === 'ok' && <svg className="w-3 h-3 stroke-ok" fill="none" strokeWidth={2.5} viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>}
- {tone === 'gap' && <svg className="w-3 h-3 stroke-danger" fill="none" strokeWidth={2.5} viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>}
+ {tone === 'ok' && <Check size={12} strokeWidth={2.5} className="text-ok" />}
+ {tone === 'gap' && <AlertTriangle size={12} strokeWidth={2.5} className="text-danger" />}
  {tone === 'pending' && <div className="w-2 h-2 rounded-full bg-ghost" />}
  </div>
  <div className="flex-1">
@@ -75,10 +76,10 @@ function TraceNode({ label, name, detail, tone, gapMsg, onResolve }) {
  <div className="font-body text-ghost text-[10px]">{detail}</div>
  {gapMsg && (
  <div className="font-body text-danger text-[10px] mt-1 flex items-start gap-1">
- <span>⚠</span><span>{gapMsg}</span>
+ <AlertTriangle size={11} strokeWidth={2} className="text-danger flex-shrink-0 mt-0.5" /><span>{gapMsg}</span>
  </div>
  )}
- {onResolve && <button type="button" onClick={onResolve} className="font-body text-int text-[10px] mt-1 hover:underline">Go to Data Readiness →</button>}
+ {onResolve && <button type="button" onClick={onResolve} className="font-body text-int text-[10px] mt-1 hover:underline flex items-center gap-1">Go to Data Readiness <ArrowRight size={10} /></button>}
  </div>
  </div>
  )
@@ -101,6 +102,15 @@ const networkIntel = {
  'Prairie Farms': { percentile: 55, plants: 6, note: null, tone: 'warn' },
 }
 
+
+const FOOD_ICONS = {
+ 'Wheat flour': Wheat,
+ 'Tomato sauce': Soup,
+ 'Mozzarella': Milk,
+ 'Pepperoni': Beef,
+ 'Canola oil': Droplets,
+}
+
 export default function SupplierIQ() {
  const d = supplierData
  const { coaRequested, setCoaRequested, rfqSent, setRfqSent, readinessResolved } = useAppState()
@@ -118,35 +128,7 @@ export default function SupplierIQ() {
 
  const side = (
  <>
- {/* Supplier performance */}
- <SP title="Supplier performance" sub="On-time + compliance · last audit">
- {d.suppliers.map((s, i) => {
- const audit = supplierAudits[s.name]
- return (
- <div key={i} className={`border-b border-rule last:border-b-0 ${audit?.needsAction ? 'bg-danger/[0.02]' : ''}`}>
- <div className="flex items-center gap-2 px-4 py-2 hover:bg-stone3 transition-colors">
- <span className="display-num text-[11px] text-ghost w-4">{s.rank}</span>
- <span className="font-body font-medium text-ink text-[12px] flex-1">{s.name}</span>
- <span className={`font-body font-medium text-[10px] px-1.5 py-0.5 ${
- s.tierTone === 'ok' ? 'bg-ok/10 text-ok' : s.tierTone === 'danger' ? 'bg-danger/10 text-danger' : 'bg-int/10 text-int'
- }`}>{s.tier}</span>
- <span className={`display-num text-base w-7 text-right ${s.scoreColor}`}>{s.score}</span>
- </div>
- {audit && (
- <div className="px-4 pb-2 flex items-center gap-3 flex-wrap">
- <span className="font-body text-ghost text-[10px]">Last audit: {audit.lastAudit}</span>
- <span className={`font-body font-medium text-[10px] px-1 py-px ${audit.result === 'Approved' ? 'text-ok' : audit.result === 'Conditional' ? 'text-warn' : 'text-danger'}`}>{audit.result}</span>
- {audit.findings > 0 && <span className="font-body text-ghost text-[10px]">{audit.findings} finding{audit.findings > 1 ? 's' : ''}</span>}
- <span className="font-body text-ghost text-[10px]">Next: {audit.nextAudit}</span>
- {audit.needsAction && <span className="font-body text-danger text-[10px]">Re-audit due</span>}
- </div>
- )}
- </div>
- )
- })}
- </SP>
-
- {/* FDA audit */}
+  {/* FDA audit */}
  <SP title="FDA inspection" sub="FSMA 204">
  <div className="flex items-baseline gap-2 px-4 pt-3 pb-2">
  <span className="display-num text-4xl text-warn">18</span>
@@ -158,8 +140,8 @@ export default function SupplierIQ() {
  <div className={`w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 ${
  s.tone === 'ok' ? 'bg-ok/20' : s.tone === 'gap' ? 'bg-danger/20' : 'bg-stone3'
  }`}>
- {s.tone === 'ok' && <svg className="w-2.5 h-2.5 stroke-ok" fill="none" strokeWidth={2.5} viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>}
- {s.tone === 'gap' && <svg className="w-2.5 h-2.5 stroke-danger" fill="none" strokeWidth={2.5} viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>}
+ {s.tone === 'ok' && <Check size={10} strokeWidth={2.5} className="text-ok" />}
+ {s.tone === 'gap' && <X size={10} strokeWidth={2.5} className="text-danger" />}
  {s.tone === 'pend' && <div className="w-1.5 h-1.5 rounded-full bg-ghost" />}
  </div>
  <div className="flex-1 min-w-0">
@@ -210,31 +192,6 @@ export default function SupplierIQ() {
  </div>
  ))}
  </SP>
-
- {/* Margin impact */}
- <SP title="Margin impact" sub="This batch">
- <div className="px-4 py-3 space-y-2.5">
- {[{l:'Prior batch',v:'$0.42/unit',c:'text-ok'},{l:'This batch',v:'$0.48/unit',c:'text-danger'}].map((r,i)=>(
- <div key={i} className="flex justify-between items-baseline">
- <span className="font-body text-muted text-[12px]">{r.l}</span>
- <span className={`display-num text-base ${r.c}`}>{r.v}</span>
- </div>
- ))}
- <div className="h-px bg-rule2" />
- <div className="flex justify-between items-baseline">
- <span className="font-body font-medium text-ink text-[12px]">Compression</span>
- <span className="display-num text-base text-danger">−14.3%</span>
- </div>
- <div className="font-body text-ghost text-[10px] border-t border-dashed border-rule2 pt-2">Driven by ingredient cost increases</div>
- {[{l:'Tomato sauce +14%',v:'−$0.04',pct:100},{l:'Canola oil +8%',v:'−$0.02',pct:57}].map((r,i)=>(
- <div key={i} className="flex items-center gap-2">
- <span className="font-body text-ghost text-[10px] flex-1">{r.l}</span>
- <div className="w-14 h-1 bg-rule2 flex-shrink-0"><div className="h-full bg-danger" style={{ width:r.pct+'%' }} /></div>
- <span className="display-num text-[11px] text-danger w-10 text-right">{r.v}</span>
- </div>
- ))}
- </div>
- </SP>
  </>
  )
 
@@ -273,8 +230,7 @@ export default function SupplierIQ() {
  const audit = supplierAudits[s.name]
  return (
  <div key={i} className={`border-b border-rule2 ${audit?.needsAction ? 'bg-danger/[0.02] border-l-2 border-l-danger' : 'border-l-2 border-l-transparent'}`}>
- <div className="grid px-4 py-3" style={{ gridTemplateColumns:'28px 1fr 80px 100px 90px 100px' }}>
- <span className="display-num text-[11px] text-ghost pt-0.5">{s.rank}</span>
+ <div className="grid px-4 py-3" style={{ gridTemplateColumns:'1fr 80px 100px 90px 100px' }}>
  <div>
  <div className="font-body font-medium text-ink text-[13px]">{s.name}</div>
  {audit?.reason && <div className="font-body text-warn text-[10px] mt-0.5">{audit.reason}</div>}
@@ -311,62 +267,66 @@ export default function SupplierIQ() {
  })}
  </>
  )}
- {activeView === 'lots' && (
- <>
- <SecHd tag="Ingredient lots" title="Current batch — COA status, shelf life, delivery" badge={<Urg level="danger">1 blocking · 2 expiring</Urg>} />
- <div className="overflow-x-auto">
- <table className="w-full text-[12px]">
- <thead>
- <tr className="border-b border-rule2 bg-stone2">
- {['Ingredient','Supplier · Lot','PO date','Shelf life','Delivery ETA','COA status','Action'].map(h => (
- <th key={h} className="px-4 py-2 text-left font-body text-ghost text-[10px] font-normal">{h}</th>
- ))}
- </tr>
- </thead>
- <tbody>
- {d.lots.map((lot, i) => (
- <tr key={i} className={`border-b border-rule2 hover:bg-stone2 transition-colors ${lot.urgent ? 'bg-danger/[0.03]' : ''}`}>
- <td className={`px-4 py-3 font-body font-medium ${lot.urgent ? 'text-danger' : 'text-ink'}`}>{lot.ing}</td>
- <td className="px-4 py-3 font-body text-ghost text-[11px]">{lot.supplier}</td>
- <td className="px-4 py-3 font-body text-ghost text-[11px]">{lot.po}</td>
- <td className="px-4 py-3"><ShelfPill days={lot.shelf} tone={lot.shelfTone} useFirst={lot.useFirst} /></td>
- <td className="px-4 py-3">
- <span className={`font-body font-medium text-[11px] ${
- lot.deliveryTone === 'ok' ? 'text-ok' : lot.deliveryTone === 'warn' ? 'text-warn' : lot.deliveryTone === 'int' ? 'text-int' : 'text-ink'
- }`}>{lot.delivery}</span>
- <div className="font-body text-ghost text-[10px] mt-0.5">{lot.deliveryTime}</div>
- </td>
- <td className="px-4 py-3">
- <Chip tone={lot.coaTone === 'ok' ? 'ok' : lot.coaTone === 'danger' ? 'danger' : 'warn'}>{lot.coa}</Chip>
- </td>
- <td className="px-4 py-3">
- {lot.urgent && !coaRequested
- ? <button type="button" onClick={() => setCoaRequested(true)}
- className="font-body font-medium text-[10px] px-2.5 py-1 bg-danger text-white hover:opacity-90 transition-opacity">
- Request now
- </button>
- : lot.urgent && coaRequested
- ? <span className="font-body text-ok text-[11px]">Requested ✓</span>
- : <button
- onClick={() => setCoaViewLot(lot)}
- className="font-body font-medium text-[10px] px-2.5 py-1 bg-stone3 text-ink hover:bg-stone2 transition-colors"
- >
- View COA
- </button>
- }
- </td>
- </tr>
- ))}
- </tbody>
- </table>
- </div>
- {coaRequested && (
- <div className="flex items-center gap-2 px-4 py-2.5 bg-ok/10 border-t border-ok/20 font-body text-ok text-[11px] slide-in">
- <svg className="w-3 h-3 stroke-ok flex-shrink-0" fill="none" strokeWidth={2} viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
- COA request sent to ConAgra · Expected response within 2 hours · Production hold maintained until received
- </div>
- )}
-
+ 
+     {activeView === 'lots' && (
+     <>
+     <SecHd tag="Ingredient lots" title="Current batch — COA status, shelf life, delivery" badge={<Urg level="danger">1 blocking · 2 expiring</Urg>} />
+     {/* Urgency-first sort: urgent lots first, then by shelf life */}
+     {[...d.lots].sort((a,b) => (b.urgent ? 1 : 0) - (a.urgent ? 1 : 0) || a.shelf - b.shelf).map((lot, i) => {
+      const supplierEntry = d.suppliers.find(s => lot.supplier.startsWith(s.name))
+      return (
+      <div key={i} className={`border-b border-rule2 border-l-2 ${
+       lot.urgent ? 'border-l-danger bg-danger/[0.02]' : lot.shelfTone === 'warn' ? 'border-l-warn' : 'border-l-transparent'
+      }`}>
+       <div className="grid px-4 py-3" style={{ gridTemplateColumns: '1fr 90px 90px 120px 90px' }}>
+        {/* Name + supplier */}
+        <div>
+        <div className={`flex items-center gap-1.5 font-body font-medium text-[13px] ${lot.urgent ? 'text-danger' : 'text-ink'}`}>
+         {(() => { const I = FOOD_ICONS[lot.ing]; return I ? <I size={12} strokeWidth={1.75} className="flex-shrink-0 opacity-50" /> : null })()}
+         {lot.ing}
+        </div>
+        <div className="font-body text-ghost text-[10px] mt-0.5">{lot.supplier}</div>
+        </div>
+        {/* COA status */}
+        <div className="flex flex-col justify-center">
+        <Chip tone={lot.coaTone === 'ok' ? 'ok' : lot.coaTone === 'danger' ? 'danger' : 'warn'}>{lot.coa}</Chip>
+        </div>
+        {/* Shelf life */}
+        <div className="flex flex-col justify-center">
+        <ShelfPill days={lot.shelf} tone={lot.shelfTone} useFirst={lot.useFirst} />
+        </div>
+        {/* Delivery */}
+        <div className="flex flex-col justify-center">
+        <div className={`font-body font-medium text-[11px] ${
+         lot.deliveryTone === 'ok' ? 'text-ok' : lot.deliveryTone === 'warn' ? 'text-warn' : lot.deliveryTone === 'int' ? 'text-int' : 'text-ink'
+        }`}>{lot.delivery}</div>
+        <div className="font-body text-ghost text-[10px] mt-0.5">{lot.deliveryTime}</div>
+        </div>
+        {/* Action */}
+        <div className="flex flex-col justify-center items-end">
+        {lot.urgent && !coaRequested
+         ? <button type="button" onClick={() => setCoaRequested(true)}
+          className="font-body font-medium text-[10px] px-2.5 py-1 bg-danger text-white hover:opacity-90 transition-opacity">
+          Request COA
+         </button>
+         : lot.urgent && coaRequested
+         ? <span className="font-body text-ok text-[11px] flex items-center gap-1"><Check size={11} strokeWidth={2} /> Requested</span>
+         : <button type="button" onClick={() => setCoaViewLot(lot)}
+          className="font-body text-[10px] px-2.5 py-1 text-muted hover:text-ink transition-colors">
+          View COA
+         </button>
+        }
+        </div>
+       </div>
+      </div>
+      )
+     })}
+     {coaRequested && (
+      <div className="flex items-center gap-2 px-4 py-2.5 bg-ok/10 border-t border-ok/20 font-body text-ok text-[11px] slide-in">
+      <Check size={12} strokeWidth={2} className="text-ok flex-shrink-0" />
+      COA request sent to ConAgra · Expected response within 2 hours · Production hold maintained until received
+      </div>
+     )}
  {/* FSMA 204 traceability chain */}
  <div className="border-t border-rule2">
  <SecHd tag="FSMA 204 traceability" title="Lot-level chain of custody — Tomato Sauce · TS-8811"
@@ -377,8 +337,8 @@ export default function SupplierIQ() {
  {[{t:'ok',l:'CTE 1'},{t: namingResolved ? 'ok' : 'gap',l:'CTE 2'},{t:'pend',l:'CTE 3'},{t:'pend',l:'CTE 4'}].map((n,i) => (
  <div key={i} className="flex flex-col items-center gap-0.5">
  <div className={`w-4 h-4 rounded-full flex items-center justify-center ${n.t==='ok'?'bg-ok/20':n.t==='gap'?'bg-danger/20':'bg-stone3'}`}>
- {n.t==='ok' && <svg className="w-2 h-2 stroke-ok" fill="none" strokeWidth={3} viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>}
- {n.t==='gap' && <svg className="w-2 h-2 stroke-danger" fill="none" strokeWidth={3} viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>}
+ {n.t==='ok' && <Check size={8} strokeWidth={3} className="text-ok" />}
+ {n.t==='gap' && <X size={8} strokeWidth={3} className="text-danger" />}
  {n.t==='pend' && <div className="w-1.5 h-1.5 rounded-full bg-ghost" />}
  </div>
  <span className="font-body text-ghost text-[8px]">{n.l}</span>
@@ -392,7 +352,7 @@ export default function SupplierIQ() {
  </p>
  </div>
  <div className="flex items-start gap-2 px-4 py-2.5 bg-ok/10 border-b border-rule2">
- <svg className="w-3.5 h-3.5 stroke-ok flex-shrink-0 mt-0.5" fill="none" strokeWidth={2} viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+ <Clock size={14} strokeWidth={2} className="text-ok flex-shrink-0 mt-0.5" />
  <p className="font-body text-ink2 text-[11px]">FSMA 204 requires this chain to be submittable to FDA within <strong className="text-ok not-italic font-semibold">24 hours</strong> of a request. Auto-assembled from existing records.</p>
  </div>
  <div className="px-4 py-2 relative">
@@ -436,7 +396,7 @@ export default function SupplierIQ() {
  </div>
  {rfqSent && (
  <div className="flex items-center gap-2 px-4 py-2.5 border-t border-rule2 bg-ok/10 font-body text-ok text-[11px] slide-in">
- <svg className="w-3 h-3 stroke-ok flex-shrink-0" fill="none" strokeWidth={2} viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+ <Check size={12} strokeWidth={2} className="text-ok flex-shrink-0" />
  RFQ sent to ADM Foods and Sysco for Tomato Sauce · Draft includes current volume, delivery requirements, and price ceiling.
  </div>
  )}

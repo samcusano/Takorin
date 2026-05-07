@@ -1,10 +1,10 @@
-import { useState } from 'react'
-import { NavLink } from 'react-router-dom'
+import { useState, useEffect, useRef } from 'react'
+import { NavLink, useNavigate } from 'react-router-dom'
 import {
  Activity, Handshake, Truck, ClipboardCheck,
  Gauge, BarChart2, FileText, Users, Settings,
  Building2, ChevronRight, Globe2, Bell,
- LayoutDashboard
+ LayoutDashboard, MapPin, ShieldCheck, AlertTriangle,
 } from 'lucide-react'
 import { useAppState } from '../context/AppState'
 import { commandData } from '../data'
@@ -125,10 +125,191 @@ function CommandSurfaceItem() {
  )
 }
 
+
+function PlantDropdown({ triggerRef, onClose, complianceState }) {
+ const dropRef = useRef(null)
+ const [pos, setPos] = useState({ top: 60 })
+ const navigate = useNavigate()
+
+ useEffect(() => {
+  if (triggerRef.current) {
+   const r = triggerRef.current.getBoundingClientRect()
+   setPos({ top: r.top })
+  }
+ }, [triggerRef])
+
+ useEffect(() => {
+  function handleClick(e) {
+   if (
+    dropRef.current && !dropRef.current.contains(e.target) &&
+    triggerRef.current && !triggerRef.current.contains(e.target)
+   ) onClose()
+  }
+  function handleKey(e) { if (e.key === 'Escape') onClose() }
+  document.addEventListener('mousedown', handleClick)
+  document.addEventListener('keydown', handleKey)
+  return () => {
+   document.removeEventListener('mousedown', handleClick)
+   document.removeEventListener('keydown', handleKey)
+  }
+ }, [onClose, triggerRef])
+
+ const complianceTone =
+  complianceState === 'blocked' ? { cls: 'text-danger bg-danger/10', icon: AlertTriangle, label: 'Compliance blocked' }
+  : complianceState === 'attention' ? { cls: 'text-warn bg-warn/10', icon: AlertTriangle, label: 'Needs attention' }
+  : { cls: 'text-ok bg-ok/10', icon: ShieldCheck, label: 'Compliance clear' }
+
+ return (
+  <div
+   ref={dropRef}
+   className="fixed z-50 plant-drop-in"
+   style={{ left: 248, top: Math.max(8, pos.top) }}
+  >
+   {/* Card */}
+   <div className="w-[296px] bg-[#1e1a14] border border-[#3A342E] rounded-2xl shadow-[0_24px_60px_rgba(0,0,0,0.5)] overflow-hidden">
+    <div className="plant-drop-in-content">
+
+     {/* Header */}
+     <div className="flex flex-col items-center text-center px-5 pt-5 pb-4">
+      <div className="w-14 h-14 rounded-2xl bg-[#2A2420] border border-[#3A342E] flex items-center justify-center mb-3 flex-shrink-0">
+       <Building2 size={24} strokeWidth={1.5} className="text-ochre" />
+      </div>
+      <h2 className="font-display font-bold text-stone text-[15px] leading-snug">Salina Campus</h2>
+      <p className="font-body text-ghost text-[11px] mt-0.5">SL-04</p>
+      <div className="flex items-center gap-1 mt-1.5 font-body text-ghost/60 text-[10px]">
+       <MapPin size={9} strokeWidth={2} />
+       <span>Salina, KS · AM shift</span>
+      </div>
+      <div className={`flex items-center gap-1 mt-2 px-2 py-0.5 rounded font-body text-[10px] font-medium ${complianceTone.cls}`}>
+       <complianceTone.icon size={9} strokeWidth={2.5} />
+       {complianceTone.label}
+      </div>
+     </div>
+
+
+     {/* Divider */}
+     <div className="mx-5 h-px bg-[#3A342E]" />
+
+     {/* Network plants */}
+     <div className="px-5 pt-3 pb-4">
+      <p className="font-body text-ghost/40 text-[9px] uppercase tracking-widest mb-2">Network plants</p>
+      {[
+       { name: 'Topeka Plant', id: 'KS-02' },
+       { name: 'Denver Plant', id: 'CO-07' },
+       { name: 'Wichita Plant', id: 'KS-09' },
+      ].map(p => (
+       <div key={p.name} className="flex items-center justify-between py-1.5 opacity-40">
+        <div className="flex items-center gap-2">
+         <div className="w-5 h-5 rounded bg-[#2A2420] flex items-center justify-center flex-shrink-0">
+          <Building2 size={10} strokeWidth={1.75} className="text-ghost" />
+         </div>
+         <span className="font-body text-ghost text-[11px]">{p.name}</span>
+        </div>
+        <span className="font-body text-ghost/60 text-[9px]">Not in pilot</span>
+       </div>
+      ))}
+     </div>
+
+    </div>
+   </div>
+  </div>
+ )
+}
+
+
+// ── UserDropdown ──────────────────────────────────────────────────────────────
+
+function UserDropdown({ triggerRef, onClose, viewingRole, setViewingRole }) {
+ const dropRef = useRef(null)
+ const [pos, setPos] = useState({ top: 60 })
+ const navigate = useNavigate()
+
+ useEffect(() => {
+  if (triggerRef.current) {
+   const r = triggerRef.current.getBoundingClientRect()
+   const estimatedH = 350
+   const top = r.top + estimatedH > window.innerHeight - 8
+    ? Math.max(8, r.bottom - estimatedH)
+    : r.top
+   setPos({ top })
+  }
+ }, [triggerRef])
+
+ useEffect(() => {
+  function handleClick(e) {
+   if (
+    dropRef.current && !dropRef.current.contains(e.target) &&
+    triggerRef.current && !triggerRef.current.contains(e.target)
+   ) onClose()
+  }
+  function handleKey(e) { if (e.key === 'Escape') onClose() }
+  document.addEventListener('mousedown', handleClick)
+  document.addEventListener('keydown', handleKey)
+  return () => {
+   document.removeEventListener('mousedown', handleClick)
+   document.removeEventListener('keydown', handleKey)
+  }
+ }, [onClose, triggerRef])
+
+ const roles = [
+  { id: 'director',         name: 'J. Crocker',  role: 'Plant Director',  route: '/command' },
+  { id: 'supervisor',       name: 'D. Kowalski', role: 'Supervisor · L4', route: '/shift' },
+  { id: 'operator-reyes',   name: 'C. Reyes',    role: 'Operator · L1',   route: '/operator' },
+  { id: 'operator-okonkwo', name: 'P. Okonkwo',  role: 'Operator · L2',   route: '/operator' },
+ ]
+
+ return (
+  <div
+   ref={dropRef}
+   className="fixed z-50 plant-drop-in"
+   style={{ left: 248, top: Math.max(8, pos.top) }}
+  >
+   <div className="w-[280px] bg-[#1e1a14] border border-[#3A342E] rounded-2xl shadow-[0_24px_60px_rgba(0,0,0,0.5)] overflow-hidden" style={{ maxHeight: 'calc(100vh - 24px)' }}>
+    <div className="plant-drop-in-content">
+
+     {/* Header */}
+     <div className="flex flex-col items-center text-center px-5 pt-5 pb-4">
+      <PersonAvatar name="J. Crocker" size={48} />
+      <h2 className="font-display font-bold text-stone text-[15px] leading-snug mt-3">J. Crocker</h2>
+      <p className="font-body text-ghost text-[11px] mt-0.5">Plant Director</p>
+      <p className="font-body text-ghost/50 text-[10px] mt-0.5">Salina Campus · SL-04</p>
+     </div>
+
+     {/* Divider */}
+     <div className="mx-5 h-px bg-[#3A342E]" />
+
+     {/* Viewing as */}
+     <div className="px-5 pt-3 pb-4">
+      <p className="font-body text-ghost/40 text-[9px] uppercase tracking-widest mb-2">Viewing as</p>
+      {roles.map(r => (
+       <button key={r.id} type="button"
+        onClick={() => { setViewingRole(r.id); navigate(r.route); onClose() }}
+        className="flex items-center gap-2.5 w-full py-1.5 group"
+       >
+        <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 transition-colors ${viewingRole === r.id ? 'bg-ochre' : 'bg-[#3A342E] group-hover:bg-[#5A4A3E]'}`} />
+        <PersonAvatar name={r.name} size={20} />
+        <div className="flex-1 text-left min-w-0">
+         <div className={`font-body text-[11px] font-medium truncate transition-colors ${viewingRole === r.id ? 'text-stone' : 'text-ghost group-hover:text-stone/80'}`}>{r.name}</div>
+         <div className="font-body text-ghost/40 text-[9px]">{r.role}</div>
+        </div>
+        {viewingRole === r.id && <span className="font-body text-ochre text-[9px] flex-shrink-0">Active</span>}
+       </button>
+      ))}
+     </div>
+
+    </div>
+   </div>
+  </div>
+ )
+}
+
 export default function Sidebar() {
  const [plantOpen, setPlantOpen] = useState(false)
+ const plantTriggerRef = useRef(null)
+ const [userOpen, setUserOpen] = useState(false)
+ const userTriggerRef = useRef(null)
  const [toast, setToast] = useState(null)
- const { blockingEvidenceUploaded, allergenOverride, checklistSigned, nearMisses, maintenanceTickets, notifPanelOpen, setNotifPanelOpen } = useAppState() || {}
+ const { blockingEvidenceUploaded, allergenOverride, checklistSigned, nearMisses, maintenanceTickets, notifPanelOpen, setNotifPanelOpen, viewingRole, setViewingRole } = useAppState() || {}
 
  const allergenSigned = checklistSigned?.['allergen'] || !!allergenOverride
  const complianceState = !blockingEvidenceUploaded ? 'blocked' : !allergenSigned ? 'attention' : 'clear'
@@ -165,37 +346,32 @@ export default function Sidebar() {
  </div>
 
  {/* Facility */}
- <button type="button"
- onClick={() => setPlantOpen(p => !p)}
- className="flex items-center gap-2.5 px-4 py-3 border-b border-sidebar-border w-full text-left hover:bg-sidebar2 transition-colors"
+ <button
+  ref={plantTriggerRef}
+  type="button"
+  onClick={() => setPlantOpen(p => !p)}
+  className="flex items-center gap-2.5 px-4 py-3 border-b border-sidebar-border w-full text-left hover:bg-sidebar2 transition-colors"
  >
- <div className="w-8 h-8 rounded-full bg-sidebar2 border border-sidebar-border flex items-center justify-center flex-shrink-0">
- <Building2 size={15} className="text-ghost" strokeWidth={1.75} />
- </div>
- <div className="flex-1 min-w-0">
- <div className="font-body text-stone text-[13px] font-medium truncate">Salina Campus</div>
- <div className="font-body text-ghost text-[10px]">Plant ID SL-04</div>
- </div>
- <ChevronRight
- size={13}
- className={`text-ghost flex-shrink-0 transition-transform duration-150 ${plantOpen ? 'rotate-90' : ''}`}
- />
+  <div className="w-8 h-8 rounded-full bg-sidebar2 border border-sidebar-border flex items-center justify-center flex-shrink-0">
+  <Building2 size={15} className="text-ghost" strokeWidth={1.75} />
+  </div>
+  <div className="flex-1 min-w-0">
+  <div className="font-body text-stone text-[13px] font-medium truncate">Salina Campus</div>
+  <div className="font-body text-ghost text-[10px]">Plant ID SL-04</div>
+  </div>
+  <ChevronRight
+  size={13}
+  className={`text-ghost flex-shrink-0 transition-transform duration-200 ${plantOpen ? 'rotate-90' : ''}`}
+  />
  </button>
 
- {/* Plant switcher dropdown */}
+ {/* Plant dropdown — floats right of the sidebar */}
  {plantOpen && (
- <div className="mx-3 mb-1 border border-sidebar-border bg-sidebar slide-in">
- <div className="flex items-center justify-between px-3 py-2 bg-sidebar2">
- <span className="font-body font-medium text-stone text-[11px]">Salina Campus</span>
- <span className="font-body text-[9px] text-ok bg-ok/10 px-1.5 py-0.5">Active</span>
- </div>
- {['Topeka Plant', 'Denver Plant', 'Wichita Plant'].map(p => (
- <div key={p} className="flex items-center justify-between px-3 py-2 border-t border-sidebar-border opacity-50">
- <span className="font-body text-[#A8A098] text-[11px]">{p}</span>
- <span className="font-body text-ghost text-[9px]">Not in pilot</span>
- </div>
- ))}
- </div>
+  <PlantDropdown
+   triggerRef={plantTriggerRef}
+   onClose={() => setPlantOpen(false)}
+   complianceState={complianceState}
+  />
  )}
 
  {/* Nav */}
@@ -249,13 +425,29 @@ export default function Sidebar() {
  </div>
 
  {/* User */}
- <div className="flex items-center gap-2.5 px-4 py-3 border-t border-sidebar-border">
- <PersonAvatar name="J. Crocker" size={28} />
- <div>
- <div className="font-body text-stone text-[12px] font-medium">J. Crocker</div>
- <div className="font-body text-ghost text-[10px]">Plant Director</div>
- </div>
- </div>
+ <button
+  ref={userTriggerRef}
+  type="button"
+  onClick={() => setUserOpen(p => !p)}
+  className="flex items-center gap-2.5 px-4 py-3 border-t border-sidebar-border w-full text-left hover:bg-sidebar2 transition-colors"
+ >
+  <PersonAvatar name="J. Crocker" size={28} />
+  <div className="flex-1 min-w-0">
+  <div className="font-body text-stone text-[12px] font-medium">J. Crocker</div>
+  <div className="font-body text-ghost text-[10px]">
+   {viewingRole === 'supervisor' ? <span className="text-ochre">Viewing as Kowalski</span> : viewingRole === 'operator-reyes' ? <span className="text-ochre">Viewing as C. Reyes</span> : viewingRole === 'operator-okonkwo' ? <span className="text-ochre">Viewing as P. Okonkwo</span> : 'Plant Director'}
+  </div>
+  </div>
+  <ChevronRight size={13} className={`text-ghost flex-shrink-0 transition-transform duration-200 ${userOpen ? 'rotate-90' : ''}`} />
+ </button>
+ {userOpen && (
+  <UserDropdown
+   triggerRef={userTriggerRef}
+   onClose={() => setUserOpen(false)}
+   viewingRole={viewingRole || 'director'}
+   setViewingRole={setViewingRole || (() => {})}
+  />
+ )}
 
  {/* Toast */}
  {toast && (

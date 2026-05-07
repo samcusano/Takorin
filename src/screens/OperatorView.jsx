@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Flag } from 'lucide-react'
 import { handoffData } from '../data'
 import { useAppState } from '../context/AppState'
 import { SecHd, Urg, SP, ActionBanner, PersonAvatar } from '../components/UI'
@@ -15,8 +16,14 @@ const SAFETY_CONTEXT = {
  'F. Adeyemi': 'Zone 1 environmental swab due today — Sauce Dosing area. Log result before end of shift.',
 }
 
-export default function OperatorView() {
- const [selected, setSelected] = useState('C. Reyes')
+const ROLE_TO_OPERATOR = {
+ 'operator-reyes': 'C. Reyes',
+ 'operator-okonkwo': 'P. Okonkwo',
+}
+
+export default function OperatorView({ role }) {
+ const defaultOp = (role && ROLE_TO_OPERATOR[role]) || 'C. Reyes'
+ const [selected, setSelected] = useState(defaultOp)
  const { taskAssignments, trainingPlans, trainingCompletions, flaggedItems, checklistSigned, nearMisses, operatorAcknowledgments } = useAppState()
 
  const op = OPERATORS.find(o => o.name === selected)
@@ -88,7 +95,7 @@ export default function OperatorView() {
  <SecHd tag="Flagged items" title="Items you could not complete this shift" badge={<Urg level="warn">{myFlags.length} flagged</Urg>} />
  {myFlags.map((f, i) => (
  <div key={i} className="flex items-start gap-2.5 px-4 py-3.5 border-b border-rule2 last:border-b-0 bg-warn/[0.02]">
- <span className="font-body text-warn text-[14px] flex-shrink-0">⚑</span>
+ <Flag size={13} strokeWidth={2} className="text-warn flex-shrink-0 mt-0.5" />
  <div>
  <div className="font-body font-medium text-ink text-[14px]">{f.key}</div>
  <div className="font-body text-warn text-[11px]">{f.reason}</div>
