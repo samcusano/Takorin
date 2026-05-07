@@ -3,6 +3,11 @@ import { readinessData } from '../data'
 
 const Ctx = createContext(null)
 
+export const PLANTS = {
+ sl: { id:'sl', name:'Salina Campus', code:'SL-04', region:'Salina, KS',  director:'J. Crocker',  readinessScore:64, complianceState:'blocked' },
+ ks: { id:'ks', name:'Wichita Plant', code:'KS-09', region:'Wichita, KS', director:'T. Okonkwo',  readinessScore:88, complianceState:'clear'   },
+}
+
 export function AppStateProvider({ children }) {
  const [shiftActed, setShiftActed] = useState({})
  const [handoffSigned, setHandoffSigned] = useState(false)
@@ -28,6 +33,7 @@ export function AppStateProvider({ children }) {
  const [operatorAcknowledgments, setOperatorAcknowledgments] = useState({})
  const [notifPanelOpen, setNotifPanelOpen] = useState(false)
  const [commandAcknowledged, setCommandAcknowledged] = useState(new Set())
+ const [currentPlant, setCurrentPlant] = useState(PLANTS.sl)
  const [viewingRole, setViewingRole] = useState('director')
  const acknowledgeCommand = (id) => setCommandAcknowledged(prev => new Set([...prev, id]))
  const [activityLog, setActivityLog] = useState([
@@ -68,6 +74,7 @@ export function AppStateProvider({ children }) {
  notifPanelOpen, setNotifPanelOpen,
  commandAcknowledged, acknowledgeCommand,
  activityLog, logActivity,
+ currentPlant, setCurrentPlant,
  viewingRole, setViewingRole,
  }}>
  {children}

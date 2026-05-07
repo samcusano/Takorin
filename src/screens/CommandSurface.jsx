@@ -150,7 +150,7 @@ function UndoToast({ entries, onUndo }) {
 // ── Main screen ───────────────────────────────────────────────────────────────
 
 export default function CommandSurface() {
- const { commandAcknowledged, acknowledgeCommand, logActivity } = useAppState()
+ const { commandAcknowledged, acknowledgeCommand, logActivity, currentPlant } = useAppState()
  const [pendingRemoval, setPendingRemoval] = useState(new Map())
 
  const handleAcknowledge = (id, title, moduleLabel) => {
@@ -197,7 +197,7 @@ export default function CommandSurface() {
  <ActionBanner
  tone={bannerTone}
  headline={bannerHeadline}
- body={`${facility.name} · ${facility.user.name} · ${shiftData.time}`}
+ body={`${currentPlant?.name || facility.name} · ${facility.user.name} · ${shiftData.time}`}
  />
 
  {/* Stats bar — shift context */}

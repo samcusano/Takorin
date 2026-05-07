@@ -2,11 +2,11 @@ import { useState, useEffect, useRef } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import {
  Activity, Handshake, Truck, ClipboardCheck,
- Gauge, BarChart2, FileText, Users, Settings,
+ Gauge,
  Building2, ChevronDown, Globe2, Bell,
  LayoutDashboard, MapPin, ShieldCheck, AlertTriangle,
 } from 'lucide-react'
-import { useAppState } from '../context/AppState'
+import { useAppState, PLANTS } from '../context/AppState'
 import { commandData } from '../data'
 import { PersonAvatar } from './UI'
 
@@ -20,12 +20,6 @@ const foundation = [
  { id:'readiness', label:'Data Readiness', path:'/readiness', icon:Gauge, badge:'64', badgeType:'score' },
  { id:'network', label:'Network View', path:'/network', icon:Globe2, badge:null },
  { id:'notifications', label:'Notifications', path:'/notifications', icon:Bell, badge:null, dynamic:true },
-]
-const plant = [
- { label:'Analytics', icon:BarChart2, disabled:true },
- { label:'Documents', icon:FileText, disabled:true },
- { label:'Workforce', icon:Users, disabled:true },
- { label:'Settings', icon:Settings, disabled:true },
 ]
 
 const accentMap = {
@@ -68,7 +62,7 @@ function SideItem({ to, icon: Icon, label, badge, badgeType, disabled, id, onDis
  `flex items-center gap-3 px-4 py-2.5 text-sm transition-colors duration-100 border-l-2 ` +
  (isActive
  ? `border-ochre bg-ochre/10 text-stone font-medium`
- : `border-transparent text-[#A8A098] hover:bg-sidebar2 hover:text-stone`)
+ : `border-transparent text-[#A8A098] hover:bg-sidebar2 hover:text-white`)
  }
  >
  {({ isActive }) => (<>
@@ -102,7 +96,7 @@ function CommandSurfaceItem() {
  `flex items-center gap-3 px-4 py-3 text-sm transition-colors duration-100 border-l-2 border-b border-sidebar-border ` +
  (isActive
  ? `border-l-ochre bg-ochre/10 text-stone font-medium`
- : `border-l-transparent text-[#A8A098] hover:bg-sidebar2 hover:text-stone`)
+ : `border-l-transparent text-[#A8A098] hover:bg-sidebar2 hover:text-white`)
  }
  >
  {({ isActive }) => (<>
@@ -126,7 +120,13 @@ function CommandSurfaceItem() {
 }
 
 
-function PlantDropdown({ triggerRef, onClose, complianceState }) {
+const AVAILABLE_PLANTS = [PLANTS.sl, PLANTS.ks]
+const DISABLED_PLANTS = [
+ { name: 'Topeka Plant', code: 'KS-02' },
+ { name: 'Denver Plant', code: 'CO-07' },
+]
+
+function PlantDropdown({ triggerRef, onClose, complianceState, currentPlant, setCurrentPlant }) {
  const dropRef = useRef(null)
  const [pos, setPos] = useState({ top: 60 })
  const navigate = useNavigate()
@@ -174,11 +174,11 @@ function PlantDropdown({ triggerRef, onClose, complianceState }) {
       <div className="w-14 h-14 rounded-2xl bg-[#2A2420] border border-[#3A342E] flex items-center justify-center mb-3 flex-shrink-0">
        <Building2 size={24} strokeWidth={1.5} className="text-ochre" />
       </div>
-      <h2 className="font-display font-bold text-stone text-[15px] leading-snug">Salina Campus</h2>
-      <p className="font-body text-ghost text-[11px] mt-0.5">SL-04</p>
+      <h2 className="font-display font-bold text-stone text-[15px] leading-snug">{currentPlant.name}</h2>
+      <p className="font-body text-ghost text-[11px] mt-0.5">{currentPlant.code}</p>
       <div className="flex items-center gap-1 mt-1.5 font-body text-ghost/60 text-[10px]">
        <MapPin size={9} strokeWidth={2} />
-       <span>Salina, KS · AM shift</span>
+       <span>{currentPlant.region} · AM shift</span>
       </div>
       <div className={`flex items-center gap-1 mt-2 px-2 py-0.5 rounded font-body text-[10px] font-medium ${complianceTone.cls}`}>
        <complianceTone.icon size={9} strokeWidth={2.5} />
@@ -193,11 +193,29 @@ function PlantDropdown({ triggerRef, onClose, complianceState }) {
      {/* Network plants */}
      <div className="px-5 pt-3 pb-4">
       <p className="font-body text-ghost/40 text-[9px] uppercase tracking-widest mb-2">Network plants</p>
-      {[
-       { name: 'Topeka Plant', id: 'KS-02' },
-       { name: 'Denver Plant', id: 'CO-07' },
-       { name: 'Wichita Plant', id: 'KS-09' },
-      ].map(p => (
+      {AVAILABLE_PLANTS.map(p => {
+       const isActive = currentPlant.id === p.id
+       return (
+        <button
+         key={p.id}
+         type="button"
+         onClick={() => { if (!isActive) { setCurrentPlant(p); onClose() } }}
+         className={`flex items-center justify-between w-full py-1.5 ${isActive ? 'cursor-default' : 'hover:opacity-80 transition-opacity'}`}
+        >
+         <div className="flex items-center gap-2">
+          <div className="w-5 h-5 rounded bg-[#2A2420] flex items-center justify-center flex-shrink-0">
+           <Building2 size={10} strokeWidth={1.75} className={isActive ? 'text-ochre' : 'text-ghost'} />
+          </div>
+          <span className={`font-body text-[11px] ${isActive ? 'text-stone font-medium' : 'text-ghost'}`}>{p.name}</span>
+         </div>
+         {isActive
+          ? <span className="font-body text-ochre text-[9px]">Active</span>
+          : <span className="font-body text-ghost/60 text-[9px]">Switch →</span>
+         }
+        </button>
+       )
+      })}
+      {DISABLED_PLANTS.map(p => (
        <div key={p.name} className="flex items-center justify-between py-1.5 opacity-40">
         <div className="flex items-center gap-2">
          <div className="w-5 h-5 rounded bg-[#2A2420] flex items-center justify-center flex-shrink-0">
@@ -306,10 +324,10 @@ export default function Sidebar() {
  const [userOpen, setUserOpen] = useState(false)
  const userTriggerRef = useRef(null)
  const [toast, setToast] = useState(null)
- const { blockingEvidenceUploaded, allergenOverride, checklistSigned, nearMisses, maintenanceTickets, notifPanelOpen, setNotifPanelOpen, viewingRole, setViewingRole } = useAppState() || {}
+ const { blockingEvidenceUploaded, allergenOverride, checklistSigned, nearMisses, maintenanceTickets, notifPanelOpen, setNotifPanelOpen, viewingRole, setViewingRole, currentPlant, setCurrentPlant } = useAppState() || {}
 
  const allergenSigned = checklistSigned?.['allergen'] || !!allergenOverride
- const complianceState = !blockingEvidenceUploaded ? 'blocked' : !allergenSigned ? 'attention' : 'clear'
+ const complianceState = currentPlant?.id === 'ks' ? 'clear' : (!blockingEvidenceUploaded ? 'blocked' : !allergenSigned ? 'attention' : 'clear')
  const complianceLabel = complianceState === 'blocked' ? 'Blocked' : complianceState === 'attention' ? 'Attention' : 'Clear'
  const complianceColor = complianceState === 'blocked' ? 'text-danger bg-danger/10' : complianceState === 'attention' ? 'text-warn bg-warn/10' : 'text-ok bg-ok/10'
  const notifCount = 3 + (allergenOverride ? 1 : 0) + (nearMisses?.length || 0) + (maintenanceTickets?.filter(t => t.status === 'open').length || 0)
@@ -349,12 +367,12 @@ export default function Sidebar() {
   onClick={() => setPlantOpen(p => !p)}
   className="flex items-center gap-2.5 px-4 py-3 border-b border-sidebar-border w-full text-left hover:bg-sidebar2 transition-colors"
  >
-  <div className="w-8 h-8 rounded-full bg-sidebar2 border border-sidebar-border flex items-center justify-center flex-shrink-0">
+  <div className="w-8 h-8 rounded-full bg-sidebar2 flex items-center justify-center flex-shrink-0">
   <Building2 size={15} className="text-ghost" strokeWidth={1.75} />
   </div>
   <div className="flex-1 min-w-0">
-  <div className="font-body text-stone text-[13px] font-medium truncate">Salina Campus</div>
-  <div className="font-body text-ghost text-[10px]">Plant ID SL-04</div>
+  <div className="font-body text-stone text-[13px] font-medium truncate">{currentPlant?.name || 'Salina Campus'}</div>
+  <div className="font-body text-ghost text-[10px]">Plant ID {currentPlant?.code || 'SL-04'}</div>
   </div>
   <ChevronDown
   size={13}
@@ -368,11 +386,13 @@ export default function Sidebar() {
    triggerRef={plantTriggerRef}
    onClose={() => setPlantOpen(false)}
    complianceState={complianceState}
+   currentPlant={currentPlant || PLANTS.sl}
+   setCurrentPlant={setCurrentPlant || (() => {})}
   />
  )}
 
  {/* Nav */}
- <nav className="flex-1 overflow-y-auto py-2">
+ <nav className="flex-1 overflow-hidden py-2">
  {/* Command Surface — always first */}
  <CommandSurfaceItem />
 
@@ -389,7 +409,7 @@ export default function Sidebar() {
  key={m.id}
  onClick={() => setNotifPanelOpen?.(o => !o)}
  className={`flex items-center gap-3 px-4 py-2.5 text-sm transition-colors duration-100 border-l-2 w-full text-left ${
- notifPanelOpen ? 'border-ochre bg-ochre/10 text-stone font-medium' : 'border-transparent text-[#A8A098] hover:bg-sidebar2 hover:text-stone'
+ notifPanelOpen ? 'border-ochre bg-ochre/10 text-stone font-medium' : 'border-transparent text-[#A8A098] hover:bg-sidebar2 hover:text-white'
  }`}
  >
  <m.icon size={15} strokeWidth={1.75} className="flex-shrink-0" style={notifPanelOpen ? { color: accentMap[m.id] } : {}} />
@@ -400,10 +420,6 @@ export default function Sidebar() {
  <SideItem key={m.id} to={m.path} id={m.id} {...m} badge={m.badge} badgeType={m.badgeType} />
  ))}
 
- <div className="px-4 pt-4 pb-1 text-[10px] tracking-widest uppercase text-ghost font-body font-medium">
- Plant
- </div>
- {plant.map((m, i) => <SideItem key={i} disabled onDisabledClick={showToast} {...m} />)}
  </nav>
 
  {/* Compliance status */}
