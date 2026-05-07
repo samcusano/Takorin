@@ -10,7 +10,7 @@ const CELL_STYLES = {
 export function StatCell({ type = 'so', label, value, sub, pct }) {
  const s = CELL_STYLES[type] || CELL_STYLES.so
  return (
- <div className="bg-stone2 px-4 py-3 flex flex-col gap-1 min-w-0">
+ <div className="bg-stone px-4 py-3 flex flex-col gap-1 min-w-0">
  <div className="text-[10px] font-body text-muted truncate">{label}</div>
  <div className={`font-display text-2xl font-black tracking-tight leading-none ${s.text}`}>
  {value}
@@ -28,7 +28,7 @@ export function StatCell({ type = 'so', label, value, sub, pct }) {
 export default function StatBar({ cells }) {
  return (
  <div
- className="grid gap-px bg-rule border-b border-rule"
+ className="grid gap-px bg-rule2 border-b border-rule2"
  style={{ gridTemplateColumns: `repeat(${cells.length}, 1fr)` }}
  >
  {cells.map((cell, i) => <StatCell key={i} {...cell} />)}

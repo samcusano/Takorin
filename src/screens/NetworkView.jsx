@@ -84,31 +84,33 @@ function PlantCard({ plant, sharedLots }) {
  )
 }
 
-function ContactRow({ plant }) {
+function ContactCard({ plant }) {
  const meta = plantMeta[plant.id]
  const isAtRisk = plant.status === 'at-risk'
  const scoreColor = plant.score >= 80 ? 'text-ok' : plant.score >= 65 ? 'text-warn' : 'text-danger'
  return (
- <div className="flex items-center gap-3 px-4 py-3 border-b border-rule2 last:border-b-0 hover:bg-stone2 transition-colors">
- <PersonAvatar name={meta.director} size={36} />
- <div className="flex-1 min-w-0">
- <div className="flex items-center gap-2 mb-0.5">
- <span className="font-body font-medium text-ink text-[13px]">{meta.director}</span>
- <span className="font-body text-ghost text-[10px]">Plant Director</span>
- </div>
- <div className="flex items-center gap-1">
- <MapPin size={9} strokeWidth={1.5} className="text-ghost" />
- <span className="font-body text-ghost text-[10px]">{meta.region}</span>
- <span className="font-body text-ghost text-[10px] mx-1">·</span>
- <span className="font-body font-medium text-muted text-[10px]">{plant.code}</span>
- </div>
- </div>
- <div className="text-right flex-shrink-0">
- <div className={`display-num text-xl ${scoreColor}`}>{plant.score}</div>
- <div className={`font-body text-[10px] mt-0.5 ${isAtRisk ? 'text-danger' : 'text-ok'}`}>
- {isAtRisk ? 'At risk' : 'Clear'}
- </div>
- </div>
+ <div className={`border border-rule2 border-l-2 ${isAtRisk ? 'border-l-danger bg-danger/[0.02]' : 'border-l-ok bg-stone'}`}>
+  <div className="px-3.5 pt-3.5 pb-2 flex items-start gap-3">
+  <PersonAvatar name={meta.director} size={40} />
+  <div className="flex-1 min-w-0">
+   <div className="font-body font-medium text-ink text-[13px]">{meta.director}</div>
+   <div className="font-body text-ghost text-[11px]">Plant Director</div>
+   <div className="flex items-center gap-1 mt-1">
+   <MapPin size={9} strokeWidth={1.5} className="text-ghost" />
+   <span className="font-body text-ghost text-[10px]">{meta.region}</span>
+   </div>
+  </div>
+  <div className="text-right flex-shrink-0">
+   <div className={`display-num text-2xl ${scoreColor}`}>{plant.score}</div>
+   <div className={`font-body text-[10px] mt-0.5 ${isAtRisk ? 'text-danger' : 'text-ok'}`}>
+   {isAtRisk ? 'At risk' : 'Clear'}
+   </div>
+  </div>
+  </div>
+  <div className="px-3.5 pb-2.5 flex items-center gap-1.5">
+  <span className="font-body text-[9px] px-1.5 py-px bg-stone3 text-muted">{plant.code}</span>
+  {plant.active && <span className="font-body text-[9px] px-1.5 py-px bg-ochre/20 text-ochre">This plant</span>}
+  </div>
  </div>
  )
 }
@@ -236,8 +238,7 @@ export default function NetworkView() {
  </div>
  )}
 
- <div className={`flex-1 min-h-0 overflow-hidden flex flex-col ${!isUnlocked ? 'opacity-60 pointer-events-none select-none' : ''}`}>
- <div className="flex-1 overflow-y-auto">
+ <div className={`flex-1 min-h-0 overflow-y-auto ${!isUnlocked ? 'pointer-events-none' : ''}`}>
 
  {/* Network overview */}
  <div className="grid grid-cols-4 border-b border-rule2">
@@ -273,9 +274,11 @@ export default function NetworkView() {
  {/* Plant contacts */}
  <div className="border-t border-rule2">
  <SecHd tag="Plant contacts" title="Directors across the network" icon={Users} />
+ <div className="grid grid-cols-3 gap-3 p-4">
  {networkData.plants.map(plant => (
- <ContactRow key={plant.id} plant={plant} />
+  <ContactCard key={plant.id} plant={plant} />
  ))}
+ </div>
  </div>
 
  {/* Shared exposure */}
@@ -323,7 +326,6 @@ export default function NetworkView() {
  </div>
  </div>
 
- </div>
  </div>
  </div>
  )

@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react'
-import { shiftData, haccpData, productionRate, crewHoursData } from '../data'
+import { useState, useEffect, useRef } from 'react'
+import { shiftData, line6Data, haccpData, productionRate, crewHoursData } from '../data'
 import {
  Urg, StatCell, SecHd, CaseCard, Layout,
  Btn, ConsequenceNotice, PageHead, ActionBanner, MetricCard, ScoreRing,
  PersonAvatar, Modal, WaveformSparkline, Chip
 } from '../components/UI'
+import { Flag, ChevronRight, ChevronDown, AlertTriangle, Check, X, TrendingDown, RotateCcw } from 'lucide-react'
 import { useAppState } from '../context/AppState'
 
 const CHECKLIST_ITEMS = [
@@ -131,9 +132,7 @@ function OperatorPanel({ name, onClose }) {
  <div className="font-body text-ghost text-[11px]">{meta.station}</div>
  </div>
  <button type="button" onClick={onClose} aria-label="Close operator panel" className="text-ghost hover:text-ink transition-colors p-1 cursor-pointer">
- <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24" aria-hidden="true">
- <path d="M18 6L6 18M6 6l12 12"/>
- </svg>
+ <X size={14} strokeWidth={2.5} aria-hidden="true" />
  </button>
  </div>
 
@@ -159,7 +158,7 @@ function OperatorPanel({ name, onClose }) {
  ) : myTasks.map((t, i) => (
  <div key={i} className={`flex items-center gap-3 px-4 py-3 border-b border-rule2 last:border-b-0 ${t.done ? 'opacity-50' : ''}`}>
  <div className={`w-4 h-4 rounded-full flex-shrink-0 flex items-center justify-center ${t.done ? 'bg-ok' : 'border-2 border-rule2'}`}>
- {t.done && <svg className="w-2.5 h-2.5 stroke-white" fill="none" strokeWidth={3} viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>}
+ {t.done && <Check size={10} strokeWidth={3} className="text-white" />}
  </div>
  <div className="flex-1">
  <div className={`font-body font-medium text-[12px] ${t.done ? 'line-through text-ghost' : 'text-ink'}`}>{t.label}</div>
@@ -174,7 +173,7 @@ function OperatorPanel({ name, onClose }) {
  <div className="px-4 py-2 border-b border-rule2 bg-stone2 font-body text-muted text-[10px]">Flagged items</div>
  {myFlags.map((f, i) => (
  <div key={i} className="flex gap-2.5 px-4 py-3 border-b border-rule2 last:border-b-0 bg-warn/[0.02]">
- <span className="text-warn text-[13px] flex-shrink-0">⚑</span>
+ <Flag size={13} strokeWidth={2} className="text-warn flex-shrink-0 mt-0.5" />
  <div>
  <div className="font-body font-medium text-ink text-[12px]">{f.key}</div>
  <div className="font-body text-warn text-[10px]">{f.reason}</div>
@@ -212,7 +211,7 @@ function OperatorPanel({ name, onClose }) {
  ))}
  {completion ? (
  <div className={`flex items-center gap-1 pt-2 border-t border-rule font-body text-[11px] ${completion.outcome === 'Passed' ? 'text-ok' : 'text-warn'}`}>
- <svg className="w-3 h-3 stroke-current flex-shrink-0" fill="none" strokeWidth={2} viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+ <Check size={12} strokeWidth={2} className="stroke-current flex-shrink-0" />
  {completion.outcome} · {completion.date} · {completion.hours}h
  </div>
  ) : (
@@ -248,9 +247,7 @@ function CrewRow({ m, onView }) {
  <div key={i} className={`w-2 h-2 ${d ? 'bg-ochre' : 'bg-rule2'}`} />
  ))}
  </div>
- <button type="button" onClick={onView} className="font-body text-[10px] text-muted hover:text-ink px-1.5 py-0.5 hover:bg-stone3 transition-colors cursor-pointer">
- Operator view
- </button>
+
  </div>
  </div>
  )
@@ -279,7 +276,7 @@ function Finding({ f, onAct }) {
  <div className="p-4 pl-2 space-y-2">
  <p className="font-body text-ink font-medium text-[13px] leading-snug">{f.title}</p>
  <p className="font-body text-ink2 text-[12px] leading-relaxed">{f.desc}</p>
- <p className="font-body text-ghost text-[11px]">▸ {f.evidence}</p>
+ <p className="font-body text-ghost text-[11px] flex items-start gap-1"><ChevronRight size={11} className="flex-shrink-0 mt-px" />{f.evidence}</p>
  {f.source && (
   <div className="flex gap-1.5">
    <Chip tone="muted">{f.source}</Chip>
@@ -319,6 +316,98 @@ function Finding({ f, onAct }) {
  )
 }
 
+
+// ── CrewAvatarStack ────────────────────────────────────────────────────────────
+
+function CrewAvatarStack({ crew, onSelect }) {
+ const MAX_SHOWN = 4
+ const shown = crew.slice(0, MAX_SHOWN)
+ const extra = crew.length - MAX_SHOWN
+ return (
+  <div className="flex items-center">
+   {shown.map((m, i) => (
+    <button key={m.name} type="button"
+     onClick={() => onSelect(m.name)}
+     title={m.name}
+     className={`relative hover:z-10 transition-transform hover:scale-110 cursor-pointer ${i > 0 ? '-ml-2' : ''}`}
+    >
+     <div className="rounded-full border-2 border-stone2">
+      <PersonAvatar name={m.name} size={34} />
+     </div>
+    </button>
+   ))}
+   {extra > 0 && (
+    <div className="-ml-2 w-[34px] h-[34px] rounded-full border-2 border-stone2 bg-stone3 flex items-center justify-center">
+     <span className="font-body text-ghost text-[10px] font-medium">+{extra}</span>
+    </div>
+   )}
+  </div>
+ )
+}
+
+// ── LineDropdown ───────────────────────────────────────────────────────────────
+
+function LineDropdown({ lines, activeLine, onSelect, triggerRef, onClose }) {
+ const dropRef = useRef(null)
+ const [pos, setPos] = useState({ top: 0, left: 0 })
+
+ useEffect(() => {
+  if (triggerRef.current) {
+   const r = triggerRef.current.getBoundingClientRect()
+   setPos({ top: r.bottom + 4, left: r.left })
+  }
+ }, [triggerRef])
+
+ useEffect(() => {
+  function handleClick(e) {
+   if (
+    dropRef.current && !dropRef.current.contains(e.target) &&
+    triggerRef.current && !triggerRef.current.contains(e.target)
+   ) onClose()
+  }
+  function handleKey(e) { if (e.key === 'Escape') onClose() }
+  document.addEventListener('mousedown', handleClick)
+  document.addEventListener('keydown', handleKey)
+  return () => {
+   document.removeEventListener('mousedown', handleClick)
+   document.removeEventListener('keydown', handleKey)
+  }
+ }, [onClose, triggerRef])
+
+ return (
+  <div ref={dropRef} className="fixed z-50 plant-drop-in" style={{ top: pos.top, left: pos.left }}>
+   <div className="w-[260px] bg-[#1e1a14] border border-[#3A342E] rounded-2xl shadow-[0_24px_60px_rgba(0,0,0,0.5)] overflow-hidden">
+    <div className="plant-drop-in-content">
+     <div className="px-4 py-2.5 border-b border-[#3A342E]">
+      <p className="font-body text-ghost/40 text-[9px] uppercase tracking-widest">Select line</p>
+     </div>
+     {lines.map(line => {
+      const sc = line.score >= 75 ? 'text-danger' : line.score >= 60 ? 'text-warn' : 'text-ok'
+      const zoneLabel = line.score >= 75 ? 'AT RISK' : line.score >= 60 ? 'WATCH' : 'CLEAR'
+      const isActive = line.id === activeLine
+      return (
+       <button key={line.id} type="button"
+        onClick={() => { onSelect(line.id); onClose() }}
+        className="flex items-center justify-between w-full px-4 py-3 border-b border-[#3A342E] last:border-b-0 hover:bg-[#2a2420] transition-colors group"
+       >
+        <div className="text-left">
+         <div className={`font-body text-[12px] font-medium transition-colors ${isActive ? 'text-stone' : 'text-ghost group-hover:text-stone/80'}`}>{line.name}</div>
+         <div className="font-body text-ghost/50 text-[10px] mt-0.5">{line.supervisor} shift</div>
+        </div>
+        <div className="flex items-center gap-2">
+         <span className={`font-body text-[9px] uppercase tracking-widest ${sc}`}>{zoneLabel}</span>
+         <span className={`display-num text-xl ${sc}`}>{line.score}</span>
+         {isActive && <div className="w-1.5 h-1.5 rounded-full bg-ochre flex-shrink-0" />}
+        </div>
+       </button>
+      )
+     })}
+    </div>
+   </div>
+  </div>
+ )
+}
+
 export default function ShiftIQ() {
  const d = shiftData
  const [activeLine, setActiveLine] = useState('l4')
@@ -346,6 +435,8 @@ export default function ShiftIQ() {
  const [showTaskForm, setShowTaskForm] = useState(false)
  const [taskForm, setTaskForm] = useState({ assignee:'', label:'', dueTime:'' })
  const [viewingOperator, setViewingOperator] = useState(null)
+ const [lineDropOpen, setLineDropOpen] = useState(false)
+ const lineTriggerRef = useRef(null)
  const [col1Tab, setCol1Tab] = useState('orders')
 
  const skuContextReady = readinessResolved?.['ctx-0'] && (readinessScore ?? 64) >= 75
@@ -363,8 +454,11 @@ export default function ShiftIQ() {
 
  const countdownFmt = `${String(Math.floor(countdown / 60)).padStart(2, '0')}:${String(countdown % 60).padStart(2, '0')}`
  const activeLined = d.lines.find(l => l.id === activeLine)
- const hasLiveData = activeLine === 'l4'
- const scoreColor = d.score >= 75 ? 'text-danger' : d.score >= 60 ? 'text-warn' : 'text-ok'
+ const hasLiveData = activeLine === 'l4' || activeLine === 'l6'
+ const lineD = activeLine === 'l6' ? line6Data : d
+ const lineScore = activeLine === 'l6' ? line6Data.score : d.score
+ const lineSupervisor = activeLine === 'l6' ? line6Data.supervisor : 'D. Kowalski'
+ const scoreColor = lineScore >= 75 ? 'text-danger' : lineScore >= 60 ? 'text-warn' : 'text-ok'
 
  return (
  <div className="flex flex-col h-full overflow-hidden">
@@ -384,41 +478,52 @@ export default function ShiftIQ() {
  </ActionBanner>
 
  {/* Line switcher */}
- <div className="flex border-b border-rule2 bg-stone2 flex-shrink-0 overflow-x-auto">
- {d.lines.map(line => {
- const sc = line.score >= 75 ? 'text-danger' : line.score >= 60 ? 'text-warn' : 'text-ok'
- const active = activeLine === line.id
- return (
- <button type="button" key={line.id}
- onClick={() => setActiveLine(line.id)}
- className={`flex flex-col items-start px-4 py-2.5 border-b-2 border-r border-rule2 flex-shrink-0 transition-colors cursor-pointer ${
- active ? 'border-b-ochre bg-stone' : 'border-b-transparent hover:bg-stone3'
- }`}>
- <div className="font-body text-ink2 font-medium text-[11px]">{line.name}</div>
- <div className="flex items-baseline gap-1.5 mt-0.5">
- <span className={`font-body font-medium uppercase tracking-widest text-[10px] ${sc}`}>
- {line.score >= 75 ? 'AT RISK' : line.score >= 60 ? 'WATCH' : 'CLEAR'}
- </span>
- <span className={`display-num text-xl leading-none ${sc}`}>{line.score}</span>
- {active && d.confidence < d.rawConfidence && (
-  <span className="font-body text-warn text-[9px]">adj.</span>
- )}
- </div>
- <div className="font-body text-ghost text-[10px] mt-0.5">{line.supervisor}</div>
- </button>
- )
- })}
- </div>
+ {(() => {
+  const al = d.lines.find(l => l.id === activeLine)
+  const sc = al.score >= 75 ? 'text-danger' : al.score >= 60 ? 'text-warn' : 'text-ok'
+  const zone = al.score >= 75 ? 'AT RISK' : al.score >= 60 ? 'WATCH' : 'CLEAR'
+  return (
+   <>
+   <div className="flex items-center gap-3 px-4 py-2.5 border-b border-rule2 bg-stone2 flex-shrink-0">
+    <button
+     ref={lineTriggerRef}
+     type="button"
+     onClick={() => setLineDropOpen(o => !o)}
+     className="flex items-center gap-2 hover:opacity-80 transition-opacity cursor-pointer"
+    >
+     <span className="font-body font-medium text-ink text-[13px]">{al.name}</span>
+     <span className={`font-body font-medium uppercase tracking-widest text-[10px] ${sc}`}>{zone}</span>
+     <span className={`display-num text-xl leading-none ${sc}`}>{al.score}</span>
+     {d.confidence < d.rawConfidence && activeLine === 'l4' && (
+      <span className="font-body text-warn text-[9px]">adj.</span>
+     )}
+     <ChevronDown size={12} className={`text-ghost transition-transform duration-200 ${lineDropOpen ? 'rotate-180' : ''}`} />
+    </button>
+    <span className="font-body text-ghost/50 text-[11px]">·</span>
+    <span className="font-body text-ghost text-[11px]">{lineSupervisor} · {al.supervisor} shift</span>
+   </div>
+   {lineDropOpen && (
+    <LineDropdown
+     lines={d.lines}
+     activeLine={activeLine}
+     onSelect={setActiveLine}
+     triggerRef={lineTriggerRef}
+     onClose={() => setLineDropOpen(false)}
+    />
+   )}
+   </>
+  )
+ })()}
 
  {/* Stat bar */}
  <div className="grid grid-cols-4 border-b border-rule2 bg-stone flex-shrink-0">
- {d.stats.map((s, i) => <StatCell key={i} {...s} />)}
+ {lineD.stats.map((s, i) => <StatCell key={i} {...s} />)}
  </div>
 
  {/* Risk trend strip */}
  <div className="flex items-center gap-4 px-5 py-2.5 border-b border-rule2 bg-stone flex-shrink-0">
   <div className="flex-1 min-w-[80px]">
-  <WaveformSparkline data={d.sparkline} color={d.score >= 75 ? '#D94F2A' : d.score >= 60 ? '#C4920A' : '#3A8A5A'} height={24} />
+  <WaveformSparkline data={lineD.sparkline} color={lineScore >= 75 ? '#D94F2A' : d.score >= 60 ? '#C4920A' : '#3A8A5A'} height={24} />
   </div>
   <div className="flex-shrink-0 text-right">
   <div className="font-body text-ghost text-[10px]">Rising · 06:12–06:42</div>
@@ -428,32 +533,6 @@ export default function ShiftIQ() {
   </div>
  </div>
 
- {/* Mid-shift production strip */}
- <div className="flex items-center gap-5 px-5 py-2.5 border-b border-rule2 bg-stone2 flex-shrink-0 overflow-x-auto">
- <div className="flex items-baseline gap-2">
- <span className="display-num text-xl text-ink">{productionRate.unitsProduced.toLocaleString()}</span>
- <span className="font-body text-ghost text-[11px]">of {productionRate.unitsTarget.toLocaleString()} units · T+{Math.round(productionRate.hoursElapsed * 60)}m</span>
- </div>
- <div className="flex-1 min-w-[120px] max-w-xs">
- <div className="h-1.5 bg-rule2">
- <div className="h-full bg-warn transition-all" style={{ width: Math.round(productionRate.unitsProduced / productionRate.unitsTarget * 100) + '%' }} />
- </div>
- <div className="flex justify-between font-body text-ghost text-[10px] mt-0.5">
- <span>{Math.round(productionRate.unitsProduced / productionRate.unitsTarget * 100)}% of target</span>
- <span>Expected at T+{Math.round(productionRate.hoursElapsed * 60)}m: {Math.round(productionRate.unitsTarget * (productionRate.hoursElapsed / productionRate.hoursTotal)).toLocaleString()}</span>
- </div>
- </div>
- <div className="flex items-baseline gap-1.5">
- <span className="font-body text-ghost text-[10px]">Rate:</span>
- <span className="display-num text-base text-ink">{productionRate.currentRate.toLocaleString()}</span>
- <span className="font-body text-ghost text-[10px]">u/hr</span>
- </div>
- <div className="flex items-baseline gap-1.5">
- <span className="font-body text-ghost text-[10px]">Proj. OEE:</span>
- <span className={`display-num text-base ${productionRate.projectedOEE >= 82 ? 'text-ok' : productionRate.projectedOEE >= 75 ? 'text-warn' : 'text-danger'}`}>{productionRate.projectedOEE}%</span>
- <span className="font-body text-warn text-[10px]">↓ below 82% target</span>
- </div>
- </div>
 
  {/* 3-column layout */}
  <div className="flex flex-1 min-h-0 overflow-hidden">
@@ -467,14 +546,19 @@ export default function ShiftIQ() {
   </div>
   <div className="overflow-y-auto flex-1">
   {[
-   { icon: haccpData.allergenChangeover.required ? '⚠' : '✓', color: haccpData.allergenChangeover.required ? 'text-danger' : 'text-ok',
+   { icon: haccpData.allergenChangeover.required ? 'alert' : 'check', color: haccpData.allergenChangeover.required ? 'text-danger' : 'text-ok',
    text: `Allergen changeover required: ${haccpData.allergenChangeover.from} → ${haccpData.allergenChangeover.to}. Full flush before start.` },
-   { icon: '⚑', color: 'text-warn', text: 'HACCP CCP-3 active — Oven B minimum 185°F for GF-Flatbread. Log any deviation immediately.' },
-   { icon: '↷', color: 'text-warn', text: 'Carry-forward: Sensor A-7 variance at count 4. Escalate at 5.' },
-   { icon: '⚠', color: 'text-warn', text: 'Cert gap: Reyes (L1) assigned to Sauce Dosing (L2 required). Reassign before production.' },
+   { icon: 'flag', color: 'text-warn', text: 'HACCP CCP-3 active — Oven B minimum 185°F for GF-Flatbread. Log any deviation immediately.' },
+   { icon: 'rotate', color: 'text-warn', text: 'Carry-forward: Sensor A-7 variance at count 4. Escalate at 5.' },
+   { icon: 'alert', color: 'text-warn', text: 'Cert gap: Reyes (L1) assigned to Sauce Dosing (L2 required). Reassign before production.' },
   ].map((item, i) => (
    <div key={i} className="flex gap-2.5 px-4 py-3 border-b border-rule2">
-   <span className={`font-body ${item.color} text-[12px] flex-shrink-0 mt-px`}>{item.icon}</span>
+   <span className={`${item.color} flex-shrink-0 mt-0.5`}>
+   {item.icon === 'alert' && <AlertTriangle size={13} strokeWidth={2} />}
+   {item.icon === 'check' && <Check size={13} strokeWidth={2} />}
+   {item.icon === 'flag' && <Flag size={13} strokeWidth={2} />}
+   {item.icon === 'rotate' && <RotateCcw size={13} strokeWidth={2} />}
+   </span>
    <span className="font-body text-ink2 text-[12px] leading-relaxed">{item.text}</span>
    </div>
   ))}
@@ -494,33 +578,33 @@ export default function ShiftIQ() {
  <div className="flex-1 overflow-y-auto border-r border-rule2">
  <div className="border-b border-rule2 bg-stone2 sticky top-0 z-10">
   <div className="flex">
-  {[
-   { id: 'orders', label: 'Orders' },
-   { id: 'tasks', label: pendingTaskCount > 0 ? `Tasks \u00b7 ${pendingTaskCount}` : 'Tasks' },
-  ].map(tab => (
-   <button key={tab.id} type="button"
-   onClick={() => setCol1Tab(tab.id)}
-   className={`px-4 py-2 font-body text-[10px] uppercase tracking-widest font-medium border-b-2 transition-colors cursor-pointer ${
-    col1Tab === tab.id
-    ? 'border-b-ochre text-ink'
-    : 'border-b-transparent text-ghost hover:text-muted'
-   }`}>
-   {tab.label}
-   </button>
-  ))}
+  {(() => {
+   const remainingCount = CHECKLIST_ITEMS.filter(it => !checklistSigned[it.key]).length
+   return [
+    { id: 'orders', label: 'Orders' },
+    { id: 'tasks', label: pendingTaskCount > 0 ? `Tasks \u00b7 ${pendingTaskCount}` : 'Tasks' },
+    { id: 'checklist', label: remainingCount > 0 ? `Checklist \u00b7 ${remainingCount}` : 'Checklist' },
+   ].map(tab => (
+    <button key={tab.id} type="button"
+    onClick={() => setCol1Tab(tab.id)}
+    className={`px-4 py-2 font-body text-[10px] uppercase tracking-widest font-medium border-b-2 transition-colors cursor-pointer ${
+     col1Tab === tab.id ? 'border-b-ochre text-ink' : 'border-b-transparent text-ghost hover:text-muted'
+    }`}>
+    {tab.label}
+    </button>
+   ))
+  })()}
   </div>
  </div>
  {hasLiveData ? (
  <>
  {col1Tab === 'orders' && (
  <>
- {/* Allergen changeover hard block */}
- {!allergenSigned && (
+ {/* Allergen changeover hard block — Line 4 only */}
+ {activeLine === 'l4' && !allergenSigned && (
  <div className="border-b-2 border-b-danger bg-danger/[0.04] px-4 py-3">
  <div className="flex items-start gap-2 mb-3">
- <svg className="w-4 h-4 stroke-danger flex-shrink-0 mt-px" fill="none" strokeWidth={2} viewBox="0 0 24 24">
- <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
- </svg>
+ <AlertTriangle size={16} strokeWidth={2} className="text-danger flex-shrink-0 mt-px" />
  <div>
  <div className="font-body font-medium text-danger text-[12px]">Allergen changeover log unsigned — production start blocked</div>
  <div className="font-body text-danger/80 text-[10px] mt-0.5">
@@ -568,13 +652,13 @@ export default function ShiftIQ() {
  )}
  {allergenOverride && (
  <div className="flex items-center gap-2 px-4 py-2 bg-warn/10 border-b border-warn/20 font-body text-warn text-[10px] slide-in">
- <svg className="w-3 h-3 stroke-warn flex-shrink-0" fill="none" strokeWidth={2} viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+ <Check size={12} strokeWidth={2} className="text-warn flex-shrink-0" />
  Override logged · CAPA auto-created · Director notified · Reason: "{allergenOverride}"
  </div>
  )}
- {checklistSigned['allergen'] && (
+ {activeLine === 'l4' && checklistSigned['allergen'] && (
  <div className="flex items-center gap-2 px-4 py-2 bg-ok/10 border-b border-ok/20 font-body text-ok text-[10px] slide-in">
- <svg className="w-3 h-3 stroke-ok flex-shrink-0" fill="none" strokeWidth={2} viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+ <Check size={12} strokeWidth={2} className="text-ok flex-shrink-0" />
  Allergen changeover log signed — Okonkwo · {checklistSigned['allergen']} · Production start unblocked
  </div>
  )}
@@ -710,6 +794,103 @@ export default function ShiftIQ() {
  </div>
  </>
  )}
+ {col1Tab === 'checklist' && (
+ <div>
+
+  {CHECKLIST_ITEMS.map(item => {
+  const signed = checklistSigned[item.key]
+  const flag = flaggedItems[item.key]
+  const empResult = empSessionResults[item.key]
+  const showEmpForm = item.key === 'emp' && signed && !empResult
+  const showFlagForm = flagForm[item.key]
+  return (
+   <div key={item.key} className={`border-l-2 border-b border-rule2 ${
+    signed ? 'border-l-ok bg-stone' : item.isAllergen && !allergenSigned ? 'border-l-danger bg-danger/[0.03]' : flag ? 'border-l-warn bg-warn/[0.02]' : 'border-l-rule2 bg-stone'
+   }`}>
+   <div className="px-4 py-3">
+    <div className="flex items-start justify-between gap-2 mb-1.5">
+    <p className={`font-body font-medium text-[13px] leading-snug ${signed ? 'line-through text-ghost' : item.isAllergen && !allergenSigned ? 'text-danger' : 'text-ink'}`}>
+     {item.label}
+     {item.isAllergen && !allergenSigned && <span className="ml-1.5 inline-flex items-center gap-0.5 text-[10px] font-medium"><AlertTriangle size={9} strokeWidth={2.5} /> BLOCKING</span>}
+     {flag && <span className="ml-1.5 inline-flex items-center gap-0.5 text-[10px] text-warn font-medium"><Flag size={9} strokeWidth={2.5} /> flagged</span>}
+    </p>
+    {signed && !empResult && item.key !== 'emp' && <span className="font-body text-ok text-[10px] flex items-center gap-0.5 flex-shrink-0"><Check size={10} strokeWidth={2.5} /> {signed}</span>}
+    {signed && item.key === 'emp' && empResult && <span className="font-body text-ok text-[10px] flex items-center gap-0.5 flex-shrink-0"><Check size={10} strokeWidth={2.5} /> {empResult.result === 'negative' ? 'Neg' : 'Pos'} · {signed}</span>}
+    {flag && !signed && <span className="font-body text-warn text-[10px] flex items-center gap-0.5 flex-shrink-0"><Flag size={9} strokeWidth={2.5} /> {flag.reason}</span>}
+    </div>
+    <p className="font-body text-ghost text-[11px] mb-2">{item.operator}</p>
+    {!signed && !flag && (
+    <div className="flex gap-2">
+     <button type="button"
+     onClick={() => setChecklistSigned(p => ({...p, [item.key]: new Date().toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' })}))}
+     className={`font-body font-medium text-[10px] px-2.5 py-1 ${item.isAllergen ? 'bg-danger text-white hover:opacity-90' : 'bg-ink text-stone hover:bg-ink2'} transition-colors`}
+     >Sign</button>
+     <button type="button"
+     onClick={() => setFlagForm(p => ({...p, [item.key]: { reason:'', note:'' }}))}
+     className="font-body text-[10px] px-2 py-1 border border-rule2 text-muted hover:border-ghost transition-colors"
+     >Flag</button>
+    </div>
+    )}
+   </div>
+   {showEmpForm && (
+    <div className="pb-2 px-1 space-y-1.5 slide-in">
+    <div className="font-body text-ghost text-[10px] uppercase tracking-widest">Swab result required</div>
+    <div className="flex gap-2">
+     {['negative','positive'].map(r => (
+     <button type="button" key={r} onClick={() => setEmpForm(p => ({...p, [item.key]: {...p[item.key], result: r}}))}
+      className={`font-body font-medium text-[10px] px-2 py-1 transition-colors ${empForm[item.key]?.result === r ? (r === 'negative' ? 'bg-ok text-white' : 'bg-danger text-white') : 'bg-stone3 text-muted'}`}>
+      {r.charAt(0).toUpperCase() + r.slice(1)}
+     </button>
+     ))}
+     {empForm[item.key]?.result === 'positive' && (
+     <input placeholder="CFU count" type="number"
+      value={empForm[item.key]?.cfu || ''}
+      onChange={e => setEmpForm(p => ({...p, [item.key]: {...p[item.key], cfu: e.target.value}}))}
+      className="w-20 font-body text-ink text-[10px] bg-stone border border-rule px-2 py-0.5" />
+     )}
+    </div>
+    {empForm[item.key]?.result && (
+     <button type="button"
+     onClick={() => {
+      const r = empForm[item.key]
+      setEmpSessionResults(p => ({...p, [item.key]: { result: r.result, cfu: r.cfu, time: checklistSigned[item.key] }}))
+      if (r.result === 'positive') setMaintenanceTickets(p => [...p, { id:`MT-EMP-${Date.now()}`, equipment:'Zone 1 — Sauce Dosing', issue:`Positive EMP swab${r.cfu ? ` · ${r.cfu} CFU` : ''} — deep clean required before next production run`, urgency:'danger', status:'open', requestedBy:'T. Osei', createdAt: checklistSigned[item.key] }])
+     }}
+     className="font-body font-medium text-[10px] px-2.5 py-1 bg-ok text-white hover:opacity-90 transition-opacity"
+     >Log result {empForm[item.key]?.result === 'positive' ? '— auto-CAPA created' : ''}</button>
+    )}
+    </div>
+   )}
+   {showFlagForm && !flag && (
+    <div className="pb-2 px-1 space-y-1.5 slide-in">
+    <select value={flagForm[item.key]?.reason || ''} onChange={e => setFlagForm(p => ({...p, [item.key]: {...p[item.key], reason: e.target.value}}))}
+     className="w-full font-body text-ink text-[10px] bg-stone border border-rule px-2 py-1 cursor-pointer">
+     <option value="">Reason for flag…</option>
+     <option>Equipment malfunction</option>
+     <option>Kit or supplies missing</option>
+     <option>Unsafe condition</option>
+     <option>Other</option>
+    </select>
+    <div className="flex gap-1.5">
+     <button type="button" disabled={!flagForm[item.key]?.reason}
+     onClick={() => {
+      const f = flagForm[item.key]
+      setFlaggedItems(p => ({...p, [item.key]: f}))
+      if (f.reason === 'Equipment malfunction') setMaintenanceTickets(p => [...p, { id:`MT-${Date.now()}`, equipment: item.label, issue: f.reason, urgency:'warn', status:'open', requestedBy: item.operator, createdAt: new Date().toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' }) }])
+      setFlagForm(p => { const n = {...p}; delete n[item.key]; return n })
+     }}
+     className="font-body font-medium text-[10px] px-2.5 py-1 bg-warn text-white disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90 transition-opacity">
+     Flag item
+     </button>
+     <button type="button" onClick={() => setFlagForm(p => { const n = {...p}; delete n[item.key]; return n })} className="font-body text-[10px] text-ghost px-2">Cancel</button>
+    </div>
+    </div>
+   )}
+   </div>
+  )
+  })}
+ </div>
+ )}
  </>
  ) : (
  <EmptyLine name={activeLined.name} />
@@ -725,11 +906,14 @@ export default function ShiftIQ() {
  <>
  {/* Crew */}
  <div className="border-b border-rule2">
- <div className="px-4 py-2 flex justify-between items-baseline">
- <span className="font-body font-medium text-ink text-[12px]">Crew</span>
- <span className="font-body text-ghost text-[10px]">18 workers</span>
+ <div className="px-4 pt-3 pb-2">
+  <div className="flex justify-between items-baseline mb-3">
+   <span className="font-body font-medium text-ink text-[12px]">Crew</span>
+   <span className="font-body text-ghost text-[10px]">18 workers</span>
+  </div>
+  <CrewAvatarStack crew={lineD.crew} onSelect={setViewingOperator} />
  </div>
- {d.crew.map((m, i) => {
+ {lineD.crew.map((m, i) => {
  const haccp = HACCP_BY_STATION[m.role]
  return (
  <div key={i}>
@@ -737,121 +921,6 @@ export default function ShiftIQ() {
  {haccp && (
  <div className="px-4 pb-2 font-body text-ghost text-[10px] leading-relaxed border-b border-rule last:border-b-0">
  {haccp.station} · {haccp.ccp}: {haccp.limit}
- </div>
- )}
- </div>
- )
- })}
- </div>
- {/* Startup dial */}
- <div className="px-4 py-3">
- <div className="flex justify-between items-baseline mb-3">
- <span className="font-body font-medium text-ink text-[12px]">Startup sequence</span>
- <span className="font-body text-ghost text-[10px]">{signedCount} of {CHECKLIST_TOTAL} · T+42</span>
- </div>
- <div className="mb-3">
- <div className="flex items-baseline justify-between mb-1.5">
- <span style={{ fontFamily:'Georgia,serif', fontWeight:800, fontStyle:'', fontSize:30, color: allergenSigned ? '#100F0D' : '#D94F2A', letterSpacing:'-0.02em', lineHeight:1 }}>
- {startupPct}%
- </span>
- <span style={{ fontFamily:'Georgia,serif', fontStyle:'', fontSize:10, color:'#78706A' }}>
- {signedCount} of 11
- </span>
- </div>
- <div style={{ height:8, background:'#D8D2C8' }}>
- <div style={{ height:'100%', width:`${startupPct}%`, background: allergenSigned ? '#C4920A' : '#D94F2A', transition:'width 0.6s ease' }} />
- </div>
- </div>
- <div className="flex items-center gap-1.5 mb-2">
- <div className={`w-2 h-2 ${allergenSigned ? 'bg-warn' : 'bg-danger'}`} />
- <span className={`font-body text-[10px] font-medium ${allergenSigned ? 'text-warn' : 'text-danger'}`}>
- {CHECKLIST_ITEMS.filter(it => !checklistSigned[it.key]).length} remaining
- </span>
- </div>
- {CHECKLIST_ITEMS.map(item => {
- const signed = checklistSigned[item.key]
- const flag = flaggedItems[item.key]
- const empResult = empSessionResults[item.key]
- const showEmpForm = item.key === 'emp' && signed && !empResult
- const showFlagForm = flagForm[item.key]
- return (
- <div key={item.key} className={`border-b border-rule last:border-b-0 ${item.isAllergen && !allergenSigned ? 'bg-danger/[0.04]' : flag ? 'bg-warn/[0.03]' : ''}`}>
- <div className="flex items-center justify-between py-1.5">
- <span className={`font-body text-[10px] flex-1 ${signed ? 'line-through text-ghost' : flag ? 'text-warn' : item.isAllergen && !allergenSigned ? 'text-danger font-medium' : 'text-ink2'}`}>
- {item.label} · {item.operator}
- {item.isAllergen && !allergenSigned && <span className="ml-1 text-[10px]">⚠ BLOCKING</span>}
- {flag && <span className="ml-1 text-[10px] not-italic">⚑ flagged</span>}
- </span>
- <div className="flex gap-1 ml-2 flex-shrink-0">
- {!signed && !flag && (
- <>
- <button type="button"
- onClick={() => setChecklistSigned(p => ({...p, [item.key]: new Date().toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' })}))}
- className={`font-body text-[10px] px-1.5 py-0.5 ${item.isAllergen ? 'bg-danger text-white hover:opacity-90' : 'bg-stone2 text-muted hover:bg-stone3'} transition-colors`}
- >Sign</button>
- <button type="button"
- onClick={() => setFlagForm(p => ({...p, [item.key]: { reason:'', note:'' }}))}
- className="font-body text-[10px] px-1.5 py-0.5 bg-warn/10 text-warn hover:bg-warn/20 transition-colors"
- >Flag</button>
- </>
- )}
- {signed && !empResult && item.key !== 'emp' && <span className="font-body text-ok text-[10px]">✓ {signed}</span>}
- {signed && item.key === 'emp' && empResult && <span className="font-body text-ok text-[10px]">✓ {empResult.result === 'negative' ? 'Neg' : 'Pos'} · {signed}</span>}
- {flag && <span className="font-body text-warn text-[10px]">⚑ {flag.reason}</span>}
- </div>
- </div>
- {showEmpForm && (
- <div className="pb-2 px-1 space-y-1.5 slide-in">
- <div className="font-body text-ghost text-[10px] uppercase tracking-widest">Swab result required</div>
- <div className="flex gap-2">
- {['negative','positive'].map(r => (
- <button type="button" key={r} onClick={() => setEmpForm(p => ({...p, [item.key]: {...p[item.key], result: r}}))}
- className={`font-body font-medium text-[10px] px-2 py-1 transition-colors ${empForm[item.key]?.result === r ? (r === 'negative' ? 'bg-ok text-white' : 'bg-danger text-white') : 'bg-stone3 text-muted'}`}>
- {r.charAt(0).toUpperCase() + r.slice(1)}
- </button>
- ))}
- {empForm[item.key]?.result === 'positive' && (
- <input placeholder="CFU count" type="number"
- value={empForm[item.key]?.cfu || ''}
- onChange={e => setEmpForm(p => ({...p, [item.key]: {...p[item.key], cfu: e.target.value}}))}
- className="w-20 font-body text-ink text-[10px] bg-stone border border-rule px-2 py-0.5" />
- )}
- </div>
- {empForm[item.key]?.result && (
- <button type="button"
- onClick={() => {
- const r = empForm[item.key]
- setEmpSessionResults(p => ({...p, [item.key]: { result: r.result, cfu: r.cfu, time: checklistSigned[item.key] }}))
- if (r.result === 'positive') setMaintenanceTickets(p => [...p, { id:`MT-EMP-${Date.now()}`, equipment:'Zone 1 — Sauce Dosing', issue:`Positive EMP swab${r.cfu ? ` · ${r.cfu} CFU` : ''} — deep clean required before next production run`, urgency:'danger', status:'open', requestedBy:'T. Osei', createdAt: checklistSigned[item.key] }])
- }}
- className="font-body font-medium text-[10px] px-2.5 py-1 bg-ok text-white hover:opacity-90 transition-opacity"
- >Log result {empForm[item.key]?.result === 'positive' ? '— auto-CAPA created' : ''}</button>
- )}
- </div>
- )}
- {showFlagForm && !flag && (
- <div className="pb-2 px-1 space-y-1.5 slide-in">
- <select value={flagForm[item.key]?.reason || ''} onChange={e => setFlagForm(p => ({...p, [item.key]: {...p[item.key], reason: e.target.value}}))}
- className="w-full font-body text-ink text-[10px] bg-stone border border-rule px-2 py-1 cursor-pointer">
- <option value="">Reason for flag…</option>
- <option>Equipment malfunction</option>
- <option>Kit or supplies missing</option>
- <option>Unsafe condition</option>
- <option>Other</option>
- </select>
- <div className="flex gap-1.5">
- <button type="button" disabled={!flagForm[item.key]?.reason}
- onClick={() => {
- const f = flagForm[item.key]
- setFlaggedItems(p => ({...p, [item.key]: f}))
- if (f.reason === 'Equipment malfunction') setMaintenanceTickets(p => [...p, { id:`MT-${Date.now()}`, equipment: item.label, issue: f.reason, urgency:'warn', status:'open', requestedBy: item.operator, createdAt: new Date().toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' }) }])
- setFlagForm(p => { const n = {...p}; delete n[item.key]; return n })
- }}
- className="font-body font-medium text-[10px] px-2.5 py-1 bg-warn text-white disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90 transition-opacity">
- Flag item
- </button>
- <button type="button" onClick={() => setFlagForm(p => { const n = {...p}; delete n[item.key]; return n })} className="font-body text-[10px] text-ghost px-2">Cancel</button>
- </div>
  </div>
  )}
  </div>

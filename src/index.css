@@ -61,6 +61,26 @@
   }
   .slide-right { animation: slideRight 0.28s cubic-bezier(.16,1,.3,1) both; }
 
+  /* Plant dropdown — springs out from the sidebar edge */
+  @keyframes plantDropIn {
+    0%   { opacity: 0; transform: scale(0.94) translateX(-8px); }
+    65%  { transform: scale(1.015) translateX(1px); }
+    82%  { transform: scale(0.997) translateX(0); }
+    100% { opacity: 1; transform: scale(1) translateX(0); }
+  }
+  .plant-drop-in {
+    animation: plantDropIn 0.32s cubic-bezier(.16,1,.3,1) both;
+    transform-origin: left center;
+  }
+  @keyframes plantDropInContent {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+  .plant-drop-in-content {
+    animation: plantDropInContent 0.2s ease both;
+    animation-delay: 0.06s;
+  }
+
   /* Waveform bars growing from baseline */
   @keyframes waveformReveal {
     from { opacity: 0; transform: scaleY(0.3); }

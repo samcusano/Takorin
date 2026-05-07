@@ -1,4 +1,5 @@
 import React from 'react'
+import { TrendingUp, TrendingDown, Minus } from 'lucide-react'
 
 const DOT_CLASSES = {
  d1: 'bg-danger/20', d2: 'bg-danger/40', d3: 'bg-danger/65', d4: 'bg-danger',
@@ -16,7 +17,7 @@ function PatternDots({ dots }) {
  )
 }
 
-const TREND_ICON = { up: '↑', down: '↓', flat: '→' }
+const TREND_ICON = { up: <TrendingUp size={13} />, down: <TrendingDown size={13} />, flat: <Minus size={13} /> }
 const TREND_COLOR = { up: 'text-danger', down: 'text-ok', flat: 'text-ghost' }
 
 export default function PatternMatrix({ rows }) {

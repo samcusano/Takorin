@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
+import { Check } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { commandData, facility, shiftData } from '../data'
-import { ActionBanner, SP, SPRow, MetricCard } from '../components/UI'
+import { ActionBanner, StatCell, PersonAvatar } from '../components/UI'
 import { useAppState } from '../context/AppState'
 
 const prefersReducedMotion =
@@ -35,9 +36,7 @@ function CommandCell({ item, isPending, onAcknowledge }) {
  if (isPending) {
  return (
  <div className="border-b border-rule2 border-l-2 border-l-ok px-3 py-2.5 bg-ok/5 flex items-center gap-2">
- <svg className="w-3 h-3 stroke-ok flex-shrink-0" fill="none" strokeWidth={2.5} viewBox="0 0 24 24">
- <polyline points="20 6 9 17 4 12" />
- </svg>
+ <Check size={12} strokeWidth={2.5} className="text-ok flex-shrink-0" />
  <span className="font-body text-ok text-[10px]">Acknowledged</span>
  </div>
  )
@@ -78,7 +77,7 @@ function CommandCell({ item, isPending, onAcknowledge }) {
  </span>
  </div>
  <p className={`font-body text-[10px] leading-snug truncate ${actionColorCls}`}>
- ▸ {item.action}
+ <span className="text-ghost text-[11px]">—</span> {item.action}
  </p>
  {confirming ? (
  <div className="flex items-center gap-2 pt-1.5 border-t border-rule2">
@@ -258,6 +257,19 @@ export default function CommandSurface() {
  body={`${facility.name} · ${facility.user.name} · ${shiftData.time}`}
  />
 
+ {/* Stats bar — shift context */}
+ <div className="grid grid-cols-3 border-b border-rule2 bg-stone flex-shrink-0">
+ <StatCell
+  label="Line 4"
+  value={String(shiftData.score)}
+  sub={`${zone} · AM shift`}
+  type={shiftData.score >= 75 ? 'sa' : shiftData.score >= 60 ? 'sw' : 'so'}
+  pct={shiftData.score}
+ />
+ <StatCell label="Into shift" value="42" sub="minutes elapsed" type="so" />
+ <StatCell label="Remaining" value="5h 18m" sub="until handoff" type="so" />
+ </div>
+
  <div className="flex flex-1 min-h-0 overflow-hidden">
  {/* ── 3 urgency columns ── */}
  <div
@@ -269,22 +281,27 @@ export default function CommandSurface() {
  <MatrixColumn label="Watching" urgency="watch" count={watchItems.filter(i => !pendingIds.has(i.id)).length} items={watchItems} pendingIds={pendingIds} onAcknowledge={handleAcknowledge} />
  </div>
 
- {/* ── Context rail ── */}
- <div className="w-[220px] flex-shrink-0 border-l border-rule2 overflow-y-auto bg-stone2 flex flex-col">
- <SP title="Current shift">
- <MetricCard
- title={`${zone} — ${shiftData.line}`}
- value={shiftData.score}
- valueColor="text-danger"
- waveformData={shiftData.sparkline}
- waveformColor="#D94F2A"
- waveformHeight={36}
- meta={{ label: 'Supervisor', value: 'D. Kowalski' }}
- />
- <SPRow label="Into shift" value="42 min" />
- <SPRow label="Remaining" value="5h 18m" valueColor="text-muted" />
- </SP>
-
+ {/* ── Acknowledged rail ── */}
+ <div className="w-[200px] flex-shrink-0 border-l border-rule2 overflow-y-auto bg-stone2 flex flex-col">
+ <div className="px-4 py-2 border-b border-rule2 bg-stone2 sticky top-0 z-10 font-body uppercase tracking-widest text-ghost text-[10px] font-medium">
+  Current shift
+ </div>
+ <div className={`px-4 py-3 border-b border-rule2 border-l-2 ${zone === 'AT RISK' ? 'border-l-danger bg-danger/[0.02]' : zone === 'WATCH' ? 'border-l-warn' : 'border-l-ok'}`}>
+  <div className="flex items-center gap-2.5 mb-2">
+   <PersonAvatar name="D. Kowalski" size={30} />
+   <div className="min-w-0">
+    <div className="font-body font-medium text-ink text-[12px]">D. Kowalski</div>
+    <div className="font-body text-ghost text-[10px]">Supervisor · Line 4</div>
+   </div>
+  </div>
+  <div className="flex items-center gap-1.5">
+   <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${zone === 'AT RISK' ? 'bg-danger beat' : zone === 'WATCH' ? 'bg-warn' : 'bg-ok'}`} />
+   <span className={`font-body font-medium text-[11px] ${zone === 'AT RISK' ? 'text-danger' : zone === 'WATCH' ? 'text-warn' : 'text-ok'}`}>
+    {zone} · {shiftData.score}
+   </span>
+   <span className="font-body text-ghost text-[10px]">· {shiftData.time}</span>
+  </div>
+ </div>
  <AcknowledgedHistory ids={permanentlyGone} />
  </div>
  </div>
