@@ -69,7 +69,8 @@ export default function HandoffIQ() {
  trainingCompletions, setTrainingCompletions,
  sanitationEntries, setSanitationEntries,
  operatorAcknowledgments, setOperatorAcknowledgments,
- logActivity } = useAppState()
+ logActivity,
+ currentPlant } = useAppState()
  const [handoffAccepted, setHandoffAccepted] = useState(false)
  const [completionForms, setCompletionForms] = useState({})
  const [trainingForms, setTrainingForms] = useState({})
@@ -261,7 +262,7 @@ export default function HandoffIQ() {
  {!signed && (
  <ActionBanner
  tone="ok"
- headline="Shift handoff awaiting outgoing signature — Line 4"
+ headline={`Shift handoff awaiting outgoing signature — ${currentPlant?.name || 'Salina Campus'} · Line 4`}
  body="D. Kowalski signing off · Incoming: M. Santos · April 16, 14:02"
  >
  <Btn variant="secondary" onClick={() => setSigned(true)}>Sign handoff — Kowalski</Btn>

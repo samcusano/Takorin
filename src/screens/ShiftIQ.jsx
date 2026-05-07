@@ -414,6 +414,7 @@ export default function ShiftIQ() {
  empSessionResults, setEmpSessionResults,
  flaggedItems, setFlaggedItems,
  logActivity,
+ currentPlant,
  } = useAppState()
  const [predActioned, setPredActioned] = useState(false)
  const [overrideMode, setOverrideMode] = useState(false)
@@ -455,7 +456,7 @@ export default function ShiftIQ() {
  <div className="flex flex-col h-full overflow-hidden">
  <ActionBanner
  tone="warn"
- headline={`3 interventions pending · Line 4 · ${countdownFmt} remaining`}
+ headline={`3 interventions pending · ${currentPlant?.name || 'Salina Campus'} · Line 4 · ${countdownFmt} remaining`}
  body={escalatedShift
  ? 'Director notified — escalation logged. Act on findings before the window closes.'
  : 'Risk score 78 — above intervention threshold. Two actionable findings. Act before the window closes.'}
