@@ -1,24 +1,29 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
+import { useFocusTrap, useExitAnimation } from '../lib/utils'
 import { Check, X, AlertTriangle, Clock, ArrowRight, Wheat, Soup, Milk, Beef, Droplets } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { supplierData, supplierAudits, empResultsHistory } from '../data'
 import { useAppState } from '../context/AppState'
-import { Urg, StatCell, SP, SecHd, Btn, Chip, Layout, ActionBanner, ScoreRing } from '../components/UI'
+import { Urg, StatCell, SP, SecHd, Btn, Chip, Layout, ActionBanner, ScoreRing, Spinner, AnimatedCheck } from '../components/UI'
 
 // ── CoaPanel ──────────────────────────────────────────────────────────────────
 
 function CoaPanel({ lot, onClose }) {
+  const panelRef = useRef(null)
+  const { exiting, exit } = useExitAnimation(200)
+  useFocusTrap(panelRef, !!lot)
   if (!lot) return null
+  const handleClose = () => exit(onClose)
   return (
     <>
-      <div className="fixed inset-0 bg-ink/20 z-40" onClick={onClose} />
-      <aside className="fixed top-0 right-0 bottom-0 w-full max-w-[400px] bg-stone border-l border-rule2 z-50 flex flex-col slide-right">
+      <div className="fixed inset-0 bg-ink/20 z-40" onClick={handleClose} />
+      <aside ref={panelRef} role="dialog" aria-modal="true" aria-label="Certificate of Analysis" className={`fixed top-0 right-0 bottom-0 w-full max-w-[400px] bg-stone border-l border-rule2 z-50 flex flex-col ${exiting ? 'slide-right-out' : 'slide-right'}`}>
         <div className="flex items-start justify-between px-5 py-4 border-b border-rule2 bg-stone2 flex-shrink-0">
           <div>
             <div className="font-body text-ghost text-[10px] mb-1">Certificate of Analysis</div>
             <div className="font-display font-bold text-ink text-base">{lot.ing}</div>
           </div>
-          <button type="button" onClick={onClose} aria-label="Close COA panel" className="p-1 text-ghost hover:text-ink transition-colors cursor-pointer">
+          <button type="button" onClick={handleClose} aria-label="Close COA panel" className="p-1 text-ghost hover:text-ink transition-colors duration-100 ease-standard cursor-pointer">
             <X size={14} strokeWidth={2} aria-hidden="true" />
           </button>
         </div>
@@ -40,7 +45,7 @@ function CoaPanel({ lot, onClose }) {
           ))}
         </div>
         <div className="px-5 py-3 border-t border-rule2 bg-stone2 flex-shrink-0">
-          <Btn variant="secondary" onClick={onClose}>Close</Btn>
+          <Btn variant="secondary" onClick={handleClose}>Close</Btn>
         </div>
       </aside>
     </>
@@ -198,7 +203,7 @@ export default function SupplierIQ() {
   )
 
   return (
-    <div className="flex flex-col h-full overflow-hidden">
+    <div className="flex flex-col h-full overflow-hidden content-reveal">
       <CoaPanel lot={coaViewLot} onClose={() => setCoaViewLot(null)} />
 
       <ActionBanner
@@ -207,11 +212,11 @@ export default function SupplierIQ() {
         body="ConAgra Lot TS-8811 · FDA inspection in 18 days · 2 lots expiring in 14 days"
       >
         <Btn variant="secondary" onClick={handleExport} disabled={exportState === 'loading'}>
-          {exportState === 'loading' ? 'Preparing…' : exportState === 'done' ? 'Exported ✓' : 'Export audit package'}
+          {exportState === 'loading' ? <><Spinner label="Preparing export" /> Preparing…</> : exportState === 'done' ? <><AnimatedCheck size={11} color="currentColor" /> Exported</> : 'Export audit package'}
         </Btn>
       </ActionBanner>
 
-      <div className="grid grid-cols-6 border-b border-rule2 bg-stone flex-shrink-0">
+      <div className="grid grid-cols-3 md:grid-cols-6 border-b border-rule2 bg-stone flex-shrink-0">
         {d.stats.map((s, i) => <StatCell key={i} {...s} />)}
       </div>
 
@@ -237,7 +242,8 @@ export default function SupplierIQ() {
             {blockingLots.map((lot, i) => {
               const Icon = FOOD_ICONS[lot.ing]
               return (
-                <div key={i} className="p-4 border-b border-rule2 bg-danger/[0.025]">
+                <div key={i} className="relative p-4 border-b border-rule2 bg-danger/[0.025] overflow-hidden">
+                  {coaRequested && <span key="coa-flash" className="flash-success" aria-hidden="true" />}
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1.5">

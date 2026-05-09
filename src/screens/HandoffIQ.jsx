@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { handoffData, sanitationLogs, certExpiry, haccpData, scheduleData, crewHoursData } from '../data'
-import { Urg, StatCell, SP, SPRow, SecHd, Btn, ConsequenceNotice, Layout, ActionBanner, PersonAvatar } from '../components/UI'
+import { Urg, StatCell, SP, SPRow, SecHd, Btn, ConsequenceNotice, Layout, ActionBanner, PersonAvatar, HoldButton } from '../components/UI'
 import { ChevronRight, ArrowRight, Check, AlertTriangle } from 'lucide-react'
 import { useAppState } from '../context/AppState'
 
@@ -17,16 +17,21 @@ function ShiftTimeline({ events }) {
  const dotColor = { ok:'bg-ok', warn:'bg-warn', danger:'bg-danger' }
  const labelColor = { ok:'text-ok', warn:'text-warn', danger:'text-danger' }
  return (
- <div className="px-4 py-4 overflow-x-auto">
+ <div
+  className="px-4 py-4 overflow-x-auto"
+  role="region"
+  aria-label="Shift timeline — scroll horizontally to see all events"
+  tabIndex={0}
+ >
  <div className="relative" style={{ minWidth: 520 }}>
  <div className="absolute h-px bg-rule2" style={{ top: 28, left: 0, right: 0 }} />
  <div className="flex">
  {events.map((e, i) => (
  <div key={i} className="flex flex-col items-center flex-1">
- <span className="font-body text-ghost text-[9px] h-6 flex items-end pb-1 leading-none">{e.time}</span>
+ <span className="font-body text-ghost text-[10px] h-6 flex items-end pb-1 leading-none">{e.time}</span>
  <div className={`w-2.5 h-2.5 rounded-full relative z-10 ${dotColor[e.tone]}`} />
  <div className={`font-body font-medium text-[10px] mt-2 text-center leading-tight px-1 ${labelColor[e.tone]}`}>{e.label}</div>
- <div className="font-body text-ghost text-[9px] mt-0.5 text-center leading-tight px-1">{e.detail}</div>
+ <div className="font-body text-ghost text-[10px] mt-0.5 text-center leading-tight px-1">{e.detail}</div>
  </div>
  ))}
  </div>
@@ -124,12 +129,12 @@ export default function HandoffIQ() {
  </div>
  <div className="flex items-center gap-2">
  <div className="flex-1 h-1 bg-rule2"><div className={`h-full ${op.color}`} style={{ width: op.pct + '%' }} /></div>
- <span className="font-body text-ghost text-[9px] whitespace-nowrap">{op.label}</span>
+ <span className="font-body text-ghost text-[10px] whitespace-nowrap">{op.label}</span>
  </div>
  {op.fromCapa && <div className="font-body text-warn/80 text-[10px] mt-1">{op.fromCapa}</div>}
  {nominated[op.name] && !plan?.submitted && (
  <div className="mt-2 slide-in space-y-1.5">
- <div className="font-body text-ghost text-[9px] uppercase tracking-widest">Training plan</div>
+ <div className="font-body text-ghost text-[10px] uppercase tracking-widest">Training plan</div>
  <select
  value={form.level || ''}
  onChange={e => setTrainingForms(p => ({ ...p, [op.name]: { ...p[op.name], level: e.target.value } }))}
@@ -214,7 +219,7 @@ export default function HandoffIQ() {
  </div>
  <div className="text-right flex-shrink-0">
  <div className={`display-num text-base ${color}`}>{c.expiresIn === 0 ? '0d' : `${c.expiresIn}d`}</div>
- <div className="font-body text-ghost text-[9px]">{c.expiresIn === 0 ? 'tonight' : 'remaining'}</div>
+ <div className="font-body text-ghost text-[10px]">{c.expiresIn === 0 ? 'tonight' : 'remaining'}</div>
  </div>
  </div>
  )
@@ -257,7 +262,7 @@ export default function HandoffIQ() {
  )
 
  return (
- <div className="flex flex-col h-full overflow-hidden">
+ <div className="flex flex-col h-full overflow-hidden content-reveal">
  {/* Step 1 — outgoing signs */}
  {!signed && (
  <ActionBanner
@@ -317,16 +322,18 @@ export default function HandoffIQ() {
  <span className="text-warn not-italic font-medium">Safety: </span>{op.safetyNote}
  </div>
  {!operatorAcknowledgments[op.name] ? (
- <button type="button"
- onClick={() => {
- const t = new Date().toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' })
- setOperatorAcknowledgments(p => ({...p, [op.name]: { time: t, item: 'safety-briefing-apr16' }}))
- logActivity({ actor: op.name, action: 'Acknowledged safety briefing', item: 'Safety context Apr 16', type: 'acknowledgment' })
- }}
- className="font-body font-medium text-[10px] px-3 py-1.5 bg-stone3 text-muted hover:bg-ok/10 hover:text-ok transition-colors w-full text-left"
- >
- I've read and understood this — {op.name}
- </button>
+ <HoldButton
+  label={`Hold to confirm — I've read and understood this`}
+  holdLabel="Keep holding…"
+  doneLabel={`${op.name} acknowledged`}
+  duration={1500}
+  tone="ok"
+  onConfirm={() => {
+   const t = new Date().toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' })
+   setOperatorAcknowledgments(p => ({...p, [op.name]: { time: t, item: 'safety-briefing-apr16' }}))
+   logActivity({ actor: op.name, action: 'Acknowledged safety briefing', item: 'Safety context Apr 16', type: 'acknowledgment' })
+  }}
+ />
  ) : (
  <div className="flex items-center gap-1 font-body text-ok text-[10px] slide-in">
  <Check size={12} strokeWidth={2} className="text-ok flex-shrink-0" />
@@ -389,13 +396,18 @@ export default function HandoffIQ() {
 
  {/* Attestation — outgoing signature */}
  {!signed && (
- <div className="px-4 py-4 bg-stone3/50 border-t border-rule2">
- <div className="font-body text-ink2 text-[12px] mb-3 leading-relaxed">
+ <div className="border-t border-rule2">
+ <div className="px-4 pt-4 pb-3 font-body text-ink2 text-[12px] leading-relaxed">
  D. Kowalski: sign off to confirm all carry-forward items have been documented and the incoming supervisor has been briefed.
  </div>
- <Btn style={{ background:'#3A8A5A', color:'#F5F0E8' }} onClick={() => setSigned(true)}>
- Sign off — D. Kowalski
- </Btn>
+ <HoldButton
+  label="Hold to sign off — D. Kowalski"
+  holdLabel="Keep holding to sign off…"
+  doneLabel="Signed off · D. Kowalski"
+  duration={2000}
+  tone="ok"
+  onConfirm={() => setSigned(true)}
+ />
  </div>
  )}
 
@@ -403,7 +415,7 @@ export default function HandoffIQ() {
  {signed && !handoffAccepted && (
  <div className="border-t border-rule2">
  <div className="px-4 py-4 bg-stone2">
- <div className="font-body text-[9px] font-medium uppercase tracking-widest text-ghost mb-3">
+ <div className="font-body text-[10px] font-medium uppercase tracking-widest text-ghost mb-3">
  Carry-forward items — M. Santos must acknowledge before accepting
  </div>
  {[
@@ -418,7 +430,14 @@ export default function HandoffIQ() {
  <div className="font-body text-ink2 text-[12px] mb-3 leading-relaxed">
  By accepting, M. Santos acknowledges these carry-forwards and takes responsibility for Line 4 from 14:00.
  </div>
- <Btn variant="primary" onClick={() => { setHandoffAccepted(true); logActivity({ actor: 'M. Santos', action: 'Accepted shift handoff from D. Kowalski', item: 'Line 4 · Apr 16 PM', type: 'acknowledgment' }) }}>Accept shift — M. Santos</Btn>
+ <HoldButton
+  label="Hold to accept shift — M. Santos"
+  holdLabel="Keep holding to accept…"
+  doneLabel="Shift accepted · M. Santos"
+  duration={2000}
+  tone="ok"
+  onConfirm={() => { setHandoffAccepted(true); logActivity({ actor: 'M. Santos', action: 'Accepted shift handoff from D. Kowalski', item: 'Line 4 · Apr 16 PM', type: 'acknowledgment' }) }}
+ />
  </div>
  </div>
  )}

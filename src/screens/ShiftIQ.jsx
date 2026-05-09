@@ -1,11 +1,13 @@
 import { useState, useEffect, useRef } from 'react'
+import { useFocusTrap, useExitAnimation, riskColorClass, riskLabel, riskBgColor } from '../lib/utils'
 import { shiftData, line6Data, haccpData, productionRate, crewHoursData } from '../data'
 import {
  Urg, StatCell, SecHd, CaseCard, Layout,
  Btn, ConsequenceNotice, PageHead, ActionBanner, MetricCard, ScoreRing,
- PersonAvatar, Modal, WaveformSparkline, Chip
+ PersonAvatar, Modal, WaveformSparkline, Chip, AnimatedCheck, Spinner,
+ VaulDrawer, HoldButton
 } from '../components/UI'
-import { Flag, ChevronRight, ChevronDown, AlertTriangle, Check, X, TrendingDown, RotateCcw } from 'lucide-react'
+import { Flag, ChevronRight, ChevronDown, AlertTriangle, Check, X, TrendingDown, RotateCcw, Wrench, Package, HelpCircle } from 'lucide-react'
 import { useAppState } from '../context/AppState'
 
 const CHECKLIST_ITEMS = [
@@ -19,6 +21,13 @@ const CHECKLIST_ITEMS = [
 
 const CHECKLIST_TOTAL = 13
 
+const FLAG_REASONS = [
+ { value: 'Equipment malfunction', label: 'Equipment', Icon: Wrench },
+ { value: 'Kit or supplies missing', label: 'Missing kit', Icon: Package },
+ { value: 'Unsafe condition', label: 'Unsafe', Icon: AlertTriangle },
+ { value: 'Other', label: 'Other', Icon: HelpCircle },
+]
+
 
 function EmptyLine({ name }) {
  return (
@@ -31,14 +40,18 @@ function EmptyLine({ name }) {
 }
 
 function ScoreBadge({ score }) {
- const color = score >= 75 ? 'text-danger' : score >= 60 ? 'text-warn' : 'text-ok'
- return <span className={`display-num text-3xl ${color}`}>{score}</span>
+ return (
+  <span
+   className={`display-num text-3xl ${riskColorClass(score)}`}
+   aria-label={`Risk score ${score} — ${riskLabel(score)}`}
+  >{score}</span>
+ )
 }
 
 function AgentTimeline({ timeline, sparkline, score }) {
- const scoreColor = score >= 75 ? '#D94F2A' : score >= 60 ? '#C4920A' : '#3A8A5A'
- const scoreTextColor = score >= 75 ? 'text-danger' : score >= 60 ? 'text-warn' : 'text-ok'
- const zone = score >= 75 ? 'AT RISK' : score >= 60 ? 'WATCH' : 'CLEAR'
+ const scoreColor = riskBgColor(score)
+ const scoreTextColor = riskColorClass(score)
+ const zone = riskLabel(score)
  return (
  <div className="border-b border-rule2">
  <MetricCard
@@ -58,9 +71,11 @@ function AgentTimeline({ timeline, sparkline, score }) {
  row.level === 'now' ? 'bg-ochre' : row.level === 'warn' ? 'bg-warn' : row.level === 'ok' ? 'bg-ok' : 'bg-rule'
  }`} />
  <div className="flex-1">
- <p className="font-body text-ink2 text-[11px] leading-relaxed"
- dangerouslySetInnerHTML={{ __html: row.event.replace(/\*\*(.*?)\*\*/g, '<strong class="text-ink font-medium">$1</strong>') }}
- />
+ <p className="font-body text-ink2 text-[11px] leading-relaxed">
+ {row.event.split(/\*\*(.*?)\*\*/g).map((part, i) =>
+  i % 2 === 1 ? <strong key={i} className="text-ink font-medium">{part}</strong> : part
+ )}
+ </p>
  {row.delta && <div className={`display-num text-[11px] mt-0.5 ${row.deltaColor}`}>{row.delta}</div>}
  </div>
  </div>
@@ -69,8 +84,9 @@ function AgentTimeline({ timeline, sparkline, score }) {
  )
 }
 
+const TONE_HEX = { danger: '#D94F2A', warn: '#C4920A', ok: '#3A8A5A' }
 function SignalCard({ sig }) {
- const c = sig.tone === 'danger' ? '#D94F2A' : sig.tone === 'warn' ? '#C4920A' : '#3A8A5A'
+ const c = TONE_HEX[sig.tone] ?? '#3A8A5A'
  return (
  <div className="flex items-center gap-3 px-4 py-2.5 border-b border-rule2 last:border-b-0">
  <ScoreRing pct={sig.score} size={36} color={c} />
@@ -108,24 +124,29 @@ function OperatorPanel({ name, onClose }) {
  const completion = trainingCompletions[name]
  const myFlags = Object.entries(flaggedItems).filter(([, f]) => f).map(([key, f]) => ({ key, ...f }))
  const certC = meta.certPct >= 80 ? '#3A8A5A' : '#C4920A'
+ const panelRef = useRef(null)
+ const { exiting, exit } = useExitAnimation(200)
+ useFocusTrap(panelRef)
+
+ const handleClose = () => exit(onClose)
 
  useEffect(() => {
- const handler = (e) => { if (e.key === 'Escape') onClose() }
+ const handler = (e) => { if (e.key === 'Escape') handleClose() }
  document.addEventListener('keydown', handler)
  return () => document.removeEventListener('keydown', handler)
- }, [onClose])
+ }, [])
 
  return (
  <>
- <div className="fixed inset-0 z-40 bg-ink/20" onClick={onClose} />
- <div className="fixed right-0 top-0 bottom-0 z-50 w-[340px] bg-stone border-l border-rule2 flex flex-col overflow-hidden slide-right">
+ <div className="fixed inset-0 z-40 bg-ink/20" onClick={handleClose} />
+ <div ref={panelRef} role="dialog" aria-modal="true" aria-label={`Operator profile — ${name}`} className={`fixed right-0 top-0 bottom-0 z-50 w-[340px] bg-stone border-l border-rule2 flex flex-col overflow-hidden ${exiting ? 'slide-right-out' : 'slide-right'}`}>
  <div className="flex items-center gap-3 px-4 py-3 border-b border-rule2 bg-stone2 flex-shrink-0" style={{ borderTop:'3px solid #D94F2A' }}>
  <PersonAvatar name={name} size={32} />
  <div className="flex-1 min-w-0">
  <div className="font-body font-medium text-ink text-[13px]">{name}</div>
  <div className="font-body text-ghost text-[11px]">{meta.station}</div>
  </div>
- <button type="button" onClick={onClose} aria-label="Close operator panel" className="text-ghost hover:text-ink transition-colors p-1 cursor-pointer">
+ <button type="button" onClick={handleClose} aria-label="Close operator panel" className="text-ghost hover:text-ink transition-colors duration-100 ease-standard p-1 cursor-pointer">
  <X size={14} strokeWidth={2} aria-hidden="true" />
  </button>
  </div>
@@ -152,7 +173,7 @@ function OperatorPanel({ name, onClose }) {
  ) : myTasks.map((t, i) => (
  <div key={i} className={`flex items-center gap-3 px-4 py-3 border-b border-rule2 last:border-b-0 ${t.done ? 'opacity-50' : ''}`}>
  <div className={`w-4 h-4 rounded-full flex-shrink-0 flex items-center justify-center ${t.done ? 'bg-ok' : 'border-2 border-rule2'}`}>
- {t.done && <Check size={10} strokeWidth={2} className="text-white" />}
+ {t.done && <AnimatedCheck size={10} color="white" />}
  </div>
  <div className="flex-1">
  <div className={`font-body font-medium text-[12px] ${t.done ? 'line-through text-ghost' : 'text-ink'}`}>{t.label}</div>
@@ -182,9 +203,9 @@ function OperatorPanel({ name, onClose }) {
  <div className="px-4 py-3">
  <div className="font-body text-ghost text-[10px] mb-2">{meta.certLabel}</div>
  <div style={{ height:5, background:'#D8D2C8', marginBottom:8 }}>
- <div style={{ height:'100%', width:`${meta.certPct}%`, background:certC, transition:'width 0.6s ease' }} />
+ <div style={{ height:'100%', width:`${meta.certPct}%`, background:certC, transition:'width 500ms cubic-bezier(0.19,0.91,0.38,1)' }} />
  </div>
- <span style={{ fontFamily:'Georgia,serif', fontWeight:800, fontStyle:'', fontSize:20, color:certC }}>{meta.certPct}%</span>
+ <span className="display-num text-xl" style={{ color: certC }}>{meta.certPct}%</span>
  </div>
  </div>
 
@@ -216,6 +237,21 @@ function OperatorPanel({ name, onClose }) {
  )}
  </div>
  )}
+ </div>
+
+ {/* Operator avatar tabs at bottom */}
+ <div className="border-t border-rule2 bg-stone2 flex items-center justify-center gap-2 px-3 py-2.5 flex-shrink-0">
+  {Object.keys(OP_META).map(opName => (
+   <button
+    key={opName}
+    type="button"
+    onClick={() => setViewingOperator(opName)}
+    className={`flex items-center justify-center w-9 h-9 rounded-full border-2 transition-all ${name === opName ? 'border-ink bg-ink/10' : 'border-rule2 hover:border-ghost'}`}
+    title={opName}
+    aria-label={`View ${opName}'s details`}>
+    <PersonAvatar name={opName} size={24} />
+   </button>
+  ))}
  </div>
  </div>
  </div>
@@ -283,7 +319,7 @@ function Finding({ f, onAct }) {
  </div>
  {showDismiss && !dismissed && (
  <div className="flex gap-2 pt-1 slide-in">
- <select className="font-body text-ink text-[11px] bg-stone border border-rule2 px-2 py-1 flex-1 cursor-pointer">
+ <select aria-label="Reason for dismissing this finding" className="font-body text-ink text-[11px] bg-stone border border-rule2 px-2 py-1 flex-1 cursor-pointer">
  <option>Reason for dismissing…</option>
  <option>Already handled by outgoing supervisor</option>
  <option>Not applicable — SKU change in progress</option>
@@ -341,6 +377,7 @@ function CrewAvatarStack({ crew, onSelect, size = 34 }) {
 function LineDropdown({ lines, activeLine, onSelect, triggerRef, onClose }) {
  const dropRef = useRef(null)
  const [pos, setPos] = useState({ top: 0, left: 0 })
+ useFocusTrap(dropRef)
 
  useEffect(() => {
   if (triggerRef.current) {
@@ -366,28 +403,29 @@ function LineDropdown({ lines, activeLine, onSelect, triggerRef, onClose }) {
  }, [onClose, triggerRef])
 
  return (
-  <div ref={dropRef} className="fixed z-50 plant-drop-in" style={{ top: pos.top, left: pos.left }}>
-   <div className="w-[260px] bg-[#1e1a14] border border-[#3A342E] rounded-2xl shadow-[0_24px_60px_rgba(0,0,0,0.5)] overflow-hidden">
+  <div ref={dropRef} className="fixed z-[40] plant-drop-in" style={{ top: pos.top, left: pos.left }}>
+   <div className="w-[260px] bg-sidebar border border-sidebar-border rounded-2xl shadow-[0_24px_60px_rgba(0,0,0,0.5)] overflow-hidden">
     <div className="plant-drop-in-content">
-     <div className="px-4 py-2.5 border-b border-[#3A342E]">
-      <p className="font-body text-ghost/40 text-[9px] uppercase tracking-widest">Select line</p>
+     <div className="px-4 py-2.5 border-b border-sidebar-border">
+      <p className="font-body text-sidebar-ghost/40 text-[10px] uppercase tracking-widest">Select line</p>
      </div>
      {lines.map(line => {
-      const sc = line.score >= 75 ? 'text-danger' : line.score >= 60 ? 'text-warn' : 'text-ok'
-      const zoneLabel = line.score >= 75 ? 'AT RISK' : line.score >= 60 ? 'WATCH' : 'CLEAR'
+      const sc = riskColorClass(line.score)
+      const zoneLabel = riskLabel(line.score)
       const isActive = line.id === activeLine
       return (
        <button key={line.id} type="button"
+        aria-pressed={isActive}
         onClick={() => { onSelect(line.id); onClose() }}
-        className="flex items-center justify-between w-full px-4 py-3 border-b border-[#3A342E] last:border-b-0 hover:bg-[#2a2420] transition-colors group"
+        className="flex items-center justify-between w-full px-4 py-3 border-b border-sidebar-border last:border-b-0 hover:bg-sidebar-3 transition-colors group"
        >
         <div className="text-left">
-         <div className={`font-body text-[12px] font-medium transition-colors ${isActive ? 'text-stone' : 'text-ghost group-hover:text-stone/80'}`}>{line.name}</div>
-         <div className="font-body text-ghost/50 text-[10px] mt-0.5">{line.supervisor} shift</div>
+         <div className={`font-body text-[12px] font-medium transition-colors ${isActive ? 'text-stone' : 'text-sidebar-ghost group-hover:text-stone/80'}`}>{line.name}</div>
+         <div className="font-body text-sidebar-ghost/50 text-[10px] mt-0.5">{line.supervisor} shift</div>
         </div>
         <div className="flex items-center gap-2">
-         <span className={`font-body text-[9px] uppercase tracking-widest ${sc}`}>{zoneLabel}</span>
-         <span className={`display-num text-xl ${sc}`}>{line.score}</span>
+         <span className={`font-body text-[10px] uppercase tracking-widest ${sc}`}>{zoneLabel}</span>
+         <span className={`display-num text-xl ${sc}`} aria-label={`Risk score ${line.score}`}>{line.score}</span>
          {isActive && <div className="w-1.5 h-1.5 rounded-full bg-ochre flex-shrink-0" />}
         </div>
        </button>
@@ -419,6 +457,7 @@ export default function ShiftIQ() {
  const [predActioned, setPredActioned] = useState(false)
  const [overrideMode, setOverrideMode] = useState(false)
  const [overrideReason, setOverrideReason] = useState('')
+ const [overrideShake, setOverrideShake] = useState(false)
  const [showNearMiss, setShowNearMiss] = useState(false)
  const [nearMissForm, setNearMissForm] = useState({ station:'', what:'', action:'', atRisk: false })
  const [nearMissSubmitted, setNearMissSubmitted] = useState(false)
@@ -428,6 +467,7 @@ export default function ShiftIQ() {
  const [taskForm, setTaskForm] = useState({ assignee:'', label:'', dueTime:'' })
  const [viewingOperator, setViewingOperator] = useState(null)
  const [lineDropOpen, setLineDropOpen] = useState(false)
+ const [checklistDrawerOpen, setChecklistDrawerOpen] = useState(false)
  const lineTriggerRef = useRef(null)
  const [col1Tab, setCol1Tab] = useState('orders')
 
@@ -450,10 +490,10 @@ export default function ShiftIQ() {
  const lineD = activeLine === 'l6' ? line6Data : d
  const lineScore = activeLine === 'l6' ? line6Data.score : d.score
  const lineSupervisor = activeLine === 'l6' ? line6Data.supervisor : 'D. Kowalski'
- const scoreColor = lineScore >= 75 ? 'text-danger' : lineScore >= 60 ? 'text-warn' : 'text-ok'
+ const scoreColor = riskColorClass(lineScore)
 
  return (
- <div className="flex flex-col h-full overflow-hidden">
+ <div className="flex flex-col h-full overflow-hidden content-reveal">
  <ActionBanner
  tone="warn"
  headline={`3 interventions pending · ${currentPlant?.name || 'Salina Campus'} · Line 4 · ${countdownFmt} remaining`}
@@ -464,7 +504,12 @@ export default function ShiftIQ() {
  <Btn variant="secondary" onClick={() => { setCol1Tab('tasks'); setShowNearMiss(true) }}>
  + Near miss
  </Btn>
- <Btn variant="secondary" onClick={() => setEscalatedShift(true)}>
+ <Btn variant="secondary" onClick={() => {
+ if (!escalatedShift) {
+  setEscalatedShift(true)
+  logActivity({ actor:'D. Kowalski', action:'Escalated shift risk to director', item:'Line 4 · Risk score 78 · 3 interventions pending', type:'escalation' })
+ }
+ }}>
  {escalatedShift ? 'Escalated ✓' : 'Escalate to director'}
  </Btn>
  </ActionBanner>
@@ -472,8 +517,8 @@ export default function ShiftIQ() {
  {/* Line switcher */}
  {(() => {
   const al = d.lines.find(l => l.id === activeLine)
-  const sc = al.score >= 75 ? 'text-danger' : al.score >= 60 ? 'text-warn' : 'text-ok'
-  const zone = al.score >= 75 ? 'AT RISK' : al.score >= 60 ? 'WATCH' : 'CLEAR'
+  const sc = riskColorClass(al.score)
+  const zone = riskLabel(al.score)
   return (
    <>
    <div className="flex items-center gap-3 px-4 py-2.5 border-b border-rule2 bg-stone2 flex-shrink-0">
@@ -485,9 +530,9 @@ export default function ShiftIQ() {
     >
      <span className="font-body font-medium text-ink text-[13px]">{al.name}</span>
      <span className={`font-body font-medium uppercase tracking-widest text-[10px] ${sc}`}>{zone}</span>
-     <span className={`display-num text-xl leading-none ${sc}`}>{al.score}</span>
+     <span className={`display-num text-xl leading-none ${sc}`} aria-label={`Risk score ${al.score} — ${zone}`}>{al.score}</span>
      {d.confidence < d.rawConfidence && activeLine === 'l4' && (
-      <span className="font-body text-warn text-[9px]">adj.</span>
+      <span className="font-body text-warn text-[10px]">adj.</span>
      )}
      <ChevronDown size={12} className={`text-ghost transition-transform duration-200 ${lineDropOpen ? 'rotate-180' : ''}`} />
     </button>
@@ -512,7 +557,7 @@ export default function ShiftIQ() {
  })()}
 
  {/* Stat bar */}
- <div className="grid grid-cols-4 border-b border-rule2 bg-stone flex-shrink-0">
+ <div className="grid grid-cols-2 md:grid-cols-4 border-b border-rule2 bg-stone flex-shrink-0">
  {lineD.stats.map((s, i) => <StatCell key={i} {...s} />)}
  </div>
 
@@ -521,9 +566,9 @@ export default function ShiftIQ() {
 
  {/* Pre-shift safety briefing modal */}
  {!briefingAcknowledged && (
- <Modal>
+ <Modal title="Pre-shift safety briefing">
   <div className="flex items-center justify-between px-4 pt-3 pb-2 border-b border-rule2">
-  <div className="font-body font-medium text-ink text-[13px]">Pre-shift safety briefing</div>
+  <div className="font-body font-medium text-ink text-[13px]" id="modal-title">Pre-shift safety briefing</div>
   <span className="font-body text-ghost text-[10px]">Acknowledge before proceeding</span>
   </div>
   <div className="overflow-y-auto flex-1">
@@ -545,10 +590,15 @@ export default function ShiftIQ() {
    </div>
   ))}
   </div>
-  <div className="px-4 py-3 border-t border-rule2 flex-shrink-0">
-  <Btn variant="primary" className="w-full py-2.5" onClick={() => setBriefingAcknowledged(true)}>
-   I've reviewed this shift's safety context — D. Kowalski · {new Date().toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' })}
-  </Btn>
+  <div className="border-t border-rule2 flex-shrink-0">
+  <HoldButton
+   label={`Hold to confirm — I've reviewed this briefing`}
+   holdLabel="Keep holding to confirm…"
+   doneLabel={`Confirmed — D. Kowalski · ${new Date().toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' })}`}
+   duration={2000}
+   tone="ok"
+   onConfirm={() => setBriefingAcknowledged(true)}
+  />
   </div>
  </Modal>
  )}
@@ -557,22 +607,18 @@ export default function ShiftIQ() {
  <div className="flex-1 overflow-y-auto border-r border-rule2">
  <div className="border-b border-rule2 bg-stone2 sticky top-0 z-10">
   <div className="flex">
-  {(() => {
-   const remainingCount = CHECKLIST_ITEMS.filter(it => !checklistSigned[it.key]).length
-   return [
-    { id: 'orders', label: 'Orders' },
-    { id: 'tasks', label: pendingTaskCount > 0 ? `Tasks \u00b7 ${pendingTaskCount}` : 'Tasks' },
-    { id: 'checklist', label: remainingCount > 0 ? `Checklist \u00b7 ${remainingCount}` : 'Checklist' },
-   ].map(tab => (
-    <button key={tab.id} type="button"
-    onClick={() => setCol1Tab(tab.id)}
-    className={`px-4 py-2 font-body text-[10px] uppercase tracking-widest font-medium border-b-2 transition-colors cursor-pointer ${
-     col1Tab === tab.id ? 'border-b-ochre text-ink' : 'border-b-transparent text-ghost hover:text-muted'
-    }`}>
-    {tab.label}
-    </button>
-   ))
-  })()}
+  {[
+   { id: 'orders', label: 'Orders' },
+   { id: 'tasks', label: pendingTaskCount > 0 ? `Tasks \u00b7 ${pendingTaskCount}` : 'Tasks' },
+  ].map(tab => (
+   <button key={tab.id} type="button"
+   onClick={() => setCol1Tab(tab.id)}
+   className={`px-4 py-2 font-body text-[10px] uppercase tracking-widest font-medium border-b-2 transition-colors cursor-pointer ${
+    col1Tab === tab.id ? 'border-b-ochre text-ink' : 'border-b-transparent text-ghost hover:text-muted'
+   }`}>
+   {tab.label}
+   </button>
+  ))}
   </div>
  </div>
  {hasLiveData ? (
@@ -601,12 +647,15 @@ export default function ShiftIQ() {
  <input
  type="text" placeholder="Override reason (required)…"
  value={overrideReason}
- onChange={e => setOverrideReason(e.target.value)}
- className="w-full font-body text-ink text-[11px] bg-stone border border-danger/30 px-2 py-1.5"
+ onChange={e => { setOverrideReason(e.target.value); setOverrideShake(false) }}
+ className={`w-full font-body text-ink text-[11px] bg-stone border border-danger/30 px-2 py-1.5 ${overrideShake ? 'shake-error' : ''}`}
  autoFocus
  />
  <div className="flex gap-2">
- <Btn variant="primary" disabled={!overrideReason.trim()} onClick={() => { setAllergenOverride(overrideReason); setOverrideMode(false); logActivity({ actor:'D. Kowalski', action:`Allergen override: "${overrideReason}"`, item:'Allergen changeover log', type:'override' }) }}>Confirm override — auto-CAPA created</Btn>
+ <Btn variant="primary" disabled={!overrideReason.trim()} onClick={() => {
+ if (!overrideReason.trim()) { setOverrideShake(true); return }
+ setAllergenOverride(overrideReason); setOverrideMode(false); logActivity({ actor:'D. Kowalski', action:`Allergen override: "${overrideReason}"`, item:'Allergen changeover log', type:'override' })
+ }}>Confirm override — auto-CAPA created</Btn>
  <button type="button" onClick={() => setOverrideMode(false)} className="font-body text-[11px] px-2 py-1.5 text-ghost">Cancel</button>
  </div>
  </div>
@@ -621,7 +670,7 @@ export default function ShiftIQ() {
  )}
  {activeLine === 'l4' && checklistSigned['allergen'] && (
  <div className="flex items-center gap-2 px-4 py-2 bg-ok/10 border-b border-ok/20 font-body text-ok text-[10px] slide-in">
- <Check size={12} strokeWidth={2} className="text-ok flex-shrink-0" />
+ <AnimatedCheck size={12} color="#3A8A5A" className="flex-shrink-0" />
  Allergen changeover log signed — Okonkwo · {checklistSigned['allergen']} · Production start unblocked
  </div>
  )}
@@ -685,14 +734,14 @@ export default function ShiftIQ() {
  )))}
  {showTaskForm && (
  <div className="mt-2 space-y-1.5 slide-in">
- <select value={taskForm.assignee} onChange={e => setTaskForm(p => ({...p, assignee: e.target.value}))}
+ <select aria-label="Assign to operator" value={taskForm.assignee} onChange={e => setTaskForm(p => ({...p, assignee: e.target.value}))}
  className="w-full font-body text-ink text-[11px] bg-stone border border-rule2 px-2 py-1 cursor-pointer">
  <option value="">Assign to…</option>
  {['A. Martinez','C. Reyes','P. Okonkwo','F. Adeyemi','T. Osei'].map(n => <option key={n}>{n}</option>)}
  </select>
- <input placeholder="Task description" value={taskForm.label} onChange={e => setTaskForm(p => ({...p, label: e.target.value}))}
+ <input aria-label="Task description" placeholder="Task description" value={taskForm.label} onChange={e => setTaskForm(p => ({...p, label: e.target.value}))}
  className="w-full font-body text-ink text-[11px] bg-stone border border-rule2 px-2 py-1" />
- <input placeholder="Due time (e.g. 09:00)" value={taskForm.dueTime} onChange={e => setTaskForm(p => ({...p, dueTime: e.target.value}))}
+ <input aria-label="Due time" placeholder="Due time (e.g. 09:00)" value={taskForm.dueTime} onChange={e => setTaskForm(p => ({...p, dueTime: e.target.value}))}
  className="w-full font-body text-ink text-[11px] bg-stone border border-rule2 px-2 py-1" />
  <div className="flex gap-1.5">
  <Btn variant="primary" disabled={!taskForm.assignee || !taskForm.label} onClick={() => {
@@ -716,7 +765,7 @@ export default function ShiftIQ() {
  {showNearMiss && !nearMissSubmitted && (
  <div className="slide-in space-y-2">
  <div className="font-body text-ghost text-[10px] uppercase tracking-widest">Near-miss report</div>
- <select value={nearMissForm.station} onChange={e => setNearMissForm(p => ({...p, station: e.target.value}))}
+ <select aria-label="Station where near-miss occurred" value={nearMissForm.station} onChange={e => setNearMissForm(p => ({...p, station: e.target.value}))}
  className="w-full font-body text-ink text-[11px] bg-stone border border-rule2 px-2 py-1 cursor-pointer">
  <option value="">Station…</option>
  <option>Sauce Dosing</option>
@@ -724,9 +773,9 @@ export default function ShiftIQ() {
  <option>Pack Line</option>
  <option>Topping Line</option>
  </select>
- <textarea placeholder="What happened?" value={nearMissForm.what} onChange={e => setNearMissForm(p => ({...p, what: e.target.value}))}
+ <textarea aria-label="What happened" placeholder="What happened?" value={nearMissForm.what} onChange={e => setNearMissForm(p => ({...p, what: e.target.value}))}
  className="w-full font-body text-ink text-[11px] bg-stone border border-rule2 px-2 py-1 h-16 resize-none" />
- <input placeholder="Corrective step taken" value={nearMissForm.action} onChange={e => setNearMissForm(p => ({...p, action: e.target.value}))}
+ <input aria-label="Corrective step taken" placeholder="Corrective step taken" value={nearMissForm.action} onChange={e => setNearMissForm(p => ({...p, action: e.target.value}))}
  className="w-full font-body text-ink text-[11px] bg-stone border border-rule2 px-2 py-1" />
  <label className="flex items-center gap-2 font-body text-muted text-[11px] cursor-pointer">
  <input type="checkbox" checked={nearMissForm.atRisk} onChange={e => setNearMissForm(p => ({...p, atRisk: e.target.checked}))} />
@@ -734,7 +783,9 @@ export default function ShiftIQ() {
  </label>
  <div className="flex gap-2">
  <Btn variant="primary" disabled={!nearMissForm.station || !nearMissForm.what} onClick={() => {
- setNearMisses(p => [...p, { ...nearMissForm, time: new Date().toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' }) }])
+ const t = new Date().toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' })
+ setNearMisses(p => [...p, { ...nearMissForm, time: t }])
+ logActivity({ actor:'D. Kowalski', action:`Near-miss reported — ${nearMissForm.station}`, item: nearMissForm.what, type:'near_miss' })
  setNearMissSubmitted(true); setShowNearMiss(false)
  }}>Submit — auto-CAPA created</Btn>
  <button type="button" onClick={() => setShowNearMiss(false)} className="font-body text-[11px] px-2 py-1 text-ghost">Cancel</button>
@@ -747,7 +798,7 @@ export default function ShiftIQ() {
  </div>
  </>
  )}
- {col1Tab === 'checklist' && (
+ {false && /* checklist moved to FAB drawer below */ (
  <div>
 
   {CHECKLIST_ITEMS.map(item => {
@@ -757,9 +808,10 @@ export default function ShiftIQ() {
   const showEmpForm = item.key === 'emp' && signed && !empResult
   const showFlagForm = flagForm[item.key]
   return (
-   <div key={item.key} className={`border-l-2 border-b border-rule2 ${
+   <div key={item.key} className={`relative border-l-2 border-b border-rule2 overflow-hidden ${
     signed ? 'border-l-ok bg-stone' : item.isAllergen && !allergenSigned ? 'border-l-danger bg-danger/[0.03]' : flag ? 'border-l-warn bg-warn/[0.02]' : 'border-l-rule2 bg-stone'
    }`}>
+   {signed && <span key={`flash-${item.key}`} className="flash-success" aria-hidden="true" />}
    <div className="px-4 py-3">
     <div className="flex items-start justify-between gap-2 mb-1.5">
     <p className={`font-body font-medium text-[13px] leading-snug ${signed ? 'line-through text-ghost' : item.isAllergen && !allergenSigned ? 'text-danger' : 'text-ink'}`}>
@@ -767,8 +819,8 @@ export default function ShiftIQ() {
      {item.isAllergen && !allergenSigned && <span className="ml-1.5 inline-flex items-center gap-0.5 text-[10px] font-medium"><AlertTriangle size={9} strokeWidth={2} /> BLOCKING</span>}
      {flag && <span className="ml-1.5 inline-flex items-center gap-0.5 text-[10px] text-warn font-medium"><Flag size={9} strokeWidth={2} /> flagged</span>}
     </p>
-    {signed && !empResult && item.key !== 'emp' && <span className="font-body text-ok text-[10px] flex items-center gap-0.5 flex-shrink-0"><Check size={10} strokeWidth={2} /> {signed}</span>}
-    {signed && item.key === 'emp' && empResult && <span className="font-body text-ok text-[10px] flex items-center gap-0.5 flex-shrink-0"><Check size={10} strokeWidth={2} /> {empResult.result === 'negative' ? 'Neg' : 'Pos'} · {signed}</span>}
+    {signed && !empResult && item.key !== 'emp' && <span className="font-body text-ok text-[10px] flex items-center gap-0.5 flex-shrink-0"><AnimatedCheck size={10} color="#3A8A5A" /> {signed}</span>}
+    {signed && item.key === 'emp' && empResult && <span className="font-body text-ok text-[10px] flex items-center gap-0.5 flex-shrink-0"><AnimatedCheck size={10} color="#3A8A5A" /> {empResult.result === 'negative' ? 'Neg' : 'Pos'} · {signed}</span>}
     {flag && !signed && <span className="font-body text-warn text-[10px] flex items-center gap-0.5 flex-shrink-0"><Flag size={9} strokeWidth={2} /> {flag.reason}</span>}
     </div>
     <p className="font-body text-ghost text-[11px] mb-2">{item.operator}</p>
@@ -807,7 +859,7 @@ export default function ShiftIQ() {
    )}
    {showFlagForm && !flag && (
     <div className="pb-2 px-1 space-y-1.5 slide-in">
-    <select value={flagForm[item.key]?.reason || ''} onChange={e => setFlagForm(p => ({...p, [item.key]: {...p[item.key], reason: e.target.value}}))}
+    <select aria-label="Reason for flagging this item" value={flagForm[item.key]?.reason || ''} onChange={e => setFlagForm(p => ({...p, [item.key]: {...p[item.key], reason: e.target.value}}))}
      className="w-full font-body text-ink text-[10px] bg-stone border border-rule2 px-2 py-1 cursor-pointer">
      <option value="">Reason for flag…</option>
      <option>Equipment malfunction</option>
@@ -842,6 +894,165 @@ export default function ShiftIQ() {
  {viewingOperator && (
   <OperatorPanel name={viewingOperator} onClose={() => setViewingOperator(null)} />
  )}
+
+ {/* ── Checklist FAB ──────────────────────────────────────────────────── */}
+ {hasLiveData && (() => {
+  const remaining = CHECKLIST_ITEMS.filter(it => !checklistSigned[it.key]).length
+  return (
+   <button
+    type="button"
+    onClick={() => setChecklistDrawerOpen(true)}
+    aria-label={`Open shift checklist — ${remaining > 0 ? `${remaining} items remaining` : 'all signed'}`}
+    className="fixed bottom-6 right-6 z-20 flex items-center gap-2 px-3.5 py-2.5 bg-ink text-stone font-body text-[11px] font-medium shadow-[0_4px_20px_rgba(16,15,13,0.25)] hover:bg-ink2 transition-colors duration-100 ease-standard"
+   >
+    {remaining > 0
+     ? <><span className="w-4 h-4 flex items-center justify-center bg-warn text-white text-[10px] font-bold rounded-sm flex-shrink-0">{remaining}</span>Checklist</>
+     : <><AnimatedCheck size={11} color="#3A8A5A" />Checklist</>
+    }
+   </button>
+  )
+ })()}
+
+ {/* ── Checklist VaulDrawer ───────────────────────────────────────────── */}
+ <VaulDrawer
+  open={checklistDrawerOpen}
+  onClose={() => setChecklistDrawerOpen(false)}
+  title="Shift checklist"
+  badge={(() => {
+   const r = CHECKLIST_ITEMS.filter(it => !checklistSigned[it.key]).length
+   return r > 0 ? <span className="font-body text-warn text-[10px] font-medium">{r} remaining</span> : <span className="font-body text-ok text-[10px]">All signed</span>
+  })()}
+  maxHeight="78vh"
+  maxWidth="560px"
+ >
+  {CHECKLIST_ITEMS.map(item => {
+   const signed = checklistSigned[item.key]
+   const flag = flaggedItems[item.key]
+   const empResult = empSessionResults[item.key]
+   const showEmpForm = item.key === 'emp' && signed && !empResult
+   const showFlagForm = flagForm[item.key]
+   return (
+    <div key={item.key} className={`relative border-b border-rule2 overflow-hidden transition-colors ${
+     signed ? 'bg-stone' : item.isAllergen && !allergenSigned ? 'bg-danger/[0.03]' : flag ? 'bg-warn/[0.02]' : 'bg-stone'
+    }`}>
+    {signed && <span key={`flash-cl-${item.key}`} className="flash-success" aria-hidden="true" />}
+    <div className="px-4 py-3.5 flex items-center justify-between gap-3">
+     <div className="flex-1 min-w-0">
+      <div className="flex items-baseline gap-2 mb-0.5">
+       <p className={`font-body font-medium text-[13px] leading-snug ${signed ? 'line-through text-ghost' : item.isAllergen && !allergenSigned ? 'text-danger' : 'text-ink'}`}>
+        {item.label}
+        {item.isAllergen && !allergenSigned && <span className="ml-1.5 inline-flex items-center gap-0.5 text-[10px] font-medium"><AlertTriangle size={9} strokeWidth={2} /> BLOCKING</span>}
+        {flag && <span className="ml-1.5 inline-flex items-center gap-0.5 text-[10px] text-warn font-medium"><Flag size={9} strokeWidth={2} /> flagged</span>}
+       </p>
+      </div>
+      <p className="font-body text-ghost text-[11px]">{item.operator}</p>
+     </div>
+     <div className="flex items-center gap-2 flex-shrink-0">
+      {signed && !empResult && item.key !== 'emp' && <span className="font-body text-ok text-[9px] flex items-center gap-0.5"><AnimatedCheck size={10} color="#3A8A5A" />{signed}</span>}
+      {signed && item.key === 'emp' && empResult && <span className="font-body text-ok text-[9px] flex items-center gap-0.5"><AnimatedCheck size={10} color="#3A8A5A" />{empResult.result === 'negative' ? 'Neg' : 'Pos'}</span>}
+      {flag && !signed && <span className="font-body text-warn text-[9px] flex items-center gap-0.5"><Flag size={9} strokeWidth={2} />{flag.reason}</span>}
+      {!signed && !flag && (
+       <button type="button" onClick={() => setChecklistSigned(p => ({...p, [item.key]: new Date().toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' })}))}
+        className="flex items-center justify-center w-10 h-10 rounded-full border-2 border-rule2 bg-stone3 hover:border-ghost transition-colors cursor-pointer flex-shrink-0"
+        aria-label={`Mark ${item.label} complete`}>
+        <Check size={18} strokeWidth={2} className="text-ink" />
+       </button>
+      )}
+      {signed && (
+       <div className="flex items-center justify-center w-12 h-12 rounded-full border border-ok/20 bg-ok/5 text-ok flex-shrink-0"
+        aria-label={`Completed ${item.label}`}>
+        <Check size={18} strokeWidth={2.5} className="text-ok" />
+       </div>
+      )}
+      {!signed && flag && (
+       <button type="button" onClick={() => setFlagForm(p => ({...p, [item.key]: { reason:'', note:'' }}))} 
+        className="flex items-center justify-center w-10 h-10 rounded-full border-2 border-warn bg-warn/[0.05] hover:bg-warn/[0.1] transition-colors cursor-pointer flex-shrink-0"
+        aria-label={`Flag ${item.label}`}>
+        <Flag size={18} strokeWidth={2} className="text-warn" />
+       </button>
+      )}
+      {!signed && !flag && (
+       <button type="button" onClick={() => setFlagForm(p => ({...p, [item.key]: { reason:'', note:'' }}))} 
+        className="flex items-center justify-center w-10 h-10 rounded-full border-2 border-rule2 hover:border-ghost transition-colors cursor-pointer flex-shrink-0"
+        aria-label={`Flag ${item.label}`}>
+        <Flag size={18} strokeWidth={2} className="text-ghost" />
+       </button>
+      )}
+     </div>
+    </div>
+    {showEmpForm && (
+     <div className="pb-2 px-1 space-y-1.5 slide-in">
+     <div className="font-body text-ghost text-[10px] uppercase tracking-widest">Swab result required</div>
+     <div className="flex gap-2">
+      {['negative','positive'].map(r => (
+      <button type="button" key={r} onClick={() => setEmpForm(p => ({...p, [item.key]: {...p[item.key], result: r}}))}
+       className={`font-body font-medium text-[10px] px-2 py-1 transition-colors ${empForm[item.key]?.result === r ? (r === 'negative' ? 'bg-ok text-white' : 'bg-danger text-white') : 'bg-stone3 text-muted'}`}>
+       {r.charAt(0).toUpperCase() + r.slice(1)}
+      </button>
+      ))}
+      {empForm[item.key]?.result === 'positive' && (
+      <input aria-label="CFU count" placeholder="CFU count" type="number"
+       value={empForm[item.key]?.cfu || ''}
+       onChange={e => setEmpForm(p => ({...p, [item.key]: {...p[item.key], cfu: e.target.value}}))}
+       className="w-20 font-body text-ink text-[10px] bg-stone border border-rule2 px-2 py-0.5" />
+      )}
+     </div>
+     {empForm[item.key]?.result && (
+      <Btn variant="primary" onClick={() => {
+       const r = empForm[item.key]
+       setEmpSessionResults(p => ({...p, [item.key]: { result: r.result, cfu: r.cfu, time: checklistSigned[item.key] }}))
+       if (r.result === 'positive') setMaintenanceTickets(p => [...p, { id:`MT-EMP-${Date.now()}`, equipment:'Zone 1 — Sauce Dosing', issue:`Positive EMP swab${r.cfu ? ` · ${r.cfu} CFU` : ''} — deep clean required before next production run`, urgency:'danger', status:'open', requestedBy:'T. Osei', createdAt: checklistSigned[item.key] }])
+      }}>Log result {empForm[item.key]?.result === 'positive' ? '— auto-CAPA created' : ''}</Btn>
+     )}
+     </div>
+    )}
+    {showFlagForm && !flag && (
+     <div className="px-4 py-3 space-y-3 slide-in">
+      <div className="font-body text-ghost text-[10px] uppercase tracking-widest">Select reason</div>
+      <div className="relative flex items-center justify-center gap-6">
+       <button
+        type="button"
+        onClick={() => setFlagForm(p => { const n = {...p}; delete n[item.key]; return n })}
+        className="flex items-center justify-center w-9 h-9 rounded-full border-2 border-rule2 bg-stone2 hover:bg-stone3 hover:border-ghost transition-all cursor-pointer flex-shrink-0"
+        aria-label="Close flag selector">
+        <X size={16} strokeWidth={2} className="text-ink" />
+       </button>
+       <div className="flex items-center gap-4">
+        {FLAG_REASONS.map(({ value, label, Icon }) => {
+         const active = flagForm[item.key]?.reason === value
+         return (
+          <button
+           key={value}
+           type="button"
+           onClick={() => {
+            setFlagForm(p => ({...p, [item.key]: {...p[item.key], reason: value, active: true}}))
+            setTimeout(() => {
+             const f = flagForm[item.key]
+             if (f) {
+              setFlaggedItems(p => ({...p, [item.key]: {reason: value}}))
+              if (value === 'Equipment malfunction') setMaintenanceTickets(p => [...p, { id:`MT-${Date.now()}`, equipment: item.label, issue: value, urgency:'warn', status:'open', requestedBy: item.operator, createdAt: new Date().toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' }) }])
+              setFlagForm(p => { const n = {...p}; delete n[item.key]; return n })
+             }
+            }, 200)
+           }}
+           title={label}
+           className={`group relative flex flex-col items-center justify-center w-11 h-11 rounded-full transition-transform ${active ? 'scale-110' : 'scale-100 hover:scale-110'} ${active ? 'bg-ok/10' : 'bg-stone2 hover:bg-stone3'}`}
+           aria-label={label}>
+           <Icon size={18} strokeWidth={2} className={`${active ? 'text-ok' : 'text-ink'}`} aria-hidden="true" />
+           <span className="absolute -bottom-7 left-1/2 -translate-x-1/2 whitespace-nowrap font-body text-[9px] bg-ink text-stone px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+            {label}
+           </span>
+          </button>
+         )
+        })}
+       </div>
+      </div>
+     </div>
+    )}
+    </div>
+   )
+  })}
+ </VaulDrawer>
  </div>
  )
 }
