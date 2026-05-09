@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import { readinessData } from '../data'
 import { useAppState } from '../context/AppState'
-import { Urg, StatCell, SP, SecHd, Btn, Layout, ActionBanner } from '../components/UI'
+import { Urg, StatCell, SP, SecHd, Btn, Layout, ActionBanner, Spinner, AnimatedCheck } from '../components/UI'
 
 const toneColor = t => t === 'ok' ? '#3A8A5A' : t === 'danger' ? '#D94F2A' : '#C4920A'
 const statusCls = t => t === 'ok' ? 'bg-ok/10 text-ok' : t === 'danger' ? 'bg-danger/10 text-danger' : 'bg-warn/10 text-warn'
@@ -19,9 +19,9 @@ function SourceRowTable({ s }) {
  <div className="font-body text-ghost text-[11px]">{s.sub}</div>
  </div>
  <div className="flex flex-col justify-center px-3 gap-1">
- <span style={{ fontFamily:'Georgia,serif', fontWeight:800, fontStyle:'', fontSize:11, color:c, lineHeight:1 }}>{s.score}</span>
+ <span className="font-display font-extrabold leading-none text-[11px]" style={{ color: c }}>{s.score}</span>
  <div style={{ height:3, background:'#D8D2C8' }}>
- <div style={{ height:'100%', width:`${s.score}%`, background:c, transition:'width 0.6s ease' }} />
+ <div style={{ height:'100%', width:`${s.score}%`, background:c, transition:'width 500ms cubic-bezier(0.19,0.91,0.38,1)' }} />
  </div>
  </div>
  <div className="flex items-center px-3">
@@ -29,7 +29,7 @@ function SourceRowTable({ s }) {
  </div>
  <div className="flex flex-col justify-center px-3 gap-1">
  <div style={{ height:3, background:'#D8D2C8' }}>
- <div style={{ height:'100%', width:`${s.consistency}%`, background:c, transition:'width 0.6s ease' }} />
+ <div style={{ height:'100%', width:`${s.consistency}%`, background:c, transition:'width 500ms cubic-bezier(0.19,0.91,0.38,1)' }} />
  </div>
  <span className={`font-body text-[10px] ${s.tone==='ok'?'text-ghost':s.tone==='danger'?'text-danger':'text-warn'}`}>{s.consistency}%</span>
  </div>
@@ -122,14 +122,14 @@ export default function DataReadiness() {
  )
 
  return (
- <div className="flex flex-col h-full overflow-hidden">
+ <div className="flex flex-col h-full overflow-hidden content-reveal">
  <ActionBanner
  tone="warn"
  headline={`AI confidence: ${score}/100 — before acting on a $50K call, know how certain the system is`}
  body="3 gaps prevent cross-plant correlation and constrain recommendation accuracy across ShiftIQ and SupplierIQ"
  >
  <Btn variant="secondary" onClick={handleExport} disabled={exportState === 'loading'}>
- {exportState === 'loading' ? 'Preparing…' : exportState === 'done' ? 'Exported ✓' : 'Export readiness report'}
+ {exportState === 'loading' ? <><Spinner label="Preparing export" /> Preparing…</> : exportState === 'done' ? <><AnimatedCheck size={11} color="currentColor" /> Exported</> : 'Export readiness report'}
  </Btn>
  </ActionBanner>
 
@@ -153,10 +153,10 @@ export default function DataReadiness() {
  <div className="bg-ok/20" style={{ width:'25%' }} />
  </div>
  {/* Filled bar */}
- <div className={`absolute inset-y-0 left-0 transition-all duration-1000 ${scoreBg}`}
+ <div className={`absolute inset-y-0 left-0 transition-[left,width] duration-500 ease-enter ${scoreBg}`}
  style={{ width: score + '%' }} />
  {/* Thumb marker */}
- <div className={`absolute top-1/2 -translate-y-1/2 w-[3px] h-[14px] transition-all duration-1000 ${scoreBg}`}
+ <div className={`absolute top-1/2 -translate-y-1/2 w-[3px] h-[14px] transition-[left,width] duration-500 ease-enter ${scoreBg}`}
  style={{ left: score + '%' }} />
  </div>
  {/* Zone labels */}

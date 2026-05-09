@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react'
+import { useFocusTrap, useExitAnimation } from '../lib/utils'
 import { FileText, BarChart2 } from 'lucide-react'
 import StatBar from '../components/StatBar.jsx'
 import { Check, X, AlertTriangle, ArrowRight, TrendingUp, ChevronRight } from 'lucide-react'
@@ -17,6 +18,9 @@ function CaseDetailPanel({ caseData, onClose }) {
  const [actionTaken, setActionTaken] = useState(null)
  const { setClosedCases, logActivity } = useAppState()
  const fileInputRef = useRef(null)
+ const panelRef = useRef(null)
+ const { exiting, exit } = useExitAnimation(200)
+ useFocusTrap(panelRef, !!caseData)
 
  useEffect(() => {
  if (actionTaken) {
@@ -30,14 +34,14 @@ function CaseDetailPanel({ caseData, onClose }) {
 
  return (
  <>
- <div className="fixed inset-0 bg-ink/30 z-40" onClick={onClose} />
- <aside className="fixed top-0 right-0 bottom-0 w-full max-w-[480px] bg-stone border-l border-rule2 z-50 flex flex-col slide-right">
+ <div className="fixed inset-0 bg-ink/30 z-40" onClick={() => exit(onClose)} />
+ <aside ref={panelRef} role="dialog" aria-modal="true" aria-label={`CAPA case — ${caseData.capaId}`} className={`fixed top-0 right-0 bottom-0 w-full max-w-[480px] bg-stone border-l border-rule2 z-50 flex flex-col ${exiting ? 'slide-right-out' : 'slide-right'}`}>
  <div className="flex items-start justify-between px-4 py-4 border-b border-rule2 bg-stone2 flex-shrink-0">
  <div>
  <div className="font-body text-[10px] text-muted mb-1">{caseData.capaId}</div>
  <div className="font-display text-base font-black text-ink">{caseData.title}</div>
  </div>
- <button type="button" onClick={onClose} aria-label="Close case detail" className="p-1 text-ghost hover:text-ink transition-colors flex-shrink-0">
+ <button type="button" onClick={() => exit(onClose)} aria-label="Close case detail" className="p-1 text-ghost hover:text-ink transition-colors duration-100 ease-standard flex-shrink-0">
  <X size={14} strokeWidth={2} aria-hidden="true" />
  </button>
  </div>
@@ -143,7 +147,7 @@ function CollapsibleSection({ label, isOpen, onToggle, children }) {
  <div className="border-b border-rule2 last:border-b-0">
  <button type="button" onClick={onToggle}
  className="w-full flex items-center justify-between px-4 py-2.5 hover:bg-stone2 transition-colors">
- <span className="font-body text-ghost text-[9px] uppercase tracking-widest">{label}</span>
+ <span className="font-body text-ghost text-[10px] uppercase tracking-widest">{label}</span>
  <span className={`text-ghost text-[10px] transition-transform ${isOpen ? 'rotate-180' : ''}`}>▾</span>
  </button>
  {isOpen && <div className="border-t border-rule2 bg-stone">{children}</div>}
@@ -167,7 +171,7 @@ function PriorityQueueRow({ c, isSelected, onSelect, isEscalated, isResolved }) 
  <Chip tone={isEscalated ? 'muted' : isResolved ? 'ok' : c.badgeColor === 'text-danger' ? 'danger' : c.badgeColor === 'text-ok' ? 'ok' : 'warn'}>
  {isEscalated ? 'Delegated' : isResolved ? 'Resolved' : c.badge}
  </Chip>
- <span className="font-body text-ghost text-[9px]">{c.capaId}</span>
+ <span className="font-body text-ghost text-[10px]">{c.capaId}</span>
  </div>
  <div className={`font-body font-medium text-[11px] leading-snug truncate ${isResolved || isEscalated ? 'text-muted' : 'text-ink'}`}>
  {c.title}
@@ -178,7 +182,7 @@ function PriorityQueueRow({ c, isSelected, onSelect, isEscalated, isResolved }) 
  </div>
  )}
  {isEscalated && (
- <div className="font-body text-[9px] mt-0.5 text-ghost">Delegated — moved to bottom</div>
+ <div className="font-body text-[10px] mt-0.5 text-ghost">Delegated — moved to bottom</div>
  )}
  </div>
  </div>
@@ -226,7 +230,7 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
  : 'bg-ink text-stone'
 
  return (
- <div className="flex flex-col h-full overflow-hidden">
+ <div className="flex flex-col h-full overflow-hidden content-reveal">
  {/* Case header */}
  <div className="px-4 py-4 border-b border-rule2 bg-stone2 flex-shrink-0">
  <div className="flex items-center gap-2 mb-1">
@@ -534,7 +538,7 @@ function QueueItem({ item, priority, onSelectCase, onShowBlockingCase, blockingE
  </div>
  <div className="flex-1 min-w-0">
  <div className="flex items-center gap-2 mb-1.5 flex-wrap">
- <span className={`font-body font-medium text-[9px] px-1.5 py-px ${item.badgeColor} ${BADGE_BG[item.badgeColor]||'bg-warn/10'}`}>{item.badge}</span>
+ <span className={`font-body font-medium text-[10px] px-1.5 py-px ${item.badgeColor} ${BADGE_BG[item.badgeColor]||'bg-warn/10'}`}>{item.badge}</span>
  <span className="font-body text-ghost text-[10px]">{item.capaId}</span>
  {item.rootCause && <span className="font-body text-ghost text-[10px]">· {item.rootCause.split(' — ')[0]}</span>}
  </div>
@@ -622,7 +626,7 @@ export default function CapaEngine() {
  }
 
  return (
- <div className="flex flex-col h-full overflow-hidden">
+ <div className="flex flex-col h-full overflow-hidden content-reveal">
  {/* Shared slide-over panels */}
  <CaseDetailPanel caseData={selectedCase} onClose={() => setSelectedCase(null)} />
  {showBlockingCase && (

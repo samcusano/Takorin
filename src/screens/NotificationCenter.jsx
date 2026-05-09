@@ -1,239 +1,269 @@
-import { useState, useCallback } from 'react'
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAppState } from '../context/AppState'
-import { SecHd, Urg, ActionBanner, Btn } from '../components/UI'
+import { VaulDrawer } from '../components/UI'
 
-const TYPE_COLOR = {
- override: { bg: 'bg-danger/[0.04] border-l-danger', dot: 'bg-danger', label: 'Override' },
- escalation: { bg: 'bg-danger/[0.03] border-l-danger', dot: 'bg-danger', label: 'Escalation' },
- near_miss: { bg: 'bg-warn/[0.03] border-l-warn', dot: 'bg-warn', label: 'Near miss' },
- maintenance: { bg: 'bg-warn/[0.02] border-l-warn', dot: 'bg-warn', label: 'Maintenance' },
- coa: { bg: 'bg-warn/[0.02] border-l-warn', dot: 'bg-warn', label: 'COA' },
- rfq: { bg: 'border-l-int', dot: 'bg-int', label: 'RFQ' },
- evidence: { bg: 'bg-ok/[0.02] border-l-ok', dot: 'bg-ok', label: 'Evidence' },
- acknowledged: { bg: 'border-l-ok', dot: 'bg-ok', label: 'Acknowledged' },
+// Type → visual style mapping
+const TYPE = {
+  safety:       { label: 'Safety',       chip: 'bg-danger/10 text-danger', bar: 'border-l-danger', row: 'bg-danger/[0.03]' },
+  near_miss:    { label: 'Near miss',    chip: 'bg-warn/10 text-warn',    bar: 'border-l-warn',   row: 'bg-warn/[0.02]' },
+  override:     { label: 'Override',     chip: 'bg-danger/10 text-danger', bar: 'border-l-danger', row: 'bg-danger/[0.03]' },
+  escalation:   { label: 'Escalation',   chip: 'bg-danger/10 text-danger', bar: 'border-l-danger', row: '' },
+  compliance:   { label: 'Compliance',   chip: 'bg-warn/10 text-warn',    bar: 'border-l-warn',   row: '' },
+  capa:         { label: 'CAPA',         chip: 'bg-warn/10 text-warn',    bar: 'border-l-warn',   row: '' },
+  evidence:     { label: 'Evidence',     chip: 'bg-ok/10 text-ok',        bar: 'border-l-ok',     row: '' },
+  acknowledged: { label: 'Acknowledged', chip: 'bg-ok/10 text-ok',        bar: 'border-l-ok',     row: '' },
+  acknowledgment: { label: 'Acknowledged', chip: 'bg-ok/10 text-ok',      bar: 'border-l-ok',     row: '' },
+  handoff:      { label: 'Handoff',      chip: 'bg-ok/10 text-ok',        bar: 'border-l-ok',     row: '' },
+  intervention: { label: 'Action',       chip: 'bg-int/10 text-int',      bar: 'border-l-int',    row: '' },
 }
 
-function GroupedNotifRow({ group, onAction }) {
- const [expanded, setExpanded] = useState(false)
- const style = TYPE_COLOR[group.type] || { bg: 'border-l-rule', dot: 'bg-ghost', label: '' }
- const undismissed = group.items.filter(n => !n.dismissed)
- const allDismissed = undismissed.length === 0
+const FILTER = {
+  All:        () => true,
+  Safety:     e => ['safety','near_miss','override','escalation'].includes(e.type),
+  Compliance: e => ['compliance','capa','evidence'].includes(e.type),
+  People:     e => ['acknowledged','acknowledgment','handoff'].includes(e.type),
+}
+
+// Log types that are the director's own actions or system noise — exclude from feed
+const EXCLUDE_TYPES = new Set(['intervention', 'system'])
+
+function NotifItem({ item, read, onRead, onNavigate }) {
+ const s = TYPE[item.type] || TYPE.compliance
+ const isRead = read.has(item.id)
 
  return (
- <div className={`border-b border-rule2 border-l-2 transition-opacity duration-200 ${style.bg} ${allDismissed ? 'opacity-40' : ''}`}>
- <button
- type="button"
- onClick={() => setExpanded(e => !e)}
- className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-stone2 transition-colors"
- >
- <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${style.dot}`} />
- <div className="flex-1 min-w-0">
- <div className="flex items-center gap-2 mb-0.5">
- <span className={`font-body font-medium text-[10px] px-1.5 py-px ${
- group.type === 'override' || group.type === 'escalation' ? 'bg-danger/10 text-danger' :
- group.type === 'near_miss' || group.type === 'maintenance' || group.type === 'coa' ? 'bg-warn/10 text-warn' :
- 'bg-ok/10 text-ok'
- }`}>{style.label}</span>
- <span className="font-body text-muted text-[10px] px-1.5 py-px bg-stone3">{group.items.length}</span>
- <span className="font-body text-muted text-[10px]">{group.items[0].time}</span>
- </div>
- <div className="font-body font-medium text-ink text-[12px] leading-snug">
- {group.items.map(n => n.title.replace(/^(Near-miss:|Maintenance:|[^—]+—\s*)/, '').trim()).join(' · ')}
- </div>
- </div>
- <span className="font-body text-ghost text-[10px] flex-shrink-0">{expanded ? '▴' : '▾'}</span>
- </button>
- {expanded && group.items.map(n => (
- <NotifRow key={n.id} notif={n} onAction={onAction} indent />
- ))}
- </div>
+  <div className={`border-b border-rule2 border-l-2 ${s.bar} ${s.row} ${isRead ? 'opacity-40' : ''} transition-opacity duration-200`}>
+   <div className="px-4 py-3 flex gap-3">
+    <div className="flex-1 min-w-0">
+     <div className="flex items-center gap-2 mb-1">
+      <span className={`font-body font-medium text-[10px] px-1.5 py-px ${s.chip}`}>{s.label}</span>
+      <span className="font-body text-ghost text-[10px]">{item.time}</span>
+     </div>
+     <div className="font-body font-medium text-ink text-[12px] leading-snug mb-0.5">{item.title}</div>
+     {item.body && <div className="font-body text-muted text-[11px] leading-relaxed">{item.body}</div>}
+     {item.link && (
+      <button
+       type="button"
+       onClick={() => onNavigate(item.link)}
+       className="font-body text-int text-[10px] mt-1.5 hover:underline flex items-center gap-0.5 transition-colors"
+      >
+       {item.linkLabel || 'Open in module'} →
+      </button>
+     )}
+    </div>
+    {!isRead && (
+     <button
+      type="button"
+      onClick={() => onRead(item.id)}
+      className="font-body text-ghost text-[10px] hover:text-muted transition-colors flex-shrink-0 self-start pt-0.5"
+      aria-label="Mark as read"
+     >
+      Mark read
+     </button>
+    )}
+   </div>
+  </div>
  )
 }
 
-const SAFETY_CRITICAL = new Set(['override', 'escalation'])
-
-function NotifRow({ notif, onAction, indent }) {
- const [confirmingDismiss, setConfirmingDismiss] = useState(false)
- const style = TYPE_COLOR[notif.type] || { bg: 'border-l-rule', dot: 'bg-ghost', label: '' }
- const isCritical = SAFETY_CRITICAL.has(notif.type)
-
- function handleDismiss() {
- if (isCritical) { setConfirmingDismiss(true); return }
- onAction(notif.id, 'dismiss')
- }
+function StandingItem({ item, onNavigate }) {
+ const severityBar  = item.severity === 'danger' ? 'border-l-danger' : 'border-l-warn'
+ const severityRow  = item.severity === 'danger' ? 'bg-danger/[0.03]' : ''
+ const severityChip = item.severity === 'danger' ? 'bg-danger/10 text-danger' : 'bg-warn/10 text-warn'
 
  return (
- <div className={`border-b border-rule2 border-l-2 transition-opacity duration-200 ${style.bg} ${notif.dismissed ? 'opacity-40' : ''} ${indent ? 'ml-4 border-l-0 border-t border-rule2' : ''}`}>
- <div className="flex items-start gap-3 px-4 py-3">
- <div className={`w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0 ${style.dot}`} />
- <div className="flex-1 min-w-0">
- <div className="flex items-center gap-2 mb-0.5">
- <span className={`font-body font-medium text-[10px] px-1.5 py-px ${
- notif.type === 'override' || notif.type === 'escalation' ? 'bg-danger/10 text-danger' :
- notif.type === 'near_miss' || notif.type === 'maintenance' || notif.type === 'coa' ? 'bg-warn/10 text-warn' :
- 'bg-ok/10 text-ok'
- }`}>{style.label}</span>
- <span className="font-body text-muted text-[10px]">{notif.time}</span>
- </div>
- <div className="font-body font-medium text-ink text-[12px] leading-snug">{notif.title}</div>
- <div className="font-body text-ghost text-[10px] mt-0.5 leading-relaxed">{notif.body}</div>
- {notif.linkedItem && <div className="font-body text-int text-[10px] mt-1">{notif.linkedItem}</div>}
- {confirmingDismiss && (
- <div className="flex items-center gap-2 mt-2 pt-2 border-t border-rule2 slide-in">
- <span className="font-body text-danger text-[10px] flex-1">Dismissing a safety override is logged. Confirm?</span>
- <Btn variant="secondary" onClick={() => setConfirmingDismiss(false)}>Cancel</Btn>
- <Btn variant="primary" onClick={() => { setConfirmingDismiss(false); onAction(notif.id, 'dismiss') }}>Dismiss anyway</Btn>
- </div>
- )}
- </div>
- {!notif.dismissed && !confirmingDismiss ? (
- <div className="flex flex-col gap-1 flex-shrink-0">
- {notif.actionLabel && (
- <Btn variant="primary" className="whitespace-nowrap" onClick={() => onAction(notif.id, 'act')}>{notif.actionLabel}</Btn>
- )}
- <button type="button" onClick={handleDismiss}
- className="font-body text-[10px] px-2.5 py-1 text-ghost hover:text-muted transition-colors text-center">
- Dismiss
- </button>
- </div>
- ) : !notif.dismissed ? null : <span className="font-body text-ghost text-[10px] flex-shrink-0">Dismissed</span>}
- </div>
- </div>
+  <div className={`border-b border-rule2 border-l-2 ${severityBar} ${severityRow}`}>
+   <div className="px-4 py-3">
+    <div className="flex items-center gap-2 mb-1">
+     <span className={`font-body font-medium text-[10px] px-1.5 py-px ${severityChip}`}>Active</span>
+     <span className="font-body text-ghost text-[10px]">Compliance</span>
+    </div>
+    <div className="font-body font-medium text-ink text-[12px] leading-snug mb-0.5">{item.title}</div>
+    <div className="font-body text-muted text-[11px] leading-relaxed">{item.body}</div>
+    {item.link && (
+     <button
+      type="button"
+      onClick={() => onNavigate(item.link)}
+      className="font-body text-int text-[10px] mt-1.5 hover:underline flex items-center gap-0.5"
+     >
+      {item.linkLabel} →
+     </button>
+    )}
+   </div>
+  </div>
  )
 }
 
 export default function NotificationCenter({ onClose }) {
- const { allergenOverride, nearMisses, maintenanceTickets, rfqSent, blockingEvidenceUploaded, operatorAcknowledgments, logActivity } = useAppState()
- const [dismissed, setDismissed] = useState({})
+ const {
+  allergenOverride, nearMisses, blockingEvidenceUploaded,
+  operatorAcknowledgments, activityLog,
+ } = useAppState()
+ const navigate = useNavigate()
+ const [read, setRead] = useState(new Set())
  const [activeFilter, setActiveFilter] = useState('All')
 
- const dismiss = (id) => setDismissed(p => ({ ...p, [id]: true }))
- const act = (id, title) => {
- logActivity({ actor:'J. Crocker', action:`Acknowledged: ${title}`, item:id, type:'acknowledgment' })
- dismiss(id)
- }
+ const markRead = (id) => setRead(p => new Set([...p, id]))
+ const go = (path) => { onClose?.(); navigate(path) }
 
- const notifications = [
- { id:'capa-001-overdue', type:'escalation', time:'Apr 9', title:'CAPA-2604-001 overdue — 7 days', body:'Sensor A-7 bearing failure. No corrective measure submitted. FDA inspection in 18 days.', linkedItem:'CAPA-2604-001 · D. Kowalski', actionLabel:'View case' },
- { id:'fda-18d', type:'escalation', time:'Today', title:'FDA inspection in 18 days', body:'1 CAPA blocking evidence export. FSMA 204 chain gap unresolved. 62% of audit checklist complete.', linkedItem:'CAPA Engine · Audit pre-flight', actionLabel:'Review package' },
- { id:'coa-missing', type:'coa', time:'Today', title:'COA missing — Line 4 blocked', body:'ConAgra Lot TS-8811 COA not received. Production start on hold until receipt.', linkedItem:'SupplierIQ · Lot TS-8811', actionLabel:'View in SupplierIQ' },
- ...(allergenOverride ? [{ id:'allergen-override', type:'override', time:'Today', title:'Allergen override logged — D. Kowalski', body:`Supervisor bypassed allergen changeover block. Reason: "${allergenOverride}". Auto-CAPA created.`, linkedItem:'Line 4 · Allergen changeover log', actionLabel:'Confirm reviewed' }] : []),
- ...(nearMisses.map((n, i) => ({ id:`near-miss-${i}`, type:'near_miss', time:'Today', title:`Near-miss: ${n.station}`, body:n.what, linkedItem:`Step taken: ${n.action || '—'}`, actionLabel:'Review' }))),
- ...(maintenanceTickets.filter(t => t.status === 'open').map(t => ({ id:t.id, type:'maintenance', time:t.createdAt, title:`Maintenance: ${t.equipment}`, body:t.issue, linkedItem:`Requested by ${t.requestedBy}`, actionLabel:'View ticket' }))),
- ...(rfqSent ? [{ id:'rfq-sent', type:'rfq', time:'Today', title:'RFQ sent — Tomato Sauce alternatives', body:'ADM and Sysco contacted. ConAgra contract expires May 12.', linkedItem:'SupplierIQ · Price alerts', actionLabel:null }] : []),
- ...(blockingEvidenceUploaded ? [{ id:'evidence-ok', type:'evidence', time:'Today', title:'CAPA-2604-006 evidence uploaded', body:'FDA audit package unblocked — export now available.', linkedItem:'CAPA Engine', actionLabel:null }] : []),
- ...(Object.entries(operatorAcknowledgments || {}).map(([name, ack]) => ({ id:`ack-${name}`, type:'acknowledged', time:ack.time, title:`${name} acknowledged safety briefing`, body:'Food safety culture signal — operator confirmed understanding of shift safety context.', linkedItem:'HandoffIQ', actionLabel:null }))),
- ].map(n => ({ ...n, dismissed: !!dismissed[n.id] }))
+ // ── Standing compliance items — persist until underlying state resolves ──
+ const standing = [
+  !blockingEvidenceUploaded && {
+   id: 'capa-006-evidence',
+   severity: 'danger',
+   title: 'CAPA-2604-006 — evidence required before export',
+   body: 'Pack Line QA pre-check log must be attached to unblock the FDA audit package. Assigned to T. Osei.',
+   link: '/capa',
+   linkLabel: 'Open in CAPA Engine',
+  },
+  {
+   id: 'fda-18d',
+   severity: 'warn',
+   title: 'FDA inspection in 18 days — Region 7, Salina',
+   body: '38% of pre-flight checklist complete. CAPA-2604-001 and CAPA-2604-006 evidence gaps remain open. FSMA 204 traceability submission has a naming conflict at CTE 2.',
+   link: '/capa',
+   linkLabel: 'Open in CAPA Engine',
+  },
+  {
+   id: 'capa-001-overdue',
+   severity: 'danger',
+   title: 'CAPA-2604-001 overdue by 7 days',
+   body: 'Sensor A-7 bearing failure root cause. No corrective measure submitted by assigned owner (D. Kowalski). Second auto-escalation sent at 09:15.',
+   link: '/capa',
+   linkLabel: 'Open in CAPA Engine',
+  },
+ ].filter(Boolean)
 
- const pending = notifications.filter(n => !n.dismissed).length
+ // ── Activity events from dynamic state ──────────────────────────────────
+ const dynamicEvents = [
+  allergenOverride && {
+   id: 'allergen-override',
+   type: 'override',
+   time: 'Today',
+   title: 'Allergen override logged — D. Kowalski',
+   body: `Pepperoni → GF-Flatbread changeover block bypassed. Reason: "${allergenOverride}". Auto-CAPA created and assigned.`,
+  },
+  ...nearMisses.map((n, i) => ({
+   id: `near-miss-${i}`,
+   type: 'near_miss',
+   time: n.time || 'Today',
+   title: `Near-miss reported — ${n.station}`,
+   body: n.what + (n.action ? `. Corrective step: ${n.action}` : ''),
+  })),
+  ...Object.entries(operatorAcknowledgments || {}).map(([name, ack]) => ({
+   id: `ack-${name}`,
+   type: 'acknowledged',
+   time: ack.time,
+   title: `${name} confirmed safety briefing`,
+   body: 'Operator acknowledged station safety context before shift start. Logged for food safety culture record.',
+  })),
+ ].filter(Boolean)
 
- const filteredNotifications = notifications.filter(n => {
- if (activeFilter === 'All') return true
- if (activeFilter === 'Critical') return n.type === 'escalation' || n.type === 'override'
- if (activeFilter === 'Safety') return n.type === 'near_miss' || n.type === 'acknowledged'
- if (activeFilter === 'Operations') return n.type === 'maintenance' || n.type === 'coa' || n.type === 'rfq'
- return true
- })
+ // ── Activity log events — exclude director's own actions + system noise ─
+ const logEvents = activityLog
+  .filter(e => !EXCLUDE_TYPES.has(e.type))
+  .map((e, i) => ({
+   id: `log-${i}`,
+   type: e.type,
+   time: e.time,
+   title: `${e.actor} — ${e.action}`,
+   body: e.item,
+  }))
 
- // Group same-type multi-item events; single items stay as-is
- const GROUPABLE_TYPES = new Set(['near_miss', 'acknowledged', 'maintenance'])
- const groupedItems = (() => {
- const result = []
- const seen = new Map()
- for (const n of filteredNotifications) {
- if (GROUPABLE_TYPES.has(n.type)) {
- if (!seen.has(n.type)) {
- seen.set(n.type, { type: n.type, items: [n], grouped: true })
- result.push(seen.get(n.type))
- } else {
- seen.get(n.type).items.push(n)
+ // Deduplicate: skip log entries whose type is already covered by dynamic state
+ const dynamicTypes = new Set(dynamicEvents.map(e => e.type))
+ const DYNAMIC_COVERS = { override: true, near_miss: true, acknowledged: true, acknowledgment: true }
+ const mergedActivity = [
+  ...dynamicEvents,
+  ...logEvents.filter(e => !(DYNAMIC_COVERS[e.type] && dynamicTypes.has(e.type))),
+ ]
+
+ // ── Filter ───────────────────────────────────────────────────────────────
+ const showCompliance = activeFilter === 'All' || activeFilter === 'Compliance'
+ const filteredActivity = mergedActivity.filter(FILTER[activeFilter] || FILTER.All)
+
+ const totalUnread = standing.length + mergedActivity.filter(e => !read.has(e.id)).length
+
+ // Filter tab counts
+ const counts = {
+  All: totalUnread,
+  Safety: mergedActivity.filter(FILTER.Safety).length,
+  Compliance: standing.length,
+  People: mergedActivity.filter(FILTER.People).length,
  }
- } else {
- result.push(n)
- }
- }
- return result
- })()
 
  const content = (
- <div className="flex flex-col h-full overflow-hidden">
- <div className="flex items-center justify-between px-4 py-3.5 flex-shrink-0 bg-ink">
- <div className="flex-1">
- <div className="font-display font-bold text-stone text-base leading-tight">{`Notification center — ${pending} pending`}</div>
- <div className="font-body text-stone/80 text-[12px] mt-1">J. Crocker · Plant Director · April 16, 2026</div>
- </div>
- {onClose && (
- <button type="button" onClick={onClose} className="ml-4 p-1.5 text-stone/60 hover:text-stone transition-colors flex-shrink-0" aria-label="Close notifications">
- <svg className="w-4 h-4 stroke-current" fill="none" strokeWidth={2} viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
- </button>
- )}
- </div>
+  <div className="flex flex-col">
+   {/* Header */}
+   <div className="px-4 py-3 bg-ink flex-shrink-0">
+    <div className="font-display font-bold text-stone text-[15px] leading-tight">Notifications</div>
+    <div className="font-body text-stone/70 text-[11px] mt-0.5">
+     {totalUnread > 0 ? `${totalUnread} unread · ` : 'All read · '}J. Crocker · April 16, 2026
+    </div>
+   </div>
 
- <div className="flex border-b border-rule2 bg-stone2 px-4 py-2 gap-5 flex-shrink-0 flex-wrap">
- {[
- ['All', notifications.length],
- ['Critical', notifications.filter(n=>n.type==='escalation'||n.type==='override').length],
- ['Safety', notifications.filter(n=>n.type==='near_miss'||n.type==='acknowledged').length],
- ['Operations', notifications.filter(n=>n.type==='maintenance'||n.type==='coa'||n.type==='rfq').length],
- ].map(([label, count]) => (
- <button
- type="button"
- key={label}
- onClick={() => setActiveFilter(label)}
- className={`flex items-center gap-1.5 py-1 border-b-2 transition-colors ${activeFilter === label ? 'border-b-ochre' : 'border-b-transparent'}`}
- >
- <span className={`font-body text-[11px] transition-colors ${activeFilter === label ? 'text-ink' : 'text-muted'}`}>{label}</span>
- {count > 0 && <span className="font-body text-muted text-[10px] px-1.5 py-px bg-stone3">{count}</span>}
- </button>
- ))}
- </div>
+   {/* Filter tabs */}
+   <div className="flex gap-5 px-4 py-2 border-b border-rule2 bg-stone2 flex-shrink-0">
+    {Object.keys(FILTER).map(f => (
+     <button
+      type="button"
+      key={f}
+      onClick={() => setActiveFilter(f)}
+      className={`flex items-center gap-1.5 py-1 border-b-2 transition-colors ${activeFilter === f ? 'border-b-ochre' : 'border-b-transparent'}`}
+     >
+      <span className={`font-body text-[11px] ${activeFilter === f ? 'text-ink' : 'text-muted'}`}>{f}</span>
+      {counts[f] > 0 && (
+       <span className="font-body text-muted text-[10px] px-1.5 py-px bg-stone3">{counts[f]}</span>
+      )}
+     </button>
+    ))}
+   </div>
 
- <div className="flex-1 overflow-y-auto">
- <SecHd tag="Director queue" title="Items requiring Plant Director response"
- badge={<Urg level={pending > 2 ? 'critical' : pending > 0 ? 'warn' : 'ok'}>{pending} pending</Urg>} />
- {groupedItems.length === 0 && (
- <div className="px-4 py-8 text-center font-body text-ghost text-[12px]">No notifications{activeFilter !== 'All' ? ` in ${activeFilter}` : ''}.</div>
- )}
- {groupedItems.map((item, i) =>
- item.grouped && item.items.length > 1 ? (
- <GroupedNotifRow
- key={`group-${item.type}`}
- group={item}
- onAction={(id, action) => {
- const n = item.items.find(x => x.id === id)
- action === 'dismiss' ? dismiss(id) : act(id, n?.title || '')
- }}
- />
- ) : (
- <NotifRow
- key={item.grouped ? item.items[0].id : item.id}
- notif={item.grouped ? item.items[0] : item}
- onAction={(id, action) => {
- const n = item.grouped ? item.items[0] : item
- action === 'dismiss' ? dismiss(id) : act(id, n.title)
- }}
- />
- )
- )}
- </div>
- </div>
+   {/* Standing compliance items */}
+   {showCompliance && standing.length > 0 && (
+    <>
+     <div className="px-4 py-2 bg-stone2 border-b border-rule2">
+      <span className="font-body text-[10px] uppercase tracking-widest text-muted font-medium">Requires attention</span>
+     </div>
+     {standing.map(item => (
+      <StandingItem key={item.id} item={item} onNavigate={go} />
+     ))}
+    </>
+   )}
+
+   {/* Activity feed */}
+   {filteredActivity.length > 0 && (
+    <>
+     <div className="px-4 py-2 bg-stone2 border-b border-rule2">
+      <span className="font-body text-[10px] uppercase tracking-widest text-muted font-medium">Activity</span>
+     </div>
+     {filteredActivity.map(item => (
+      <NotifItem key={item.id} item={item} read={read} onRead={markRead} onNavigate={go} />
+     ))}
+    </>
+   )}
+
+   {filteredActivity.length === 0 && !showCompliance && (
+    <div className="px-4 py-10 text-center font-body text-ghost text-[12px]">
+     No {activeFilter.toLowerCase()} events today.
+    </div>
+   )}
+
+   {filteredActivity.length === 0 && showCompliance && standing.length === 0 && (
+    <div className="px-4 py-10 text-center font-body text-ghost text-[12px]">
+     No notifications.
+    </div>
+   )}
+  </div>
  )
 
  if (onClose) {
- return (
- <>
- <div className="fixed inset-0 bg-ink/20 z-40" onClick={onClose} />
- <aside
- className="fixed top-0 right-0 bottom-0 z-50 flex flex-col slide-right bg-stone border-l border-rule2"
- style={{ width: '100%', maxWidth: 480 }}
- role="dialog"
- aria-modal="true"
- aria-label="Notification center"
- >
- {content}
- </aside>
- </>
- )
+  return (
+   <VaulDrawer open onClose={onClose} maxHeight="90vh">
+    {content}
+   </VaulDrawer>
+  )
  }
 
  return content

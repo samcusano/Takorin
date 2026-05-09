@@ -42,7 +42,7 @@ export default function BenchmarkBlock({ metric, rank, total, score, delta, delt
 
  {peers && peers.length > 0 && (
  <div className="px-4 pb-2 border-t border-rule pt-2">
- <div className="text-[9px] font-body uppercase tracking-wide text-ghost mb-2">Top plants · comparable category</div>
+ <div className="text-[10px] font-body uppercase tracking-wide text-ghost mb-2">Top plants · comparable category</div>
  {peers.map((p, i) => (
  <div key={i} className="flex items-center gap-2 py-1 border-b border-rule last:border-0">
  <span className="display-num text-[11px] text-ghost w-4 flex-shrink-0">{i + 1}</span>
@@ -64,7 +64,7 @@ export default function BenchmarkBlock({ metric, rank, total, score, delta, delt
  </div>
  <div className="flex">
  {zones.map((z, i) => (
- <div key={i} className="flex-1 text-center font-body text-[9px] " style={{ color: z.color }}>
+ <div key={i} className="flex-1 text-center font-body text-[10px] " style={{ color: z.color }}>
  <div>● {z.label}</div>
  <div className="text-ghost">{z.range}</div>
  </div>

@@ -18,7 +18,7 @@ export function StatCell({ type = 'so', label, value, sub, pct }) {
  {sub && <div className="text-[10px] font-body text-ghost truncate">{sub}</div>}
  {pct !== undefined && (
  <div className="h-0.5 bg-rule mt-1">
- <div className={`h-full ${s.bar} transition-all duration-1000`} style={{ width: `${pct}%` }} />
+ <div className={`h-full ${s.bar} transition-[width] duration-500 ease-enter`} style={{ width: `${pct}%` }} />
  </div>
  )}
  </div>

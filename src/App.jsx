@@ -1,17 +1,23 @@
+import { lazy, Suspense } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import Sidebar from './components/Sidebar'
 import ErrorBoundary from './components/ErrorBoundary'
-import CommandSurface from './screens/CommandSurface'
-import ShiftIQ from './screens/ShiftIQ'
-import HandoffIQ from './screens/HandoffIQ'
-import SupplierIQ from './screens/SupplierIQ'
-import CAPAEngine from './screens/CAPAEngine'
-import DataReadiness from './screens/DataReadiness'
-import NetworkView from './screens/NetworkView'
-import NotificationCenter from './screens/NotificationCenter'
-import OperatorView from './screens/OperatorView'
-import DesignLabPage from './__design_lab/DesignLabPage'
 import { useAppState } from './context/AppState'
+
+const CommandSurface   = lazy(() => import('./screens/CommandSurface'))
+const ShiftIQ          = lazy(() => import('./screens/ShiftIQ'))
+const HandoffIQ        = lazy(() => import('./screens/HandoffIQ'))
+const SupplierIQ       = lazy(() => import('./screens/SupplierIQ'))
+const CAPAEngine       = lazy(() => import('./screens/CapaEngine'))
+const DataReadiness    = lazy(() => import('./screens/DataReadiness'))
+const NetworkView      = lazy(() => import('./screens/NetworkView'))
+const NotificationCenter = lazy(() => import('./screens/NotificationCenter'))
+const OperatorView     = lazy(() => import('./screens/OperatorView'))
+const DesignLabPage    = lazy(() => import('./__design_lab/DesignLabPage'))
+
+function ScreenLoader() {
+ return <div className="flex-1 flex items-center justify-center font-body text-ghost text-[11px]">Loading…</div>
+}
 
 const ROLE_LABELS = {
  director: null,
@@ -29,7 +35,7 @@ export default function App() {
  <Sidebar />
  <main className="flex-1 flex flex-col overflow-hidden ml-[240px]">
  {roleInfo && (
- <div className="flex items-center justify-between px-4 py-2 bg-[#1e1a14] border-b border-[#3A342E] flex-shrink-0">
+ <div className="flex items-center justify-between px-4 py-2 bg-sidebar border-b border-sidebar-border flex-shrink-0">
   <span className="font-body text-ghost text-[11px]">
    Viewing as <span className="text-ochre font-medium">{roleInfo.name}</span>
    <span className="text-ghost/60"> · {roleInfo.role}</span>
@@ -43,6 +49,7 @@ export default function App() {
   </button>
  </div>
  )}
+ <Suspense fallback={<ScreenLoader />}>
  <Routes>
  <Route path="/" element={<Navigate to="/command" replace />} />
  <Route path="/command" element={<ErrorBoundary><CommandSurface /></ErrorBoundary>} />
@@ -55,6 +62,7 @@ export default function App() {
  <Route path="/operator" element={<ErrorBoundary><OperatorView role={viewingRole} /></ErrorBoundary>} />
  <Route path="/__design_lab" element={<DesignLabPage />} />
  </Routes>
+ </Suspense>
  </main>
  {notifPanelOpen && (
  <NotificationCenter onClose={() => setNotifPanelOpen(false)} />

@@ -34,9 +34,9 @@ export default function OperatorView({ role }) {
  const myNearMisses = nearMisses.filter(n => n.station)
 
  return (
- <div className="flex flex-col h-full overflow-hidden">
+ <div className="flex flex-col h-full overflow-hidden content-reveal">
  <ActionBanner
- color="#8A6A3A"
+ tone="muted"
  headline={`Operator view — ${selected}`}
  body={`${op?.role} · Line 4 · April 16, 2026`}
  />
@@ -45,6 +45,8 @@ export default function OperatorView({ role }) {
  <div className="flex border-b border-rule2 bg-stone2 flex-shrink-0">
  {OPERATORS.map(o => (
  <button key={o.name}
+ type="button"
+ aria-pressed={selected === o.name}
  onClick={() => setSelected(o.name)}
  className={`flex items-center gap-2.5 px-4 py-2.5 border-r border-rule2 border-b-2 transition-colors ${selected === o.name ? 'border-b-ochre bg-stone' : 'border-b-transparent hover:bg-stone3'}`}>
  <PersonAvatar name={o.name} size={28} />
@@ -121,7 +123,7 @@ export default function OperatorView({ role }) {
  </div>
 
  {/* Right panel: cert + training */}
- <div className="w-[260px] flex-shrink-0 border-l border-rule2 overflow-y-auto bg-stone2">
+ <div className="hidden lg:block w-[260px] flex-shrink-0 border-l border-rule2 overflow-y-auto bg-stone2">
  <SP title="Certification progress" sub={op?.role}>
  <div className="px-4 py-3">
  <div className="font-body text-ghost text-[10px] mb-1.5">{op?.certLabel}</div>

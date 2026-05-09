@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
+import { riskLabel } from '../lib/utils'
 import { Check } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { commandData, facility, shiftData } from '../data'
-import { ActionBanner, StatCell, Btn, Chip } from '../components/UI'
+import { ActionBanner, StatCell, Btn, Chip, HoldButton } from '../components/UI'
 import { useAppState } from '../context/AppState'
 
 const prefersReducedMotion =
@@ -20,15 +21,6 @@ function ModulePill({ label }) {
 // ── CommandCell ───────────────────────────────────────────────────────────────
 
 function CommandCell({ item, isPending, onAcknowledge }) {
- const [confirming, setConfirming] = useState(false)
-
- useEffect(() => {
- if (!confirming) return
- const handler = (e) => { if (e.key === 'Escape') setConfirming(false) }
- window.addEventListener('keydown', handler)
- return () => window.removeEventListener('keydown', handler)
- }, [confirming])
-
  if (isPending) {
  return (
  <div className="border-b border-rule2 border-l-2 border-l-ok px-3 py-2.5 bg-ok/5 flex items-center gap-2">
@@ -43,12 +35,7 @@ function CommandCell({ item, isPending, onAcknowledge }) {
  const timeLabelCls = { danger: 'text-danger', warn: 'text-warn', watch: 'text-muted' }[item.urgency]
  const isWatch = item.urgency === 'watch'
  const isNow = item.timeWindow === 'now'
-
- const handleClick = () => {
- if (isNow && !confirming) { setConfirming(true); return }
- setConfirming(false)
- onAcknowledge(item.id, item.title, item.moduleLabel)
- }
+ const holdTone = item.urgency === 'danger' ? 'danger' : 'warn'
 
  return (
  <div className={`border-b border-rule2 border-l-2 ${borderCls} px-3 py-3 flex flex-col gap-2 ${isWatch ? 'bg-stone2/30' : ''}`}>
@@ -61,29 +48,32 @@ function CommandCell({ item, isPending, onAcknowledge }) {
  {item.timeLabel}
  </span>
  </div>
- <div className="flex items-start justify-between gap-2">
  <p
- className={`font-body font-medium text-[12px] leading-snug flex-1 ${isWatch ? 'text-ink2' : 'text-ink'}`}
+ className={`font-body font-medium text-[12px] leading-snug ${isWatch ? 'text-ink2' : 'text-ink'}`}
  style={{ display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}
  >
  {item.title}
  </p>
- </div>
  <p className={`font-body text-[10px] leading-snug truncate ${actionColorCls}`}>
  <span className="text-ghost text-[11px]">—</span> {item.action}
  </p>
- {confirming ? (
- <div className="flex items-center gap-2 pt-1.5 border-t border-rule2">
- <p className="font-body text-ink2 text-[10px] flex-1">Acknowledge and remove? You have 6 seconds to undo.</p>
- <Btn variant="secondary" onClick={() => setConfirming(false)}>Cancel</Btn>
- <Btn variant="primary" onClick={handleClick}>Confirm</Btn>
+ <div className="border-t border-rule2 pt-1.5">
+ {isWatch ? (
+ <div className="flex items-center justify-between">
+  <span className="font-body text-ghost text-[10px]">{item.owner.name}</span>
+  <Btn variant="secondary" onClick={() => onAcknowledge(item.id, item.title, item.moduleLabel)}>Noted</Btn>
  </div>
  ) : (
- <div className="flex items-center justify-between pt-1.5 border-t border-rule2">
- <span className="font-body text-ghost text-[10px]">{item.owner.name}</span>
- <Btn variant={isWatch ? 'outline' : 'ink'} className="min-h-[36px]" onClick={handleClick}>{isWatch ? 'Noted' : 'Acknowledge'}</Btn>
- </div>
+ <HoldButton
+  label={`Hold to acknowledge`}
+  holdLabel={isNow ? 'Keep holding…' : 'Keep holding…'}
+  doneLabel="Acknowledged"
+  duration={isNow ? 1500 : 1000}
+  tone={holdTone}
+  onConfirm={() => onAcknowledge(item.id, item.title, item.moduleLabel)}
+ />
  )}
+ </div>
  </div>
  )
 }
@@ -124,7 +114,7 @@ function MatrixColumn({ label, urgency, count, items, pendingIds, onAcknowledge 
 function UndoToast({ entries, onUndo }) {
  if (entries.length === 0) return null
  return (
- <div className="fixed bottom-4 left-[248px] z-50 flex flex-col gap-2">
+ <div className="fixed bottom-4 left-[calc(240px+1rem)] z-[70] flex flex-col gap-2">
  {entries.map(({ id, title }) => (
  <div key={id} className="flex flex-col bg-ink border border-ink2 slide-in overflow-hidden">
  <div className="flex items-center gap-4 px-4 py-2.5">
@@ -188,12 +178,12 @@ export default function CommandSurface() {
  return parts.join(' · ') || 'All clear — no pending actions'
  })()
 
- const zone = shiftData.score >= 75 ? 'AT RISK' : shiftData.score >= 60 ? 'WATCH' : 'CLEAR'
+ const zone = riskLabel(shiftData.score)
 
  const bannerTone = visibleCritCount > 0 ? 'danger' : visibleWarnCount > 0 ? 'warn' : 'ok'
 
  return (
- <div className="flex flex-col h-full overflow-hidden">
+ <div className="flex flex-col h-full overflow-hidden content-reveal">
  <ActionBanner
  tone={bannerTone}
  headline={bannerHeadline}

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { useFocusTrap } from '../lib/utils'
 import { NavLink, useNavigate } from 'react-router-dom'
 import {
  Activity, Handshake, Truck, ClipboardCheck,
@@ -57,7 +58,7 @@ function SideItem({ to, icon: Icon, label, badge, badgeType, disabled, id, onDis
  `flex items-center gap-3 px-4 py-2.5 text-sm transition-colors duration-100 border-l-2 ` +
  (isActive
  ? `border-ochre bg-ochre/10 text-stone font-medium`
- : `border-transparent text-[#A8A098] hover:bg-sidebar2 hover:text-white`)
+ : `border-transparent text-stone/70 hover:bg-sidebar-2 hover:text-stone`)
  }
  >
  {({ isActive }) => (<>
@@ -65,7 +66,6 @@ function SideItem({ to, icon: Icon, label, badge, badgeType, disabled, id, onDis
  size={15}
  strokeWidth={1.75}
  className="flex-shrink-0"
- style={isActive ? { color: 'white' } : {}}
  />
  <span className="font-body">{label}</span>
  <Badge badge={badge} badgeType={badgeType} />
@@ -91,7 +91,7 @@ function CommandSurfaceItem() {
  `flex items-center gap-3 px-4 py-3 text-sm transition-colors duration-100 border-l-2 border-b border-sidebar-border ` +
  (isActive
  ? `border-l-ochre bg-ochre/10 text-stone font-medium`
- : `border-l-transparent text-[#A8A098] hover:bg-sidebar2 hover:text-white`)
+ : `border-l-transparent text-stone/70 hover:bg-sidebar-2 hover:text-stone`)
  }
  >
  {({ isActive }) => (<>
@@ -99,7 +99,6 @@ function CommandSurfaceItem() {
  size={15}
  strokeWidth={1.75}
  className="flex-shrink-0"
- style={isActive ? { color: 'white' } : {}}
  />
  <span className="font-body flex-1">Command</span>
  {activeCount > 0 && (
@@ -124,6 +123,7 @@ const DISABLED_PLANTS = [
 function PlantDropdown({ triggerRef, onClose, complianceState, currentPlant, setCurrentPlant }) {
  const dropRef = useRef(null)
  const [pos, setPos] = useState({ top: 60 })
+ useFocusTrap(dropRef)
  const navigate = useNavigate()
 
  useEffect(() => {
@@ -161,17 +161,17 @@ function PlantDropdown({ triggerRef, onClose, complianceState, currentPlant, set
    style={{ left: 0, top: Math.max(8, pos.top) }}
   >
    {/* Card */}
-   <div className="w-[240px] bg-[#1e1a14] border border-[#3A342E] rounded-2xl shadow-[0_24px_60px_rgba(0,0,0,0.5)] overflow-hidden">
+   <div className="w-[240px] bg-sidebar border border-sidebar-border rounded-2xl shadow-[0_24px_60px_rgba(0,0,0,0.5)] overflow-hidden">
     <div className="plant-drop-in-content">
 
      {/* Header */}
      <div className="flex flex-col items-center text-center px-5 pt-5 pb-4">
-      <div className="w-14 h-14 rounded-2xl bg-[#2A2420] border border-[#3A342E] flex items-center justify-center mb-3 flex-shrink-0">
+      <div className="w-14 h-14 rounded-2xl bg-sidebar-3 border border-sidebar-border flex items-center justify-center mb-3 flex-shrink-0">
        <Building2 size={24} strokeWidth={1.5} className="text-ochre" />
       </div>
       <h2 className="font-display font-bold text-stone text-[15px] leading-snug">{currentPlant.name}</h2>
-      <p className="font-body text-ghost text-[11px] mt-0.5">{currentPlant.code}</p>
-      <div className="flex items-center gap-1 mt-1.5 font-body text-ghost/60 text-[10px]">
+      <p className="font-body text-stone/70 text-[11px] mt-0.5">{currentPlant.code}</p>
+      <div className="flex items-center gap-1 mt-1.5 font-body text-stone/70/60 text-[10px]">
        <MapPin size={9} strokeWidth={2} />
        <span>{currentPlant.region} · AM shift</span>
       </div>
@@ -181,13 +181,12 @@ function PlantDropdown({ triggerRef, onClose, complianceState, currentPlant, set
       </div>
      </div>
 
-
      {/* Divider */}
-     <div className="mx-5 h-px bg-[#3A342E]" />
+     <div className="mx-5 h-px bg-sidebar-border" />
 
      {/* Network plants */}
      <div className="px-5 pt-3 pb-4">
-      <p className="font-body text-ghost/40 text-[9px] uppercase tracking-widest mb-2">Network plants</p>
+      <p className="font-body text-stone/70/40 text-[10px] uppercase tracking-widest mb-2">Network plants</p>
       {AVAILABLE_PLANTS.map(p => {
        const isActive = currentPlant.id === p.id
        return (
@@ -198,14 +197,14 @@ function PlantDropdown({ triggerRef, onClose, complianceState, currentPlant, set
          className={`flex items-center justify-between w-full py-1.5 ${isActive ? 'cursor-default' : 'hover:opacity-80 transition-opacity'}`}
         >
          <div className="flex items-center gap-2">
-          <div className="w-5 h-5 rounded bg-[#2A2420] flex items-center justify-center flex-shrink-0">
-           <Building2 size={10} strokeWidth={1.75} className={isActive ? 'text-ochre' : 'text-ghost'} />
+          <div className="w-5 h-5 rounded bg-sidebar-3 flex items-center justify-center flex-shrink-0">
+           <Building2 size={10} strokeWidth={1.75} className={isActive ? 'text-ochre' : 'text-stone/70'} />
           </div>
-          <span className={`font-body text-[11px] ${isActive ? 'text-stone font-medium' : 'text-ghost'}`}>{p.name}</span>
+          <span className={`font-body text-[11px] ${isActive ? 'text-stone font-medium' : 'text-stone/70'}`}>{p.name}</span>
          </div>
          {isActive
-          ? <span className="font-body text-ochre text-[9px]">Active</span>
-          : <span className="font-body text-ghost/60 text-[9px]">Switch →</span>
+          ? <span className="font-body text-ochre text-[10px]">Active</span>
+          : <span className="font-body text-stone/70/60 text-[10px]">Switch →</span>
          }
         </button>
        )
@@ -213,12 +212,12 @@ function PlantDropdown({ triggerRef, onClose, complianceState, currentPlant, set
       {DISABLED_PLANTS.map(p => (
        <div key={p.name} className="flex items-center justify-between py-1.5 opacity-40">
         <div className="flex items-center gap-2">
-         <div className="w-5 h-5 rounded bg-[#2A2420] flex items-center justify-center flex-shrink-0">
-          <Building2 size={10} strokeWidth={1.75} className="text-ghost" />
+         <div className="w-5 h-5 rounded bg-sidebar-3 flex items-center justify-center flex-shrink-0">
+          <Building2 size={10} strokeWidth={1.75} className="text-stone/70" />
          </div>
-         <span className="font-body text-ghost text-[11px]">{p.name}</span>
+         <span className="font-body text-stone/70 text-[11px]">{p.name}</span>
         </div>
-        <span className="font-body text-ghost/60 text-[9px]">Not in pilot</span>
+        <span className="font-body text-stone/70/60 text-[10px]">Not in pilot</span>
        </div>
       ))}
      </div>
@@ -235,6 +234,7 @@ function PlantDropdown({ triggerRef, onClose, complianceState, currentPlant, set
 function UserDropdown({ triggerRef, onClose, viewingRole, setViewingRole }) {
  const dropRef = useRef(null)
  const [pos, setPos] = useState({ top: 60 })
+ useFocusTrap(dropRef)
  const navigate = useNavigate()
 
  useEffect(() => {
@@ -274,35 +274,36 @@ function UserDropdown({ triggerRef, onClose, viewingRole, setViewingRole }) {
    className="fixed z-50 plant-drop-in"
    style={{ left: 0, top: Math.max(8, pos.top) }}
   >
-   <div className="w-[240px] bg-[#1e1a14] border border-[#3A342E] rounded-2xl shadow-[0_24px_60px_rgba(0,0,0,0.5)] overflow-hidden" style={{ maxHeight: 'calc(100vh - 24px)' }}>
+   <div className="w-[240px] bg-sidebar border border-sidebar-border rounded-2xl shadow-[0_24px_60px_rgba(0,0,0,0.5)] overflow-hidden" style={{ maxHeight: 'calc(100vh - 24px)' }}>
     <div className="plant-drop-in-content">
 
      {/* Header */}
      <div className="flex flex-col items-center text-center px-5 pt-5 pb-4">
       <PersonAvatar name="J. Crocker" size={48} />
       <h2 className="font-display font-bold text-stone text-[15px] leading-snug mt-3">J. Crocker</h2>
-      <p className="font-body text-ghost text-[11px] mt-0.5">Plant Director</p>
-      <p className="font-body text-ghost/50 text-[10px] mt-0.5">Salina Campus · SL-04</p>
+      <p className="font-body text-stone/70 text-[11px] mt-0.5">Plant Director</p>
+      <p className="font-body text-stone/70/50 text-[10px] mt-0.5">Salina Campus · SL-04</p>
      </div>
 
      {/* Divider */}
-     <div className="mx-5 h-px bg-[#3A342E]" />
+     <div className="mx-5 h-px bg-sidebar-border" />
 
      {/* Viewing as */}
      <div className="px-5 pt-3 pb-4">
-      <p className="font-body text-ghost/40 text-[9px] uppercase tracking-widest mb-2">Viewing as</p>
+      <p className="font-body text-stone/70/40 text-[10px] uppercase tracking-widest mb-2">Viewing as</p>
       {roles.map(r => (
        <button key={r.id} type="button"
+        aria-pressed={viewingRole === r.id}
         onClick={() => { setViewingRole(r.id); navigate(r.route); onClose() }}
         className="flex items-center gap-2.5 w-full py-1.5 group"
        >
-        <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 transition-colors ${viewingRole === r.id ? 'bg-ochre' : 'bg-[#3A342E] group-hover:bg-[#5A4A3E]'}`} />
+        <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 transition-colors ${viewingRole === r.id ? 'bg-ochre' : 'bg-sidebar-border group-hover:bg-sidebar-3'}`} />
         <PersonAvatar name={r.name} size={20} />
         <div className="flex-1 text-left min-w-0">
-         <div className={`font-body text-[11px] font-medium truncate transition-colors ${viewingRole === r.id ? 'text-stone' : 'text-ghost group-hover:text-stone/80'}`}>{r.name}</div>
-         <div className="font-body text-ghost/40 text-[9px]">{r.role}</div>
+         <div className={`font-body text-[11px] font-medium truncate transition-colors ${viewingRole === r.id ? 'text-stone' : 'text-stone/70 group-hover:text-stone/80'}`}>{r.name}</div>
+         <div className="font-body text-stone/70/40 text-[10px]">{r.role}</div>
         </div>
-        {viewingRole === r.id && <span className="font-body text-ochre text-[9px] flex-shrink-0">Active</span>}
+        {viewingRole === r.id && <span className="font-body text-ochre text-[10px] flex-shrink-0">Active</span>}
        </button>
       ))}
      </div>
@@ -325,7 +326,10 @@ export default function Sidebar() {
  const complianceState = currentPlant?.id === 'ks' ? 'clear' : (!blockingEvidenceUploaded ? 'blocked' : !allergenSigned ? 'attention' : 'clear')
  const complianceLabel = complianceState === 'blocked' ? 'Blocked' : complianceState === 'attention' ? 'Attention' : 'Clear'
  const complianceColor = complianceState === 'blocked' ? 'text-danger bg-danger/10' : complianceState === 'attention' ? 'text-warn bg-warn/10' : 'text-ok bg-ok/10'
- const notifCount = 3 + (allergenOverride ? 1 : 0) + (nearMisses?.length || 0) + (maintenanceTickets?.filter(t => t.status === 'open').length || 0)
+ // Standing compliance items (2 always present + 1 evidence gap if not yet uploaded)
+ // plus dynamic safety events the director hasn't seen
+ const standingCount = blockingEvidenceUploaded ? 2 : 3
+ const notifCount = standingCount + (allergenOverride ? 1 : 0) + (nearMisses?.length || 0)
 
  const showToast = (label) => {
  setToast(label)
@@ -337,7 +341,7 @@ export default function Sidebar() {
  fixed inset-y-0 left-0 z-30
  w-[240px] flex flex-col
  bg-sidebar border-r border-sidebar-border
- transition-transform duration-200
+ transition-transform duration-200 ease-spring
  ">
  {/* Brand */}
  <div className="flex items-center gap-3 px-4 py-3.5 border-b border-sidebar-border bg-sidebar2">
@@ -349,7 +353,7 @@ export default function Sidebar() {
  <div className="font-display font-bold text-stone text-base tracking-tight leading-none">
  takorin
  </div>
- <div className="font-body text-ghost text-[10px] mt-0.5">
+ <div className="font-body text-stone/70 text-[10px] mt-0.5">
  Total intelligence
  </div>
  </div>
@@ -362,16 +366,16 @@ export default function Sidebar() {
   onClick={() => setPlantOpen(p => !p)}
   className="flex items-center gap-2.5 px-4 py-3 border-b border-sidebar-border w-full text-left hover:bg-sidebar2 transition-colors"
  >
-  <div className="w-8 h-8 rounded-full bg-sidebar2 flex items-center justify-center flex-shrink-0">
-  <Building2 size={15} className="text-ghost" strokeWidth={1.75} />
+  <div className="w-8 h-8 rounded-full bg-sidebar-2 flex items-center justify-center flex-shrink-0">
+  <Building2 size={15} className="text-stone/70" strokeWidth={1.75} />
   </div>
   <div className="flex-1 min-w-0">
   <div className="font-body text-stone text-[13px] font-medium truncate">{currentPlant?.name || 'Salina Campus'}</div>
-  <div className="font-body text-ghost text-[10px]">Plant ID {currentPlant?.code || 'SL-04'}</div>
+  <div className="font-body text-stone/70 text-[10px]">Plant ID {currentPlant?.code || 'SL-04'}</div>
   </div>
   <ChevronDown
   size={13}
-  className={`text-ghost flex-shrink-0 transition-transform duration-200 ${plantOpen ? 'rotate-180' : ''}`}
+  className={`text-stone/70 flex-shrink-0 transition-transform duration-200 ease-spring ${plantOpen ? 'rotate-180' : ''}`}
   />
  </button>
 
@@ -387,11 +391,11 @@ export default function Sidebar() {
  )}
 
  {/* Nav */}
- <nav className="flex-1 overflow-hidden py-2">
+ <nav aria-label="Main navigation" className="flex-1 overflow-hidden py-2">
  {/* Command Surface — always first */}
  <CommandSurfaceItem />
 
- <div className="px-4 pt-3 pb-1 text-[10px] tracking-widest uppercase text-ghost font-body font-medium">
+ <div className="px-4 pt-3 pb-1 text-[10px] tracking-widest uppercase text-stone/40 font-body font-medium">
  Intelligence
  </div>
  {modules.map(m => <SideItem key={m.id} to={m.path} id={m.id} {...m} />)}
@@ -402,14 +406,17 @@ export default function Sidebar() {
  {foundation.map(m => m.dynamic ? (
  <button type="button"
  key={m.id}
+ aria-haspopup="true"
+ aria-expanded={notifPanelOpen}
+ aria-label={`Notifications — ${notifCount > 0 ? `${notifCount} unread` : 'no unread'}`}
  onClick={() => setNotifPanelOpen?.(o => !o)}
  className={`flex items-center gap-3 px-4 py-2.5 text-sm transition-colors duration-100 border-l-2 w-full text-left ${
- notifPanelOpen ? 'border-ochre bg-ochre/10 text-stone font-medium' : 'border-transparent text-[#A8A098] hover:bg-sidebar2 hover:text-white'
+ notifPanelOpen ? 'border-ochre bg-ochre/10 text-stone font-medium' : 'border-transparent text-stone/70 hover:bg-sidebar-2 hover:text-stone'
  }`}
  >
- <m.icon size={15} strokeWidth={1.75} className="flex-shrink-0" style={notifPanelOpen ? { color: 'white' } : {}} />
+ <m.icon size={15} strokeWidth={1.75} className="flex-shrink-0" />
  <span className="font-body flex-1">{m.label}</span>
- {notifCount > 0 && <span className="ml-auto text-[10px] font-semibold px-1.5 py-0.5 bg-danger text-white">{notifCount}</span>}
+ {notifCount > 0 && <span key={notifCount} className="ml-auto text-[10px] font-semibold px-1.5 py-0.5 bg-danger text-white badge-pulse" aria-hidden="true">{notifCount}</span>}
  </button>
  ) : (
  <SideItem key={m.id} to={m.path} id={m.id} {...m} badge={m.badge} badgeType={m.badgeType} />
@@ -420,12 +427,12 @@ export default function Sidebar() {
  {/* Compliance status */}
  <div className="px-4 py-2.5 border-t border-sidebar-border">
  <div className="flex items-center justify-between">
- <span className="font-body text-ghost text-[10px]">Compliance</span>
- <span className={`font-body font-medium text-[9px] px-2 py-0.5 ${complianceColor}`}>
+ <span className="font-body text-stone/70 text-[10px]">Compliance</span>
+ <span className={`font-body font-medium text-[10px] px-2 py-0.5 ${complianceColor}`}>
  {complianceLabel}
  </span>
  </div>
- <div className="font-body text-ghost text-[9px] mt-0.5 leading-relaxed">
+ <div className="font-body text-stone/70 text-[10px] mt-0.5 leading-relaxed">
  {complianceState === 'blocked' && 'CAPA-2604-006 evidence missing · FDA export blocked'}
  {complianceState === 'attention' && 'Allergen changeover log unsigned · Line 4'}
  {complianceState === 'clear' && 'No blocking compliance items · 18d to FDA inspection'}
@@ -442,11 +449,11 @@ export default function Sidebar() {
   <PersonAvatar name="J. Crocker" size={28} />
   <div className="flex-1 min-w-0">
   <div className="font-body text-stone text-[12px] font-medium">J. Crocker</div>
-  <div className="font-body text-ghost text-[10px]">
+  <div className="font-body text-stone/70 text-[10px]">
    {viewingRole === 'supervisor' ? <span className="text-ochre">Viewing as Kowalski</span> : viewingRole === 'operator-reyes' ? <span className="text-ochre">Viewing as C. Reyes</span> : viewingRole === 'operator-okonkwo' ? <span className="text-ochre">Viewing as P. Okonkwo</span> : 'Plant Director'}
   </div>
   </div>
-  <ChevronDown size={13} className={`text-ghost flex-shrink-0 transition-transform duration-200 ${userOpen ? 'rotate-180' : ''}`} />
+  <ChevronDown size={13} className={`text-stone/70 flex-shrink-0 transition-transform duration-200 ease-spring ${userOpen ? 'rotate-180' : ''}`} />
  </button>
  {userOpen && (
   <UserDropdown
@@ -460,7 +467,7 @@ export default function Sidebar() {
  {/* Toast */}
  {toast && (
  <div className="fixed bottom-4 left-4 z-50 bg-sidebar border border-sidebar-border px-3 py-2 slide-in">
- <span className="font-body text-ghost text-[11px]">{toast} — not available in pilot</span>
+ <span className="font-body text-stone/70 text-[11px]">{toast} — not available in pilot</span>
  </div>
  )}
  </aside>
