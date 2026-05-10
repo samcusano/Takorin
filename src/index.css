@@ -22,9 +22,31 @@
 @layer base {
   * { box-sizing: border-box; }
 
+  :root {
+    --color-stone: #F5F0E8;
+    --color-stone-2: #EDE7DC;
+    --color-stone-3: #E0D9CC;
+    --color-stone-4: #D4CEC4;
+    --color-ink: #100F0D;
+    --color-ink-2: #2A2520;
+    --color-muted: #5E5650;
+    --color-ghost: #696258;
+    --color-rule: #C8C0B4;
+    --color-rule-2: #D8D2C8;
+    --color-ok: #3A8A5A;
+    --color-warn: #C4920A;
+    --color-danger: #D94F2A;
+    --color-int: #3A7FD4;
+    --color-ochre: #C17D2A;
+    --radius-sm: 4px;
+    --radius-md: 10px;
+    --radius-lg: 16px;
+    --shadow-card: 0 12px 30px rgba(16, 15, 13, 0.12);
+  }
+
   /* Global focus ring — ochre on stone background, keyboard-only via :focus-visible */
   :focus-visible {
-    outline: 2px solid #C17D2A;
+    outline: 2px solid var(--color-ochre);
     outline-offset: 2px;
     transition: outline-offset var(--dur-fast) var(--ease-enter);
   }
@@ -35,8 +57,8 @@
   body {
     margin: 0;
     font-family: "IBM Plex Mono", ui-monospace, monospace;
-    background: #F5F0E8;
-    color: #100F0D;
+    background: var(--color-stone);
+    color: var(--color-ink);
     -webkit-font-smoothing: antialiased;
     line-height: 1.45;
   }

@@ -1,0 +1,46 @@
+export const designTokens = {
+  colors: {
+    stone: '#F5F0E8',
+    stone2: '#EDE7DC',
+    stone3: '#E0D9CC',
+    stone4: '#D4CEC4',
+    ink: '#100F0D',
+    ink2: '#2A2520',
+    muted: '#5E5650',
+    ghost: '#696258',
+    rule: '#C8C0B4',
+    rule2: '#D8D2C8',
+    ok: '#3A8A5A',
+    warn: '#C4920A',
+    danger: '#D94F2A',
+    int: '#3A7FD4',
+    ochre: '#C17D2A',
+  },
+  spacing: {
+    xs: '4px',
+    sm: '8px',
+    md: '12px',
+    lg: '16px',
+    xl: '24px',
+  },
+  radius: {
+    sm: '4px',
+    md: '10px',
+    lg: '16px',
+    round: '9999px',
+  },
+  shadows: {
+    card: '0 12px 30px rgba(16, 15, 13, 0.12)',
+    overlay: '0 0 0 1px rgba(16, 15, 13, 0.04)',
+  },
+  durations: {
+    fast: '100ms',
+    standard: '300ms',
+    data: '500ms',
+  },
+  easing: {
+    standard: 'cubic-bezier(0.25, 0.1, 0.25, 1)',
+    enter: 'cubic-bezier(0.19, 0.91, 0.38, 1)',
+    exit: 'cubic-bezier(0.42, 0, 1, 1)',
+  },
+}

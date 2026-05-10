@@ -1,10 +1,11 @@
 // Shared primitive components — PostHog-influenced density, Takorin palette
 import { useRef, useEffect, useMemo, useId, useState, useCallback } from 'react'
-import { X } from 'lucide-react'
+import { X, ArrowRight, ChevronRight } from 'lucide-react'
 import BoringAvatar from 'boring-avatars'
 import { useFocusTrap, useExitAnimation } from '../lib/utils'
+import { designTokens } from '../lib/designSystem'
 
-const AVATAR_PALETTE = ['#100F0D', '#C17D2A', '#F5F0E8', '#D8D2C8', '#A8A098']
+const AVATAR_PALETTE = [designTokens.colors.ink, designTokens.colors.ochre, designTokens.colors.stone, designTokens.colors.rule2, designTokens.colors.muted]
 
 export function PersonAvatar({ name, size = 28 }) {
  return <BoringAvatar size={size} name={name} variant="beam" colors={AVATAR_PALETTE} />
@@ -121,15 +122,18 @@ export function ActionBanner({ tone = 'warn', headline, body, children, footer }
 }
 
 // ── Button variants
-export function Btn({ variant = 'primary', onClick, disabled, children, className = '', style }) {
- const base = 'font-body font-medium text-[11px] px-3 py-2 min-h-[36px] inline-flex items-center transition-[background-color,opacity,transform] duration-100 ease-standard active:scale-[0.97] cursor-pointer border-0 disabled:opacity-50 disabled:cursor-not-allowed'
+export function Btn({ variant = 'primary', icon: Icon, onClick, disabled, children, className = '', style }) {
+ const base = 'font-body font-medium text-[11px] px-3 py-2 min-h-[36px] inline-flex items-center justify-center gap-2 transition-[background-color,opacity,transform] duration-100 ease-standard active:scale-[0.97] cursor-pointer border-0 disabled:opacity-50 disabled:cursor-not-allowed'
+ const defaults = { primary: ArrowRight, secondary: ChevronRight }
+ const IconComp = Icon || defaults[variant]
  const cls = {
  primary:   'bg-ink text-stone hover:bg-ink2',
- secondary: 'border border-rule2 text-muted hover:border-ghost',
+ secondary: 'border border-rule2 bg-stone2 text-muted hover:border-ghost hover:bg-stone3',
  }[variant] ?? 'bg-ink text-stone hover:bg-ink2'
  return (
  <button type="button" className={`${base} ${cls} ${className}`} onClick={onClick} disabled={disabled} style={style}>
- {children}
+  {IconComp && <IconComp size={12} className="flex-shrink-0" aria-hidden="true" />}
+  <span>{children}</span>
  </button>
  )
 }
@@ -172,22 +176,23 @@ export function Dot({ level = 'empty' }) {
 // Default color logic: higher pct = better (supplier quality scores).
 // For risk scores (higher = worse), pass an explicit color prop.
 export function ScoreRing({ pct = 0, size = 32, color }) {
- const c = color || (pct >= 75 ? '#3A8A5A' : pct >= 60 ? '#C4920A' : '#D94F2A')
+ const defaultColor = pct >= 75 ? designTokens.colors.ok : pct >= 60 ? designTokens.colors.warn : designTokens.colors.danger
+ const c = color || defaultColor
  const barH = size <= 40 ? 3 : 5
  const numSize = size <= 40 ? 11 : Math.round(size * 0.26)
  const w = size <= 40 ? 56 : size * 2
  return (
  <div className="flex flex-col gap-1 flex-shrink-0" style={{ width: w }}>
  <span className="font-display font-extrabold leading-none" style={{ fontSize: numSize, color: c }}>{pct}</span>
- <div style={{ height:barH, background:'#D8D2C8' }}>
- <div style={{ height:'100%', width:`${pct}%`, background:c, transition:'width 500ms cubic-bezier(0.19,0.91,0.38,1)' }} />
+ <div style={{ height: barH, background: designTokens.colors.rule2 }}>
+ <div style={{ height: '100%', width: `${pct}%`, background: c, transition: `width ${designTokens.durations.data} ${designTokens.easing.enter}` }} />
  </div>
  </div>
- )
+)
 }
 
 // ── Page header
-export function PageHead({ over, title, accent = '#C17D2A', meta = [], children }) {
+export function PageHead({ over, title, accent = designTokens.colors.ochre, meta = [], children }) {
  return (
  <div className="px-4 py-4 border-b border-rule2 bg-stone2" style={{ borderLeft: `3px solid ${accent}` }}>
  <div className="font-body text-muted text-[11px] mb-1">{over}</div>
@@ -373,15 +378,15 @@ export function VaulDrawer({ open, onClose, title, badge, children, maxHeight = 
  const handleClose = () => exit(onClose)
 
  return (
-  <div className="fixed inset-0 z-[50] flex flex-col justify-end">
+  <div className="fixed inset-0 z-[60] flex flex-col justify-end">
    <div className="absolute inset-0 bg-ink/50" onClick={handleClose} />
    <div
     ref={contentRef}
     role="dialog"
     aria-modal="true"
     aria-label={typeof title === 'string' ? title : undefined}
-    className={`relative z-10 bg-stone flex flex-col overflow-hidden rounded-t-2xl shadow-[0_-8px_40px_rgba(16,15,13,0.18)] mx-auto w-full ${exiting ? 'drawer-out' : 'drawer-in'}`}
-    style={{ maxHeight, width: `min(100%, ${maxWidth})` }}
+    className={`relative z-10 bg-stone flex flex-col overflow-hidden rounded-t-2xl mx-auto w-full ${exiting ? 'drawer-out' : 'drawer-in'}`}
+    style={{ maxHeight, width: `min(100%, ${maxWidth})`, boxShadow: designTokens.shadows.card }}
    >
     {/* Drag handle */}
     <div className="flex justify-center pt-3 pb-1 flex-shrink-0" aria-hidden="true">
