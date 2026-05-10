@@ -7,7 +7,7 @@ import {
  PersonAvatar, Modal, WaveformSparkline, Chip, AnimatedCheck, Spinner,
  VaulDrawer, HoldButton
 } from '../components/UI'
-import { Flag, ChevronRight, ChevronDown, AlertTriangle, Check, X, TrendingDown, RotateCcw, Wrench, Package, HelpCircle } from 'lucide-react'
+import { Flag, ChevronRight, ChevronDown, AlertTriangle, Check, X, TrendingDown, RotateCcw, Wrench, Package, HelpCircle, ListChecks } from 'lucide-react'
 import { useAppState } from '../context/AppState'
 
 const CHECKLIST_ITEMS = [
@@ -115,7 +115,7 @@ const OP_SAFETY = {
  'P. Okonkwo': 'Oven Station B: today\'s SKU (GF-Flatbread) CCP-3 minimum is 185°F. Log any reading below this immediately.',
 }
 
-function OperatorPanel({ name, onClose }) {
+function OperatorPanel({ name, onClose, onSelectOperator }) {
  const { taskAssignments, trainingPlans, trainingCompletions, flaggedItems } = useAppState()
  const meta = OP_META[name] || { initials: name.split(' ').map(n => n[0]).join(''), station: '—', certPct: 0, certLabel: '—' }
  const safety = OP_SAFETY[name]
@@ -245,7 +245,7 @@ function OperatorPanel({ name, onClose }) {
    <button
     key={opName}
     type="button"
-    onClick={() => setViewingOperator(opName)}
+    onClick={() => onSelectOperator?.(opName)}
     className={`flex items-center justify-center w-9 h-9 rounded-full border-2 transition-all ${name === opName ? 'border-ink bg-ink/10' : 'border-rule2 hover:border-ghost'}`}
     title={opName}
     aria-label={`View ${opName}'s details`}>
@@ -892,7 +892,11 @@ export default function ShiftIQ() {
  </div>
 
  {viewingOperator && (
-  <OperatorPanel name={viewingOperator} onClose={() => setViewingOperator(null)} />
+  <OperatorPanel
+   name={viewingOperator}
+   onClose={() => setViewingOperator(null)}
+   onSelectOperator={setViewingOperator}
+  />
  )}
 
  {/* ── Checklist FAB ──────────────────────────────────────────────────── */}
@@ -906,8 +910,8 @@ export default function ShiftIQ() {
     className="fixed bottom-6 right-6 z-20 flex items-center gap-2 px-3.5 py-2.5 bg-ink text-stone font-body text-[11px] font-medium shadow-[0_4px_20px_rgba(16,15,13,0.25)] hover:bg-ink2 transition-colors duration-100 ease-standard"
    >
     {remaining > 0
-     ? <><span className="w-4 h-4 flex items-center justify-center bg-warn text-white text-[10px] font-bold rounded-sm flex-shrink-0">{remaining}</span>Checklist</>
-     : <><AnimatedCheck size={11} color="#3A8A5A" />Checklist</>
+     ? <><ListChecks size={14} /><span>Checklist</span><span className="w-4 h-4 flex items-center justify-center bg-warn text-white text-[10px] font-bold rounded-sm flex-shrink-0">{remaining}</span></>
+     : <><ListChecks size={14} /><AnimatedCheck size={11} color="#3A8A5A" />Checklist</>
     }
    </button>
   )

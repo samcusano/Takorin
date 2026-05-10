@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { ArrowRight } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useAppState } from '../context/AppState'
 import { VaulDrawer } from '../components/UI'
@@ -28,6 +29,55 @@ const FILTER = {
 // Log types that are the director's own actions or system noise — exclude from feed
 const EXCLUDE_TYPES = new Set(['intervention', 'system'])
 
+const sampleStanding = [
+  {
+    id: 'sample-capa-001',
+    severity: 'danger',
+    title: 'CAPA-2604-001 overdue by 7 days',
+    body: 'Sensor A-7 bearing failure evidence still missing from QA package. Assigned to D. Kowalski.',
+    link: '/capa',
+    linkLabel: 'Review CAPA',
+  },
+  {
+    id: 'sample-fda-18d',
+    severity: 'warn',
+    title: 'FDA inspection in 18 days — Region 7',
+    body: 'Traceability submission 82% complete. Close evidence gaps before the inspection window.',
+    link: '/readiness',
+    linkLabel: 'Open readiness',
+  },
+]
+
+const sampleActivity = [
+  {
+    id: 'sample-supplier',
+    type: 'override',
+    time: '10:05',
+    title: 'Supplier COA request sent — Lot TS-8811',
+    body: 'COA request dispatched to ConAgra. Hold remains until validation completes.',
+    link: '/supplier',
+    linkLabel: 'Open SupplierIQ',
+  },
+  {
+    id: 'sample-ack',
+    type: 'acknowledged',
+    time: '09:42',
+    title: 'C. Reyes acknowledged safety briefing',
+    body: 'Operator confirmed Sauce Dosing allergen and CCP requirements before shift start.',
+    link: '/handoff',
+    linkLabel: 'Open HandoffIQ',
+  },
+  {
+    id: 'sample-near-miss',
+    type: 'near_miss',
+    time: '08:17',
+    title: 'Near-miss reported at Pack Line',
+    body: 'Floor spill near condiment station identified and secured by crew.',
+    link: '/shift',
+    linkLabel: 'Review ShiftIQ',
+  },
+]
+
 function NotifItem({ item, read, onRead, onNavigate }) {
  const s = TYPE[item.type] || TYPE.compliance
  const isRead = read.has(item.id)
@@ -46,9 +96,8 @@ function NotifItem({ item, read, onRead, onNavigate }) {
       <button
        type="button"
        onClick={() => onNavigate(item.link)}
-       className="font-body text-int text-[10px] mt-1.5 hover:underline flex items-center gap-0.5 transition-colors"
-      >
-       {item.linkLabel || 'Open in module'} →
+       className="font-body text-int text-[10px] mt-1.5 flex items-center gap-1 transition-colors hover:text-ink"
+      ><ArrowRight size={12} />{item.linkLabel || 'Open in module'}
       </button>
      )}
     </div>
@@ -85,9 +134,9 @@ function StandingItem({ item, onNavigate }) {
      <button
       type="button"
       onClick={() => onNavigate(item.link)}
-      className="font-body text-int text-[10px] mt-1.5 hover:underline flex items-center gap-0.5"
+      className="font-body text-int text-[10px] mt-1.5 flex items-center gap-1 transition-colors hover:text-ink"
      >
-      {item.linkLabel} →
+      <ArrowRight size={12} />{item.linkLabel}
      </button>
     )}
    </div>
@@ -183,14 +232,14 @@ export default function NotificationCenter({ onClose }) {
  const showCompliance = activeFilter === 'All' || activeFilter === 'Compliance'
  const filteredActivity = mergedActivity.filter(FILTER[activeFilter] || FILTER.All)
 
- const totalUnread = standing.length + mergedActivity.filter(e => !read.has(e.id)).length
+ const totalUnread = effectiveStanding.length + effectiveActivity.filter(e => !read.has(e.id)).length
 
  // Filter tab counts
  const counts = {
   All: totalUnread,
-  Safety: mergedActivity.filter(FILTER.Safety).length,
-  Compliance: standing.length,
-  People: mergedActivity.filter(FILTER.People).length,
+  Safety: effectiveActivity.filter(FILTER.Safety).length,
+  Compliance: effectiveStanding.length,
+  People: effectiveActivity.filter(FILTER.People).length,
  }
 
  const content = (
@@ -221,12 +270,12 @@ export default function NotificationCenter({ onClose }) {
    </div>
 
    {/* Standing compliance items */}
-   {showCompliance && standing.length > 0 && (
+   {showCompliance && effectiveStanding.length > 0 && (
     <>
      <div className="px-4 py-2 bg-stone2 border-b border-rule2">
       <span className="font-body text-[10px] uppercase tracking-widest text-muted font-medium">Requires attention</span>
      </div>
-     {standing.map(item => (
+     {effectiveStanding.map(item => (
       <StandingItem key={item.id} item={item} onNavigate={go} />
      ))}
     </>
@@ -250,7 +299,7 @@ export default function NotificationCenter({ onClose }) {
     </div>
    )}
 
-   {filteredActivity.length === 0 && showCompliance && standing.length === 0 && (
+   {filteredActivity.length === 0 && showCompliance && effectiveStanding.length === 0 && (
     <div className="px-4 py-10 text-center font-body text-ghost text-[12px]">
      No notifications.
     </div>

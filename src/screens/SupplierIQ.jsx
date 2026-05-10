@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react'
 import { useFocusTrap, useExitAnimation } from '../lib/utils'
-import { Check, X, AlertTriangle, Clock, ArrowRight, Wheat, Soup, Milk, Beef, Droplets } from 'lucide-react'
+import { Check, X, AlertTriangle, Clock, ArrowRight, Wheat, Soup, Milk, Beef, Droplets, History } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { supplierData, supplierAudits, empResultsHistory } from '../data'
 import { useAppState } from '../context/AppState'
@@ -295,7 +295,7 @@ export default function SupplierIQ() {
                 </div>
                 <div className="flex gap-2 flex-shrink-0">
                   <Btn variant="primary">Schedule re-audit</Btn>
-                  <Btn variant="secondary">View history</Btn>
+                  <Btn variant="secondary" icon={History}><span className="sr-only">History</span></Btn>
                 </div>
               </div>
             ))}
@@ -327,8 +327,8 @@ export default function SupplierIQ() {
                   <Chip tone={lot.shelfTone}>{lot.shelf}d shelf</Chip>
                   {lot.useFirst && <span className="font-body text-warn text-[10px] flex-shrink-0">Use first</span>}
                   <button type="button" onClick={() => setCoaViewLot(lot)}
-                    className="font-body text-muted text-[10px] hover:text-ink transition-colors flex-shrink-0">
-                    View COA
+                    className="font-body text-muted text-[10px] hover:text-ink transition-colors flex items-center gap-1 flex-shrink-0">
+                    <ArrowRight size={12} />View COA
                   </button>
                 </div>
               )
@@ -384,7 +384,9 @@ export default function SupplierIQ() {
               </div>
               {audit?.needsAction
                 ? <Btn variant="secondary">Schedule re-audit</Btn>
-                : <button type="button" className="font-body text-ghost text-[10px] hover:text-ink transition-colors">View history</button>
+                : <button type="button" className="font-body text-ghost text-[10px] hover:text-ink transition-colors flex items-center gap-1">
+                  <History size={12} />History
+                </button>
               }
             </div>
           )
