@@ -31,6 +31,7 @@ export function AppStateProvider({ children }) {
  const [plantActions, setPlantActions] = useState({})
  const [sanitationEntries, setSanitationEntries] = useState([])
  const [operatorAcknowledgments, setOperatorAcknowledgments] = useState({})
+ const [carryForwardAcknowledged, setCarryForwardAcknowledged] = useState(new Set())
  const [notifPanelOpen, setNotifPanelOpen] = useState(false)
  const [commandAcknowledged, setCommandAcknowledged] = useState(new Set())
  const [currentPlant, setCurrentPlant] = useState(PLANTS.sl)
@@ -71,6 +72,7 @@ export function AppStateProvider({ children }) {
  plantActions, setPlantActions,
  sanitationEntries, setSanitationEntries,
  operatorAcknowledgments, setOperatorAcknowledgments,
+ carryForwardAcknowledged, setCarryForwardAcknowledged,
  notifPanelOpen, setNotifPanelOpen,
  commandAcknowledged, acknowledgeCommand,
  activityLog, logActivity,

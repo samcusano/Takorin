@@ -1,6 +1,6 @@
 // Shared primitive components — PostHog-influenced density, Takorin palette
 import { useRef, useEffect, useMemo, useId, useState, useCallback } from 'react'
-import { X, ArrowRight, ChevronRight } from 'lucide-react'
+import { X, ArrowRight, ChevronRight, Check } from 'lucide-react'
 import BoringAvatar from 'boring-avatars'
 import { useFocusTrap, useExitAnimation } from '../lib/utils'
 import { designTokens } from '../lib/designSystem'
@@ -479,5 +479,114 @@ export function HoldButton({ label, holdLabel, doneLabel, duration = 1500, onCon
     ) : label}
    </span>
   </button>
+ )
+}
+
+// ── AcceptanceGate — Sticky top bar for shift handoff acceptance
+// Persistent accountability framing: incoming supervisor name + carry-forward count + acceptance status
+export function AcceptanceGate({ incomingSupervisor, shiftTime, carryForwardCount, acknowledgedCount, allAcknowledged, onAccept, disabled = false }) {
+ const bannerTone = carryForwardCount > 0 ? (allAcknowledged ? 'ok' : 'warn') : 'ok'
+ const statusText = carryForwardCount > 0 ? `${acknowledgedCount} of ${carryForwardCount} acknowledged` : 'All clear'
+ const bannerColor = {
+  ok: 'bg-ok/[0.05] border-b-ok',
+  warn: 'bg-warn/[0.05] border-b-warn',
+  danger: 'bg-danger/[0.05] border-b-danger',
+ }[bannerTone]
+
+ return (
+  <div className={`sticky top-0 z-40 flex items-center justify-between gap-4 px-4 py-3 border-b-2 ${bannerColor} flex-shrink-0`}>
+   <div className="flex-1">
+    <div className="flex items-baseline gap-2 mb-0.5">
+     <span className="font-body font-medium text-ink text-[12px]">{incomingSupervisor}</span>
+     <span className="font-body text-ghost text-[10px]">{shiftTime}</span>
+    </div>
+    <div className={`font-body text-[10px] ${carryForwardCount > 0 && !allAcknowledged ? 'text-warn' : 'text-muted'}`}>
+     {carryForwardCount > 0 ? `${carryForwardCount} item${carryForwardCount !== 1 ? 's' : ''} require acknowledgment` : 'No carry-forward items'}
+    </div>
+   </div>
+   <Btn
+    variant="primary"
+    onClick={onAccept}
+    disabled={!allAcknowledged || disabled}
+   >
+    Accept shift
+   </Btn>
+  </div>
+ )
+}
+
+// ── CarryForwardItem — Dense row for each carry-forward risk
+// Severity border + title + impact + owner + action + acknowledgment control
+export function CarryForwardItem({ item, acknowledged, onAcknowledge }) {
+ const borderColor = {
+  danger: 'border-l-danger',
+  warn: 'border-l-warn',
+  watch: 'border-l-rule2',
+ }[item.urgency] || 'border-l-rule2'
+
+ const textColorForUrgency = {
+  danger: 'text-danger',
+  warn: 'text-warn',
+  watch: 'text-muted',
+ }[item.urgency] || 'text-muted'
+
+ const actionColor = {
+  danger: 'text-danger',
+  warn: 'text-warn',
+  watch: 'text-muted',
+ }[item.urgency] || 'text-muted'
+
+ return (
+  <div className={`border-l-2 ${borderColor} border-b border-rule2 px-3 py-2.5 flex flex-col gap-2 ${acknowledged ? 'bg-ok/[0.03]' : 'bg-stone'}`}>
+   <div className="flex items-start justify-between gap-3">
+    <div className="flex-1 min-w-0">
+     <div className="font-body font-medium text-ink text-[12px] leading-snug mb-1">{item.title}</div>
+     <div className="font-body text-muted text-[10px] leading-snug mb-1">{item.operationalImpact}</div>
+     <div className="font-body text-ghost text-[10px] leading-snug">{item.ownerContext}</div>
+    </div>
+    <div className="flex-shrink-0">
+     {acknowledged && (
+      <div className="w-5 h-5 rounded-sm bg-ok flex items-center justify-center">
+       <Check size={12} strokeWidth={2.5} className="text-stone" />
+      </div>
+     )}
+    </div>
+   </div>
+   <div className="border-t border-rule2 pt-1.5 flex items-center justify-between gap-2">
+    <span className={`font-body font-medium text-[10px] ${actionColor}`}>{item.recommendedAction}</span>
+    {!acknowledged && (
+     <button
+      type="button"
+      onClick={() => onAcknowledge(item.id)}
+      className="font-body font-medium text-[11px] px-2.5 py-1 border border-rule2 bg-stone hover:bg-stone2 text-ink transition-colors"
+     >
+      Assume
+     </button>
+    )}
+   </div>
+  </div>
+ )
+}
+
+// ── ExpandableSection — Collapsible context sections (operator briefing, shift stats, etc.)
+export function ExpandableSection({ title, children, defaultOpen = false }) {
+ const [open, setOpen] = useState(defaultOpen)
+
+ return (
+  <div className="border-b border-rule2">
+   <button
+    type="button"
+    onClick={() => setOpen(!open)}
+    className="w-full flex items-center justify-between px-4 py-2.5 bg-stone2 hover:bg-stone3 transition-colors"
+   >
+    <span className="font-body font-medium text-ink text-[12px]">{title}</span>
+    <ChevronRight
+     size={14}
+     strokeWidth={2}
+     className={`text-ghost transition-transform duration-200 ${open ? 'rotate-90' : ''}`}
+    />
+   </button>
+   {open && <div>{children}</div>}
+  </div>
  )
 }
