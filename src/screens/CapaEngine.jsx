@@ -255,15 +255,21 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
  {(c.expectedImpact || c.riskIfIgnored) && (
  <div className="grid grid-cols-2 gap-4 mb-4">
  {c.expectedImpact && (
- <div>
- <div className="font-body text-muted text-[10px] mb-1">If you act</div>
- <div className="font-body text-ink text-[11px] leading-relaxed">{c.expectedImpact}</div>
+ <div className="flex items-start gap-2">
+  <Check size={13} strokeWidth={2} className="text-ok flex-shrink-0 mt-0.5" />
+  <div>
+   <div className="font-body text-muted text-[10px] mb-1">If you act</div>
+   <div className="font-body text-ink text-[11px] leading-relaxed">{c.expectedImpact}</div>
+  </div>
  </div>
  )}
  {c.riskIfIgnored && (
- <div>
- <div className="font-body text-muted text-[10px] mb-1">If you delay</div>
- <div className="font-body text-ink text-[11px] leading-relaxed">{c.riskIfIgnored}</div>
+ <div className="flex items-start gap-2">
+  <X size={13} strokeWidth={2} className="text-danger flex-shrink-0 mt-0.5" />
+  <div>
+   <div className="font-body text-muted text-[10px] mb-1">If you delay</div>
+   <div className="font-body text-ink text-[11px] leading-relaxed">{c.riskIfIgnored}</div>
+  </div>
  </div>
  )}
  </div>
@@ -324,7 +330,8 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
  <div className="flex border-b border-rule2 bg-stone2 flex-shrink-0">
  {[
   { id: 'details', label: 'Details' },
-  { id: 'activity', label: `Activity · ${c.activity?.length || 0}` },
+  { id: 'evidence', label: 'Evidence' },
+  { id: 'activity', label: `Activity` },
  ].map(tab => (
   <button key={tab.id} type="button"
   onClick={() => setDetailTab(tab.id)}
@@ -339,12 +346,12 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
  {/* Details tab */}
  {detailTab === 'details' && (
  <div className="px-4 py-4 space-y-4 border-b border-rule2">
-  {[{l:'Root cause',v:c.rootCause},{l:'Assigned',v:c.assigned},{l:'Due',v:c.due,vc:c.dueColor},{l:'Source',v:c.source}].map(m => (
-  <div key={m.l} className="flex items-start gap-3">
-   <span className="font-body text-muted text-[10px] w-24 flex-shrink-0 mt-0.5">{m.l}</span>
-   <span className="font-body text-[12px] text-ink">{m.v}</span>
+  {c.description && (
+  <div>
+   <div className="font-body text-ghost text-[10px] mb-0.5">Description</div>
+   <p className="font-body text-muted text-[11px] leading-relaxed">{c.description}</p>
   </div>
-  ))}
+  )}
   <div>
   <div className="font-body text-ghost text-[10px] mb-1.5">Regulatory</div>
   <div className="flex gap-1.5 flex-wrap">
@@ -357,21 +364,18 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
    {(c.rootCauseTags||[]).map(t => <Chip key={t} tone="warn">{t}</Chip>)}
   </div>
   </div>
-  {c.description && (
-  <div>
-   <div className="font-body text-ghost text-[10px] mb-0.5">Description</div>
-   <p className="font-body text-muted text-[11px] leading-relaxed">{c.description}</p>
-  </div>
-  )}
-  {/* Evidence files */}
-  <div>
+ </div>
+ )}
+
+ {/* Evidence tab */}
+ {detailTab === 'evidence' && (
+ <div className="px-4 py-4 border-b border-rule2">
   <div className="flex items-center justify-between mb-2">
    <div className="font-body text-ghost text-[10px]">Evidence files</div>
    <Urg level={allFiles.length > 0 ? 'ok' : c.type === 'ca' ? 'warn' : 'info'}>
    {allFiles.length > 0 ? `${allFiles.length} filed` : 'None attached'}
    </Urg>
   </div>
-  <input ref={fileInputRef} type="file" className="hidden" onChange={e=>{const f=e.target.files[0];if(f)setLocalFiles(p=>[...p,f.name]);e.target.value=''}} />
   {allFiles.length > 0 ? allFiles.map(f => (
    <div key={f} className="flex items-center gap-2 py-1.5 border-b border-rule2 last:border-0">
    <FileText size={11} className="text-muted flex-shrink-0" />
@@ -383,7 +387,6 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
   <Btn variant="secondary" className="mt-2" onClick={() => fileInputRef.current?.click()}>
    {allFiles.length > 0 ? 'Add file' : 'Upload evidence'}
   </Btn>
-  </div>
  </div>
  )}
 

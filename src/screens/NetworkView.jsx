@@ -248,36 +248,7 @@ export default function NetworkView() {
  ))}
  </div>
 
- {/* Plant network */}
- <SecHd
- tag="Plant network"
- title="3 plants · Salina region"
- icon={Globe2}
- badge={<Urg level="warn">1 at-risk · 2 clear</Urg>}
- />
- <div className="grid grid-cols-3 gap-3 p-4">
- {networkData.plants.map(plant => (
- <PlantCard key={plant.id} plant={plant} sharedLots={networkData.sharedExposure} />
- ))}
- </div>
 
- {/* Plant contacts */}
- <div className="border-t border-rule2">
- <SecHd tag="Plant contacts" title="Directors across the network" icon={Users} />
- <div className="grid grid-cols-3 gap-3 p-4">
- {networkData.plants.map(plant => (
-  <ContactCard key={plant.id} plant={plant} />
- ))}
- </div>
- </div>
-
- {/* Shared exposure */}
- <div className="border-t border-rule2">
- <SecHd
- tag="Shared lot exposure"
- title="Ingredients shared across plants — recall blast radius"
- icon={Package}
- badge={<Urg level="danger">1 high-risk lot · 2 plants affected</Urg>}
  />
  {networkData.sharedExposure.map((e, i) => (
  <div key={i}>
