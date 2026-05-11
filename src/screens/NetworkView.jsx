@@ -248,7 +248,12 @@ export default function NetworkView() {
  ))}
  </div>
 
-
+ {/* Shared exposure */}
+ <div className="border-t border-rule2">
+ <SecHd
+ tag="Shared exposure"
+ title="Cross-plant supplier lot correlation"
+ icon={Globe2}
  />
  {networkData.sharedExposure.map((e, i) => (
  <div key={i}>

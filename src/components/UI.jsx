@@ -568,6 +568,143 @@ export function CarryForwardItem({ item, acknowledged, onAcknowledge }) {
  )
 }
 
+// ── MetadataRow — Structured metadata with icon for visual hierarchy (Approach 1: Visual Hierarchy)
+// Breaks dense single-line metadata into scannable rows with icons and color coding
+export function MetadataRow({ icon: Icon, label, value, tone = 'muted', sub, details }) {
+ const textColorClass = {
+  danger: 'text-danger',
+  warn: 'text-warn',
+  ok: 'text-ok',
+  muted: 'text-muted',
+  ink: 'text-ink',
+ }[tone] || 'text-muted'
+
+ const bgTone = {
+  danger: 'bg-danger/[0.03]',
+  warn: 'bg-warn/[0.03]',
+  ok: 'bg-ok/[0.03]',
+  muted: 'bg-stone2',
+ }[tone] || 'bg-stone'
+
+ return (
+  <div className={`flex items-start gap-2.5 px-3 py-2 border-b border-rule2 ${bgTone}`}>
+   {Icon && <Icon size={12} strokeWidth={2} className={`flex-shrink-0 mt-0.5 ${textColorClass}`} aria-hidden="true" />}
+   <div className="flex-1 min-w-0">
+    <div className="font-body font-medium text-ink text-[11px]">{label}</div>
+    <div className={`font-body text-[11px] ${textColorClass}`}>{value}</div>
+    {sub && <div className="font-body text-ghost text-[9px] mt-0.5">{sub}</div>}
+   </div>
+   {details && <div className="font-body text-ghost text-[10px] flex-shrink-0 text-right">{details}</div>}
+  </div>
+ )
+}
+
+// ── ExpandableMetadata — Progressive disclosure for detailed specs (Approach 2: Progressive Disclosure)
+// Shows essential info upfront, expandable for COA specs, audit history, etc.
+export function ExpandableMetadata({ title, defaultOpen = false, children, icon: Icon, tone = 'muted' }) {
+ const [open, setOpen] = useState(defaultOpen)
+ const bgTone = {
+  danger: 'bg-danger/[0.03]',
+  warn: 'bg-warn/[0.03]',
+  ok: 'bg-ok/[0.03]',
+  muted: 'bg-stone2',
+ }[tone] || 'bg-stone2'
+
+ return (
+  <div className="border-b border-rule2">
+   <button
+    type="button"
+    onClick={() => setOpen(!open)}
+    className={`w-full flex items-center justify-between px-3 py-2 ${bgTone} hover:opacity-75 transition-opacity`}
+   >
+    <div className="flex items-center gap-2 flex-1">
+     {Icon && <Icon size={11} strokeWidth={2} className="text-ghost flex-shrink-0" />}
+     <span className="font-body font-medium text-ink text-[11px]">{title}</span>
+    </div>
+    <ChevronRight
+     size={14}
+     strokeWidth={2}
+     className={`text-ghost transition-transform duration-200 flex-shrink-0 ${open ? 'rotate-90' : ''}`}
+    />
+   </button>
+   {open && <div className="px-3 py-2 bg-stone">{children}</div>}
+  </div>
+ )
+}
+
+// ── ActionCard — Action-oriented layout for supplier issues (Approach 3: Action-Oriented Layout)
+// Groups content by urgency with clear actions, status tracking, and prominence
+export function ActionCard({ tone = 'danger', title, subtitle, metadata, actions, status, children }) {
+ const bgColor = {
+  danger: 'bg-danger/[0.03]',
+  warn: 'bg-warn/[0.03]',
+  ok: 'bg-ok/[0.03]',
+  muted: 'bg-stone',
+ }[tone] || 'bg-stone'
+
+ const borderColor = {
+  danger: 'border-l-danger',
+  warn: 'border-l-warn',
+  ok: 'border-l-ok',
+  muted: 'border-l-rule2',
+ }[tone] || 'border-l-rule2'
+
+ return (
+  <div className={`border-l-2 ${borderColor} border-b border-rule2 ${bgColor}`}>
+   <div className="px-4 py-3 flex items-start justify-between gap-3">
+    <div className="flex-1 min-w-0">
+     <div className="font-body font-medium text-ink text-[12px] mb-1">{title}</div>
+     {subtitle && <div className="font-body text-muted text-[11px] mb-2">{subtitle}</div>}
+     {metadata && (
+      <div className="flex items-center gap-2 mb-2 flex-wrap">
+       {metadata.map((m, i) => (
+        <span key={i} className="font-body text-ghost text-[10px] px-2 py-1 bg-stone2 rounded-sm">
+         {m}
+        </span>
+       ))}
+      </div>
+     )}
+     {children}
+    </div>
+    {status && <div className="flex-shrink-0 text-right">{status}</div>}
+   </div>
+   {actions && (
+    <div className="px-4 pb-3 flex gap-2 flex-wrap border-t border-rule2">
+     {actions}
+    </div>
+   )}
+  </div>
+ )
+}
+
+// ── StatusIndicator — Visual status representation
+export function StatusIndicator({ status, tone = 'muted' }) {
+ const baseClass = 'inline-flex items-center gap-1.5 font-body text-[10px] font-medium'
+ const toneClass = {
+  ok: 'text-ok',
+  warn: 'text-warn',
+  danger: 'text-danger',
+  muted: 'text-muted',
+ }[tone] || 'text-muted'
+
+ const icon = status === 'pending' ? (
+  <div className="w-1.5 h-1.5 rounded-full bg-current" />
+ ) : status === 'complete' ? (
+  <Check size={10} strokeWidth={2} />
+ ) : status === 'error' ? (
+  <X size={10} strokeWidth={2} />
+ ) : (
+  <div className="w-1.5 h-1.5 rounded-full bg-current" />
+ )
+
+ return (
+  <div className={`${baseClass} ${toneClass}`}>
+   {icon}
+   {status.charAt(0).toUpperCase() + status.slice(1)}
+  </div>
+ )
+}
+
 // ── ExpandableSection — Collapsible context sections (operator briefing, shift stats, etc.)
 export function ExpandableSection({ title, children, defaultOpen = false }) {
  const [open, setOpen] = useState(defaultOpen)
