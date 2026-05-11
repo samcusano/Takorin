@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { handoffData, sanitationLogs, certExpiry, haccpData, scheduleData, crewHoursData } from '../data'
-import { Urg, StatCell, SP, SPRow, SecHd, Btn, ConsequenceNotice, Layout, ActionBanner, PersonAvatar, HoldButton } from '../components/UI'
+import { Urg, StatCell, SP, SPRow, SecHd, Btn, ConsequenceNotice, Layout, ActionBanner, PersonAvatar, HoldButton, AcceptanceGate, CarryForwardItem, ExpandableSection } from '../components/UI'
 import { ChevronRight, ArrowRight, Check, AlertTriangle } from 'lucide-react'
 import { useAppState } from '../context/AppState'
 
@@ -69,391 +69,126 @@ function ForecastRow({ row }) {
 export default function HandoffIQ() {
  const d = handoffData
  const { handoffSigned: signed, setHandoffSigned: setSigned,
- handoffNominated: nominated, setHandoffNominated: setNominated,
- trainingPlans, setTrainingPlans,
- trainingCompletions, setTrainingCompletions,
- sanitationEntries, setSanitationEntries,
- operatorAcknowledgments, setOperatorAcknowledgments,
+ carryForwardAcknowledged, setCarryForwardAcknowledged,
  logActivity,
  currentPlant } = useAppState()
- const [handoffAccepted, setHandoffAccepted] = useState(false)
- const [completionForms, setCompletionForms] = useState({})
- const [trainingForms, setTrainingForms] = useState({})
- const [showSanitationForm, setShowSanitationForm] = useState(false)
- const [sanitationForm, setSanitationForm] = useState({ line:'', shift:'', checks:'7', total:'7', notes:'', tech:'T. Osei' })
- const [timeToShift, setTimeToShift] = useState('')
 
- useEffect(() => {
- const tick = () => {
- const now = new Date()
- const target = new Date()
- target.setHours(14, 0, 0, 0)
- const diff = Math.max(0, target - now)
- const h = Math.floor(diff / 3600000)
- const m = Math.floor((diff % 3600000) / 60000)
- setTimeToShift(h > 0 ? `${h}h ${m}m` : `${m}m`)
+ // Filter for critical carry-forward items (warn + danger urgency)
+ const carryForwardItems = d.cases.filter(c => c.urgency === 'warn' || c.urgency === 'danger').map(c => ({
+  id: c.num,
+  urgency: c.urgency,
+  title: c.title,
+  operationalImpact: c.desc,
+  ownerContext: c.evidence || 'Documented in shift record',
+  recommendedAction: c.events?.[0]?.val || 'Review shift notes for action steps'
+ }))
+
+ const carryForwardCount = carryForwardItems.length
+ const acknowledgedCount = carryForwardItems.filter(item => carryForwardAcknowledged.has(item.id)).length
+ const allAcknowledged = acknowledgedCount === carryForwardCount && carryForwardCount > 0
+
+ const handleAcknowledgeCarryForward = (id) => {
+  setCarryForwardAcknowledged(prev => new Set([...prev, id]))
+  logActivity({ actor: 'M. Santos', action: 'Acknowledged carry-forward item', item: id, type: 'acknowledgment' })
  }
- tick()
- const id = setInterval(tick, 30000)
- return () => clearInterval(id)
- }, [])
 
- const side = (
- <>
- {/* Workforce dev */}
- <SP title="Workforce development" sub="CAPA-driven">
- <div className="px-4 py-2 font-body text-warn text-[11px] border-b border-rule2 flex items-center gap-1.5">
- <AlertTriangle size={14} strokeWidth={2} className="text-warn flex-shrink-0" />
- Skill mismatch = 29% of 90-day CAPAs
- </div>
- {d.operators.map((op, i) => {
- const plan = trainingPlans[op.name]
- const form = trainingForms[op.name] || {}
- return (
- <div key={i} className="px-4 py-3 border-b border-rule2 last:border-b-0">
- <div className="flex items-start gap-2 mb-2">
- <PersonAvatar name={op.name} size={28} />
- <div className="flex-1 min-w-0">
- <div className="font-body text-ink font-medium text-[12px]">{op.name}</div>
- <div className="font-body text-ghost text-[10px]">{op.role}</div>
- </div>
- <span className={`font-body text-[10px] flex-shrink-0 ${
- plan?.submitted ? 'text-ok'
- : nominated[op.name] ? 'text-ok'
- : op.badgeTone === 'warn' ? 'text-warn'
- : op.badgeTone === 'ok' ? 'text-ok'
- : 'text-ghost'
- }`}>
- {plan?.submitted ? 'Plan set ✓' : nominated[op.name] ? 'Nominated ✓' : op.badge}
- </span>
- </div>
- <div className="flex items-center gap-2">
- <div className="flex-1 h-1 bg-rule2"><div className={`h-full ${op.color}`} style={{ width: op.pct + '%' }} /></div>
- <span className="font-body text-ghost text-[10px] whitespace-nowrap">{op.label}</span>
- </div>
- {op.fromCapa && <div className="font-body text-warn/80 text-[10px] mt-1">{op.fromCapa}</div>}
- {nominated[op.name] && !plan?.submitted && (
- <div className="mt-2 slide-in space-y-1.5">
- <div className="font-body text-ghost text-[10px] uppercase tracking-widest">Training plan</div>
- <select
- value={form.level || ''}
- onChange={e => setTrainingForms(p => ({ ...p, [op.name]: { ...p[op.name], level: e.target.value } }))}
- className="w-full font-body text-ink text-[11px] bg-stone border border-rule2 px-2 py-1 cursor-pointer"
- >
- <option value="">Target cert level…</option>
- <option>L2 Sauce Dosing</option>
- <option>L2 QA Inspector</option>
- <option>L3 Oven Operator</option>
- <option>L3 Pack Lead</option>
- </select>
- <input
- type="text" placeholder="Start date (e.g. Apr 22)"
- value={form.startDate || ''}
- onChange={e => setTrainingForms(p => ({ ...p, [op.name]: { ...p[op.name], startDate: e.target.value } }))}
- className="w-full font-body text-ink text-[11px] bg-stone border border-rule2 px-2 py-1"
- />
- <select
- value={form.trainer || ''}
- onChange={e => setTrainingForms(p => ({ ...p, [op.name]: { ...p[op.name], trainer: e.target.value } }))}
- className="w-full font-body text-ink text-[11px] bg-stone border border-rule2 px-2 py-1 cursor-pointer"
- >
- <option value="">Assign trainer…</option>
- <option>A. Martinez · L3</option>
- <option>D. Kowalski · Supervisor</option>
- <option>P. Okonkwo · L2</option>
- </select>
- <Btn variant="primary" className="w-full" disabled={!form.level || !form.startDate || !form.trainer} onClick={() => setTrainingPlans(p => ({ ...p, [op.name]: { ...form, submitted: true } }))}>Submit training plan</Btn>
- </div>
- )}
- {plan?.submitted && !trainingCompletions[op.name] && (
- <div className="mt-2 space-y-1 slide-in">
- <div className="flex items-center gap-1 font-body text-ok text-[10px]">
- <div className="w-1 h-1 rounded-full bg-ok" />
- {op.name} — {plan.level} with {plan.trainer} · starts {plan.startDate}
- </div>
- {!completionForms[op.name] ? (
- <Btn variant="secondary" onClick={() => setCompletionForms(p => ({...p, [op.name]: { outcome:'', date:'', hours:'' }}))}>Mark complete</Btn>
- ) : (
- <div className="space-y-1.5 slide-in">
- <select value={completionForms[op.name]?.outcome || ''} onChange={e => setCompletionForms(p => ({...p, [op.name]: {...p[op.name], outcome: e.target.value}}))}
- className="w-full font-body text-ink text-[11px] bg-stone border border-rule2 px-2 py-1 cursor-pointer">
- <option value="">Outcome…</option>
- <option>Passed</option><option>Failed — repeat required</option><option>Needs supervisor review</option>
- </select>
- <div className="flex gap-1.5">
- <input placeholder="Completion date" value={completionForms[op.name]?.date || ''} onChange={e => setCompletionForms(p => ({...p, [op.name]: {...p[op.name], date: e.target.value}}))}
- className="flex-1 font-body text-ink text-[11px] bg-stone border border-rule2 px-2 py-1" />
- <input placeholder="Hours" type="number" value={completionForms[op.name]?.hours || ''} onChange={e => setCompletionForms(p => ({...p, [op.name]: {...p[op.name], hours: e.target.value}}))}
- className="w-16 font-body text-ink text-[11px] bg-stone border border-rule2 px-2 py-1" />
- </div>
- <Btn variant="primary" disabled={!completionForms[op.name]?.outcome || !completionForms[op.name]?.date} onClick={() => {
- setTrainingCompletions(p => ({...p, [op.name]: completionForms[op.name]}))
- setCompletionForms(p => { const n={...p}; delete n[op.name]; return n })
- }}>Record completion</Btn>
- </div>
- )}
- </div>
- )}
- {trainingCompletions[op.name] && (
- <div className="flex items-center gap-1 mt-2 font-body text-ok text-[10px] slide-in">
- <Check size={12} strokeWidth={2} className="text-ok flex-shrink-0" />
- {trainingCompletions[op.name].outcome} · {trainingCompletions[op.name].date} · {trainingCompletions[op.name].hours}h
- </div>
- )}
- </div>
- )
- })}
- </SP>
-
- {/* Cert expiry calendar */}
- <SP title="Cert expirations" sub="30 / 60 / 90 day view">
- {certExpiry.map((c, i) => {
- const color = c.tone === 'danger' ? 'text-danger' : c.tone === 'warn' ? 'text-warn' : 'text-ok'
- const bg = c.tone === 'danger' ? 'bg-danger/[0.03] border-l-danger' : c.tone === 'warn' ? 'border-l-warn' : 'border-l-ok'
- return (
- <div key={i} className={`flex items-start gap-2.5 px-4 py-2.5 border-b border-rule2 last:border-b-0 border-l-2 ${bg}`}>
- <div className="flex-1 min-w-0">
- <div className={`font-body font-medium text-[12px] ${color}`}>{c.name}</div>
- <div className="font-body text-ghost text-[10px]">{c.cert} · {c.line}</div>
- {c.note && <div className={`font-body text-[10px] mt-0.5 ${color}`}>{c.note}</div>}
- </div>
- <div className="text-right flex-shrink-0">
- <div className={`display-num text-base ${color}`}>{c.expiresIn === 0 ? '0d' : `${c.expiresIn}d`}</div>
- <div className="font-body text-ghost text-[10px]">{c.expiresIn === 0 ? 'tonight' : 'remaining'}</div>
- </div>
- </div>
- )
- })}
- </SP>
-
- {/* Incoming briefing */}
- <SP title="Incoming supervisor" sub="PM shift · 14:02">
- <div className="px-4 py-3 space-y-1.5">
- <div className="flex items-center gap-2">
- <PersonAvatar name="M. Santos" size={24} />
- <div>
- <div className="font-body text-ink font-medium text-[13px]">M. Santos</div>
- <div className="font-body text-ghost text-[10px]">14:00–22:00 · Line 4</div>
- </div>
- </div>
- <div className="h-px bg-rule2 my-2" />
- <div className="font-body text-ink2 text-[11px] leading-relaxed">
- Review Sensor A-7 watch — count is at 4, threshold is 5. TS-8811 COA gap carries forward — request immediately if not resolved.
- </div>
- </div>
- {timeToShift && (
- <div className="flex items-baseline gap-2 px-4 py-3 border-t border-rule2">
- <span className="display-num text-2xl text-warn">{timeToShift}</span>
- <span className="font-body text-ghost text-[11px]">until PM shift starts</span>
- </div>
- )}
- </SP>
-
- {/* Last 5 handoffs */}
- <SP title="Recent handoffs" sub="Line 4">
- {d.lastHandoffs.map((h, i) => (
- <div key={i} className="flex justify-between px-4 py-2 border-b border-rule2 last:border-b-0 font-body text-[11px]">
- <span className=" text-muted">{h.shift}</span>
- <span className={`display-num text-[13px] ${h.tone}`}>{h.oee}</span>
- </div>
- ))}
- </SP>
- </>
- )
+ const handleAcceptShift = () => {
+  setSigned(true)
+  logActivity({ actor: 'M. Santos', action: 'Accepted shift handoff', item: `Line 4 · ${new Date().toLocaleDateString()}`, type: 'acknowledgment' })
+ }
 
  return (
  <div className="flex flex-col h-full overflow-hidden content-reveal">
- {/* Step 1 — outgoing signs */}
- {!signed && (
- <ActionBanner
- tone="ok"
- headline={`Shift handoff awaiting outgoing signature — ${currentPlant?.name || 'Salina Campus'} · Line 4`}
- body="D. Kowalski signing off · Incoming: M. Santos · April 16, 14:02"
- >
- <Btn variant="secondary" onClick={() => setSigned(true)}>Sign handoff — Kowalski</Btn>
- </ActionBanner>
- )}
 
- {/* Step 2 — incoming pending */}
- {signed && !handoffAccepted && (
- <ActionBanner
- tone="ok"
- headline="D. Kowalski signed off — waiting for M. Santos to accept"
- body="Scroll to bottom to review carry-forward items and confirm the shift"
+ {/* Sticky Acceptance Gate */}
+ <AcceptanceGate
+  incomingSupervisor="M. Santos"
+  shiftTime="PM 14:00–22:00"
+  carryForwardCount={carryForwardCount}
+  acknowledgedCount={acknowledgedCount}
+  allAcknowledged={allAcknowledged}
+  onAccept={handleAcceptShift}
+  disabled={!signed}
  />
+
+ {/* Outgoing supervisor signature step */}
+ {!signed && (
+  <ActionBanner
+   tone="ok"
+   headline={`Shift handoff awaiting outgoing signature — ${currentPlant?.name || 'Salina Campus'} · Line 4`}
+   body="D. Kowalski signing off · Incoming: M. Santos · April 16, 14:02"
+  >
+   <Btn variant="secondary" onClick={() => setSigned(true)}>Sign handoff — Kowalski</Btn>
+  </ActionBanner>
  )}
 
  {/* Complete — both parties signed */}
- {signed && handoffAccepted && (
- <div className="flex items-center gap-3 px-4 py-3 bg-ok/10 border-b border-ok/20 flex-shrink-0">
- <Check size={12} strokeWidth={2} className="text-ok flex-shrink-0" />
- <span className="font-body text-ok text-[12px]">
- Handoff complete · Signed: D. Kowalski (outgoing) · M. Santos (incoming) · 14:02 · April 16, 2026
- </span>
- </div>
- )}
-
- {/* Stats */}
- <div className="grid grid-cols-4 border-b border-rule2 bg-stone flex-shrink-0">
- {d.stats.map((s, i) => <StatCell key={i} {...s} />)}
- </div>
-
- <Layout side={side}>
- {/* Operator context */}
- <div className="border-b border-rule2">
- <SecHd tag="Your shift context" title="Operator-facing — what Takorin flagged today and why"
- badge={<Urg level="info">Visible to named operators</Urg>} />
- {[
- { name: 'C. Reyes', accent: 'brass', safetyNote: 'Before starting Sauce Dosing: allergen changeover log must be signed (Pepperoni → GF-Flatbread). CCP-1 hold temp is 60°C minimum. If you see sauce temp below this, log it immediately.' },
- { name: 'P. Okonkwo', accent: 'ok', safetyNote: 'Oven Station B: today\'s SKU (GF-Flatbread) has a CCP-3 minimum of 185°F — higher than Pepperoni Classic. Log any reading below this as a CCP deviation, not a watch.' },
- ].map((op, i) => (
- <div key={i} className={`flex gap-3 px-4 py-3.5 border-b border-rule2 last:border-b-0 border-l-2 ${i === 0 ? 'border-l-brass bg-brass/[0.03]' : 'border-l-ok bg-ok/[0.02]'}`}>
- <div className="flex-shrink-0 mt-0.5">
- <PersonAvatar name={op.name} size={24} />
- </div>
- <div>
- <div className="font-body font-medium text-ink text-[12px] mb-1">{op.name}</div>
- <div className="font-body text-ink2 text-[11px] leading-relaxed mb-1.5">
- {i === 0
- ? 'Takorin flagged a certification mismatch. Sauce Dosing at today\'s production volume requires L2. Martinez covered the station. This is not a performance note — you\'ve been nominated for the L2 pathway.'
- : 'No flags on your station today. You\'re 91% toward your L3 Sauce Dosing certification. Your supervisor nominated you for the next certification assessment cycle.'}
- </div>
- <div className="font-body text-[10px] leading-relaxed px-2 py-1.5 bg-stone3 border-l-2 border-l-warn text-muted mb-2">
- <span className="text-warn not-italic font-medium">Safety: </span>{op.safetyNote}
- </div>
- {!operatorAcknowledgments[op.name] ? (
- <HoldButton
-  label={`Hold to confirm — I've read and understood this`}
-  holdLabel="Keep holding…"
-  doneLabel={`${op.name} acknowledged`}
-  duration={1500}
-  tone="ok"
-  onConfirm={() => {
-   const t = new Date().toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' })
-   setOperatorAcknowledgments(p => ({...p, [op.name]: { time: t, item: 'safety-briefing-apr16' }}))
-   logActivity({ actor: op.name, action: 'Acknowledged safety briefing', item: 'Safety context Apr 16', type: 'acknowledgment' })
-  }}
- />
- ) : (
- <div className="flex items-center gap-1 font-body text-ok text-[10px] slide-in">
- <Check size={12} strokeWidth={2} className="text-ok flex-shrink-0" />
- Acknowledged by {op.name} · {operatorAcknowledgments[op.name].time}
- </div>
- )}
- </div>
- </div>
- ))}
- </div>
-
- {/* Shift record */}
- <div className="border-b border-rule2">
- <SecHd tag="Shift record" title="Line 4 · April 16 · AM shift · D. Kowalski"
- badge={<Urg level="ok">2 acted · 1 carry-forward</Urg>} />
- {d.cases.map((c, i) => (
- <div key={i} className={`border-l-2 border-b border-rule2 last:border-b-0 ${
- c.urgency === 'ok' ? 'border-l-ok' : c.urgency === 'warn' ? 'border-l-warn' : 'border-l-danger'
- }`}>
- <div className="p-4 space-y-1.5">
- <p className="font-body text-ink font-medium text-[13px]">{c.title}</p>
- <p className="font-body text-ink2 text-[12px] leading-relaxed">{c.desc}</p>
- {c.evidence && <p className="font-body text-ghost text-[11px] flex items-start gap-1"><ChevronRight size={11} className="flex-shrink-0 mt-px" />{c.evidence}</p>}
- {c.events && c.events.map((e, j) => (
- <div key={j} className="flex gap-2 font-body text-[11px]">
- <span className=" text-ghost flex-shrink-0">{e.time}</span>
- <span className="text-ink2">{e.val}</span>
- </div>
- ))}
- </div>
- </div>
- ))}
- </div>
-
- {/* Shift timeline */}
- <div>
- <SecHd tag="Shift trajectory" title="Key events — AM shift · 06:12–14:02"
- badge={<Urg level="warn">Sensor A-7 carry-forward</Urg>} />
- <ShiftTimeline events={shiftEvents} />
- </div>
-
-
- {/* Upcoming shifts */}
- <div>
-  <SecHd tag="Upcoming shifts" title="Next 48 hours — readiness and crew conflicts"
-  badge={<Urg level="warn">1 intervention required</Urg>} />
-  {scheduleData.days.flatMap(day => day.conflicts.map((issue, j) => ({ date: day.date, issue, key: `${day.date}-${j}` }))).map(c => (
-  <div key={c.key} className="flex items-start gap-2 px-4 py-2 border-b border-rule2 bg-danger/[0.03]">
-   <AlertTriangle size={14} strokeWidth={2} className="text-warn flex-shrink-0" />
-   <div>
-   <span className="font-body font-medium text-[12px] text-danger">{c.date}</span>
-   <div className="font-body text-ghost text-[10px] mt-0.5">{c.issue}</div>
-   </div>
+ {signed && allAcknowledged && (
+  <div className="flex items-center gap-3 px-4 py-3 bg-ok/10 border-b border-ok/20 flex-shrink-0">
+   <Check size={12} strokeWidth={2} className="text-ok flex-shrink-0" />
+   <span className="font-body text-ok text-[12px]">
+    Ready to accept · All carry-forward items acknowledged
+   </span>
   </div>
-  ))}
-  {handoffData.forecast.map((row, i) => (
-  <ForecastRow key={i} row={row} />
-  ))}
- </div>
-
- {/* Attestation — outgoing signature */}
- {!signed && (
- <div className="border-t border-rule2">
- <div className="px-4 pt-4 pb-3 font-body text-ink2 text-[12px] leading-relaxed">
- D. Kowalski: sign off to confirm all carry-forward items have been documented and the incoming supervisor has been briefed.
- </div>
- <HoldButton
-  label="Hold to sign off — D. Kowalski"
-  holdLabel="Keep holding to sign off…"
-  doneLabel="Signed off · D. Kowalski"
-  duration={2000}
-  tone="ok"
-  onConfirm={() => setSigned(true)}
- />
- </div>
  )}
 
- {/* Attestation — incoming acceptance */}
- {signed && !handoffAccepted && (
- <div className="border-t border-rule2">
- <div className="px-4 py-4 bg-stone2">
- <div className="font-body text-[10px] font-medium uppercase tracking-widest text-ghost mb-3">
- Carry-forward items — M. Santos must acknowledge before accepting
+ {/* Simplified Stats */}
+ <div className="grid grid-cols-3 border-b border-rule2 bg-stone flex-shrink-0">
+  <StatCell label="Line" value="4" sub="Salina Campus" tone="ok" />
+  <StatCell label="Incoming" value="M. Santos" sub="14:00 shift start" tone="ok" />
+  <StatCell label="Carry-forward" value={String(carryForwardCount)} sub={carryForwardCount > 0 ? 'require acknowledgment' : 'all clear'} tone={carryForwardCount > 0 ? 'warn' : 'ok'} />
  </div>
- {[
- { tone: 'warn', text: 'Sensor A-7 variance at count 4 of 5 threshold. Escalate to director at count 5. No action taken by Kowalski.' },
- { tone: 'danger', text: 'TS-8811 COA gap unresolved — production start remains blocked. Request COA from ConAgra immediately on shift start.' },
- ].map((item, i) => (
- <div key={i} className={`flex items-start gap-2 px-3 py-2 mb-2 border-l-2 ${item.tone === 'danger' ? 'border-l-danger bg-danger/[0.03]' : 'border-l-warn bg-warn/[0.02]'}`}>
- <ChevronRight size={11} className={`flex-shrink-0 mt-px ${item.tone === 'danger' ? 'text-danger' : 'text-warn'}`} />
- <span className="font-body text-ink2 text-[11px] leading-relaxed">{item.text}</span>
- </div>
- ))}
- <div className="font-body text-ink2 text-[12px] mb-3 leading-relaxed">
- By accepting, M. Santos acknowledges these carry-forwards and takes responsibility for Line 4 from 14:00.
- </div>
- <HoldButton
-  label="Hold to accept shift — M. Santos"
-  holdLabel="Keep holding to accept…"
-  doneLabel="Shift accepted · M. Santos"
-  duration={2000}
-  tone="ok"
-  onConfirm={() => { setHandoffAccepted(true); logActivity({ actor: 'M. Santos', action: 'Accepted shift handoff from D. Kowalski', item: 'Line 4 · Apr 16 PM', type: 'acknowledgment' }) }}
- />
- </div>
- </div>
- )}
 
- {/* Complete */}
- {signed && handoffAccepted && (
- <div className="px-4 py-3 bg-ok/10 border-t border-rule2 flex items-center gap-3">
- <div className="w-8 h-8 flex items-center justify-center flex-shrink-0 bg-ok/20">
- <Check size={12} strokeWidth={2} className="text-ok flex-shrink-0" />
+ {/* Main content — Carry-forward queue first (primary), then collapsed context */}
+ <div className="flex-1 overflow-y-auto bg-stone">
+  {/* Carry-forward queue — THE PRODUCT */}
+  {carryForwardCount > 0 ? (
+   <div className="border-b border-rule2">
+    <div className="px-4 py-2.5 bg-stone2 font-body font-medium text-ink text-[12px]">
+     Carry-forward items ({acknowledgedCount}/{carryForwardCount} acknowledged)
+    </div>
+    {carryForwardItems.map(item => (
+     <CarryForwardItem
+      key={item.id}
+      item={item}
+      acknowledged={carryForwardAcknowledged.has(item.id)}
+      onAcknowledge={handleAcknowledgeCarryForward}
+     />
+    ))}
+   </div>
+  ) : (
+   <div className="px-4 py-8 text-center font-body text-ghost text-[11px]">
+    No carry-forward items · shift handed off cleanly
+   </div>
+  )}
+
+  {/* Expandable context sections */}
+  <ExpandableSection title="Operator briefing">
+   <div className="border-b border-rule2">
+    <div className="px-4 py-3 font-body text-muted text-[11px] italic">
+     Operator-specific safety notes and flagged items
+    </div>
+   </div>
+  </ExpandableSection>
+
+  <ExpandableSection title="Shift record details">
+   <div className="border-b border-rule2">
+    <div className="px-4 py-3 font-body text-muted text-[11px] italic">
+     Full shift events, timeline, and interventions taken
+    </div>
+   </div>
+  </ExpandableSection>
+
+  <ExpandableSection title="Upcoming shifts & staffing">
+   <div className="border-b border-rule2">
+    <div className="px-4 py-3 font-body text-muted text-[11px] italic">
+     Next 48 hours readiness and crew availability
+    </div>
+   </div>
+  </ExpandableSection>
+
  </div>
- <div className="font-body text-ok text-[12px]">
- Handoff complete · D. Kowalski signed off · M. Santos accepted · 14:02 · April 16, 2026
- </div>
- </div>
- )}
- </Layout>
+
  </div>
  )
 }
