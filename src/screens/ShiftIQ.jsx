@@ -287,6 +287,7 @@ function Finding({ f, onAct }) {
  const [acked, setAcked] = useState(null)
  const [showDismiss, setShowDismiss] = useState(false)
  const [dismissed, setDismissed] = useState(false)
+ const [dismissReason, setDismissReason] = useState('')
  const [showed, setShowed] = useState(false)
 
  const handleAct = (action) => {
@@ -309,25 +310,40 @@ function Finding({ f, onAct }) {
    <Chip tone="muted">{f.source}</Chip>
   </div>
  )}
- <div className="flex gap-2 pt-1">
+ <div className="flex gap-2 pt-1 relative">
  {f.actions.map((a, i) => (
  <Btn key={i} variant={i === 0 ? 'primary' : 'secondary'} onClick={() => handleAct(a)}>
  {a}
  </Btn>
  ))}
  <Btn variant="secondary" onClick={() => setShowDismiss(!showDismiss)}>Dismiss</Btn>
- </div>
  {showDismiss && !dismissed && (
- <div className="flex gap-2 pt-1 slide-in">
- <select aria-label="Reason for dismissing this finding" className="font-body text-ink text-[11px] bg-stone border border-rule2 px-2 py-1 flex-1 cursor-pointer">
- <option>Reason for dismissing…</option>
- <option>Already handled by outgoing supervisor</option>
- <option>Not applicable — SKU change in progress</option>
- <option>Assessment is incorrect — false positive</option>
- </select>
- <Btn variant="secondary" onClick={() => { setDismissed(true); setShowDismiss(false) }}>Confirm</Btn>
- </div>
+  <div className="absolute top-full left-0 mt-1 bg-stone border border-rule2 rounded-md px-2 py-1 shadow-md z-10">
+   <button type="button" onClick={() => setShowDismiss(false)} 
+    className="flex items-center justify-center w-6 h-6 rounded hover:bg-stone2 transition-colors mb-1"
+    aria-label="Close dismiss selector">
+    <X size={14} strokeWidth={2} className="text-ink" />
+   </button>
+   {[
+    'Already handled by outgoing supervisor',
+    'Not applicable — SKU change in progress', 
+    'Assessment is incorrect — false positive'
+   ].map(reason => (
+    <button
+     key={reason}
+     type="button"
+     onClick={() => {
+      setDismissed(true)
+      setShowDismiss(false)
+     }}
+     className="block w-full text-left font-body text-ink text-[11px] px-2 py-1 hover:bg-stone2 transition-colors rounded"
+     aria-label={`Dismiss: ${reason}`}>
+     {reason}
+    </button>
+   ))}
+  </div>
  )}
+ </div>
  {acked && (
  <div className="flex items-center gap-1.5 font-body text-ink2 text-[10px]">
  <div className={`w-1.5 h-1.5 rounded-full ${acked === 'actioning' ? 'bg-ok' : 'bg-danger'}`} />
@@ -569,7 +585,6 @@ export default function ShiftIQ() {
  <Modal title="Pre-shift safety briefing">
   <div className="flex items-center justify-between px-4 pt-3 pb-2 border-b border-rule2">
   <div className="font-body font-medium text-ink text-[13px]" id="modal-title">Pre-shift safety briefing</div>
-  <span className="font-body text-ghost text-[10px]">Acknowledge before proceeding</span>
   </div>
   <div className="overflow-y-auto flex-1">
   {[
@@ -733,25 +748,69 @@ export default function ShiftIQ() {
  </div>
  )))}
  {showTaskForm && (
- <div className="mt-2 space-y-1.5 slide-in">
- <select aria-label="Assign to operator" value={taskForm.assignee} onChange={e => setTaskForm(p => ({...p, assignee: e.target.value}))}
- className="w-full font-body text-ink text-[11px] bg-stone border border-rule2 px-2 py-1 cursor-pointer">
- <option value="">Assign to…</option>
- {['A. Martinez','C. Reyes','P. Okonkwo','F. Adeyemi','T. Osei'].map(n => <option key={n}>{n}</option>)}
- </select>
- <input aria-label="Task description" placeholder="Task description" value={taskForm.label} onChange={e => setTaskForm(p => ({...p, label: e.target.value}))}
- className="w-full font-body text-ink text-[11px] bg-stone border border-rule2 px-2 py-1" />
- <input aria-label="Due time" placeholder="Due time (e.g. 09:00)" value={taskForm.dueTime} onChange={e => setTaskForm(p => ({...p, dueTime: e.target.value}))}
- className="w-full font-body text-ink text-[11px] bg-stone border border-rule2 px-2 py-1" />
- <div className="flex gap-1.5">
- <Btn variant="primary" disabled={!taskForm.assignee || !taskForm.label} onClick={() => {
- const { assignee, label, dueTime } = taskForm
- setTaskAssignments(p => ({...p, [assignee]: [...(p[assignee]||[]), { label, dueTime, done: false, id: Date.now() }]}))
- setTaskForm({ assignee:'', label:'', dueTime:'' }); setShowTaskForm(false)
- }}>Assign task</Btn>
- <button type="button" onClick={() => setShowTaskForm(false)} className="font-body text-[10px] text-ghost px-2">Cancel</button>
- </div>
- </div>
+  <div className="fixed inset-0 bg-ink/50 z-50 flex items-center justify-center p-4">
+   <div className="bg-stone border border-rule2 rounded-lg shadow-lg max-w-sm w-full">
+    <div className="px-4 py-3 border-b border-rule2">
+     <div className="font-body font-medium text-ink text-[13px]">Assign task</div>
+    </div>
+    <div className="p-4 space-y-4">
+     <div>
+      <div className="font-body text-ghost text-[10px] mb-2">Assign to</div>
+      <div className="grid grid-cols-3 gap-2">
+       {[
+        { name: 'A. Martinez', avatar: 'A. Martinez' },
+        { name: 'C. Reyes', avatar: 'C. Reyes' },
+        { name: 'P. Okonkwo', avatar: 'P. Okonkwo' },
+        { name: 'F. Adeyemi', avatar: 'F. Adeyemi' },
+        { name: 'T. Osei', avatar: 'T. Osei' }
+       ].map(person => (
+        <button
+         key={person.name}
+         type="button"
+         onClick={() => setTaskForm(p => ({...p, assignee: person.name}))}
+         className={`flex flex-col items-center gap-1 p-2 rounded border transition-colors ${
+          taskForm.assignee === person.name ? 'border-ok bg-ok/5' : 'border-rule2 hover:border-muted'
+         }`}>
+         <PersonAvatar name={person.avatar} size={32} />
+         <span className="font-body text-[10px] text-ink truncate w-full text-center">{person.name.split(' ')[0]}</span>
+        </button>
+       ))}
+      </div>
+     </div>
+     <div>
+      <div className="font-body text-ghost text-[10px] mb-2">Due time</div>
+      <div className="grid grid-cols-2 gap-2">
+       {[
+        'Today',
+        'Tomorrow',
+        'Monday morning',
+        'Pick date/time'
+       ].map(time => (
+        <button
+         key={time}
+         type="button"
+         onClick={() => setTaskForm(p => ({...p, dueTime: time}))}
+         className={`font-body text-[11px] px-3 py-2 rounded border transition-colors ${
+          taskForm.dueTime === time ? 'border-ok bg-ok/5 text-ok' : 'border-rule2 bg-stone hover:border-muted text-ink'
+         }`}>
+         {time}
+        </button>
+       ))}
+      </div>
+     </div>
+     <input aria-label="Task description" placeholder="Task description" value={taskForm.label} onChange={e => setTaskForm(p => ({...p, label: e.target.value}))}
+      className="w-full font-body text-ink text-[11px] bg-stone border border-rule2 px-3 py-2 rounded" />
+     <div className="flex gap-2">
+      <Btn variant="primary" disabled={!taskForm.assignee || !taskForm.label || !taskForm.dueTime} onClick={() => {
+       const { assignee, label, dueTime } = taskForm
+       setTaskAssignments(p => ({...p, [assignee]: [...(p[assignee]||[]), { label, dueTime, done: false, id: Date.now() }]}))
+       setTaskForm({ assignee:'', label:'', dueTime:'' }); setShowTaskForm(false)
+      }}>Assign task</Btn>
+      <button type="button" onClick={() => setShowTaskForm(false)} className="font-body text-[11px] text-ghost px-3 py-2">Cancel</button>
+     </div>
+    </div>
+   </div>
+  </div>
  )}
  </div>
 
@@ -946,7 +1005,6 @@ export default function ShiftIQ() {
        <p className={`font-body font-medium text-[13px] leading-snug ${signed ? 'line-through text-ghost' : item.isAllergen && !allergenSigned ? 'text-danger' : 'text-ink'}`}>
         {item.label}
         {item.isAllergen && !allergenSigned && <span className="ml-1.5 inline-flex items-center gap-0.5 text-[10px] font-medium"><AlertTriangle size={9} strokeWidth={2} /> BLOCKING</span>}
-        {flag && <span className="ml-1.5 inline-flex items-center gap-0.5 text-[10px] text-warn font-medium"><Flag size={9} strokeWidth={2} /> flagged</span>}
        </p>
       </div>
       <p className="font-body text-ghost text-[11px]">{item.operator}</p>
@@ -976,11 +1034,46 @@ export default function ShiftIQ() {
        </button>
       )}
       {!signed && !flag && (
-       <button type="button" onClick={() => setFlagForm(p => ({...p, [item.key]: { reason:'', note:'' }}))} 
-        className="flex items-center justify-center w-10 h-10 rounded-full border-2 border-rule2 hover:border-ghost transition-colors cursor-pointer flex-shrink-0"
-        aria-label={`Flag ${item.label}`}>
-        <Flag size={18} strokeWidth={2} className="text-ghost" />
-       </button>
+       <div className="relative">
+        <button type="button" onClick={() => showFlagForm ? setFlagForm(p => { const n = {...p}; delete n[item.key]; return n }) : setFlagForm(p => ({...p, [item.key]: { reason:'', note:'' }}))} 
+         className="flex items-center justify-center w-10 h-10 rounded-full border-2 border-rule2 hover:border-ghost transition-colors cursor-pointer flex-shrink-0"
+         aria-label={showFlagForm ? 'Close flag selector' : `Flag ${item.label}`}>
+         {showFlagForm ? <X size={18} strokeWidth={2} className="text-ink" /> : <Flag size={18} strokeWidth={2} className="text-ghost" />}
+        </button>
+        {showFlagForm && (
+         <div className="absolute top-0 right-0 flex items-center gap-1 bg-stone border border-rule2 rounded-md px-2 py-1 shadow-md z-10">
+          <button type="button" onClick={() => setFlagForm(p => { const n = {...p}; delete n[item.key]; return n })} 
+           className="flex items-center justify-center w-6 h-6 rounded hover:bg-stone2 transition-colors"
+           aria-label="Close flag selector">
+           <X size={14} strokeWidth={2} className="text-ink" />
+          </button>
+          {FLAG_REASONS.map(({ value, label, Icon }) => {
+           const active = flagForm[item.key]?.reason === value
+           return (
+            <button
+             key={value}
+             type="button"
+             onClick={() => {
+              setFlagForm(p => ({...p, [item.key]: {...p[item.key], reason: value, active: true}}))
+              setTimeout(() => {
+               const f = flagForm[item.key]
+               if (f) {
+                setFlaggedItems(p => ({...p, [item.key]: {reason: value}}))
+                if (value === 'Equipment malfunction') setMaintenanceTickets(p => [...p, { id:`MT-${Date.now()}`, equipment: item.label, issue: value, urgency:'warn', status:'open', requestedBy: item.operator, createdAt: new Date().toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' }) }])
+                setFlagForm(p => { const n = {...p}; delete n[item.key]; return n })
+               }
+              }, 200)
+             }}
+             title={label}
+             className={`flex items-center justify-center w-8 h-8 rounded transition-transform ${active ? 'scale-110' : 'scale-100 hover:scale-110'} ${active ? 'bg-ok/10' : 'bg-stone2 hover:bg-stone3'}`}
+             aria-label={label}>
+             <Icon size={16} strokeWidth={2} className={`${active ? 'text-ok' : 'text-ink'}`} aria-hidden="true" />
+            </button>
+           )
+          })}
+         </div>
+        )}
+       </div>
       )}
      </div>
     </div>
@@ -1010,49 +1103,7 @@ export default function ShiftIQ() {
      )}
      </div>
     )}
-    {showFlagForm && !flag && (
-     <div className="px-4 py-3 space-y-3 slide-in">
-      <div className="font-body text-ghost text-[10px] uppercase tracking-widest">Select reason</div>
-      <div className="relative flex items-center justify-center gap-6">
-       <button
-        type="button"
-        onClick={() => setFlagForm(p => { const n = {...p}; delete n[item.key]; return n })}
-        className="flex items-center justify-center w-9 h-9 rounded-full border-2 border-rule2 bg-stone2 hover:bg-stone3 hover:border-ghost transition-all cursor-pointer flex-shrink-0"
-        aria-label="Close flag selector">
-        <X size={16} strokeWidth={2} className="text-ink" />
-       </button>
-       <div className="flex items-center gap-4">
-        {FLAG_REASONS.map(({ value, label, Icon }) => {
-         const active = flagForm[item.key]?.reason === value
-         return (
-          <button
-           key={value}
-           type="button"
-           onClick={() => {
-            setFlagForm(p => ({...p, [item.key]: {...p[item.key], reason: value, active: true}}))
-            setTimeout(() => {
-             const f = flagForm[item.key]
-             if (f) {
-              setFlaggedItems(p => ({...p, [item.key]: {reason: value}}))
-              if (value === 'Equipment malfunction') setMaintenanceTickets(p => [...p, { id:`MT-${Date.now()}`, equipment: item.label, issue: value, urgency:'warn', status:'open', requestedBy: item.operator, createdAt: new Date().toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' }) }])
-              setFlagForm(p => { const n = {...p}; delete n[item.key]; return n })
-             }
-            }, 200)
-           }}
-           title={label}
-           className={`group relative flex flex-col items-center justify-center w-11 h-11 rounded-full transition-transform ${active ? 'scale-110' : 'scale-100 hover:scale-110'} ${active ? 'bg-ok/10' : 'bg-stone2 hover:bg-stone3'}`}
-           aria-label={label}>
-           <Icon size={18} strokeWidth={2} className={`${active ? 'text-ok' : 'text-ink'}`} aria-hidden="true" />
-           <span className="absolute -bottom-7 left-1/2 -translate-x-1/2 whitespace-nowrap font-body text-[9px] bg-ink text-stone px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-            {label}
-           </span>
-          </button>
-         )
-        })}
-       </div>
-      </div>
-     </div>
-    )}
+
     </div>
    )
   })}

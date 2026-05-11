@@ -176,29 +176,7 @@ export default function SupplierIQ() {
         ))}
       </SP>
 
-      <SP title="EMP swab results" sub="Zone 1 · 5 swabs trailing">
-        <div className="px-4 pt-2 pb-1 flex items-end gap-1" style={{ height: 56 }}>
-          {empResultsHistory.slice().reverse().map((r, i) => (
-            <div key={i} className="flex-1 flex flex-col items-center gap-0.5">
-              <div className={`w-full ${r.result === 'positive' ? 'bg-danger' : 'bg-ok/60'}`}
-                style={{ height: r.result === 'positive' ? 32 : 16 }} />
-            </div>
-          ))}
-        </div>
-        {empResultsHistory.map((r, i) => (
-          <div key={i} className={`flex items-center gap-2 px-4 py-2 border-b border-rule2 last:border-b-0 ${r.result === 'positive' ? 'bg-danger/[0.03]' : ''}`}>
-            <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${r.result === 'positive' ? 'bg-danger' : 'bg-ok'}`} />
-            <div className="flex-1">
-              <span className="font-body font-medium text-ink text-[11px]">{r.date}</span>
-              <span className="font-body text-ghost text-[10px] ml-2">{r.zone} · {r.location}</span>
-            </div>
-            <span className={`font-body font-medium text-[10px] px-1.5 py-px ${r.result === 'positive' ? 'bg-danger/10 text-danger' : 'bg-ok/10 text-ok'}`}>
-              {r.result === 'positive' ? `Pos ${r.cfu} CFU` : 'Neg'}
-            </span>
-            {r.capaId && <span className="font-body text-ghost text-[10px]">{r.capaId}</span>}
-          </div>
-        ))}
-      </SP>
+
     </>
   )
 
@@ -222,10 +200,7 @@ export default function SupplierIQ() {
 
       {/* Alert strip */}
       <div className="flex items-center gap-2 px-4 py-2 border-b border-rule2 bg-stone2 flex-shrink-0">
-        <AlertChip count={blockingLots.length} tone="danger" label="blocking production" />
-        <AlertChip count={monitoringLots.length} tone="warn" label={`lot${monitoringLots.length !== 1 ? 's' : ''} expiring < 14d`} />
-        <AlertChip count="2" tone="warn" label="price alerts" />
-        <AlertChip count="18d" tone="muted" label="until FDA inspection" />
+
       </div>
 
       <Layout side={side}>

@@ -379,7 +379,7 @@ export function VaulDrawer({ open, onClose, title, badge, children, maxHeight = 
 
  return (
   <div className="fixed inset-0 z-[60] flex flex-col justify-end">
-   <div className="absolute inset-0 bg-ink/50" onClick={handleClose} />
+   <div className="absolute inset-0 bg-transparent" onClick={handleClose} />
    <div
     ref={contentRef}
     role="dialog"
@@ -388,10 +388,6 @@ export function VaulDrawer({ open, onClose, title, badge, children, maxHeight = 
     className={`relative z-10 bg-stone flex flex-col overflow-hidden rounded-t-2xl mx-auto w-full ${exiting ? 'drawer-out' : 'drawer-in'}`}
     style={{ maxHeight, width: `min(100%, ${maxWidth})`, boxShadow: designTokens.shadows.card }}
    >
-    {/* Drag handle */}
-    <div className="flex justify-center pt-3 pb-1 flex-shrink-0" aria-hidden="true">
-     <div className="w-9 h-[3px] rounded-full bg-rule2" />
-    </div>
     {/* Header — only if title provided */}
     {title && (
      <div className="flex items-center justify-between px-4 py-2.5 border-b border-rule2 flex-shrink-0">
