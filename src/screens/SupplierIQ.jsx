@@ -1,10 +1,10 @@
 import { useState, useRef } from 'react'
 import { useFocusTrap, useExitAnimation } from '../lib/utils'
-import { Check, X, AlertTriangle, Clock, ArrowRight, Wheat, Soup, Milk, Beef, Droplets, History } from 'lucide-react'
+import { Check, X, AlertTriangle, Clock, ArrowRight, Wheat, Soup, Milk, Beef, Droplets, History, AlertCircle, Eye } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { supplierData, supplierAudits, empResultsHistory } from '../data'
 import { useAppState } from '../context/AppState'
-import { Urg, StatCell, SP, SecHd, Btn, Chip, Layout, ActionBanner, ScoreRing, Spinner, AnimatedCheck } from '../components/UI'
+import { Urg, StatCell, SP, SecHd, Btn, Chip, Layout, ActionBanner, ScoreRing, Spinner, AnimatedCheck, MetadataRow, ExpandableMetadata, ActionCard, StatusIndicator } from '../components/UI'
 
 // ── CoaPanel ──────────────────────────────────────────────────────────────────
 
@@ -14,6 +14,7 @@ function CoaPanel({ lot, onClose }) {
   useFocusTrap(panelRef, !!lot)
   if (!lot) return null
   const handleClose = () => exit(onClose)
+  const coaPass = lot.coaTone === 'ok'
   return (
     <>
       <div className="fixed inset-0 bg-ink/20 z-40" onClick={handleClose} />
@@ -28,21 +29,56 @@ function CoaPanel({ lot, onClose }) {
           </button>
         </div>
         <div className="flex-1 overflow-y-auto p-5">
-          {[
-            { l: 'Supplier · Lot', v: lot.supplier },
-            { l: 'PO date',        v: lot.po },
-            { l: 'COA status',     v: lot.coa },
-            { l: 'Shelf life',     v: `${lot.shelf} days remaining` },
-            { l: 'Test date',      v: lot.coaTone === 'ok' ? 'Apr 12, 2026' : 'Pending receipt' },
-            { l: 'Microbial count',v: lot.coaTone === 'ok' ? 'Pass — < 100 CFU/g' : 'Not tested' },
-            { l: 'pH',             v: lot.coaTone === 'ok' ? '4.2 ✓' : 'Not tested' },
-            { l: 'Moisture %',     v: lot.coaTone === 'ok' ? '12.4% ✓' : 'Not tested' },
-          ].map(r => (
-            <div key={r.l} className="flex justify-between py-2.5 border-b border-rule2 last:border-0">
-              <span className="font-body text-ghost text-[11px]">{r.l}</span>
-              <span className="font-body font-medium text-ink text-[12px]">{r.v}</span>
+          {/* Test metadata */}
+          <div className="mb-4">
+            <div className="font-body font-medium text-ink text-[11px] mb-2 uppercase tracking-wider">Test Results</div>
+            {[
+              { l: 'Supplier · Lot', v: lot.supplier, tone: 'muted' },
+              { l: 'PO date',        v: lot.po, tone: 'muted' },
+              { l: 'COA status',     v: lot.coa, tone: coaPass ? 'ok' : 'danger' },
+              { l: 'Shelf life',     v: `${lot.shelf} days remaining`, tone: 'muted' },
+            ].map(r => (
+              <div key={r.l} className="flex justify-between py-2 border-b border-rule2 last:border-0">
+                <span className="font-body text-ghost text-[10px]">{r.l}</span>
+                <span className={`font-body font-medium text-[11px] ${r.tone === 'ok' ? 'text-ok' : r.tone === 'danger' ? 'text-danger' : 'text-ink'}`}>{r.v}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* Lab results */}
+          <div>
+            <div className="font-body font-medium text-ink text-[11px] mb-2 uppercase tracking-wider">Lab Results</div>
+            <div className="space-y-2">
+              <div className="flex items-start justify-between p-2 bg-stone2 border border-rule2">
+                <div>
+                  <div className="font-body font-medium text-ink text-[10px]">Test date</div>
+                  <div className="font-body text-ghost text-[9px] mt-1">{coaPass ? 'Apr 12, 2026' : 'Pending receipt'}</div>
+                </div>
+                <StatusIndicator status={coaPass ? 'complete' : 'pending'} tone={coaPass ? 'ok' : 'warn'} />
+              </div>
+              <div className="flex items-start justify-between p-2 bg-stone2 border border-rule2">
+                <div>
+                  <div className="font-body font-medium text-ink text-[10px]">Microbial count</div>
+                  <div className={`font-body text-[10px] mt-1 ${coaPass ? 'text-ok' : 'text-muted'}`}>{coaPass ? '< 100 CFU/g ✓' : 'Not tested'}</div>
+                </div>
+                {coaPass && <Check size={11} strokeWidth={2} className="text-ok mt-1" />}
+              </div>
+              <div className="flex items-start justify-between p-2 bg-stone2 border border-rule2">
+                <div>
+                  <div className="font-body font-medium text-ink text-[10px]">pH</div>
+                  <div className={`font-body text-[10px] mt-1 ${coaPass ? 'text-ok' : 'text-muted'}`}>{coaPass ? '4.2 ✓' : 'Not tested'}</div>
+                </div>
+                {coaPass && <Check size={11} strokeWidth={2} className="text-ok mt-1" />}
+              </div>
+              <div className="flex items-start justify-between p-2 bg-stone2 border border-rule2">
+                <div>
+                  <div className="font-body font-medium text-ink text-[10px]">Moisture %</div>
+                  <div className={`font-body text-[10px] mt-1 ${coaPass ? 'text-ok' : 'text-muted'}`}>{coaPass ? '12.4% ✓' : 'Not tested'}</div>
+                </div>
+                {coaPass && <Check size={11} strokeWidth={2} className="text-ok mt-1" />}
+              </div>
             </div>
-          ))}
+          </div>
         </div>
         <div className="px-5 py-3 border-t border-rule2 bg-stone2 flex-shrink-0">
           <Btn variant="secondary" onClick={handleClose}>Close</Btn>
@@ -198,9 +234,17 @@ export default function SupplierIQ() {
         {d.stats.map((s, i) => <StatCell key={i} {...s} />)}
       </div>
 
-      {/* Alert strip */}
+      {/* Alert strip — populated with active alerts */}
       <div className="flex items-center gap-2 px-4 py-2 border-b border-rule2 bg-stone2 flex-shrink-0">
-
+        {blockingLots.length > 0 && (
+          <AlertChip count={blockingLots.length} tone="danger" label={blockingLots.length === 1 ? 'blocking' : 'blocking'} />
+        )}
+        {monitoringLots.length > 0 && (
+          <AlertChip count={monitoringLots.length} tone="warn" label={monitoringLots.length === 1 ? 'expiring' : 'expiring'} />
+        )}
+        {namingResolved === false && (
+          <AlertChip count={1} tone="danger" label="naming conflict" />
+        )}
       </div>
 
       <Layout side={side}>
@@ -211,47 +255,55 @@ export default function SupplierIQ() {
             <SectionLabel
               tone="danger"
               label="Resolve now"
-              sub={`${resolveCount} item${resolveCount > 1 ? 's' : ''} blocking or at risk`}
+              sub={`${resolveCount} item${resolveCount > 1 ? 's' : ''} blocking production`}
             />
 
             {blockingLots.map((lot, i) => {
               const Icon = FOOD_ICONS[lot.ing]
               return (
-                <div key={i} className="relative p-4 border-b border-rule2 bg-danger/[0.025] overflow-hidden">
-                  {coaRequested && <span key="coa-flash" className="flash-success" aria-hidden="true" />}
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1.5">
-                        <Chip tone="danger">COA Missing</Chip>
-                        <span className="font-body text-ghost text-[10px]">{lot.supplier}</span>
-                      </div>
-                      <div className="flex items-center gap-1.5">
-                        {Icon && <Icon size={13} strokeWidth={2} className="text-ink/40 flex-shrink-0" />}
-                        <span className="font-body font-medium text-ink text-[15px]">{lot.ing}</span>
-                      </div>
-                      <div className="font-body text-muted text-[11px] mt-1 leading-relaxed">
-                        {lot.delivery} · {lot.deliveryTime} · {lot.shelf} days shelf remaining · Production start held
-                      </div>
-                      {!namingResolved && (
-                        <div className="flex items-center gap-1.5 mt-2 font-body text-danger text-[10px]">
-                          <AlertTriangle size={10} strokeWidth={2} className="flex-shrink-0" />
-                          FSMA 204 — naming conflict at CTE 2 blocks traceability submission
-                          <button type="button"
-                            onClick={() => navigate('/readiness', { state: { highlight: 'conflict-0' } })}
-                            className="text-int hover:underline ml-0.5 flex items-center gap-0.5">
-                            Fix <ArrowRight size={9} />
-                          </button>
-                        </div>
+                <ActionCard
+                  key={i}
+                  tone="danger"
+                  title={`${lot.ing} — COA Missing`}
+                  subtitle={`Production start held · ${lot.supplier} · Lot ${lot.delivery}`}
+                  metadata={[
+                    `${lot.shelf}d shelf remaining`,
+                    `Received ${lot.deliveryTime}`,
+                    lot.supply
+                  ]}
+                  status={
+                    coaRequested ? (
+                      <StatusIndicator status="complete" tone="ok" />
+                    ) : null
+                  }
+                  actions={
+                    <>
+                      {coaRequested ? (
+                        <span className="font-body text-ok text-[10px] flex items-center gap-1"><Check size={11} strokeWidth={2} /> COA request sent</span>
+                      ) : (
+                        <>
+                          <Btn variant="primary" onClick={() => setCoaRequested(true)}>Request COA</Btn>
+                          <Btn variant="secondary" onClick={() => setCoaViewLot(lot)}>View specs</Btn>
+                        </>
                       )}
+                    </>
+                  }
+                >
+                  {!namingResolved && (
+                    <div className="flex items-start gap-1.5 mt-2 p-2 bg-danger/5 border border-danger/20 rounded-sm">
+                      <AlertTriangle size={12} strokeWidth={2} className="text-danger flex-shrink-0 mt-0.5" />
+                      <div className="flex-1">
+                        <div className="font-body font-medium text-danger text-[10px]">FSMA 204 blocker</div>
+                        <div className="font-body text-danger text-[9px] mt-0.5 opacity-80">Naming conflict at CTE 2 prevents traceability submission</div>
+                        <button type="button"
+                          onClick={() => navigate('/readiness', { state: { highlight: 'conflict-0' } })}
+                          className="font-body text-danger text-[10px] hover:underline mt-1 flex items-center gap-0.5">
+                          Fix in Data Readiness <ArrowRight size={9} />
+                        </button>
+                      </div>
                     </div>
-                    <div className="flex flex-col items-end gap-2 flex-shrink-0">
-                      {coaRequested
-                        ? <span className="font-body text-ok text-[11px] flex items-center gap-1"><Check size={11} strokeWidth={2} /> Requested</span>
-                        : <Btn variant="primary" onClick={() => setCoaRequested(true)}>Request COA</Btn>
-                      }
-                    </div>
-                  </div>
-                </div>
+                  )}
+                </ActionCard>
               )
             })}
 
@@ -263,16 +315,22 @@ export default function SupplierIQ() {
             )}
 
             {auditActionSuppliers.map(s => (
-              <div key={s.name} className="flex items-center justify-between gap-3 px-4 py-3 border-b border-rule2 border-l-2 border-l-warn">
-                <div>
-                  <div className="font-body font-medium text-ink text-[12px]">{s.name} — conditional audit approval</div>
-                  <div className="font-body text-ghost text-[10px] mt-0.5">{supplierAudits[s.name]?.reason}</div>
-                </div>
-                <div className="flex gap-2 flex-shrink-0">
-                  <Btn variant="primary">Schedule re-audit</Btn>
-                  <Btn variant="secondary" icon={History}><span className="sr-only">History</span></Btn>
-                </div>
-              </div>
+              <ActionCard
+                key={s.name}
+                tone="warn"
+                title={`${s.name} — Conditional Audit Approval`}
+                subtitle="Re-audit required before next purchase order"
+                metadata={[
+                  `Reason: ${supplierAudits[s.name]?.reason.split(' · ')[0]}`,
+                  `Last audit: ${supplierAudits[s.name]?.lastAudit}`
+                ]}
+                actions={
+                  <>
+                    <Btn variant="primary">Schedule re-audit</Btn>
+                    <Btn variant="secondary" icon={History}><span className="sr-only">View audit history</span></Btn>
+                  </>
+                }
+              />
             ))}
           </>
         )}
@@ -283,49 +341,59 @@ export default function SupplierIQ() {
             <SectionLabel
               tone="warn"
               label="Monitoring"
-              sub={`${monitoringLots.length} expiring · 2 price alerts`}
+              sub={`${monitoringLots.length} at risk · ${d.stats[5]?.value} alerts`}
             />
 
             {monitoringLots.map((lot, i) => {
               const Icon = FOOD_ICONS[lot.ing]
               return (
-                <div key={i} className="flex items-center gap-3 px-4 py-3 border-b border-rule2">
-                  <div className={`w-0.5 self-stretch flex-shrink-0 ${lot.shelfTone === 'danger' ? 'bg-danger' : 'bg-warn'}`} />
-                  {Icon && <Icon size={12} strokeWidth={2} className="text-ghost flex-shrink-0" />}
-                  <div className="flex-1 min-w-0">
-                    <div className="font-body font-medium text-ink text-[12px]">{lot.ing}</div>
-                    <div className="font-body text-ghost text-[10px] mt-0.5">
-                      {lot.supplier} · {lot.delivery} · {lot.deliveryTime}
+                <ActionCard
+                  key={i}
+                  tone={lot.shelfTone === 'danger' ? 'danger' : 'warn'}
+                  title={`${lot.ing} — ${lot.shelfTone === 'danger' ? 'Expiring soon' : 'Shelf life alert'}`}
+                  subtitle={`${lot.supplier} · Lot ${lot.delivery}`}
+                  metadata={[
+                    `${lot.shelf}d shelf remaining`,
+                    `Arrived ${lot.deliveryTime}`,
+                    lot.coa
+                  ]}
+                  status={<StatusIndicator status={lot.coaTone === 'ok' ? 'complete' : 'pending'} tone={lot.coaTone === 'ok' ? 'ok' : 'warn'} />}
+                  actions={
+                    <>
+                      <button type="button" onClick={() => setCoaViewLot(lot)}
+                        className="font-body font-medium text-[10px] px-3 py-2 min-h-[36px] flex items-center gap-2 border border-rule2 bg-stone2 text-muted hover:border-ghost hover:bg-stone3 transition-colors">
+                        <Eye size={10} /> View COA
+                      </button>
+                    </>
+                  }
+                >
+                  {lot.useFirst && (
+                    <div className="flex items-center gap-2 mt-2 p-2 bg-warn/5 border border-warn/20 rounded-sm">
+                      <AlertCircle size={11} strokeWidth={2} className="text-warn flex-shrink-0" />
+                      <span className="font-body text-warn text-[10px]">Use-first priority — prioritize in stock rotation</span>
                     </div>
-                  </div>
-                  <Chip tone={lot.coaTone === 'ok' ? 'ok' : lot.coaTone === 'danger' ? 'danger' : 'warn'}>{lot.coa}</Chip>
-                  <Chip tone={lot.shelfTone}>{lot.shelf}d shelf</Chip>
-                  {lot.useFirst && <span className="font-body text-warn text-[10px] flex-shrink-0">Use first</span>}
-                  <button type="button" onClick={() => setCoaViewLot(lot)}
-                    className="font-body text-muted text-[10px] hover:text-ink transition-colors flex items-center gap-1 flex-shrink-0">
-                    <ArrowRight size={12} />View COA
-                  </button>
-                </div>
+                  )}
+                </ActionCard>
               )
             })}
 
-            {/* Price alerts row */}
-            <div className="flex items-center gap-3 px-4 py-3 border-b border-rule2">
-              <div className="w-0.5 self-stretch flex-shrink-0 bg-warn" />
-              <div className="flex-1 min-w-0 ml-3">
-                <div className="font-body font-medium text-ink text-[12px]">Price alerts</div>
-                <div className="font-body text-ghost text-[10px] mt-0.5">
-                  Tomato sauce +14% · ConAgra contract renewal May 12 · Canola oil +8%
-                </div>
-              </div>
-              <div className="flex items-center gap-2 flex-shrink-0">
-                <Chip tone="warn">2 active</Chip>
-                {rfqSent
+            {/* Price alerts */}
+            <ActionCard
+              tone="warn"
+              title="Price Alerts"
+              subtitle="2 active supplier contracts need renegotiation"
+              metadata={[
+                'Tomato sauce +14%',
+                'ConAgra renewal May 12',
+                'Canola oil +8%'
+              ]}
+              status={rfqSent ? <StatusIndicator status="complete" tone="ok" /> : null}
+              actions={
+                rfqSent
                   ? <span className="font-body text-ok text-[10px] flex items-center gap-1"><Check size={10} strokeWidth={2} /> RFQ sent</span>
                   : <Btn variant="secondary" onClick={() => setRfqSent(true)}>Request alternatives</Btn>
-                }
-              </div>
-            </div>
+              }
+            />
           </>
         )}
 
@@ -334,35 +402,50 @@ export default function SupplierIQ() {
 
         {sortedSuppliers.map(s => {
           const audit = supplierAudits[s.name]
+          const intel = networkIntel[s.name]
           return (
-            <div key={s.name} className={`flex items-center gap-4 px-4 py-3 border-b border-rule2 border-l-2 ${
-              audit?.needsAction ? 'border-l-danger bg-danger/[0.02]' : 'border-l-transparent'
+            <div key={s.name} className={`border-b border-rule2 border-l-2 ${
+              audit?.needsAction ? 'border-l-danger bg-danger/[0.02]' : 'border-l-transparent bg-stone'
             }`}>
-              <ScoreRing pct={s.score} size={32} />
-              <div className="flex-1 min-w-0">
-                <div className="font-body font-medium text-ink text-[13px]">{s.name}</div>
-                {audit?.reason && <div className="font-body text-warn text-[10px] mt-0.5">{audit.reason}</div>}
-                {networkIntel[s.name] && <NetworkBadge intel={networkIntel[s.name]} />}
+              <div className="px-4 py-3 flex items-center gap-4">
+                <ScoreRing pct={s.score} size={32} />
+                <div className="flex-1 min-w-0">
+                  <div className="font-body font-medium text-ink text-[13px]">{s.name}</div>
+                  {audit?.reason && <div className="font-body text-warn text-[10px] mt-0.5">{audit.reason}</div>}
+                  {intel && (
+                    <div className="flex items-center gap-1 mt-1">
+                      <div className="font-body text-ghost text-[9px]">{intel.percentile}th percentile</div>
+                      <div className="w-1 h-1 rounded-full bg-rule2" />
+                      <div className="font-body text-ghost text-[9px]">{intel.plants} plants</div>
+                      {intel.note && (
+                        <>
+                          <div className="w-1 h-1 rounded-full bg-rule2" />
+                          <div className={`font-body text-[9px] ${intel.tone === 'danger' ? 'text-danger' : 'text-ghost'}`}>{intel.note}</div>
+                        </>
+                      )}
+                    </div>
+                  )}
+                </div>
+                <span className={`font-body font-medium text-[10px] px-2 py-1 rounded-sm flex-shrink-0 ${
+                  s.tierTone === 'ok' ? 'bg-ok/10 text-ok'
+                  : s.tierTone === 'danger' ? 'bg-danger/10 text-danger'
+                  : 'bg-int/10 text-int'
+                }`}>{s.tier}</span>
+                <div className="text-right flex-shrink-0 min-w-fit">
+                  <div className="font-body text-muted text-[9px]">{audit?.lastAudit}</div>
+                  <div className={`font-body font-medium text-[11px] ${
+                    audit?.result === 'Approved' ? 'text-ok'
+                    : audit?.result === 'Conditional' ? 'text-warn'
+                    : 'text-danger'
+                  }`}>{audit?.result}</div>
+                </div>
+                {audit?.needsAction
+                  ? <Btn variant="secondary">Schedule</Btn>
+                  : <button type="button" className="font-body text-ghost text-[10px] hover:text-ink transition-colors flex items-center gap-1 px-2 py-2">
+                    <History size={11} /><span className="sr-only">Audit history</span>
+                  </button>
+                }
               </div>
-              <span className={`font-body font-medium text-[10px] px-1.5 py-0.5 ${
-                s.tierTone === 'ok' ? 'bg-ok/10 text-ok'
-                : s.tierTone === 'danger' ? 'bg-danger/10 text-danger'
-                : 'bg-int/10 text-int'
-              }`}>{s.tier}</span>
-              <div className="text-right flex-shrink-0">
-                <div className="font-body text-muted text-[10px]">{audit?.lastAudit}</div>
-                <div className={`font-body font-medium text-[11px] ${
-                  audit?.result === 'Approved' ? 'text-ok'
-                  : audit?.result === 'Conditional' ? 'text-warn'
-                  : 'text-danger'
-                }`}>{audit?.result}</div>
-              </div>
-              {audit?.needsAction
-                ? <Btn variant="secondary">Schedule re-audit</Btn>
-                : <button type="button" className="font-body text-ghost text-[10px] hover:text-ink transition-colors flex items-center gap-1">
-                  <History size={12} />History
-                </button>
-              }
             </div>
           )
         })}
