@@ -558,9 +558,9 @@ export function CarryForwardItem({ item, acknowledged, onAcknowledge }) {
      <button
       type="button"
       onClick={() => onAcknowledge(item.id)}
-      className="font-body font-medium text-[11px] px-2.5 py-1 border border-rule2 bg-stone hover:bg-stone2 text-ink transition-colors"
+      className="w-5 h-5 rounded-sm border border-rule2 bg-stone hover:bg-stone2 flex items-center justify-center transition-colors"
      >
-      Assume
+      <Check size={12} strokeWidth={2.5} className="text-ink" />
      </button>
     )}
    </div>
