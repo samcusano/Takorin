@@ -29,56 +29,27 @@ function CoaPanel({ lot, onClose }) {
           </button>
         </div>
         <div className="flex-1 overflow-y-auto p-5">
-          {/* Test metadata */}
-          <div className="mb-4">
-            <div className="font-body font-medium text-ink text-[11px] mb-2 uppercase tracking-wider">Test Results</div>
-            {[
-              { l: 'Supplier · Lot', v: lot.supplier, tone: 'muted' },
-              { l: 'PO date',        v: lot.po, tone: 'muted' },
-              { l: 'COA status',     v: lot.coa, tone: coaPass ? 'ok' : 'danger' },
-              { l: 'Shelf life',     v: `${lot.shelf} days remaining`, tone: 'muted' },
-            ].map(r => (
-              <div key={r.l} className="flex justify-between py-2 border-b border-rule2 last:border-0">
-                <span className="font-body text-ghost text-[10px]">{r.l}</span>
-                <span className={`font-body font-medium text-[11px] ${r.tone === 'ok' ? 'text-ok' : r.tone === 'danger' ? 'text-danger' : 'text-ink'}`}>{r.v}</span>
-              </div>
-            ))}
-          </div>
-
-          {/* Lab results */}
-          <div>
-            <div className="font-body font-medium text-ink text-[11px] mb-2 uppercase tracking-wider">Lab Results</div>
-            <div className="space-y-2">
-              <div className="flex items-start justify-between p-2 bg-stone2 border border-rule2">
-                <div>
-                  <div className="font-body font-medium text-ink text-[10px]">Test date</div>
-                  <div className="font-body text-ghost text-[9px] mt-1">{coaPass ? 'Apr 12, 2026' : 'Pending receipt'}</div>
-                </div>
-                <StatusIndicator status={coaPass ? 'complete' : 'pending'} tone={coaPass ? 'ok' : 'warn'} />
-              </div>
-              <div className="flex items-start justify-between p-2 bg-stone2 border border-rule2">
-                <div>
-                  <div className="font-body font-medium text-ink text-[10px]">Microbial count</div>
-                  <div className={`font-body text-[10px] mt-1 ${coaPass ? 'text-ok' : 'text-muted'}`}>{coaPass ? '< 100 CFU/g ✓' : 'Not tested'}</div>
-                </div>
-                {coaPass && <Check size={11} strokeWidth={2} className="text-ok mt-1" />}
-              </div>
-              <div className="flex items-start justify-between p-2 bg-stone2 border border-rule2">
-                <div>
-                  <div className="font-body font-medium text-ink text-[10px]">pH</div>
-                  <div className={`font-body text-[10px] mt-1 ${coaPass ? 'text-ok' : 'text-muted'}`}>{coaPass ? '4.2 ✓' : 'Not tested'}</div>
-                </div>
-                {coaPass && <Check size={11} strokeWidth={2} className="text-ok mt-1" />}
-              </div>
-              <div className="flex items-start justify-between p-2 bg-stone2 border border-rule2">
-                <div>
-                  <div className="font-body font-medium text-ink text-[10px]">Moisture %</div>
-                  <div className={`font-body text-[10px] mt-1 ${coaPass ? 'text-ok' : 'text-muted'}`}>{coaPass ? '12.4% ✓' : 'Not tested'}</div>
-                </div>
-                {coaPass && <Check size={11} strokeWidth={2} className="text-ok mt-1" />}
-              </div>
+          {/* Lot Profile */}
+          <div className="mb-6">
+            <div className="font-body font-medium text-ink text-[13px] mb-3">Lot Profile</div>
+            <div className="space-y-1">
+              <MetadataRow icon={Soup} label="Ingredient" value={lot.ing} tone="ink" />
+              <MetadataRow icon={AlertTriangle} label="Supplier & Lot" value={lot.supplier} sub={`Lot ${lot.delivery}`} tone="muted" />
+              <MetadataRow icon={Clock} label="Purchase Order" value={lot.po} tone="muted" />
+              <MetadataRow icon={Check} label="COA Status" value={lot.coa} tone={coaPass ? 'ok' : 'danger'} />
+              <MetadataRow icon={AlertCircle} label="Shelf Life" value={`${lot.shelf} days remaining`} tone={lot.shelfTone} />
             </div>
           </div>
+
+          {/* Lab Results */}
+          <ExpandableMetadata title="Lab Results" defaultOpen={true} tone="muted">
+            <div className="space-y-2">
+              <MetadataRow label="Test Date" value={coaPass ? 'Apr 12, 2026' : 'Pending receipt'} tone={coaPass ? 'ok' : 'warn'} details={<StatusIndicator status={coaPass ? 'complete' : 'pending'} tone={coaPass ? 'ok' : 'warn'} />} />
+              <MetadataRow label="Microbial Count" value={coaPass ? '< 100 CFU/g' : 'Not tested'} tone={coaPass ? 'ok' : 'muted'} details={coaPass ? '✓' : ''} />
+              <MetadataRow label="pH Level" value={coaPass ? '4.2' : 'Not tested'} tone={coaPass ? 'ok' : 'muted'} details={coaPass ? '✓' : ''} />
+              <MetadataRow label="Moisture %" value={coaPass ? '12.4%' : 'Not tested'} tone={coaPass ? 'ok' : 'muted'} details={coaPass ? '✓' : ''} />
+            </div>
+          </ExpandableMetadata>
         </div>
         <div className="px-5 py-3 border-t border-rule2 bg-stone2 flex-shrink-0">
           <Btn variant="secondary" onClick={handleClose}>Close</Btn>
@@ -236,11 +207,11 @@ export default function SupplierIQ() {
 
       {/* Alert strip — populated with active alerts */}
       <div className="flex items-center gap-2 px-4 py-2 border-b border-rule2 bg-stone2 flex-shrink-0">
-        {blockingLots.length > 0 && (
-          <AlertChip count={blockingLots.length} tone="danger" label={blockingLots.length === 1 ? 'blocking' : 'blocking'} />
+        {blockingLots.length > 1 && (
+          <AlertChip count={blockingLots.length - 1} tone="danger" label={(blockingLots.length - 1) === 1 ? 'blocking' : 'blocking'} />
         )}
-        {monitoringLots.length > 0 && (
-          <AlertChip count={monitoringLots.length} tone="warn" label={monitoringLots.length === 1 ? 'expiring' : 'expiring'} />
+        {monitoringLots.length > 1 && (
+          <AlertChip count={monitoringLots.length - 1} tone="warn" label={(monitoringLots.length - 1) === 1 ? 'expiring' : 'expiring'} />
         )}
         {namingResolved === false && (
           <AlertChip count={1} tone="danger" label="naming conflict" />
