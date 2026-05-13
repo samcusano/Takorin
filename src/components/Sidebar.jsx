@@ -4,7 +4,7 @@ import { NavLink, useNavigate } from 'react-router-dom'
 import {
  Activity, Handshake, Truck, ClipboardCheck,
  Gauge,
- Building2, ChevronDown, Globe2, Bell,
+ Building2, ChevronDown, Globe2,
  LayoutDashboard, MapPin, ShieldCheck, AlertTriangle,
 } from 'lucide-react'
 import { useAppState, PLANTS } from '../context/AppState'
@@ -20,9 +20,7 @@ const modules = [
 const foundation = [
  { id:'readiness', label:'Data Readiness', path:'/readiness', icon:Gauge, badge:'64', badgeType:'score' },
  { id:'network', label:'Network View', path:'/network', icon:Globe2, badge:null },
- { id:'notifications', label:'Notifications', path:'/notifications', icon:Bell, badge:null, dynamic:true },
 ]
-
 
 function Badge({ badge, badgeType }) {
  if (!badge) return null
@@ -320,7 +318,7 @@ export default function Sidebar() {
  const [userOpen, setUserOpen] = useState(false)
  const userTriggerRef = useRef(null)
  const [toast, setToast] = useState(null)
- const { blockingEvidenceUploaded, allergenOverride, checklistSigned, nearMisses, maintenanceTickets, notifPanelOpen, setNotifPanelOpen, viewingRole, setViewingRole, currentPlant, setCurrentPlant } = useAppState() || {}
+ const { blockingEvidenceUploaded, allergenOverride, checklistSigned, nearMisses, maintenanceTickets, viewingRole, setViewingRole, currentPlant, setCurrentPlant } = useAppState() || {}
 
  const allergenSigned = checklistSigned?.['allergen'] || !!allergenOverride
  const complianceState = currentPlant?.id === 'ks' ? 'clear' : (!blockingEvidenceUploaded ? 'blocked' : !allergenSigned ? 'attention' : 'clear')
@@ -329,7 +327,6 @@ export default function Sidebar() {
  // Standing compliance items (2 always present + 1 evidence gap if not yet uploaded)
  // plus dynamic safety events the director hasn't seen
  const standingCount = blockingEvidenceUploaded ? 2 : 3
- const notifCount = standingCount + (allergenOverride ? 1 : 0) + (nearMisses?.length || 0)
 
  const showToast = (label) => {
  setToast(label)
@@ -403,22 +400,7 @@ export default function Sidebar() {
  <div className="px-4 pt-4 pb-1 text-[10px] tracking-widest uppercase text-ghost font-body font-medium">
  Foundation
  </div>
- {foundation.map(m => m.dynamic ? (
- <button type="button"
- key={m.id}
- aria-haspopup="true"
- aria-expanded={notifPanelOpen}
- aria-label={`Notifications — ${notifCount > 0 ? `${notifCount} unread` : 'no unread'}`}
- onClick={() => setNotifPanelOpen?.(o => !o)}
- className={`flex items-center gap-3 px-4 py-2.5 text-sm transition-colors duration-100 border-l-2 w-full text-left ${
- notifPanelOpen ? 'border-ochre bg-ochre/10 text-stone font-medium' : 'border-transparent text-stone/70 hover:bg-sidebar-2 hover:text-stone'
- }`}
- >
- <m.icon size={15} strokeWidth={1.75} className="flex-shrink-0" />
- <span className="font-body flex-1">{m.label}</span>
- {notifCount > 0 && <span key={notifCount} className="ml-auto text-[10px] font-semibold px-1.5 py-0.5 bg-danger text-white badge-pulse" aria-hidden="true">{notifCount}</span>}
- </button>
- ) : (
+ {foundation.map(m => (
  <SideItem key={m.id} to={m.path} id={m.id} {...m} badge={m.badge} badgeType={m.badgeType} />
  ))}
 

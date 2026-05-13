@@ -401,7 +401,7 @@ export const networkData = {
 export const readinessData = {
   score: 64,
   stats: [
-    { label:'Overall readiness', value:'64', sub:'of 100', fill:64, tone:'warn' },
+    { label:'Overall readiness', value:'64', badge:'Degraded', sub:'of 100', fill:64, tone:'warn' },
     { label:'Sources connected', value:'5/5', sub:'All live', fill:100, tone:'ok' },
     { label:'Naming conflicts', value:'2', sub:'Cross-plant', fill:40, tone:'warn' },
     { label:'Context gaps', value:'1', sub:'Critical — Oven B', fill:20, tone:'danger' },
