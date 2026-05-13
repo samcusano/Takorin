@@ -532,12 +532,6 @@ export function CarryForwardItem({ item, acknowledged, onAcknowledge }) {
   watch: 'border-l-rule2',
  }[item.urgency] || 'border-l-rule2'
 
- const textColorForUrgency = {
-  danger: 'text-danger',
-  warn: 'text-warn',
-  watch: 'text-muted',
- }[item.urgency] || 'text-muted'
-
  const actionColor = {
   danger: 'text-danger',
   warn: 'text-warn',
@@ -545,31 +539,31 @@ export function CarryForwardItem({ item, acknowledged, onAcknowledge }) {
  }[item.urgency] || 'text-muted'
 
  return (
-  <div className={`border-l-2 ${borderColor} border-b border-rule2 px-3 py-2.5 flex flex-col gap-2 ${acknowledged ? 'bg-ok/[0.03]' : 'bg-stone'}`}>
-   <div className="flex items-start justify-between gap-3">
-    <div className="flex-1 min-w-0">
-     <div className="font-body font-medium text-ink text-[12px] leading-snug mb-1">{item.title}</div>
-     <div className="font-body text-muted text-[10px] leading-snug mb-1">{item.operationalImpact}</div>
-     <div className="font-body text-ghost text-[10px] leading-snug">{item.ownerContext}</div>
-    </div>
-    <div className="flex-shrink-0">
-     {acknowledged && (
-      <div className="w-5 h-5 rounded-sm bg-ok flex items-center justify-center">
-       <Check size={12} strokeWidth={2.5} className="text-stone" />
-      </div>
-     )}
-    </div>
-   </div>
-   <div className="border-t border-rule2 pt-1.5 flex items-center justify-between gap-2">
+  <div className={`relative overflow-hidden border-l-2 ${borderColor} border-b border-rule2 px-4 py-3 flex gap-3 ${acknowledged ? 'bg-ok/[0.03]' : 'bg-stone'}`}>
+   {acknowledged && <span className="flash-success" aria-hidden="true" />}
+   <div className="flex-1 min-w-0">
+    <div className="font-body font-medium text-ink text-[12px] leading-snug mb-1">{item.title}</div>
+    <div className="font-body text-muted text-[10px] leading-snug mb-1">{item.operationalImpact}</div>
+    <div className="font-body text-ghost text-[10px] leading-snug mb-2">{item.ownerContext}</div>
     <span className={`font-body font-medium text-[10px] ${actionColor}`}>{item.recommendedAction}</span>
-    {!acknowledged && (
+   </div>
+   <div className="flex-shrink-0 flex items-center">
+    {!acknowledged ? (
      <button
       type="button"
       onClick={() => onAcknowledge(item.id)}
-      className="w-5 h-5 rounded-sm border border-rule2 bg-stone hover:bg-stone2 flex items-center justify-center transition-colors"
+      className="flex items-center justify-center w-10 h-10 rounded-full border-2 border-rule2 bg-stone3 hover:border-ghost transition-colors cursor-pointer"
+      aria-label={`Acknowledge: ${item.title}`}
      >
-      <Check size={12} strokeWidth={2.5} className="text-ink" />
+      <Check size={18} strokeWidth={2} className="text-ink" />
      </button>
+    ) : (
+     <div
+      className="flex items-center justify-center w-12 h-12 rounded-full border border-ok/20 bg-ok/5"
+      aria-label={`Acknowledged: ${item.title}`}
+     >
+      <Check size={18} strokeWidth={2.5} className="text-ok" />
+     </div>
     )}
    </div>
   </div>

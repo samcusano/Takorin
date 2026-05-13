@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react'
-import { handoffData, sanitationLogs, certExpiry, haccpData, scheduleData, crewHoursData } from '../data'
-import { Urg, StatCell, SP, SPRow, SecHd, Btn, ConsequenceNotice, Layout, ActionBanner, PersonAvatar, HoldButton, AcceptanceGate, CarryForwardItem, ExpandableSection } from '../components/UI'
-import { ChevronRight, ArrowRight, Check, AlertTriangle } from 'lucide-react'
+import { useState } from 'react'
+import { handoffData, certExpiry, haccpData, crewHoursData } from '../data'
+import { StatCell, Btn, ActionBanner, PersonAvatar, AcceptanceGate, CarryForwardItem, ExpandableSection } from '../components/UI'
+import { Check, AlertTriangle, Clock } from 'lucide-react'
 import { useAppState } from '../context/AppState'
 
 const shiftEvents = [
@@ -73,15 +73,21 @@ export default function HandoffIQ() {
  logActivity,
  currentPlant } = useAppState()
 
- // Filter for critical carry-forward items (warn + danger urgency)
- const carryForwardItems = d.cases.filter(c => c.urgency === 'warn' || c.urgency === 'danger').map(c => ({
-  id: c.num,
-  urgency: c.urgency,
-  title: c.title,
-  operationalImpact: c.desc,
-  ownerContext: c.evidence || 'Documented in shift record',
-  recommendedAction: c.events?.[0]?.val || 'Review shift notes for action steps'
- }))
+ // Filter and sort carry-forward items — danger first, then warn
+ const carryForwardItems = d.cases
+  .filter(c => c.urgency === 'warn' || c.urgency === 'danger')
+  .sort((a, b) => {
+   const order = { danger: 0, warn: 1 }
+   return (order[a.urgency] ?? 2) - (order[b.urgency] ?? 2)
+  })
+  .map(c => ({
+   id: c.num,
+   urgency: c.urgency,
+   title: c.title,
+   operationalImpact: c.desc,
+   ownerContext: c.evidence || 'Documented in shift record',
+   recommendedAction: c.events?.[0]?.val || 'Review shift notes for action steps'
+  }))
 
  const carryForwardCount = carryForwardItems.length
  const acknowledgedCount = carryForwardItems.filter(item => carryForwardAcknowledged.has(item.id)).length
@@ -163,28 +169,120 @@ export default function HandoffIQ() {
   )}
 
   {/* Expandable context sections */}
-  <ExpandableSection title="Operator briefing">
-   <div className="border-b border-rule2">
-    <div className="px-4 py-3 font-body text-muted text-[11px] italic">
-     Operator-specific safety notes and flagged items
+  <ExpandableSection title="Operator briefing" defaultOpen={true}>
+   {/* Incoming supervisor */}
+   <div className="flex items-center gap-2.5 px-4 py-3 border-b border-rule2 bg-stone2">
+    <PersonAvatar name="M. Santos" size={28} />
+    <div>
+     <div className="font-body font-medium text-ink text-[12px]">M. Santos — Incoming PM supervisor</div>
+     <div className="font-body text-ghost text-[10px]">Line 4 · 14:00–22:00 · Review all carry-forward items before accepting</div>
     </div>
    </div>
+   {/* Active CCPs */}
+   <div className="px-4 py-1.5 bg-stone3 border-b border-rule2">
+    <span className="font-body text-ghost text-[10px] uppercase tracking-widest">Active CCPs this shift</span>
+   </div>
+   {haccpData.ccps.map((ccp, i) => (
+    <div key={i} className="flex gap-3 px-4 py-2.5 border-b border-rule2 last:border-b-0">
+     <AlertTriangle size={12} strokeWidth={2} className="text-warn flex-shrink-0 mt-0.5" />
+     <div>
+      <div className="font-body font-medium text-ink text-[12px]">{ccp.station} · {ccp.ccp}</div>
+      <div className="font-body text-ghost text-[10px]">{ccp.limit} · {ccp.skuNote}</div>
+     </div>
+    </div>
+   ))}
+   {/* Cert alerts */}
+   <div className="px-4 py-1.5 bg-stone3 border-b border-rule2">
+    <span className="font-body text-ghost text-[10px] uppercase tracking-widest">Cert alerts</span>
+   </div>
+   {certExpiry.filter(c => c.tone !== 'ok').map((c, i) => (
+    <div key={i} className={`flex gap-3 px-4 py-2.5 border-b border-rule2 last:border-b-0 ${c.tone === 'danger' ? 'bg-danger/[0.03]' : ''}`}>
+     <Clock size={12} strokeWidth={2} className={`flex-shrink-0 mt-0.5 ${c.tone === 'danger' ? 'text-danger' : 'text-warn'}`} />
+     <div>
+      <div className={`font-body font-medium text-[12px] ${c.tone === 'danger' ? 'text-danger' : 'text-ink'}`}>{c.name} · {c.cert}</div>
+      <div className={`font-body text-[10px] ${c.tone === 'danger' ? 'text-danger/80' : 'text-ghost'}`}>{c.note}</div>
+     </div>
+    </div>
+   ))}
   </ExpandableSection>
 
   <ExpandableSection title="Shift record details">
-   <div className="border-b border-rule2">
-    <div className="px-4 py-3 font-body text-muted text-[11px] italic">
-     Full shift events, timeline, and interventions taken
-    </div>
+   {/* Key stats */}
+   <div className="grid grid-cols-3 border-b border-rule2">
+    {d.stats.map((s, i) => (
+     <div key={i} className="px-4 py-3 border-r border-rule2 last:border-r-0">
+      <div className="font-body text-ghost text-[10px] mb-0.5">{s.label}</div>
+      <div className="display-num text-xl text-ink">{s.value}</div>
+      <div className="font-body text-ghost text-[10px]">{s.sub}</div>
+     </div>
+    ))}
    </div>
+   {/* Shift timeline */}
+   <ShiftTimeline events={shiftEvents} />
+   {/* Interventions taken */}
+   <div className="px-4 py-1.5 bg-stone3 border-t border-b border-rule2">
+    <span className="font-body text-ghost text-[10px] uppercase tracking-widest">Interventions taken</span>
+   </div>
+   {d.cases.filter(c => c.urgency === 'ok' && c.events?.length).map((c, i) => (
+    <div key={i} className="border-l-2 border-l-ok border-b border-rule2 last:border-b-0 px-4 py-2.5">
+     <div className="font-body font-medium text-ink text-[12px] mb-1">{c.title}</div>
+     {c.events.map((e, j) => (
+      <div key={j} className="flex gap-2 font-body text-[10px] text-ghost">
+       <span className="text-muted flex-shrink-0">{e.time}</span>
+       <span>{e.val}</span>
+      </div>
+     ))}
+    </div>
+   ))}
   </ExpandableSection>
 
   <ExpandableSection title="Upcoming shifts & staffing">
-   <div className="border-b border-rule2">
-    <div className="px-4 py-3 font-body text-muted text-[11px] italic">
-     Next 48 hours readiness and crew availability
-    </div>
+   {/* 48h forecast */}
+   <div className="px-4 py-1.5 bg-stone3 border-b border-rule2">
+    <span className="font-body text-ghost text-[10px] uppercase tracking-widest">Next 48 hours forecast</span>
    </div>
+   {d.forecast.map((row, i) => (
+    <ForecastRow key={i} row={row} />
+   ))}
+   {/* Cert watch */}
+   <div className="px-4 py-1.5 bg-stone3 border-t border-b border-rule2">
+    <span className="font-body text-ghost text-[10px] uppercase tracking-widest">Cert watch</span>
+   </div>
+   {certExpiry.map((c, i) => (
+    <div key={i} className="flex items-center justify-between px-4 py-2.5 border-b border-rule2 last:border-b-0">
+     <div>
+      <div className="font-body font-medium text-ink text-[12px]">{c.name}</div>
+      <div className="font-body text-ghost text-[10px]">{c.cert} · {c.role}</div>
+     </div>
+     <span className={`font-body font-medium text-[10px] px-1.5 py-0.5 ${
+      c.tone === 'danger' ? 'bg-danger/10 text-danger' :
+      c.tone === 'warn' ? 'bg-warn/10 text-warn' :
+      'bg-ok/10 text-ok'
+     }`}>
+      {c.expiresIn === 0 ? 'Expires tonight' : `${c.expiresIn}d`}
+     </span>
+    </div>
+   ))}
+   {/* Crew hours */}
+   <div className="px-4 py-1.5 bg-stone3 border-t border-b border-rule2">
+    <span className="font-body text-ghost text-[10px] uppercase tracking-widest">Crew hours this week</span>
+   </div>
+   {Object.entries(crewHoursData).map(([name, data]) => {
+    const overHours = data.hoursThisWeek > 50
+    const overConsec = data.consecutive >= 7
+    return (
+     <div key={name} className="flex items-center justify-between px-4 py-2 border-b border-rule2 last:border-b-0">
+      <div className="flex items-center gap-2">
+       <PersonAvatar name={name} size={20} />
+       <span className="font-body text-ink text-[11px]">{name}</span>
+      </div>
+      <div className="flex items-center gap-4 text-[10px]">
+       <span className={`font-body ${overHours ? 'text-warn font-medium' : 'text-ghost'}`}>{data.hoursThisWeek}h this week</span>
+       <span className={`font-body ${overConsec ? 'text-warn font-medium' : 'text-ghost'}`}>{data.consecutive} days consecutive</span>
+      </div>
+     </div>
+    )
+   })}
   </ExpandableSection>
 
  </div>
