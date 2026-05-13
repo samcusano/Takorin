@@ -509,7 +509,7 @@ export default function ShiftIQ() {
  const scoreColor = riskColorClass(lineScore)
 
  return (
- <div className="flex flex-col h-full overflow-hidden content-reveal">
+ <div className="flex flex-col h-full overflow-hidden">
  <ActionBanner
  tone="warn"
  headline={`3 interventions pending · ${currentPlant?.name || 'Salina Campus'} · Line 4 · ${countdownFmt} remaining`}
