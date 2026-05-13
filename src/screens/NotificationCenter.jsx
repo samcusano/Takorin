@@ -228,9 +228,12 @@ export default function NotificationCenter({ onClose }) {
   ...logEvents.filter(e => !(DYNAMIC_COVERS[e.type] && dynamicTypes.has(e.type))),
  ]
 
+ const effectiveStanding = [...sampleStanding, ...standing]
+ const effectiveActivity = [...sampleActivity, ...mergedActivity]
+
  // ── Filter ───────────────────────────────────────────────────────────────
  const showCompliance = activeFilter === 'All' || activeFilter === 'Compliance'
- const filteredActivity = mergedActivity.filter(FILTER[activeFilter] || FILTER.All)
+ const filteredActivity = effectiveActivity.filter(FILTER[activeFilter] || FILTER.All)
 
  const totalUnread = effectiveStanding.length + effectiveActivity.filter(e => !read.has(e.id)).length
 

@@ -11,7 +11,6 @@ const SupplierIQ       = lazy(() => import('./screens/SupplierIQ'))
 const CAPAEngine       = lazy(() => import('./screens/CapaEngine'))
 const DataReadiness    = lazy(() => import('./screens/DataReadiness'))
 const NetworkView      = lazy(() => import('./screens/NetworkView'))
-const NotificationCenter = lazy(() => import('./screens/NotificationCenter'))
 const OperatorView     = lazy(() => import('./screens/OperatorView'))
 const DesignLabPage    = lazy(() => import('./__design_lab/DesignLabPage'))
 
@@ -27,7 +26,7 @@ const ROLE_LABELS = {
 }
 
 export default function App() {
- const { notifPanelOpen, setNotifPanelOpen, viewingRole, setViewingRole } = useAppState()
+ const { viewingRole, setViewingRole } = useAppState()
  const roleInfo = viewingRole ? ROLE_LABELS[viewingRole] : null
 
  return (
@@ -64,9 +63,6 @@ export default function App() {
  </Routes>
  </Suspense>
  </main>
- {notifPanelOpen && (
- <NotificationCenter onClose={() => setNotifPanelOpen(false)} />
- )}
  </div>
  )
 }

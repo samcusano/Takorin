@@ -28,12 +28,15 @@ export function Urg({ level = 'info', children }) {
 }
 
 // ── Stat bar cell
-export function StatCell({ label, value, sub, fill, tone = 'ok' }) {
+export function StatCell({ label, value, sub, fill, tone = 'ok', badge }) {
  const toneColor = { ok:'bg-ok', warn:'bg-warn', danger:'bg-danger', brass:'bg-brass' }[tone]
  return (
  <div className="px-4 py-3 border-r border-rule2 last:border-r-0">
  <div className="font-body text-muted text-[10px] mb-1">{label}</div>
+ <div className="flex items-center gap-2">
  <div className="display-num text-xl text-ink">{value}</div>
+ {badge && <span className="font-body text-[10px] px-2 py-1 rounded-full bg-stone2 text-ink">{badge}</span>}
+ </div>
  {sub && <div className="font-body text-ghost text-[10px] mt-0.5">{sub}</div>}
  {fill !== undefined && (
  <div className="h-px bg-rule2 mt-2">
@@ -219,11 +222,16 @@ export function Layout({ children, side }) {
  return (
  <div className="flex flex-1 min-h-0 overflow-hidden">
  <div className="flex-1 overflow-y-auto">{children}</div>
- {side && (
- <div className="hidden lg:block w-[260px] flex-shrink-0 border-l border-rule2 overflow-y-auto bg-stone2">
- {side}
+ {side && <RightRail>{side}</RightRail>}
  </div>
- )}
+ )
+}
+
+// ── RightRail — standardized 320px side panel used across all screens
+export function RightRail({ children }) {
+ return (
+ <div className="hidden lg:block w-80 flex-shrink-0 border-l border-rule2 overflow-y-auto bg-stone2">
+  {children}
  </div>
  )
 }
