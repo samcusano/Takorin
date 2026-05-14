@@ -22,7 +22,7 @@ function ForecastRow({ row }) {
     <div className="flex gap-1.5 flex-wrap mb-1">
      {signals.map((s, i) => {
       const cls = s.tone === 'ok' ? 'text-ok bg-ok/10' : (s.tone === 'bad' || s.tone === 'danger') ? 'text-danger bg-danger/10' : 'text-warn bg-warn/10'
-      return <span key={i} className={`font-body text-[10px] px-1.5 py-px ${cls}`}>{s.label}</span>
+      return <span key={i} className={`font-body text-[10px] px-1.5 py-px rounded-[3px] ${cls}`}>{s.label}</span>
      })}
     </div>
     {row.action && <p className={`font-body text-[10px] ${hasConflict ? 'text-warn' : 'text-ghost'}`}>{row.action}</p>}

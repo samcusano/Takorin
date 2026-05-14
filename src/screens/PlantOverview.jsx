@@ -108,7 +108,7 @@ function LineCard({ line, meta, shiftActed, onClick }) {
     <button
       type="button"
       onClick={onClick}
-      className={`group flex flex-col w-full text-left bg-stone border transition-all duration-150 hover:border-ink/30 hover:shadow-[0_2px_12px_rgba(16,15,13,0.08)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ochre ${
+      className={`group flex flex-col w-full text-left bg-stone border rounded-sm transition-all duration-150 hover:border-ink/30 hover:shadow-[0_2px_12px_rgba(16,15,13,0.08)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ochre ${
         isAtRisk ? 'border-danger/30' : isWatch ? 'border-warn/20' : 'border-rule2'
       }`}
       aria-label={`${line.name} — risk score ${line.score} — ${zone}`}

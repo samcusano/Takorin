@@ -39,7 +39,7 @@ function PlantCard({ plant, sharedLots }) {
  <MapPin size={9} strokeWidth={2} className="text-ghost" />
  <span className="font-body text-ghost text-[10px]">{meta.region}</span>
  {plant.active && (
- <span className="font-body text-[10px] px-1.5 py-px bg-ochre/20 text-ochre ml-1">This plant</span>
+ <span className="font-body text-[10px] px-1.5 py-px bg-ochre/20 text-ochre ml-1 rounded-[3px]">This plant</span>
  )}
  </div>
  </div>
@@ -109,8 +109,8 @@ function ContactCard({ plant }) {
   </div>
   </div>
   <div className="px-3.5 pb-2.5 flex items-center gap-1.5">
-  <span className="font-body text-[10px] px-1.5 py-px bg-stone3 text-muted">{plant.code}</span>
-  {plant.active && <span className="font-body text-[10px] px-1.5 py-px bg-ochre/20 text-ochre">This plant</span>}
+  <span className="font-body text-[10px] px-1.5 py-px bg-stone3 text-muted rounded-[3px]">{plant.code}</span>
+  {plant.active && <span className="font-body text-[10px] px-1.5 py-px bg-ochre/20 text-ochre rounded-[3px]">This plant</span>}
   </div>
  </div>
  )
@@ -217,7 +217,7 @@ export default function NetworkView() {
    <div className="flex items-center gap-2">
     <Activity size={16} className="text-muted" />
     <span className="font-body text-ghost text-[10px] uppercase tracking-wider">Mode</span>
-    <span className={`font-body font-medium text-[11px] px-2 py-0.5 ${containmentMode ? 'bg-danger/10 text-danger' : 'bg-ok/10 text-ok'}`}>
+    <span className={`font-body font-medium text-[11px] px-2 py-0.5 rounded-[3px] ${containmentMode ? 'bg-danger/10 text-danger' : 'bg-ok/10 text-ok'}`}>
      {containmentMode ? 'Containment' : 'Monitor'}
     </span>
    </div>
@@ -425,7 +425,7 @@ export default function NetworkView() {
         {e.affectedPlants.map(p => {
          const plant = networkData.plants.find(pl => pl.id === p)
          return (
-          <span key={p} className={`font-body font-medium text-[10px] px-2 py-1 ${
+          <span key={p} className={`font-body font-medium text-[10px] px-2 py-1 rounded-[3px] ${
            plant?.active ? 'bg-danger/10 text-danger' : 'bg-warn/10 text-warn'
           }`}>
            {plant?.code}

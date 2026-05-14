@@ -614,7 +614,7 @@ function QueueItem({ item, priority, onSelectCase, onShowBlockingCase, blockingE
  </div>
  <div className="flex-1 min-w-0">
  <div className="flex items-center gap-2 mb-1.5 flex-wrap">
- <span className={`font-body font-medium text-[10px] px-1.5 py-px ${item.badgeColor} ${BADGE_BG[item.badgeColor]||'bg-warn/10'}`}>{item.badge}</span>
+ <span className={`font-body font-medium text-[10px] px-1.5 py-px rounded-[3px] ${item.badgeColor} ${BADGE_BG[item.badgeColor]||'bg-warn/10'}`}>{item.badge}</span>
  <span className="font-body text-ghost text-[10px]">{item.capaId}</span>
  {item.rootCause && <span className="font-body text-ghost text-[10px]">· {item.rootCause.split(' — ')[0]}</span>}
  </div>

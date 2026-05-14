@@ -20,7 +20,7 @@ export function Urg({ level = 'info', children }) {
  info: 'text-muted bg-stone3',
  }[level]
  return (
- <span className={`inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 font-body ${cls}`}>
+ <span className={`inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 font-body rounded-[3px] ${cls}`}>
  <span className="w-1 h-1 rounded-full bg-current flex-shrink-0" />
  {children}
  </span>
@@ -31,7 +31,7 @@ export function Urg({ level = 'info', children }) {
 export function StatCell({ label, value, sub, fill, tone = 'ok', badge }) {
  const toneColor = { ok:'bg-ok', warn:'bg-warn', danger:'bg-danger', brass:'bg-brass' }[tone]
  return (
- <div className="px-4 py-3 border-r border-rule2 last:border-r-0">
+ <div className="px-5 py-4 border-r border-rule2 last:border-r-0">
  <div className="font-body text-muted text-[10px] mb-1">{label}</div>
  <div className="flex items-center gap-2">
  <div className="display-num text-xl text-ink">{value}</div>
@@ -39,7 +39,7 @@ export function StatCell({ label, value, sub, fill, tone = 'ok', badge }) {
  </div>
  {sub && <div className="font-body text-ghost text-[10px] mt-0.5">{sub}</div>}
  {fill !== undefined && (
- <div className="h-px bg-rule2 mt-2">
+ <div className="h-[2px] bg-rule2 mt-2.5">
  <div className={`h-full ${toneColor} transition-[width] duration-500 ease-enter`} style={{ width: `${fill}%` }} />
  </div>
  )}
@@ -50,12 +50,12 @@ export function StatCell({ label, value, sub, fill, tone = 'ok', badge }) {
 // ── Section header
 export function SecHd({ tag, title, badge, icon: Icon, accent }) {
  return (
- <div className="flex items-center gap-3 px-4 py-3 border-b border-rule2">
+ <div className="flex items-center gap-3 px-4 py-3.5 border-b border-rule2 bg-stone2">
  <div className="flex items-center gap-1.5 flex-shrink-0">
  {tag && <Urg level="muted">{tag}</Urg>}
  {Icon && <Icon size={11} strokeWidth={2} style={accent ? { color: accent } : undefined} />}
  </div>
- <div className="flex-1 font-body font-medium text-ink text-[13px]">{title}</div>
+ <div className="flex-1 font-body font-semibold text-ink text-[13px]">{title}</div>
  {badge}
  </div>
  )
@@ -126,12 +126,12 @@ export function ActionBanner({ tone = 'warn', headline, body, children, footer }
 
 // ── Button variants
 export function Btn({ variant = 'primary', icon: Icon, onClick, disabled, children, className = '', style }) {
- const base = 'font-body font-medium text-[11px] px-3 py-2 min-h-[36px] inline-flex items-center justify-center gap-2 transition-[background-color,opacity,transform] duration-100 ease-standard active:scale-[0.97] cursor-pointer border-0 disabled:opacity-50 disabled:cursor-not-allowed'
+ const base = 'font-body font-medium text-[11px] px-3 py-2 min-h-[36px] inline-flex items-center justify-center gap-2 transition-[background-color,box-shadow,opacity,transform] duration-100 ease-standard active:scale-[0.97] cursor-pointer border-0 disabled:opacity-50 disabled:cursor-not-allowed rounded-[3px]'
  const defaults = { primary: ArrowRight, secondary: ChevronRight }
  const IconComp = Icon || defaults[variant]
  const cls = {
- primary:   'bg-ink text-stone hover:bg-ink2',
- secondary: 'border border-rule2 bg-stone2 text-muted hover:border-ghost hover:bg-stone3',
+ primary:   'bg-ink text-stone hover:bg-ink2 hover:shadow-[0_2px_6px_rgba(16,15,13,0.18)]',
+ secondary: 'border border-rule2 bg-stone2 text-muted hover:border-ghost hover:bg-stone3 hover:shadow-[0_1px_3px_rgba(16,15,13,0.06)]',
  }[variant] ?? 'bg-ink text-stone hover:bg-ink2'
  return (
  <button type="button" className={`${base} ${cls} ${className}`} onClick={onClick} disabled={disabled} style={style}>
@@ -151,7 +151,7 @@ export function Chip({ tone = 'ok', children }) {
  int: 'text-int bg-int/10',
  }[tone]
  return (
- <span className={`inline-flex items-center gap-1 font-body font-medium text-[10px] px-2 py-0.5 ${cls}`}>
+ <span className={`inline-flex items-center gap-1 font-body font-medium text-[10px] px-2 py-0.5 rounded-[3px] ${cls}`}>
  <span className="w-1 h-1 rounded-full bg-current" />
  {children}
  </span>
@@ -197,14 +197,14 @@ export function ScoreRing({ pct = 0, size = 32, color }) {
 // ── Page header
 export function PageHead({ over, title, accent = designTokens.colors.ochre, meta = [], children }) {
  return (
- <div className="px-4 py-4 border-b border-rule2 bg-stone2" style={{ borderLeft: `3px solid ${accent}` }}>
+ <div className="px-5 py-5 border-b border-rule2 bg-stone" style={{ borderLeft: `4px solid ${accent}`, boxShadow: '0 1px 3px rgba(16,15,13,0.04)' }}>
  <div className="font-body text-muted text-[11px] mb-1">{over}</div>
  <div className="font-display font-bold text-2xl text-ink leading-tight">
  {title}
  {children && <span className="font-light text-ochre"> {children}</span>}
  </div>
  {meta.length > 0 && (
- <div className="flex flex-wrap gap-x-6 gap-y-1 mt-2">
+ <div className="flex flex-wrap gap-x-6 gap-y-1 mt-3">
  {meta.map(({ role, val }, i) => (
  <div key={i} className="flex gap-1.5 items-baseline">
  <span className="font-body text-ghost text-[10px]">{role}</span>

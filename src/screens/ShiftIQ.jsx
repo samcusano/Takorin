@@ -95,7 +95,7 @@ function SignalCard({ sig }) {
  <div className={`font-body text-[12px] font-medium truncate ${sig.tone === 'danger' ? 'text-danger' : 'text-ink'}`}>{sig.name}</div>
  <div className="font-body text-ghost text-[10px]">{sig.sub}</div>
  </div>
- <span className={`font-body font-medium text-[10px] px-2 py-0.5 flex-shrink-0 ${
+ <span className={`font-body font-medium text-[10px] px-2 py-0.5 flex-shrink-0 rounded-[3px] ${
  sig.tone === 'ok' ? 'bg-ok/10 text-ok' : sig.tone === 'danger' ? 'bg-danger/10 text-danger' : 'bg-warn/10 text-warn'
  }`}>{sig.status}</span>
  </div>
@@ -726,7 +726,7 @@ export default function ShiftIQ() {
     <div className="font-body font-medium text-ink text-[11px] truncate">{t.equipment}</div>
     <div className="font-body text-ghost text-[10px]">{t.issue}</div>
     <div className="flex items-center gap-2 mt-1">
-     <span className={`font-body font-medium text-[10px] px-1.5 py-px ${t.status === 'open' ? 'bg-warn/10 text-warn' : 'bg-ok/10 text-ok'}`}>{t.status}</span>
+     <span className={`font-body font-medium text-[10px] px-1.5 py-px rounded-[3px] ${t.status === 'open' ? 'bg-warn/10 text-warn' : 'bg-ok/10 text-ok'}`}>{t.status}</span>
      <span className="font-body text-ghost text-[10px]">{t.createdAt} · {t.requestedBy}</span>
     </div>
     </div>
@@ -904,7 +904,7 @@ export default function ShiftIQ() {
     <div className="flex gap-2">
      {['negative','positive'].map(r => (
      <button type="button" key={r} onClick={() => setEmpForm(p => ({...p, [item.key]: {...p[item.key], result: r}}))}
-      className={`font-body font-medium text-[10px] px-2 py-1 transition-colors ${empForm[item.key]?.result === r ? (r === 'negative' ? 'bg-ok text-white' : 'bg-danger text-white') : 'bg-stone3 text-muted'}`}>
+      className={`font-body font-medium text-[10px] px-2 py-1 rounded-[3px] transition-colors ${empForm[item.key]?.result === r ? (r === 'negative' ? 'bg-ok text-white' : 'bg-danger text-white') : 'bg-stone3 text-muted'}`}>
       {r.charAt(0).toUpperCase() + r.slice(1)}
      </button>
      ))}
@@ -1294,7 +1294,7 @@ export default function ShiftIQ() {
      <div className="flex gap-2">
       {['negative','positive'].map(r => (
       <button type="button" key={r} onClick={() => setEmpForm(p => ({...p, [item.key]: {...p[item.key], result: r}}))}
-       className={`font-body font-medium text-[10px] px-2 py-1 transition-colors ${empForm[item.key]?.result === r ? (r === 'negative' ? 'bg-ok text-white' : 'bg-danger text-white') : 'bg-stone3 text-muted'}`}>
+       className={`font-body font-medium text-[10px] px-2 py-1 rounded-[3px] transition-colors ${empForm[item.key]?.result === r ? (r === 'negative' ? 'bg-ok text-white' : 'bg-danger text-white') : 'bg-stone3 text-muted'}`}>
        {r.charAt(0).toUpperCase() + r.slice(1)}
       </button>
       ))}

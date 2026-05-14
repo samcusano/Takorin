@@ -286,7 +286,7 @@ export default function WeeklyDigest() {
                       <span className={`display-num text-xl font-bold ${onTrack ? 'text-ok' : 'text-warn'}`}>{g.current}</span>
                       <span className="font-body text-ghost text-[10px]">{g.unit}</span>
                     </div>
-                    <div className={`font-body text-[10px] font-medium px-2 py-0.5 flex-shrink-0 ${onTrack ? 'bg-ok/10 text-ok' : 'bg-warn/10 text-warn'}`}>
+                    <div className={`font-body text-[10px] font-medium px-2 py-0.5 flex-shrink-0 rounded-[3px] ${onTrack ? 'bg-ok/10 text-ok' : 'bg-warn/10 text-warn'}`}>
                       {onTrack ? 'On track' : 'Needs attention'}
                     </div>
                   </div>

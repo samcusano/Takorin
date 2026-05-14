@@ -446,7 +446,7 @@ export default function Analytics() {
                     <div className="font-body font-medium text-ink text-[12px]">{title}</div>
                     <div className="font-body text-ghost text-[10px] mt-0.5">{desc}</div>
                   </div>
-                  <span className="font-body text-ghost text-[10px] flex-shrink-0 px-2 py-0.5 border border-rule2 ml-auto">3 plants required</span>
+                  <span className="font-body text-ghost text-[10px] flex-shrink-0 px-2 py-0.5 border border-rule2 ml-auto rounded-[3px]">3 plants required</span>
                 </div>
               ))}
             </div>

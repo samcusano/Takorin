@@ -87,7 +87,7 @@ function NotifItem({ item, read, onRead, onNavigate }) {
    <div className="px-4 py-3 flex gap-3">
     <div className="flex-1 min-w-0">
      <div className="flex items-center gap-2 mb-1">
-      <span className={`font-body font-medium text-[10px] px-1.5 py-px ${s.chip}`}>{s.label}</span>
+      <span className={`font-body font-medium text-[10px] px-1.5 py-px rounded-[3px] ${s.chip}`}>{s.label}</span>
       <span className="font-body text-ghost text-[10px]">{item.time}</span>
      </div>
      <div className="font-body font-medium text-ink text-[12px] leading-snug mb-0.5">{item.title}</div>
@@ -266,7 +266,7 @@ export default function NotificationCenter({ onClose }) {
      >
       <span className={`font-body text-[11px] ${activeFilter === f ? 'text-ink' : 'text-muted'}`}>{f}</span>
       {counts[f] > 0 && (
-       <span className="font-body text-muted text-[10px] px-1.5 py-px bg-stone3">{counts[f]}</span>
+       <span className="font-body text-muted text-[10px] px-1.5 py-px bg-stone3 rounded-[3px]">{counts[f]}</span>
       )}
      </button>
     ))}
