@@ -36,7 +36,7 @@ function SourceRowTable({ s }) {
  <span className={`font-body text-[10px] ${s.tone==='ok'?'text-ghost':s.tone==='danger'?'text-danger':'text-warn'}`}>{s.consistency}%</span>
  </div>
  <div className="flex items-center justify-center px-2">
- <span className={`font-body font-medium text-[10px] px-2 py-0.5 ${statusCls(s.tone)}`}>{s.status}</span>
+ <span className={`font-body font-medium text-[10px] px-2 py-0.5 rounded-[3px] ${statusCls(s.tone)}`}>{s.status}</span>
  </div>
  </div>
  )
@@ -254,7 +254,7 @@ export default function DataReadiness() {
           </div>
           <div className="flex gap-1 flex-wrap">
            {c.variants.map((v, j) => (
-            <span key={j} className={`font-body font-medium text-[10px] px-2 py-1 ${j === 0 ? 'bg-stone3 text-ink2' : 'bg-danger/10 text-danger'}`}>
+            <span key={j} className={`font-body font-medium text-[10px] px-2 py-1 rounded-[3px] ${j === 0 ? 'bg-stone3 text-ink2' : 'bg-danger/10 text-danger'}`}>
              {v}
             </span>
            ))}

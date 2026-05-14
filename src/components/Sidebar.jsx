@@ -30,12 +30,12 @@ function Badge({ badge, badgeType }) {
  <span className="ml-auto w-1.5 h-1.5 rounded-full bg-ok beat" />
  )
  if (badgeType === 'score') return (
- <span className="ml-auto text-[10px] font-semibold px-1.5 py-0.5 bg-ochre text-stone font-body ">
+ <span className="ml-auto text-[10px] font-semibold px-1.5 py-0.5 bg-ochre text-stone font-body rounded-[3px]">
  {badge}
  </span>
  )
  return (
- <span className="ml-auto text-[10px] font-semibold px-1.5 py-0.5 bg-danger text-white">
+ <span className="ml-auto text-[10px] font-semibold px-1.5 py-0.5 bg-danger text-white rounded-[3px]">
  {badge}
  </span>
  )
