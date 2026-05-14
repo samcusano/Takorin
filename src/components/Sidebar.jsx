@@ -6,7 +6,7 @@ import {
  Gauge,
  Building2, ChevronDown, Globe2,
  LayoutDashboard, MapPin, ShieldCheck, AlertTriangle,
- LayoutGrid, BarChart2,
+ LayoutGrid, BarChart2, Bell, User,
 } from 'lucide-react'
 import { useAppState, PLANTS } from '../context/AppState'
 import { commandData } from '../data'
@@ -391,23 +391,39 @@ export default function Sidebar() {
 
  {/* Nav */}
  <nav aria-label="Main navigation" className="flex-1 overflow-hidden py-2">
- {/* Plant Overview — entry point */}
- <SideItem to="/plant" id="plant" icon={LayoutGrid} label="Plant Overview" badge={null} />
 
- {/* Command Surface */}
- <CommandSurfaceItem />
+ {/* Operator view — simplified nav */}
+ {(viewingRole === 'operator-reyes' || viewingRole === 'operator-okonkwo') ? (
+  <>
+   <SideItem to="/operator" id="operator" icon={User} label="My Station" badge={null} />
+  </>
+ ) : (
+  <>
+   {/* Plant Overview — entry point */}
+   <SideItem to="/plant" id="plant" icon={LayoutGrid} label="Plant Overview" badge={null} />
 
- <div className="px-4 pt-3 pb-1 text-[10px] tracking-widest uppercase text-stone/40 font-body font-medium">
- Intelligence
- </div>
- {modules.map(m => <SideItem key={m.id} to={m.path} id={m.id} {...m} />)}
+   {/* Command Surface */}
+   <CommandSurfaceItem />
 
- <div className="px-4 pt-4 pb-1 text-[10px] tracking-widest uppercase text-ghost font-body font-medium">
- Foundation
- </div>
- {foundation.map(m => (
- <SideItem key={m.id} to={m.path} id={m.id} {...m} badge={m.badge} badgeType={m.badgeType} />
- ))}
+   <div className="px-4 pt-3 pb-1 text-[10px] tracking-widest uppercase text-stone/40 font-body font-medium">
+   Intelligence
+   </div>
+   {modules.map(m => <SideItem key={m.id} to={m.path} id={m.id} {...m} />)}
+
+   <div className="px-4 pt-4 pb-1 text-[10px] tracking-widest uppercase text-ghost font-body font-medium">
+   Foundation
+   </div>
+   {foundation.map(m => (
+   <SideItem key={m.id} to={m.path} id={m.id} {...m} badge={m.badge} badgeType={m.badgeType} />
+   ))}
+
+   {/* Notifications */}
+   <div className="px-4 pt-4 pb-1 text-[10px] tracking-widest uppercase text-ghost font-body font-medium">
+   Activity
+   </div>
+   <SideItem to="/notifications" id="notifications" icon={Bell} label="Notifications" badge="4" badgeType="alert" />
+  </>
+ )}
 
  </nav>
 

@@ -14,6 +14,7 @@ const DataReadiness    = lazy(() => import('./screens/DataReadiness'))
 const NetworkView      = lazy(() => import('./screens/NetworkView'))
 const OperatorView     = lazy(() => import('./screens/OperatorView'))
 const Analytics        = lazy(() => import('./screens/Analytics'))
+const NotificationCenter = lazy(() => import('./screens/NotificationCenter'))
 const DesignLabPage    = lazy(() => import('./__design_lab/DesignLabPage'))
 const AnalyticsLabPage = lazy(() => import('./__design_lab/AnalyticsLabPage'))
 
@@ -65,6 +66,7 @@ export default function App() {
  <Route path="/operator" element={<ErrorBoundary><OperatorView role={viewingRole} /></ErrorBoundary>} />
  <Route path="/analytics" element={<ErrorBoundary><Analytics /></ErrorBoundary>} />
  <Route path="/digest" element={<Navigate to="/analytics" replace />} />
+ <Route path="/notifications" element={<ErrorBoundary><NotificationCenter /></ErrorBoundary>} />
  <Route path="/__design_lab" element={<DesignLabPage />} />
  <Route path="/__analytics_lab" element={<AnalyticsLabPage />} />
  </Routes>

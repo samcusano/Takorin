@@ -36,6 +36,7 @@ export function AppStateProvider({ children }) {
  const [carryForwardAcknowledged, setCarryForwardAcknowledged] = useState(new Set())
  const [commandAcknowledged, setCommandAcknowledged] = useState(new Set())
  const [pilotExpanded, setPilotExpanded] = useState(false)
+ const [handoffAccepted, setHandoffAccepted] = useState(false)
  const [currentPlant, setCurrentPlant] = useState(PLANTS.sl)
  const [viewingRole, setViewingRole] = useState('director')
  const acknowledgeCommand = (id) => setCommandAcknowledged(prev => new Set([...prev, id]))
@@ -82,6 +83,7 @@ export function AppStateProvider({ children }) {
  currentPlant, setCurrentPlant,
  viewingRole, setViewingRole,
  pilotExpanded, setPilotExpanded,
+ handoffAccepted, setHandoffAccepted,
  }}>
  {children}
  </Ctx.Provider>

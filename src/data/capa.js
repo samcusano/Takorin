@@ -1,6 +1,6 @@
 export const openCases = [
   {
-    id: 'c1', type: 'cu', ordinal: '!', capaId: 'CAPA-2604-001',
+    id: 'c1', type: 'cu', ordinal: '!', capaId: 'CAPA-2604-001', shiftFindingId: 'sf3',
     badge: 'Overdue', badgeColor: 'text-danger',
     title: 'Line 4 Conveyor Bearing Failure — Sensor A-7 threshold breach',
     assigned: 'D. Kowalski', rootCause: 'Equipment — Preventive maintenance gap',

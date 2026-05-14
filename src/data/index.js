@@ -48,6 +48,7 @@ export const shiftData = {
     {
       id:'sf3', num:'III.', urgency:'warn',
       source:'Sensor A-7 · Live',
+      capaId:'CAPA-2604-001',
       title:'Sensor A-7 — projected threshold breach',
       desc:'4 of 5 variance readings · Projected breach ∼2 shifts at current trend. Bearing inspection required before next shift.',
       evidence:'Pattern matches Apr 2 bearing failure — same micro-variance signature 3 shifts prior',

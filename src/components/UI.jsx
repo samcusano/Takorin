@@ -525,7 +525,7 @@ export function AcceptanceGate({ incomingSupervisor, shiftTime, carryForwardCoun
 
 // ── CarryForwardItem — Dense row for each carry-forward risk
 // Severity border + title + impact + owner + action + acknowledgment control
-export function CarryForwardItem({ item, acknowledged, onAcknowledge }) {
+export function CarryForwardItem({ item, acknowledged, onAcknowledge, onView }) {
  const borderColor = item.resolvedInShift ? 'border-l-ok'
   : { danger: 'border-l-danger', warn: 'border-l-warn', watch: 'border-l-rule2' }[item.urgency] || 'border-l-rule2'
 
@@ -553,6 +553,11 @@ export function CarryForwardItem({ item, acknowledged, onAcknowledge }) {
     <div className="font-body text-muted text-[10px] leading-snug mb-1">{item.operationalImpact}</div>
     <div className="font-body text-ghost text-[10px] leading-snug mb-2">{item.ownerContext}</div>
     {!item.resolvedInShift && <span className={`font-body font-medium text-[10px] ${actionColor}`}>{item.recommendedAction}</span>}
+    {onView && !item.resolvedInShift && (
+     <button type="button" onClick={onView} className="font-body text-int text-[10px] mt-1.5 flex items-center gap-1 hover:text-ink transition-colors">
+      <ArrowRight size={9} />View in ShiftIQ
+     </button>
+    )}
    </div>
    <div className="flex-shrink-0 flex items-center">
     {item.resolvedInShift ? (
@@ -644,7 +649,7 @@ export function ExpandableMetadata({ title, defaultOpen = false, children, icon:
 
 // ── ActionCard — Action-oriented layout for supplier issues (Approach 3: Action-Oriented Layout)
 // Groups content by urgency with clear actions, status tracking, and prominence
-export function ActionCard({ tone = 'danger', title, subtitle, metadata, actions, status, children }) {
+export function ActionCard({ tone = 'danger', title, subtitle, metadata, actions, status, children, icon: CardIcon }) {
  const bgColor = {
   danger: 'bg-danger/[0.03]',
   warn: 'bg-warn/[0.03]',
@@ -676,7 +681,12 @@ export function ActionCard({ tone = 'danger', title, subtitle, metadata, actions
      )}
      {children}
     </div>
-    {status && <div className="flex-shrink-0 text-right">{status}</div>}
+    {(CardIcon || status) && (
+     <div className="flex flex-col items-end gap-2 flex-shrink-0">
+      {CardIcon && <CardIcon size={22} strokeWidth={1.5} className="text-ghost opacity-50" aria-hidden="true" />}
+      {status && <div className="text-right">{status}</div>}
+     </div>
+    )}
    </div>
    {actions && (
     <div className="px-4 pb-3 flex gap-2 flex-wrap border-t border-rule2">
