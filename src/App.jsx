@@ -5,6 +5,7 @@ import ErrorBoundary from './components/ErrorBoundary'
 import { useAppState } from './context/AppState'
 
 const CommandSurface   = lazy(() => import('./screens/CommandSurface'))
+const PlantOverview    = lazy(() => import('./screens/PlantOverview'))
 const ShiftIQ          = lazy(() => import('./screens/ShiftIQ'))
 const HandoffIQ        = lazy(() => import('./screens/HandoffIQ'))
 const SupplierIQ       = lazy(() => import('./screens/SupplierIQ'))
@@ -12,6 +13,7 @@ const CAPAEngine       = lazy(() => import('./screens/CapaEngine'))
 const DataReadiness    = lazy(() => import('./screens/DataReadiness'))
 const NetworkView      = lazy(() => import('./screens/NetworkView'))
 const OperatorView     = lazy(() => import('./screens/OperatorView'))
+const WeeklyDigest     = lazy(() => import('./screens/WeeklyDigest'))
 const DesignLabPage    = lazy(() => import('./__design_lab/DesignLabPage'))
 
 function ScreenLoader() {
@@ -50,7 +52,8 @@ export default function App() {
  )}
  <Suspense fallback={<ScreenLoader />}>
  <Routes>
- <Route path="/" element={<Navigate to="/command" replace />} />
+ <Route path="/" element={<Navigate to="/plant" replace />} />
+ <Route path="/plant" element={<ErrorBoundary><PlantOverview /></ErrorBoundary>} />
  <Route path="/command" element={<ErrorBoundary><CommandSurface /></ErrorBoundary>} />
  <Route path="/shift" element={<ErrorBoundary><ShiftIQ /></ErrorBoundary>} />
  <Route path="/handoff" element={<ErrorBoundary><HandoffIQ /></ErrorBoundary>} />
@@ -59,6 +62,7 @@ export default function App() {
  <Route path="/readiness" element={<ErrorBoundary><DataReadiness /></ErrorBoundary>} />
  <Route path="/network" element={<ErrorBoundary><NetworkView /></ErrorBoundary>} />
  <Route path="/operator" element={<ErrorBoundary><OperatorView role={viewingRole} /></ErrorBoundary>} />
+ <Route path="/digest" element={<ErrorBoundary><WeeklyDigest /></ErrorBoundary>} />
  <Route path="/__design_lab" element={<DesignLabPage />} />
  </Routes>
  </Suspense>

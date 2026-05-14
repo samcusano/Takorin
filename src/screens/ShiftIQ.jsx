@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { useFocusTrap, useExitAnimation, riskColorClass, riskLabel, riskBgColor } from '../lib/utils'
 import { shiftData, line6Data, haccpData, productionRate, crewHoursData } from '../data'
 import {
@@ -7,7 +8,7 @@ import {
  PersonAvatar, Modal, WaveformSparkline, Chip, AnimatedCheck, Spinner,
  VaulDrawer, HoldButton
 } from '../components/UI'
-import { Flag, ChevronRight, ChevronDown, AlertTriangle, Check, X, TrendingDown, RotateCcw, Wrench, Package, HelpCircle, ListChecks } from 'lucide-react'
+import { Flag, ChevronRight, ChevronDown, AlertTriangle, Check, X, TrendingDown, RotateCcw, Wrench, Package, HelpCircle, ListChecks, Brain, Shield, RefreshCw, ChevronUp } from 'lucide-react'
 import { useAppState } from '../context/AppState'
 
 const CHECKLIST_ITEMS = [
@@ -455,7 +456,9 @@ function LineDropdown({ lines, activeLine, onSelect, triggerRef, onClose }) {
 
 export default function ShiftIQ() {
  const d = shiftData
- const [activeLine, setActiveLine] = useState('l4')
+ const [searchParams] = useSearchParams()
+ const initialLine = searchParams.get('line') || 'l4'
+ const [activeLine, setActiveLine] = useState(initialLine)
  const {
  shiftActed: acted, setShiftActed: setActed,
  readinessResolved, readinessScore,
@@ -469,6 +472,7 @@ export default function ShiftIQ() {
  flaggedItems, setFlaggedItems,
  logActivity,
  currentPlant,
+ pilotExpanded, setPilotExpanded,
  } = useAppState()
  const [predActioned, setPredActioned] = useState(false)
  const [overrideMode, setOverrideMode] = useState(false)
@@ -484,6 +488,10 @@ export default function ShiftIQ() {
  const [viewingOperator, setViewingOperator] = useState(null)
  const [lineDropOpen, setLineDropOpen] = useState(false)
  const [checklistDrawerOpen, setChecklistDrawerOpen] = useState(false)
+ const [showExpansionGate, setShowExpansionGate] = useState(false)
+ const [expansionStep, setExpansionStep] = useState(0)
+ const [dataOwner, setDataOwner] = useState('')
+ const [directorAck, setDirectorAck] = useState(false)
  const lineTriggerRef = useRef(null)
  const [col1Tab, setCol1Tab] = useState('orders')
 
@@ -857,6 +865,134 @@ export default function ShiftIQ() {
  </div>
  </>
  )}
+ {/* COL 2: Agent timeline + Pilot validation */}
+ <div className="hidden lg:flex flex-col w-[280px] flex-shrink-0 border-l border-rule2 overflow-hidden">
+  {/* Agent timeline */}
+  {hasLiveData && <AgentTimeline timeline={lineD.agentTimeline} sparkline={lineD.sparkline} score={lineScore} />}
+
+  {/* Signal health */}
+  {hasLiveData && (
+  <div className="border-t border-rule2">
+   <div className="px-4 py-2.5 bg-stone2 border-b border-rule2 flex items-center justify-between">
+   <span className="font-body text-ghost text-[10px] uppercase tracking-widest">Signal health</span>
+   </div>
+   {lineD.signals.map((sig, i) => <SignalCard key={i} sig={sig} />)}
+  </div>
+  )}
+
+  {/* Pilot validation panel */}
+  {activeLine === 'l4' && (
+  <div className="border-t border-rule2 flex flex-col">
+   <button type="button" onClick={() => setPilotExpanded(e => !e)}
+   className="flex items-center justify-between px-4 py-2.5 bg-stone2 border-b border-rule2 hover:bg-stone3 transition-colors">
+    <div className="flex items-center gap-2">
+     <Brain size={12} strokeWidth={1.75} className="text-muted" />
+     <span className="font-body text-ghost text-[10px] uppercase tracking-widest">Pilot validation</span>
+    </div>
+    <div className="flex items-center gap-2">
+     <span className="display-num text-sm font-bold text-ok">{d.pilotAccuracy}%</span>
+     {pilotExpanded ? <ChevronUp size={11} className="text-ghost" /> : <ChevronDown size={11} className="text-ghost" />}
+    </div>
+   </button>
+
+   {pilotExpanded && (
+   <div className="slide-in">
+    {/* Accuracy + trend */}
+    <div className="px-4 py-3 border-b border-rule2">
+     <div className="flex items-baseline gap-2 mb-2">
+      <span className="display-num text-3xl font-bold text-ok">{d.pilotAccuracy}%</span>
+      <span className="font-body text-ok text-[10px]">accuracy · 28 shifts</span>
+     </div>
+     {/* 14-day trend sparkline */}
+     <div className="mb-2">
+      <div className="font-body text-ghost text-[10px] mb-1">14-day trend</div>
+      <svg width="100%" height="28" viewBox="0 0 200 28" preserveAspectRatio="none" aria-label="14-day accuracy trend">
+       <polyline points="0,22 15,20 30,18 45,19 60,17 75,14 90,15 105,12 120,10 135,11 150,9 165,8 180,7 200,6"
+        fill="none" stroke="#3A8A5A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+       <circle cx="200" cy="6" r="2.5" fill="#3A8A5A" />
+      </svg>
+      <div className="flex justify-between font-body text-ghost text-[9px] mt-0.5">
+       <span>Apr 2</span><span>Today</span>
+      </div>
+     </div>
+     {/* Commit graph */}
+     <div className="font-body text-ghost text-[10px] mb-1.5">Shift outcomes</div>
+     <div className="flex gap-0.5 flex-wrap">
+      {d.pilotLog.map((r, i) => (
+       <div key={i} title={r === 'ok' ? 'Correct' : r === 'miss' ? 'Missed' : 'Partial'}
+        className={`w-4 h-4 rounded-sm flex-shrink-0 ${r === 'ok' ? 'bg-ok' : r === 'miss' ? 'bg-danger' : 'bg-warn'}`} />
+      ))}
+     </div>
+     <div className="flex gap-3 mt-1.5">
+      {[['ok','Correct','bg-ok'],['part','Partial','bg-warn'],['miss','Missed','bg-danger']].map(([k,l,c]) => (
+       <span key={k} className="flex items-center gap-1 font-body text-ghost text-[9px]">
+        <span className={`w-2 h-2 rounded-sm ${c}`} />
+        {l}
+       </span>
+      ))}
+     </div>
+    </div>
+
+    {/* Pilot stats */}
+    <div className="px-4 py-3 border-b border-rule2 space-y-1.5">
+     {d.pilotStats.map((s, i) => (
+      <div key={i} className="flex items-center justify-between">
+       <span className="font-body text-ghost text-[10px]">{s.label}</span>
+       <span className={`font-body font-medium text-[11px] ${s.color}`}>{s.val}</span>
+      </div>
+     ))}
+    </div>
+
+    {/* Model freshness */}
+    <div className="px-4 py-3 border-b border-rule2">
+     <div className="font-body text-ghost text-[10px] mb-2">Model freshness</div>
+     <div className="flex items-center gap-2 mb-1.5">
+      <RefreshCw size={10} strokeWidth={2} className="text-ok flex-shrink-0" />
+      <span className="font-body text-ink2 text-[11px]">Last retrained Apr 2 · 14 shifts ago</span>
+     </div>
+     <div className="flex items-center gap-2">
+      <Shield size={10} strokeWidth={2} className="text-ghost flex-shrink-0" />
+      <span className="font-body text-ghost text-[10px]">Retraining recommended after 90 shifts</span>
+     </div>
+    </div>
+
+    {/* Expansion gate */}
+    <div className="px-4 py-3">
+     <div className="font-body text-ghost text-[10px] mb-2">Pilot scope</div>
+     {pilotExpanded && !pilotExpanded && null}
+     <div className="font-body text-ink2 text-[11px] mb-2.5 leading-snug">Line 4 only · 28 shifts validated</div>
+     <button
+      type="button"
+      onClick={() => { if ((readinessScore ?? 64) >= 75 && d.pilotAccuracy >= 75) setShowExpansionGate(true) }}
+      disabled={(readinessScore ?? 64) < 75 || d.pilotAccuracy < 75}
+      className={`w-full font-body font-medium text-[11px] px-3 py-2 transition-colors ${
+       (readinessScore ?? 64) >= 75 && d.pilotAccuracy >= 75
+        ? 'bg-ink text-stone hover:bg-ink2'
+        : 'bg-stone3 text-ghost cursor-not-allowed'
+      }`}
+     >
+      {(readinessScore ?? 64) < 75 ? 'Data readiness too low to expand' : d.pilotAccuracy < 75 ? 'Accuracy below expansion threshold' : 'Expand to all lines →'}
+     </button>
+     {((readinessScore ?? 64) < 75 || d.pilotAccuracy < 75) && (
+      <div className="font-body text-ghost text-[9px] mt-1.5 leading-snug">
+       Requires: readiness ≥ 75 · accuracy ≥ 75% on 30-shift window
+      </div>
+     )}
+    </div>
+   </div>
+   )}
+
+   {/* Crew */}
+   {!pilotExpanded && hasLiveData && (
+   <div>
+    <div className="px-4 py-2 bg-stone2 border-b border-rule2 font-body text-ghost text-[10px] uppercase tracking-widest">Crew</div>
+    {lineD.crew.map((m, i) => <CrewRow key={i} m={m} onView={setViewingOperator} />)}
+   </div>
+   )}
+  </div>
+  )}
+ </div>
+
  {false && /* checklist moved to FAB drawer below */ (
  <div>
 
@@ -956,6 +1092,90 @@ export default function ShiftIQ() {
    onClose={() => setViewingOperator(null)}
    onSelectOperator={setViewingOperator}
   />
+ )}
+
+ {/* Expansion gate modal */}
+ {showExpansionGate && !pilotExpanded && (
+  <div className="fixed inset-0 bg-ink/40 z-50 flex items-center justify-center p-6">
+   <div className="bg-stone border border-rule2 w-full max-w-[480px] shadow-[0_24px_60px_rgba(16,15,13,0.3)]">
+    <div className="px-5 py-4 border-b border-rule2 bg-stone2">
+     <div className="font-body text-muted text-[10px] mb-1">Pilot expansion</div>
+     <div className="font-display font-bold text-ink text-[16px]">Expand to all lines</div>
+    </div>
+    <div className="p-5 space-y-4">
+     {expansionStep === 0 && (
+     <div className="space-y-3">
+      <p className="font-body text-ink2 text-[12px] leading-relaxed">
+       Before expanding, confirm three things. New lines begin at lower confidence and will have a 10-shift calibration period.
+      </p>
+      <div className="space-y-2.5">
+       {[
+        { label: 'Line 4 accuracy', value: `${d.pilotAccuracy}%`, ok: d.pilotAccuracy >= 75, req: 'Required: ≥ 75%' },
+        { label: 'Data readiness', value: `${readinessScore ?? 64}`, ok: (readinessScore ?? 64) >= 75, req: 'Required: ≥ 75' },
+       ].map(({ label, value, ok, req }) => (
+        <div key={label} className={`flex items-center gap-3 px-3 py-2.5 border ${ok ? 'border-ok/30 bg-ok/[0.04]' : 'border-danger/30 bg-danger/[0.04]'}`}>
+         {ok ? <Check size={13} strokeWidth={2} className="text-ok flex-shrink-0" /> : <X size={13} strokeWidth={2} className="text-danger flex-shrink-0" />}
+         <div className="flex-1">
+          <div className="font-body text-ink text-[11px] font-medium">{label}</div>
+          <div className="font-body text-ghost text-[10px]">{req}</div>
+         </div>
+         <span className={`display-num text-base font-bold ${ok ? 'text-ok' : 'text-danger'}`}>{value}</span>
+        </div>
+       ))}
+      </div>
+      <div className="flex gap-2 pt-1">
+       <button type="button" onClick={() => setExpansionStep(1)}
+        className="flex-1 font-body font-medium text-[12px] px-4 py-2.5 bg-ink text-stone hover:bg-ink2 transition-colors">
+        Continue →
+       </button>
+       <button type="button" onClick={() => { setShowExpansionGate(false); setExpansionStep(0) }}
+        className="font-body text-ghost text-[11px] px-4 py-2.5 hover:text-muted transition-colors">
+        Cancel
+       </button>
+      </div>
+     </div>
+     )}
+     {expansionStep === 1 && (
+     <div className="space-y-3">
+      <div>
+       <label className="font-body text-ghost text-[10px] block mb-1.5">Named data owner for expansion <span className="text-danger">*</span></label>
+       <input
+        value={dataOwner}
+        onChange={e => setDataOwner(e.target.value)}
+        placeholder="e.g. T. Osei · Data & Quality Manager"
+        className="w-full font-body text-ink text-[11px] bg-stone border border-rule2 px-3 py-2 focus:border-ink outline-none"
+       />
+       <div className="font-body text-ghost text-[10px] mt-1">This person is accountable for data quality on new lines during calibration.</div>
+      </div>
+      <div className="flex items-start gap-2.5 px-3 py-2.5 bg-warn/[0.05] border border-warn/20">
+       <AlertTriangle size={13} strokeWidth={2} className="text-warn flex-shrink-0 mt-px" />
+       <p className="font-body text-ink2 text-[11px] leading-snug">
+        New lines start at lower confidence. The first 10 shifts may surface higher false-positive rates while the model calibrates.
+       </p>
+      </div>
+      <label className="flex items-start gap-2.5 cursor-pointer">
+       <input type="checkbox" checked={directorAck} onChange={e => setDirectorAck(e.target.checked)}
+        className="mt-0.5 flex-shrink-0" />
+       <span className="font-body text-ink2 text-[11px] leading-snug">
+        I understand new lines will have a lower confidence period and have reviewed data readiness for each line.
+       </span>
+      </label>
+      <div className="flex gap-2 pt-1">
+       <button type="button"
+        disabled={!dataOwner.trim() || !directorAck}
+        onClick={() => { setPilotExpanded(true); setShowExpansionGate(false); setExpansionStep(0); logActivity({ actor:'J. Crocker', action:'Expanded pilot to all lines', item:`Data owner: ${dataOwner}`, type:'system' }) }}
+        className={`flex-1 font-body font-medium text-[12px] px-4 py-2.5 transition-colors ${
+         dataOwner.trim() && directorAck ? 'bg-ok text-white hover:bg-ok/90' : 'bg-stone3 text-ghost cursor-not-allowed'
+        }`}>
+        Confirm expansion
+       </button>
+       <button type="button" onClick={() => setExpansionStep(0)} className="font-body text-ghost text-[11px] px-4 py-2.5 hover:text-muted transition-colors">← Back</button>
+      </div>
+     </div>
+     )}
+    </div>
+   </div>
+  </div>
  )}
 
  {/* ── Checklist FAB ──────────────────────────────────────────────────── */}

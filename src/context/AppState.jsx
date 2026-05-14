@@ -14,8 +14,10 @@ export function AppStateProvider({ children }) {
  const [handoffNominated, setHandoffNominated] = useState({})
  const [coaRequested, setCoaRequested] = useState(false)
  const [closedCases, setClosedCases] = useState([])
+ const [closureRecords, setClosureRecords] = useState({})
  const [readinessScore, setReadinessScore] = useState(readinessData.score)
  const [readinessResolved, setReadinessResolved] = useState({})
+ const [resolvedConflicts, setResolvedConflicts] = useState(new Set())
  const [trainingPlans, setTrainingPlans] = useState({})
  const [blockingEvidenceUploaded, setBlockingEvidenceUploaded] = useState(false)
  const [rfqSent, setRfqSent] = useState(false)
@@ -33,6 +35,7 @@ export function AppStateProvider({ children }) {
  const [operatorAcknowledgments, setOperatorAcknowledgments] = useState({})
  const [carryForwardAcknowledged, setCarryForwardAcknowledged] = useState(new Set())
  const [commandAcknowledged, setCommandAcknowledged] = useState(new Set())
+ const [pilotExpanded, setPilotExpanded] = useState(false)
  const [currentPlant, setCurrentPlant] = useState(PLANTS.sl)
  const [viewingRole, setViewingRole] = useState('director')
  const acknowledgeCommand = (id) => setCommandAcknowledged(prev => new Set([...prev, id]))
@@ -54,8 +57,10 @@ export function AppStateProvider({ children }) {
  handoffNominated, setHandoffNominated,
  coaRequested, setCoaRequested,
  closedCases, setClosedCases,
+ closureRecords, setClosureRecords,
  readinessScore, setReadinessScore,
  readinessResolved, setReadinessResolved,
+ resolvedConflicts, setResolvedConflicts,
  trainingPlans, setTrainingPlans,
  blockingEvidenceUploaded, setBlockingEvidenceUploaded,
  rfqSent, setRfqSent,
@@ -76,6 +81,7 @@ export function AppStateProvider({ children }) {
  activityLog, logActivity,
  currentPlant, setCurrentPlant,
  viewingRole, setViewingRole,
+ pilotExpanded, setPilotExpanded,
  }}>
  {children}
  </Ctx.Provider>

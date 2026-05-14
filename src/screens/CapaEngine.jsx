@@ -1,9 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { useFocusTrap, useExitAnimation } from '../lib/utils'
-import { FileText, BarChart2 } from 'lucide-react'
+import { FileText, BarChart2, ShieldCheck, Clock } from 'lucide-react'
 import StatBar from '../components/StatBar.jsx'
 import { Check, X, AlertTriangle, ArrowRight, TrendingUp, ChevronRight } from 'lucide-react'
-import { Urg, SecHd, SP, ActionBanner, Btn, Chip } from '../components/UI'
+import { Urg, SecHd, SP, ActionBanner, Btn, Chip, HoldButton } from '../components/UI'
 import { openCases, patternRows, benchmarks } from '../data/capa.js'
 import { haccpData, goalsData } from '../data'
 import { useAppState } from '../context/AppState'
@@ -190,9 +190,46 @@ function PriorityQueueRow({ c, isSelected, onSelect, isEscalated, isResolved }) 
  )
 }
 
-function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceUploaded, closedCases, setClosedCases, logActivity, onAdvance }) {
+function ClosureRecord({ record }) {
+ return (
+ <div className="px-4 py-5 border-b border-rule2 bg-ok/[0.04] slide-in">
+  <div className="flex items-center gap-2 mb-4">
+   <ShieldCheck size={14} strokeWidth={2} className="text-ok flex-shrink-0" />
+   <span className="font-body font-medium text-ok text-[13px]">Case closed · Closure record generated</span>
+  </div>
+  <div className="space-y-2.5 bg-stone border border-ok/20 p-4">
+   <div className="flex items-center justify-between border-b border-rule2 pb-2 mb-2">
+    <span className="font-body text-ghost text-[10px] uppercase tracking-widest">Closure record</span>
+    <span className="font-body text-ghost text-[10px]">FDA 21 CFR 110</span>
+   </div>
+   {[
+    ['Case ID', record.capaId],
+    ['Closed by', record.closedBy],
+    ['Closed at', record.closedAt],
+    ['Root cause', record.rootCause],
+   ].map(([k, v]) => (
+    <div key={k} className="flex gap-3">
+     <span className="font-body text-ghost text-[10px] w-24 flex-shrink-0 pt-px">{k}</span>
+     <span className="font-body text-ink text-[11px] leading-snug">{v}</span>
+    </div>
+   ))}
+   <div className="flex gap-3 pt-1 border-t border-rule2">
+    <span className="font-body text-ghost text-[10px] w-24 flex-shrink-0 pt-px">Corrective measure</span>
+    <span className="font-body text-ink text-[11px] leading-snug">{record.correctiveMeasure}</span>
+   </div>
+   <div className="flex gap-1.5 flex-wrap pt-1 border-t border-rule2">
+    <span className="font-body text-ghost text-[10px] w-24 flex-shrink-0 pt-0.5">Regulatory</span>
+    <div className="flex gap-1 flex-wrap">{record.regulatory.map(r => <Chip key={r} tone="int">{r}</Chip>)}</div>
+   </div>
+  </div>
+ </div>
+ )
+}
+
+function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceUploaded, closedCases, setClosedCases, closureRecords, setClosureRecords, logActivity, onAdvance }) {
  const [openSection, setOpenSection] = useState(null)
- const [confirming, setConfirming] = useState(false)
+ const [closureStep, setClosureStep] = useState(null)
+ const [correctiveMeasure, setCorrectiveMeasure] = useState('')
  const [actionTaken, setActionTaken] = useState(null)
  const [localFiles, setLocalFiles] = useState([])
  const [detailTab, setDetailTab] = useState('details')
@@ -200,15 +237,26 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
 
  const isBlocking = c.id === 'c-blocking'
  const isClosed = closedCases.includes(c.id)
+ const closureRecord = closureRecords?.[c.id]
  const allFiles = [...(c.evidenceFiles || []), ...localFiles]
+ const hasEvidence = allFiles.length > 0
 
  const toggleSection = (key) => setOpenSection(s => s === key ? null : key)
 
  const handleApprove = () => {
+ const record = {
+  capaId: c.capaId,
+  closedBy: 'J. Crocker · Plant Director',
+  closedAt: new Date().toLocaleString('en-US', { month:'short', day:'numeric', year:'numeric', hour:'2-digit', minute:'2-digit' }),
+  rootCause: c.rootCause,
+  correctiveMeasure,
+  regulatory: c.regulatory || [],
+ }
  setClosedCases(p => [...p, c.id])
- logActivity({ actor:'J. Crocker', action:`Approved and closed ${c.capaId}`, item:c.capaId, type:'capa' })
+ setClosureRecords(p => ({ ...p, [c.id]: record }))
+ logActivity({ actor:'J. Crocker', action:`Closed ${c.capaId} — corrective measure logged`, item:c.capaId, type:'capa' })
  setActionTaken('closed')
- setTimeout(onAdvance, 800)
+ setTimeout(onAdvance, 1200)
  }
 
  const handleEscalate = () => {
@@ -286,14 +334,35 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
  </button>
  </>
  ) : c.type === 'ca' ? (
- confirming ? (
- <div className="flex items-center gap-3 p-3 bg-stone border border-rule2">
- <span className="font-body text-ink2 text-[11px] flex-1">Close {c.capaId}? Logged as a regulatory action.</span>
- <Btn variant="secondary" className="flex-shrink-0" onClick={() => setConfirming(false)}>Cancel</Btn>
- <Btn variant="primary" className="flex-shrink-0" onClick={handleApprove}>Confirm close</Btn>
+ closureStep === 'measure' ? (
+ <div className="space-y-3">
+  <div>
+   <div className="font-body text-ghost text-[10px] mb-1">Root cause confirmed</div>
+   <div className="font-body text-ink2 text-[11px] px-3 py-2 bg-stone border border-rule2">{c.rootCause}</div>
+  </div>
+  <div>
+   <div className="font-body text-ghost text-[10px] mb-1">Corrective measure <span className="text-danger">*</span></div>
+   <textarea
+    value={correctiveMeasure}
+    onChange={e => setCorrectiveMeasure(e.target.value)}
+    placeholder="Describe what was done to resolve this case and prevent recurrence…"
+    rows={3}
+    className="w-full font-body text-ink text-[11px] bg-stone border border-rule2 px-3 py-2 resize-none focus:border-ink outline-none"
+   />
+  </div>
+  <HoldButton
+   label="Hold to close case — logged as regulatory action"
+   holdLabel="Keep holding to confirm closure…"
+   doneLabel="Closed"
+   duration={2000}
+   tone="ok"
+   disabled={!correctiveMeasure.trim()}
+   onConfirm={handleApprove}
+  />
+  <button type="button" onClick={() => setClosureStep(null)} className="font-body text-ghost text-[10px] hover:text-muted transition-colors">← Back</button>
  </div>
  ) : (
- <button type="button" onClick={() => setConfirming(true)}
+ <button type="button" onClick={() => setClosureStep('measure')}
  className="w-full font-body font-medium text-[12px] px-4 py-3 bg-ink text-stone hover:bg-ink2 transition-colors text-left flex items-center justify-between">
  <span>{c.recommendedAction || 'Approve & close case'}</span>
  <ChevronRight size={13} strokeWidth={2} className="opacity-60" />
@@ -310,17 +379,19 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
  )}
 
  {/* Success confirmation */}
- {actionTaken && (
+ {actionTaken === 'closed' && closureRecord && (
+ <ClosureRecord record={closureRecord} />
+ )}
+ {actionTaken && actionTaken !== 'closed' && (
  <div className="px-4 py-5 bg-ok/10 border-b border-ok/20 slide-in">
  <div className="flex items-center gap-2 mb-1">
  <Check size={12} strokeWidth={2} className="text-ok flex-shrink-0" />
  <span className="font-body font-medium text-ok text-[13px]">
- {actionTaken === 'closed' ? 'Case closed.' : actionTaken === 'uploaded' ? 'Evidence uploaded.' : 'Action delegated.'}
+ {actionTaken === 'uploaded' ? 'Evidence uploaded.' : 'Action delegated.'}
  </span>
  </div>
  <div className="font-body text-ok/70 text-[11px]">
- {actionTaken === 'closed' ? `${c.capaId} removed from open docket. Queue updated.`
- : actionTaken === 'uploaded' ? 'FDA audit package unblocked. Queue updated.'
+ {actionTaken === 'uploaded' ? 'FDA audit package unblocked. Queue updated.'
  : `${c.capaId} delegated. Moving to next item.`}
  </div>
  </div>
@@ -408,7 +479,7 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
 }
 
 function LayoutQueue({ visibleCases, blockingEvidenceUploaded, setBlockingEvidenceUploaded, onShowBlockingCase }) {
- const { closedCases, setClosedCases, logActivity } = useAppState()
+ const { closedCases, setClosedCases, closureRecords, setClosureRecords, logActivity } = useAppState()
  const [escalatedIds, setEscalatedIds] = useState(new Set())
 
  // Build sorted queue: blocking case first (score 95), then cases by priorityScore, escalated to bottom
@@ -499,6 +570,8 @@ function LayoutQueue({ visibleCases, blockingEvidenceUploaded, setBlockingEviden
  setBlockingEvidenceUploaded={setBlockingEvidenceUploaded}
  closedCases={closedCases}
  setClosedCases={setClosedCases}
+ closureRecords={closureRecords}
+ setClosureRecords={setClosureRecords}
  logActivity={logActivity}
  onAdvance={() => {
  if (selectedCase.type === 'cu') handleEscalate(selectedCase.id)

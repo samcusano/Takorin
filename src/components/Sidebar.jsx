@@ -6,6 +6,7 @@ import {
  Gauge,
  Building2, ChevronDown, Globe2,
  LayoutDashboard, MapPin, ShieldCheck, AlertTriangle,
+ LayoutGrid, FileText,
 } from 'lucide-react'
 import { useAppState, PLANTS } from '../context/AppState'
 import { commandData } from '../data'
@@ -20,6 +21,7 @@ const modules = [
 const foundation = [
  { id:'readiness', label:'Data Readiness', path:'/readiness', icon:Gauge, badge:'64', badgeType:'score' },
  { id:'network', label:'Network View', path:'/network', icon:Globe2, badge:null },
+ { id:'digest', label:'Weekly Digest', path:'/digest', icon:FileText, badge:null },
 ]
 
 function Badge({ badge, badgeType }) {
@@ -389,7 +391,10 @@ export default function Sidebar() {
 
  {/* Nav */}
  <nav aria-label="Main navigation" className="flex-1 overflow-hidden py-2">
- {/* Command Surface — always first */}
+ {/* Plant Overview — entry point */}
+ <SideItem to="/plant" id="plant" icon={LayoutGrid} label="Plant Overview" badge={null} />
+
+ {/* Command Surface */}
  <CommandSurfaceItem />
 
  <div className="px-4 pt-3 pb-1 text-[10px] tracking-widest uppercase text-stone/40 font-body font-medium">

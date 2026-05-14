@@ -134,7 +134,8 @@ function DiagnosticsPanel({ open, selectedGap, score, onClose }) {
 
 export default function DataReadiness() {
  const { readinessScore: score, setReadinessScore: setScore,
- readinessResolved: resolved, setReadinessResolved: setResolved } = useAppState()
+ readinessResolved: resolved, setReadinessResolved: setResolved,
+ resolvedConflicts, setResolvedConflicts } = useAppState()
  const [showConsequence, setShowConsequence] = useState(false)
  const [exportState, setExportState] = useState('idle')
  const [diagnosticsOpen, setDiagnosticsOpen] = useState(false)
@@ -159,6 +160,10 @@ export default function DataReadiness() {
  setResolved(p => ({ ...p, [key]: true }))
  setScore(s => Math.min(100, s + points))
  setShowConsequence(true)
+ if (key.startsWith('conflict-')) {
+  const idx = parseInt(key.split('-')[1], 10)
+  setResolvedConflicts(prev => new Set([...prev, idx]))
+ }
  }
 
  const supplierIQConf =

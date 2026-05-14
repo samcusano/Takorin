@@ -526,11 +526,8 @@ export function AcceptanceGate({ incomingSupervisor, shiftTime, carryForwardCoun
 // ── CarryForwardItem — Dense row for each carry-forward risk
 // Severity border + title + impact + owner + action + acknowledgment control
 export function CarryForwardItem({ item, acknowledged, onAcknowledge }) {
- const borderColor = {
-  danger: 'border-l-danger',
-  warn: 'border-l-warn',
-  watch: 'border-l-rule2',
- }[item.urgency] || 'border-l-rule2'
+ const borderColor = item.resolvedInShift ? 'border-l-ok'
+  : { danger: 'border-l-danger', warn: 'border-l-warn', watch: 'border-l-rule2' }[item.urgency] || 'border-l-rule2'
 
  const actionColor = {
   danger: 'text-danger',
@@ -539,16 +536,30 @@ export function CarryForwardItem({ item, acknowledged, onAcknowledge }) {
  }[item.urgency] || 'text-muted'
 
  return (
-  <div className={`relative overflow-hidden border-l-2 ${borderColor} border-b border-rule2 px-4 py-3 flex gap-3 ${acknowledged ? 'bg-ok/[0.03]' : 'bg-stone'}`}>
-   {acknowledged && <span className="flash-success" aria-hidden="true" />}
+  <div className={`relative overflow-hidden border-l-2 ${borderColor} border-b border-rule2 px-4 py-3 flex gap-3 ${
+   item.resolvedInShift ? 'bg-ok/[0.03]' : acknowledged ? 'bg-ok/[0.03]' : 'bg-stone'
+  }`}>
+   {acknowledged && !item.resolvedInShift && <span className="flash-success" aria-hidden="true" />}
    <div className="flex-1 min-w-0">
-    <div className="font-body font-medium text-ink text-[12px] leading-snug mb-1">{item.title}</div>
+    <div className="flex items-center gap-2 mb-1 flex-wrap">
+     <span className={`font-body font-medium text-[12px] leading-snug ${item.resolvedInShift ? 'text-muted line-through' : 'text-ink'}`}>{item.title}</span>
+     {item.resolvedInShift && (
+      <span className="font-body text-ok text-[10px] font-medium flex items-center gap-0.5 flex-shrink-0">
+       <Check size={10} strokeWidth={2.5} />
+       Resolved in ShiftIQ
+      </span>
+     )}
+    </div>
     <div className="font-body text-muted text-[10px] leading-snug mb-1">{item.operationalImpact}</div>
     <div className="font-body text-ghost text-[10px] leading-snug mb-2">{item.ownerContext}</div>
-    <span className={`font-body font-medium text-[10px] ${actionColor}`}>{item.recommendedAction}</span>
+    {!item.resolvedInShift && <span className={`font-body font-medium text-[10px] ${actionColor}`}>{item.recommendedAction}</span>}
    </div>
    <div className="flex-shrink-0 flex items-center">
-    {!acknowledged ? (
+    {item.resolvedInShift ? (
+     <div className="flex items-center justify-center w-12 h-12 rounded-full border border-ok/20 bg-ok/5" aria-label="Resolved this shift">
+      <Check size={18} strokeWidth={2.5} className="text-ok" />
+     </div>
+    ) : !acknowledged ? (
      <button
       type="button"
       onClick={() => onAcknowledge(item.id)}
@@ -558,10 +569,7 @@ export function CarryForwardItem({ item, acknowledged, onAcknowledge }) {
       <Check size={18} strokeWidth={2} className="text-ink" />
      </button>
     ) : (
-     <div
-      className="flex items-center justify-center w-12 h-12 rounded-full border border-ok/20 bg-ok/5"
-      aria-label={`Acknowledged: ${item.title}`}
-     >
+     <div className="flex items-center justify-center w-12 h-12 rounded-full border border-ok/20 bg-ok/5" aria-label={`Acknowledged: ${item.title}`}>
       <Check size={18} strokeWidth={2.5} className="text-ok" />
      </div>
     )}
