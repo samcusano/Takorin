@@ -13,8 +13,9 @@ const CAPAEngine       = lazy(() => import('./screens/CapaEngine'))
 const DataReadiness    = lazy(() => import('./screens/DataReadiness'))
 const NetworkView      = lazy(() => import('./screens/NetworkView'))
 const OperatorView     = lazy(() => import('./screens/OperatorView'))
-const WeeklyDigest     = lazy(() => import('./screens/WeeklyDigest'))
+const Analytics        = lazy(() => import('./screens/Analytics'))
 const DesignLabPage    = lazy(() => import('./__design_lab/DesignLabPage'))
+const AnalyticsLabPage = lazy(() => import('./__design_lab/AnalyticsLabPage'))
 
 function ScreenLoader() {
  return <div className="flex-1 flex items-center justify-center font-body text-ghost text-[11px]">Loading…</div>
@@ -62,8 +63,10 @@ export default function App() {
  <Route path="/readiness" element={<ErrorBoundary><DataReadiness /></ErrorBoundary>} />
  <Route path="/network" element={<ErrorBoundary><NetworkView /></ErrorBoundary>} />
  <Route path="/operator" element={<ErrorBoundary><OperatorView role={viewingRole} /></ErrorBoundary>} />
- <Route path="/digest" element={<ErrorBoundary><WeeklyDigest /></ErrorBoundary>} />
+ <Route path="/analytics" element={<ErrorBoundary><Analytics /></ErrorBoundary>} />
+ <Route path="/digest" element={<Navigate to="/analytics" replace />} />
  <Route path="/__design_lab" element={<DesignLabPage />} />
+ <Route path="/__analytics_lab" element={<AnalyticsLabPage />} />
  </Routes>
  </Suspense>
  </main>
