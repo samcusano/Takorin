@@ -23,25 +23,25 @@
   * { box-sizing: border-box; }
 
   :root {
-    --color-stone: #F5F0E8;
-    --color-stone-2: #EDE7DC;
-    --color-stone-3: #E0D9CC;
-    --color-stone-4: #D4CEC4;
-    --color-ink: #100F0D;
-    --color-ink-2: #2A2520;
-    --color-muted: #5E5650;
-    --color-ghost: #696258;
-    --color-rule: #C8C0B4;
-    --color-rule-2: #D8D2C8;
+    --color-stone: #FAF8F4;
+    --color-stone-2: #F0EBE0;
+    --color-stone-3: #E6DED0;
+    --color-stone-4: #DAD4C6;
+    --color-ink: #0A0906;
+    --color-ink-2: #1E1A15;
+    --color-muted: #5A5448;
+    --color-ghost: #686058;
+    --color-rule: #B8B0A4;
+    --color-rule-2: #CAC2B6;
     --color-ok: #3A8A5A;
     --color-warn: #C4920A;
-    --color-danger: #D94F2A;
+    --color-danger: #C43820;
     --color-int: #3A7FD4;
-    --color-ochre: #C17D2A;
+    --color-ochre: #B86E1A;
     --radius-sm: 4px;
     --radius-md: 10px;
     --radius-lg: 16px;
-    --shadow-card: 0 12px 30px rgba(16, 15, 13, 0.12);
+    --shadow-card: 0 12px 30px rgba(10, 9, 6, 0.12);
   }
 
   /* Global focus ring — ochre on stone background, keyboard-only via :focus-visible */
@@ -287,8 +287,8 @@
   }
 
   /* ── Locked typography scale ──────────────────────────────────────────── */
-  .type-label { font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; color: #696258; }
-  .type-body  { font-size: 11px; color: #100F0D; }
-  .type-value { font-size: 12px; font-family: Georgia, serif; color: #100F0D; }
-  .type-head  { font-size: 13px; font-weight: 600; color: #100F0D; }
+  .type-label { font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; color: #686058; }
+  .type-body  { font-size: 12px; color: #0A0906; }
+  .type-value { font-size: 14px; font-family: Georgia, serif; color: #0A0906; }
+  .type-head  { font-size: 16px; font-weight: 700; color: #0A0906; }
 }

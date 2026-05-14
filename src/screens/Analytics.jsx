@@ -26,7 +26,7 @@ const WATERFALL = [
   { id: 'actual',   label: 'Actual OEE',     value: 81.0, type: 'total', delta: +6.0, note: 'Final result · 1pt below 82% target' },
 ]
 
-const LINE_COLORS = { line4: '#D94F2A', line6: '#3A8A5A', line3: '#C4920A', line2: '#3A7FD4' }
+const LINE_COLORS = { line4: '#C43820', line6: '#3A8A5A', line3: '#C4920A', line2: '#3A7FD4' }
 
 // ── AreaChart — editorial hero visual ─────────────────────────────────────────
 // Line 4 is filled; other lines ghost behind it. The story is Line 4.
@@ -52,15 +52,15 @@ function AreaChart() {
     <svg width="100%" viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="xMidYMid meet" role="img" aria-label="Line 4 OEE area chart, 7-day trailing">
       <defs>
         <linearGradient id="l4grad-a" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#D94F2A" stopOpacity="0.16" />
-          <stop offset="100%" stopColor="#D94F2A" stopOpacity="0" />
+          <stop offset="0%" stopColor="#C43820" stopOpacity="0.16" />
+          <stop offset="100%" stopColor="#C43820" stopOpacity="0" />
         </linearGradient>
       </defs>
 
       {/* Minimal gridlines */}
       {[75, 82, 90].map(v => (
         <g key={v}>
-          <line x1={padL} x2={w - padR} y1={yOf(v)} y2={yOf(v)} stroke="#D8D2C8" strokeWidth="0.5" />
+          <line x1={padL} x2={w - padR} y1={yOf(v)} y2={yOf(v)} stroke="#CAC2B6" strokeWidth="0.5" />
           <text x={padL - 4} y={yOf(v) + 3} fontSize="8" fill="#A8A098" textAnchor="end">{v}</text>
         </g>
       ))}
@@ -69,7 +69,7 @@ function AreaChart() {
       <line x1={padL} x2={w - padR} y1={yOf(82)} y2={yOf(82)} stroke="#C4920A" strokeWidth="0.75" strokeDasharray="5,3" opacity="0.65" />
 
       {/* Wednesday dip annotation */}
-      <line x1={xOf(2)} x2={xOf(2)} y1={padT + 4} y2={h - padB - 2} stroke="#D8D2C8" strokeWidth="0.5" strokeDasharray="2,3" />
+      <line x1={xOf(2)} x2={xOf(2)} y1={padT + 4} y2={h - padB - 2} stroke="#CAC2B6" strokeWidth="0.5" strokeDasharray="2,3" />
       <text x={xOf(2)} y={padT + 1} fontSize="7.5" fill="#A8A098" textAnchor="middle">Wed dip</text>
 
       {/* Ghost lines — L6, L3, L2 */}
@@ -81,9 +81,9 @@ function AreaChart() {
 
       {/* Line 4 fill + stroke */}
       <polygon points={l4area} fill="url(#l4grad-a)" />
-      <polyline points={l4line} fill="none" stroke="#D94F2A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <polyline points={l4line} fill="none" stroke="#C43820" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
       {l4pts.map((d, i) => (
-        <circle key={i} cx={xOf(i)} cy={yOf(d.line4)} r="2.5" fill="#D94F2A" />
+        <circle key={i} cx={xOf(i)} cy={yOf(d.line4)} r="2.5" fill="#C43820" />
       ))}
 
       {/* Right-edge line labels */}
@@ -128,7 +128,7 @@ function WaterfallChart() {
     <svg width="100%" viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="xMidYMid meet" role="img" aria-label="OEE attribution waterfall chart">
       {[74, 76, 78, 80, 82].map(v => (
         <g key={v}>
-          <line x1={padL} x2={svgW - padR} y1={yOf(v)} y2={yOf(v)} stroke="#D8D2C8" strokeWidth="0.5" />
+          <line x1={padL} x2={svgW - padR} y1={yOf(v)} y2={yOf(v)} stroke="#CAC2B6" strokeWidth="0.5" />
           <text x={padL - 3} y={yOf(v) + 3} fontSize="7.5" fill="#A8A098" textAnchor="end">{v}</text>
         </g>
       ))}
@@ -138,7 +138,7 @@ function WaterfallChart() {
       {WATERFALL.map((step, i) => {
         if (i === 0 || i === WATERFALL.length - 1) return null
         const prev = WATERFALL[i - 1]
-        return <line key={i} x1={xOf(i - 1) + barW} x2={xOf(i)} y1={yOf(prev.value)} y2={yOf(prev.value)} stroke="#C8C0B4" strokeWidth="0.75" strokeDasharray="2,2" />
+        return <line key={i} x1={xOf(i - 1) + barW} x2={xOf(i)} y1={yOf(prev.value)} y2={yOf(prev.value)} stroke="#B8B0A4" strokeWidth="0.75" strokeDasharray="2,2" />
       })}
 
       {WATERFALL.map((step, i) => {
@@ -149,7 +149,7 @@ function WaterfallChart() {
         if (isBase || isTotal) { barY = yOf(step.value); barH2 = yOf(minV) - barY }
         else if (isNeg) { barY = yOf(prev); barH2 = yOf(step.value) - yOf(prev) }
         else { barY = yOf(step.value); barH2 = yOf(prev) - yOf(step.value) }
-        const color = isBase ? '#696258' : isTotal ? '#100F0D' : isNeg ? '#D94F2A' : '#3A8A5A'
+        const color = isBase ? '#686058' : isTotal ? '#0A0906' : isNeg ? '#C43820' : '#3A8A5A'
         return (
           <g key={step.id}>
             <rect x={x} y={barY} width={barW} height={Math.max(0, barH2)} fill={color}
@@ -163,7 +163,7 @@ function WaterfallChart() {
             {isTotal && (
               <text x={x + barW / 2} y={barY - 9} fontSize="9" fill={color} textAnchor="middle" fontWeight="700">81%</text>
             )}
-            <text x={x + barW / 2} y={svgH - 3} fontSize="7" fill="#696258" textAnchor="middle">{step.label}</text>
+            <text x={x + barW / 2} y={svgH - 3} fontSize="7" fill="#686058" textAnchor="middle">{step.label}</text>
           </g>
         )
       })}

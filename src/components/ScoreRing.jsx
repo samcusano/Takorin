@@ -10,7 +10,7 @@ export default function ScoreRing({ score, maxScore = 100, color = '#C4920A', si
  {/* Track */}
  <circle
  cx={size / 2} cy={size / 2} r={r}
- fill="none" stroke="rgba(16,15,13,0.08)" strokeWidth="10"
+ fill="none" stroke="rgba(10,9,6,0.08)" strokeWidth="10"
  />
  {/* Fill */}
  <circle

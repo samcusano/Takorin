@@ -6,7 +6,7 @@ import { Urg, StatCell, SP, SecHd, Btn, ActionBanner, Spinner, AnimatedCheck, Ac
 import { AlertTriangle, Check, Clock, TrendingUp, Brain, Target, Zap, Shield, Activity, X } from 'lucide-react'
 import { useFocusTrap, useExitAnimation } from '../lib/utils'
 
-const toneColor = t => t === 'ok' ? '#3A8A5A' : t === 'danger' ? '#D94F2A' : '#C4920A'
+const toneColor = t => t === 'ok' ? '#3A8A5A' : t === 'danger' ? '#C43820' : '#C4920A'
 const statusCls = t => t === 'ok' ? 'bg-ok/10 text-ok' : t === 'danger' ? 'bg-danger/10 text-danger' : 'bg-warn/10 text-warn'
 
 // Design A — compact table grid
@@ -22,7 +22,7 @@ function SourceRowTable({ s }) {
  </div>
  <div className="flex flex-col justify-center px-3 gap-1">
  <span className="font-display font-extrabold leading-none text-[11px]" style={{ color: c }}>{s.score}</span>
- <div style={{ height:3, background:'#D8D2C8' }}>
+ <div style={{ height:3, background:'#CAC2B6' }}>
  <div style={{ height:'100%', width:`${s.score}%`, background:c, transition:'width 500ms cubic-bezier(0.19,0.91,0.38,1)' }} />
  </div>
  </div>
@@ -30,7 +30,7 @@ function SourceRowTable({ s }) {
  <span className={`font-body text-[11px] ${s.tone === 'danger' ? 'text-danger' : 'text-ghost'}`}>{s.freshness}</span>
  </div>
  <div className="flex flex-col justify-center px-3 gap-1">
- <div style={{ height:3, background:'#D8D2C8' }}>
+ <div style={{ height:3, background:'#CAC2B6' }}>
  <div style={{ height:'100%', width:`${s.consistency}%`, background:c, transition:'width 500ms cubic-bezier(0.19,0.91,0.38,1)' }} />
  </div>
  <span className={`font-body text-[10px] ${s.tone==='ok'?'text-ghost':s.tone==='danger'?'text-danger':'text-warn'}`}>{s.consistency}%</span>

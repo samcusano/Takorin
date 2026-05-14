@@ -4,21 +4,21 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Takorin design tokens — mirrors CSS custom properties
-        stone:    { DEFAULT: '#F5F0E8', 2: '#EDE7DC', 3: '#E0D9CC', 4: '#D4CEC4' },
-        ink:      { DEFAULT: '#100F0D', 2: '#2A2520', 3: '#3A342E' },
-        ochre:    { DEFAULT: '#C17D2A', dim: '#FBF3E6', dark: '#8A5A18', light: '#E8A84A' },
-        brass:    { DEFAULT: '#8A6A3A', dim: '#F5EFE4' },
-        // Darkened for 4.5:1+ contrast on stone background — WCAG AA
-        muted:    '#5E5650',
-        ghost:    '#696258',
-        rule:     '#C8C0B4',
-        rule2:    '#D8D2C8',
-        ok:       { DEFAULT: '#3A8A5A', dim: '#EBF5EF' },
-        warn:     { DEFAULT: '#C4920A', dim: '#FEF6E4' },
-        danger:   { DEFAULT: '#D94F2A', dim: '#FDECE7' },
+        // Takorin design tokens — high contrast warm palette
+        stone:    { DEFAULT: '#FAF8F4', 2: '#F0EBE0', 3: '#E6DED0', 4: '#DAD4C6' },
+        ink:      { DEFAULT: '#0A0906', 2: '#1E1A15', 3: '#2E2820' },
+        ochre:    { DEFAULT: '#B86E1A', dim: '#F5E8CC', dark: '#7A4E10', light: '#D08A30' },
+        brass:    { DEFAULT: '#8A6A3A', dim: '#F0E8D8' },
+        // WCAG AA on #FAF8F4: muted 6.4:1, ghost 5.3:1
+        muted:    '#5A5448',
+        ghost:    '#686058',
+        rule:     '#B8B0A4',
+        rule2:    '#CAC2B6',
+        ok:       { DEFAULT: '#3A8A5A', dim: '#E6F2EC' },
+        warn:     { DEFAULT: '#C4920A', dim: '#FEF3E0' },
+        danger:   { DEFAULT: '#C43820', dim: '#FAE8E4' },
         int:      { DEFAULT: '#3A7FD4', dim: '#EBF2FC' },
-        // Sidebar — PostHog-influenced dark surface
+        // Sidebar — dark surface, unchanged
         sidebar:  { DEFAULT: '#1A1610', 2: '#221E18', 3: '#2A2420', border: '#3A342E', ghost: '#A8A098' },
       },
       fontFamily: {

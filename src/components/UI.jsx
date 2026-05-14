@@ -31,10 +31,10 @@ export function Urg({ level = 'info', children }) {
 export function StatCell({ label, value, sub, fill, tone = 'ok', badge }) {
  const toneColor = { ok:'bg-ok', warn:'bg-warn', danger:'bg-danger', brass:'bg-brass' }[tone]
  return (
- <div className="px-5 py-4 border-r border-rule2 last:border-r-0">
- <div className="font-body text-muted text-[10px] mb-1">{label}</div>
+ <div className="px-6 py-5 border-r border-rule2 last:border-r-0">
+ <div className="font-body text-ghost text-[11px] uppercase tracking-widest mb-2">{label}</div>
  <div className="flex items-center gap-2">
- <div className="display-num text-xl text-ink">{value}</div>
+ <div className="display-num text-3xl text-ink">{value}</div>
  {badge && <span className="font-body text-[10px] px-2 py-1 rounded-full bg-stone2 text-ink">{badge}</span>}
  </div>
  {sub && <div className="font-body text-ghost text-[10px] mt-0.5">{sub}</div>}
@@ -50,12 +50,12 @@ export function StatCell({ label, value, sub, fill, tone = 'ok', badge }) {
 // ── Section header
 export function SecHd({ tag, title, badge, icon: Icon, accent }) {
  return (
- <div className="flex items-center gap-3 px-4 py-3.5 border-b border-rule2 bg-stone2">
+ <div className="flex items-center gap-3 px-5 py-4 border-b border-rule2 bg-stone2">
  <div className="flex items-center gap-1.5 flex-shrink-0">
  {tag && <Urg level="muted">{tag}</Urg>}
- {Icon && <Icon size={11} strokeWidth={2} style={accent ? { color: accent } : undefined} />}
+ {Icon && <Icon size={12} strokeWidth={2} style={accent ? { color: accent } : undefined} />}
  </div>
- <div className="flex-1 font-body font-semibold text-ink text-[13px]">{title}</div>
+ <div className="flex-1 font-body font-bold text-ink text-[15px]">{title}</div>
  {badge}
  </div>
  )
@@ -80,8 +80,8 @@ export function CaseCard({ urgency = 'warn', num, children }) {
 export function SP({ title, sub, children }) {
  return (
  <div className="border-b border-rule2 last:border-b-0">
- <div className="px-4 py-2.5 border-b border-rule2 flex items-baseline justify-between">
- <span className="font-body font-medium text-ink text-[12px]">{title}</span>
+ <div className="px-5 py-3 border-b border-rule2 flex items-baseline justify-between">
+ <span className="font-body font-bold text-ink text-[13px]">{title}</span>
  {sub && <span className="font-body text-ghost text-[10px]">{sub}</span>}
  </div>
  <div>{children}</div>
@@ -92,12 +92,12 @@ export function SP({ title, sub, children }) {
 // ── SP row (label + value)
 export function SPRow({ label, sub, value, valueColor = 'text-ink' }) {
  return (
- <div className="flex items-center justify-between px-4 py-2.5 border-b border-rule2 last:border-b-0">
+ <div className="flex items-center justify-between px-5 py-3 border-b border-rule2 last:border-b-0">
  <div>
  <div className="font-body text-ink text-[12px] font-medium">{label}</div>
  {sub && <div className="font-body text-ghost text-[10px] mt-0.5">{sub}</div>}
  </div>
- <div className={`display-num text-base ${valueColor}`}>{value}</div>
+ <div className={`display-num text-[18px] leading-none ${valueColor}`}>{value}</div>
  </div>
  )
 }
@@ -105,17 +105,17 @@ export function SPRow({ label, sub, value, valueColor = 'text-ink' }) {
 // ── Action banner — muted tonal style
 export function ActionBanner({ tone = 'warn', headline, body, children, footer }) {
  const s = {
- danger: 'bg-danger/[0.05] border-b-2 border-b-danger',
- warn:   'bg-warn/[0.05] border-b-2 border-b-warn',
- ok:     'bg-ok/[0.05] border-b-2 border-b-ok',
+ danger: 'bg-danger/[0.08] border-b-2 border-b-danger',
+ warn:   'bg-warn/[0.08] border-b-2 border-b-warn',
+ ok:     'bg-ok/[0.08] border-b-2 border-b-ok',
  muted:  'bg-stone3 border-b border-rule2',
- }[tone] || 'bg-warn/[0.05] border-b-2 border-b-warn'
+ }[tone] || 'bg-warn/[0.08] border-b-2 border-b-warn'
  return (
  <div className={`flex-shrink-0 ${s}`}>
- <div className="px-4 py-3 flex items-start gap-4">
+ <div className="px-5 py-4 flex items-start gap-4">
  <div className="flex-1">
- <div className="font-body font-medium text-ink text-[12px] leading-tight">{headline}</div>
- {body && <div className="font-body text-muted text-[11px] mt-0.5 leading-relaxed">{body}</div>}
+ <div className="font-body font-semibold text-ink text-[13px] leading-tight">{headline}</div>
+ {body && <div className="font-body text-muted text-[12px] mt-1 leading-relaxed">{body}</div>}
  </div>
  {children && <div className="flex gap-2 flex-shrink-0 items-start">{children}</div>}
  </div>
@@ -126,7 +126,7 @@ export function ActionBanner({ tone = 'warn', headline, body, children, footer }
 
 // ── Button variants
 export function Btn({ variant = 'primary', icon: Icon, onClick, disabled, children, className = '', style }) {
- const base = 'font-body font-medium text-[11px] px-3 py-2 min-h-[36px] inline-flex items-center justify-center gap-2 transition-[background-color,box-shadow,opacity,transform] duration-100 ease-standard active:scale-[0.97] cursor-pointer border-0 disabled:opacity-50 disabled:cursor-not-allowed rounded-[3px]'
+ const base = 'font-body font-medium text-[12px] px-4 py-2.5 min-h-[40px] inline-flex items-center justify-center gap-2 transition-[background-color,box-shadow,opacity,transform] duration-100 ease-standard active:scale-[0.97] cursor-pointer border-0 disabled:opacity-50 disabled:cursor-not-allowed rounded-[3px]'
  const defaults = { primary: ArrowRight, secondary: ChevronRight }
  const IconComp = Icon || defaults[variant]
  const cls = {
@@ -197,9 +197,9 @@ export function ScoreRing({ pct = 0, size = 32, color }) {
 // ── Page header
 export function PageHead({ over, title, accent = designTokens.colors.ochre, meta = [], children }) {
  return (
- <div className="px-5 py-5 border-b border-rule2 bg-stone" style={{ borderLeft: `4px solid ${accent}`, boxShadow: '0 1px 3px rgba(16,15,13,0.04)' }}>
- <div className="font-body text-muted text-[11px] mb-1">{over}</div>
- <div className="font-display font-bold text-2xl text-ink leading-tight">
+ <div className="px-6 py-8 border-b border-rule2 bg-stone" style={{ borderLeft: `6px solid ${accent}`, boxShadow: '0 1px 3px rgba(10,9,6,0.04)' }}>
+ <div className="font-body font-semibold text-ghost text-[10px] uppercase tracking-widest mb-3">{over}</div>
+ <div className="font-display font-bold text-[48px] text-ink leading-none">
  {title}
  {children && <span className="font-light text-ochre"> {children}</span>}
  </div>
@@ -237,7 +237,7 @@ export function RightRail({ children }) {
 }
 
 // ── Mini spark plot — smooth bezier curve, Google Finance style
-export function WaveformSparkline({ data, color = '#C17D2A', height = 44 }) {
+export function WaveformSparkline({ data, color = '#B86E1A', height = 44 }) {
  if (!data || data.length < 2) return null
  const { d, fillPath } = useMemo(() => {
   const W = 100, pad = 3
@@ -274,7 +274,7 @@ export function MetricCard({ title, value, valueColor = 'text-ink', waveformData
  <div className="px-4 pt-4 pb-3 border-b border-rule2">
  <div className="flex items-baseline justify-between gap-2 mb-3">
  <span className="font-body font-medium text-ink text-[12px] leading-snug flex-1">{title}</span>
- <span className={`display-num text-2xl leading-none flex-shrink-0 ${valueColor}`}>{value}</span>
+ <span className={`display-num text-3xl leading-none flex-shrink-0 ${valueColor}`}>{value}</span>
  </div>
  {waveformData && (
  <div className="mb-2.5">
@@ -322,7 +322,7 @@ export function Modal({ onClose, title, children }) {
    <div
     ref={dialogRef}
     className={`relative z-10 bg-stone border border-rule2 w-full max-w-[480px] mx-4 flex flex-col max-h-[90vh] overflow-hidden ${closing ? 'modal-exit' : 'modal-enter'}`}
-    style={{ borderTop: '3px solid #D94F2A' }}
+    style={{ borderTop: '3px solid #C43820' }}
    >
     {title && <span id={titleId} className="sr-only">{title}</span>}
     {children}

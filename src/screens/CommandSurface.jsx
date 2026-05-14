@@ -83,13 +83,14 @@ function CommandCell({ item, isPending, onAcknowledge }) {
 function MatrixColumn({ label, urgency, count, items, pendingIds, onAcknowledge }) {
  const hdrColor = { danger: 'text-danger', warn: 'text-warn', watch: 'text-muted' }[urgency]
  const hdrBorder = { danger: 'border-b-danger', warn: 'border-b-warn', watch: 'border-b-rule2' }[urgency]
- const emptyMsg = { danger: 'Nothing critical', warn: 'Nothing requires attention', watch: 'Nothing to monitor' }[urgency]
+ const hdrBg = { danger: 'bg-danger/[0.06]', warn: 'bg-warn/[0.06]', watch: 'bg-stone2' }[urgency]
+ const emptyMsg = { danger: 'Nothing critical', warn: 'Nothing needs attention', watch: 'Nothing to monitor' }[urgency]
 
  return (
  <div className="flex flex-col min-h-0 overflow-hidden bg-stone">
- <div className={`flex items-baseline gap-3 px-4 py-3 border-b-2 ${hdrBorder} bg-stone2 flex-shrink-0`}>
- <span className={`font-body font-medium uppercase tracking-widest text-[10px] ${hdrColor}`}>{label}</span>
- <span className={`display-num text-2xl ${hdrColor}`}>{count}</span>
+ <div className={`flex items-baseline gap-4 px-5 py-5 border-b-2 ${hdrBorder} ${hdrBg} flex-shrink-0`}>
+ <span className={`display-num text-[52px] leading-none ${hdrColor}`}>{count}</span>
+ <span className={`font-body font-bold uppercase tracking-widest text-[11px] ${hdrColor}`}>{label}</span>
  </div>
  <div className="flex-1 overflow-y-auto">
  {items.length === 0 ? (
