@@ -1,10 +1,12 @@
 import { useState } from 'react'
 import { riskLabel } from '../lib/utils'
-import { Check } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { Check, ArrowRight } from 'lucide-react'
+import { Link, useNavigate } from 'react-router-dom'
 import { commandData, facility, shiftData } from '../data'
 import { ActionBanner, StatCell, Btn, Chip, HoldButton } from '../components/UI'
 import { useAppState } from '../context/AppState'
+
+const MODULE_ROUTES = { shift: '/shift', capa: '/capa', supplier: '/supplier', handoff: '/handoff', readiness: '/readiness' }
 
 const prefersReducedMotion =
  typeof window !== 'undefined' &&
@@ -21,6 +23,7 @@ function ModulePill({ label }) {
 // ── CommandCell ───────────────────────────────────────────────────────────────
 
 function CommandCell({ item, isPending, onAcknowledge }) {
+ const navigate = useNavigate()
  if (isPending) {
  return (
  <div className="border-b border-rule2 border-l-2 border-l-ok px-3 py-2.5 bg-ok/5 flex items-center gap-2">
@@ -57,6 +60,15 @@ function CommandCell({ item, isPending, onAcknowledge }) {
  <p className={`font-body text-[10px] leading-snug truncate ${actionColorCls}`}>
  <span className="text-ghost text-[11px]">—</span> {item.action}
  </p>
+ {MODULE_ROUTES[item.module] && (
+ <button
+  type="button"
+  onClick={() => navigate(MODULE_ROUTES[item.module])}
+  className="font-body text-int text-[10px] flex items-center gap-1 hover:text-ink transition-colors self-start"
+ >
+  <ArrowRight size={9} />View in {item.moduleLabel}
+ </button>
+ )}
  <div className="border-t border-rule2 pt-1.5">
  {isWatch ? (
  <div className="flex items-center justify-between">

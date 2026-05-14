@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useSearchParams, Link } from 'react-router-dom'
 import { useFocusTrap, useExitAnimation, riskColorClass, riskLabel, riskBgColor } from '../lib/utils'
 import { shiftData, line6Data, haccpData, productionRate, crewHoursData } from '../data'
 import {
@@ -8,7 +8,7 @@ import {
  PersonAvatar, Modal, WaveformSparkline, Chip, AnimatedCheck, Spinner,
  VaulDrawer, HoldButton
 } from '../components/UI'
-import { Flag, ChevronRight, ChevronDown, AlertTriangle, Check, X, TrendingDown, RotateCcw, Wrench, Package, HelpCircle, ListChecks, Brain, Shield, RefreshCw, ChevronUp } from 'lucide-react'
+import { Flag, ChevronRight, ChevronDown, AlertTriangle, Check, X, TrendingDown, RotateCcw, Wrench, Package, HelpCircle, ListChecks, Brain, Shield, RefreshCw, ChevronUp, BarChart2, ArrowRight } from 'lucide-react'
 import { useAppState } from '../context/AppState'
 
 const CHECKLIST_ITEMS = [
@@ -53,6 +53,7 @@ function AgentTimeline({ timeline, sparkline, score }) {
  const scoreColor = riskBgColor(score)
  const scoreTextColor = riskColorClass(score)
  const zone = riskLabel(score)
+ const [explainerOpen, setExplainerOpen] = useState(false)
  return (
  <div className="border-b border-rule2">
  <MetricCard
@@ -64,6 +65,7 @@ function AgentTimeline({ timeline, sparkline, score }) {
  waveformHeight={40}
  meta={{ label: 'Trend', value: 'Rising · 06:12–06:42' }}
  />
+ <ScoreExplainer score={score} open={explainerOpen} onToggle={() => setExplainerOpen(o => !o)} />
  {/* Timeline rows */}
  {timeline.map((row, i) => (
  <div key={i} className="flex gap-2.5 px-4 py-3 border-b border-rule2 last:border-b-0">
@@ -82,6 +84,89 @@ function AgentTimeline({ timeline, sparkline, score }) {
  </div>
  ))}
  </div>
+ )
+}
+
+const SCORE_FACTORS = [
+ { label: 'Staffing cert mismatch', contribution: 18, tone: 'danger', state: 'Reyes (L1) assigned Sauce Dosing — L2 cert required', confidence: 'high', source: 'Cert records · direct' },
+ { label: 'Allergen changeover log', contribution: 13, tone: 'danger', state: 'Unsigned — production start blocked', confidence: 'high', source: 'Checklist system · direct' },
+ { label: 'Startup checklists', contribution: 9, tone: 'warn', state: '7 of 13 signed · 4 overdue at shift start', confidence: 'high', source: 'Checklist system · direct' },
+ { label: 'Sensor A-7 variance', contribution: 6, tone: 'warn', state: 'Micro-variance count 4/5 · bearing suspect', confidence: 'medium', source: 'SCADA · 3-hr rolling' },
+ { label: 'CCP-1 & CCP-3', contribution: 0, tone: 'ok', state: 'Both within limits · no contribution to score', confidence: 'high', source: 'Sensor verified · direct' },
+ { label: 'SCADA — Oven B', contribution: 0, tone: 'warn', state: 'Sensor stale · confidence penalty applied', confidence: 'low', source: 'Last reading 2h 14m ago' },
+]
+
+const CONF_DOT = { high: 'bg-ok', medium: 'bg-warn', low: 'bg-ghost' }
+const CONF_LABEL = { high: 'High confidence', medium: 'Medium confidence', low: 'Low confidence' }
+
+function ScoreExplainer({ score, open, onToggle }) {
+ const baseScore = score - SCORE_FACTORS.reduce((sum, f) => sum + f.contribution, 0)
+ const adjustedFrom = SCORE_FACTORS.reduce((sum, f) => sum + f.contribution, 0) + baseScore + 3
+ return (
+  <div className="border-t border-rule2">
+   <button
+    type="button"
+    onClick={onToggle}
+    className="w-full flex items-center justify-between px-4 py-2.5 bg-stone2 hover:bg-stone3 transition-colors group"
+   >
+    <div className="flex items-center gap-2">
+     <Brain size={11} strokeWidth={1.75} className="text-muted" />
+     <span className="font-body text-ghost text-[10px] uppercase tracking-widest">Why {score}?</span>
+    </div>
+    {open
+     ? <ChevronUp size={11} className="text-ghost" />
+     : <ChevronDown size={11} className="text-ghost" />}
+   </button>
+
+   {open && (
+    <div className="slide-in">
+     {/* Base + factor rows */}
+     <div className="px-4 py-2 border-b border-rule2 bg-stone">
+      <div className="flex items-baseline gap-2">
+       <span className="display-num text-[11px] text-ghost w-8 text-right flex-shrink-0">{baseScore}</span>
+       <span className="font-body text-ghost text-[10px] flex-1">Base risk · no shift conditions</span>
+      </div>
+     </div>
+     {SCORE_FACTORS.map((f, i) => {
+      const toneText = f.tone === 'danger' ? 'text-danger' : f.tone === 'warn' ? 'text-warn' : 'text-ok'
+      const toneBg   = f.tone === 'danger' ? 'bg-danger/[0.03]' : f.tone === 'warn' ? 'bg-warn/[0.02]' : ''
+      return (
+       <div key={i} className={`px-4 py-2.5 border-b border-rule2 last:border-b-0 ${toneBg}`}>
+        <div className="flex items-start gap-2">
+         <span className={`display-num text-[12px] font-bold w-8 text-right flex-shrink-0 leading-none pt-px ${
+          f.contribution > 0 ? toneText : 'text-ghost'
+         }`}>
+          {f.contribution > 0 ? `+${f.contribution}` : '—'}
+         </span>
+         <div className="flex-1 min-w-0">
+          <div className={`font-body font-medium text-[11px] leading-snug ${f.contribution > 0 ? (f.tone === 'danger' ? 'text-danger' : 'text-ink') : 'text-ghost'}`}>
+           {f.label}
+          </div>
+          <div className="font-body text-ghost text-[10px] mt-0.5 leading-snug">{f.state}</div>
+          <div className="flex items-center gap-1 mt-1">
+           <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${CONF_DOT[f.confidence]}`} />
+           <span className="font-body text-ghost text-[9px]">{CONF_LABEL[f.confidence]} · {f.source}</span>
+          </div>
+         </div>
+        </div>
+       </div>
+      )
+     })}
+     {/* Confidence adjustment note */}
+     <div className="px-4 py-2.5 bg-warn/[0.04] border-t-2 border-t-warn/20">
+      <div className="flex items-start gap-2">
+       <AlertTriangle size={11} strokeWidth={2} className="text-warn flex-shrink-0 mt-px" />
+       <div>
+        <div className="font-body font-medium text-ink text-[10px]">Score adjusted {adjustedFrom} → {score}</div>
+        <div className="font-body text-ghost text-[9px] mt-0.5 leading-snug">
+         Oven B sensor stale — confidence penalty applied. Restore SCADA feed to remove adjustment.
+        </div>
+       </div>
+      </div>
+     </div>
+    </div>
+   )}
+  </div>
  )
 }
 
@@ -306,11 +391,14 @@ function Finding({ f, onAct }) {
  <p className="font-body text-ink font-medium text-[13px] leading-snug">{f.title}</p>
  <p className="font-body text-ink2 text-[12px] leading-relaxed">{f.desc}</p>
  <p className="font-body text-ghost text-[11px] flex items-start gap-1"><ChevronRight size={11} className="flex-shrink-0 mt-px" />{f.evidence}</p>
- {f.source && (
-  <div className="flex gap-1.5">
-   <Chip tone="muted">{f.source}</Chip>
-  </div>
- )}
+ <div className="flex gap-1.5 flex-wrap">
+  {f.source && <Chip tone="muted">{f.source}</Chip>}
+  {f.capaId && (
+   <Link to="/capa" className="font-body text-warn text-[10px] flex items-center gap-1 hover:text-ink transition-colors">
+    <ArrowRight size={9} />{f.capaId}
+   </Link>
+  )}
+ </div>
  <div className="flex gap-2 pt-1 relative">
  {f.actions.map((a, i) => (
  <Btn key={i} variant={i === 0 ? 'primary' : 'secondary'} onClick={() => handleAct(a)}>
@@ -430,19 +518,29 @@ function LineDropdown({ lines, activeLine, onSelect, triggerRef, onClose }) {
       const sc = riskColorClass(line.score)
       const zoneLabel = riskLabel(line.score)
       const isActive = line.id === activeLine
+      const hasPilotData = line.id === 'l4' || line.id === 'l6'
       return (
        <button key={line.id} type="button"
         aria-pressed={isActive}
-        onClick={() => { onSelect(line.id); onClose() }}
-        className="flex items-center justify-between w-full px-4 py-3 border-b border-sidebar-border last:border-b-0 hover:bg-sidebar-3 transition-colors group"
+        disabled={!hasPilotData}
+        onClick={() => { if (hasPilotData) { onSelect(line.id); onClose() } }}
+        className={`flex items-center justify-between w-full px-4 py-3 border-b border-sidebar-border last:border-b-0 transition-colors group ${hasPilotData ? 'hover:bg-sidebar-3 cursor-pointer' : 'opacity-40 cursor-not-allowed'}`}
        >
         <div className="text-left">
          <div className={`font-body text-[12px] font-medium transition-colors ${isActive ? 'text-stone' : 'text-sidebar-ghost group-hover:text-stone/80'}`}>{line.name}</div>
-         <div className="font-body text-sidebar-ghost/50 text-[10px] mt-0.5">{line.supervisor} shift</div>
+         <div className="font-body text-sidebar-ghost/50 text-[10px] mt-0.5">
+          {hasPilotData ? `${line.supervisor} shift` : 'Not in pilot'}
+         </div>
         </div>
         <div className="flex items-center gap-2">
-         <span className={`font-body text-[10px] uppercase tracking-widest ${sc}`}>{zoneLabel}</span>
-         <span className={`display-num text-xl ${sc}`} aria-label={`Risk score ${line.score}`}>{line.score}</span>
+         {hasPilotData ? (
+          <>
+           <span className={`font-body text-[10px] uppercase tracking-widest ${sc}`}>{zoneLabel}</span>
+           <span className={`display-num text-xl ${sc}`} aria-label={`Risk score ${line.score}`}>{line.score}</span>
+          </>
+         ) : (
+          <span className="font-body text-sidebar-ghost/40 text-[10px]">No data</span>
+         )}
          {isActive && <div className="w-1.5 h-1.5 rounded-full bg-ochre flex-shrink-0" />}
         </div>
        </button>
@@ -473,6 +571,7 @@ export default function ShiftIQ() {
  logActivity,
  currentPlant,
  pilotExpanded, setPilotExpanded,
+ viewingRole,
  } = useAppState()
  const [predActioned, setPredActioned] = useState(false)
  const [overrideMode, setOverrideMode] = useState(false)
@@ -528,6 +627,7 @@ export default function ShiftIQ() {
  <Btn variant="secondary" onClick={() => { setCol1Tab('tasks'); setShowNearMiss(true) }}>
  + Near miss
  </Btn>
+ {viewingRole !== 'director' && (
  <Btn variant="secondary" onClick={() => {
  if (!escalatedShift) {
   setEscalatedShift(true)
@@ -536,6 +636,7 @@ export default function ShiftIQ() {
  }}>
  {escalatedShift ? 'Escalated ✓' : 'Escalate to director'}
  </Btn>
+ )}
  </ActionBanner>
 
  {/* Line switcher */}
@@ -553,7 +654,10 @@ export default function ShiftIQ() {
      className="flex items-center gap-2 hover:opacity-80 transition-opacity cursor-pointer"
     >
      <span className="font-body font-medium text-ink text-[13px]">{al.name}</span>
-     <span className={`font-body font-medium uppercase tracking-widest text-[10px] ${sc}`}>{zone}</span>
+     <span
+      className={`font-body font-medium uppercase tracking-widest text-[10px] ${sc} cursor-help`}
+      title="AT RISK: score ≥ 75 · WATCH: 60–74 · CLEAR: below 60"
+     >{zone}</span>
      <span className={`display-num text-xl leading-none ${sc}`} aria-label={`Risk score ${al.score} — ${zone}`}>{al.score}</span>
      {d.confidence < d.rawConfidence && activeLine === 'l4' && (
       <span className="font-body text-warn text-[10px]">adj.</span>
@@ -562,9 +666,12 @@ export default function ShiftIQ() {
     </button>
     <span className="font-body text-ghost/50 text-[11px]">·</span>
     <span className="font-body text-ghost text-[11px]">{lineSupervisor} · {al.supervisor} shift</span>
-    <div className="ml-auto flex items-center gap-2">
+    <div className="ml-auto flex items-center gap-3">
      <CrewAvatarStack crew={lineD.crew} onSelect={setViewingOperator} size={22} />
      <span className="font-body text-ghost text-[10px]">18 workers</span>
+     <Link to="/analytics" className="font-body text-int text-[10px] flex items-center gap-1 hover:text-ink transition-colors">
+      <BarChart2 size={10} />OEE analysis
+     </Link>
     </div>
    </div>
    {lineDropOpen && (
@@ -1177,7 +1284,7 @@ export default function ShiftIQ() {
     type="button"
     onClick={() => setChecklistDrawerOpen(true)}
     aria-label={`Open shift checklist — ${remaining > 0 ? `${remaining} items remaining` : 'all signed'}`}
-    className="fixed bottom-6 right-6 z-20 flex items-center gap-2 px-3.5 py-2.5 bg-ink text-stone font-body text-[11px] font-medium shadow-[0_4px_20px_rgba(16,15,13,0.25)] hover:bg-ink2 transition-colors duration-100 ease-standard"
+    className="fixed bottom-6 right-6 z-20 flex items-center gap-2 px-4 py-2.5 min-h-[40px] bg-ink text-stone font-body text-[12px] font-medium rounded-[3px] shadow-[0_4px_20px_rgba(10,9,6,0.25)] hover:bg-ink2 transition-[background-color,box-shadow] duration-100 ease-standard"
    >
     {remaining > 0
      ? <><ListChecks size={14} /><span>Checklist</span><span className="w-4 h-4 flex items-center justify-center bg-warn text-white text-[10px] font-bold rounded-sm flex-shrink-0">{remaining}</span></>

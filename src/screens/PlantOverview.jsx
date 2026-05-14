@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import { shiftData, line6Data, facility } from '../data'
 import { useAppState } from '../context/AppState'
 import { riskColorClass, riskLabel, riskBgColor } from '../lib/utils'
-import { AlertTriangle, CheckCircle, Clock, Users, ArrowRight, Activity } from 'lucide-react'
+import { AlertTriangle, CheckCircle, Clock, Users, ArrowRight, Activity, Brain } from 'lucide-react'
 import { PersonAvatar } from '../components/UI'
 
 // Live line data keyed by line ID
@@ -15,6 +15,8 @@ const LINE_META = {
     findings: shiftData.findings,
     sparkline: shiftData.sparkline,
     acted: ['sf1', 'sf2'],
+    modelConfidence: 87,
+    modelSignal: 'Oven B SCADA stale — confidence penalty active',
   },
   l6: {
     supervisor: 'B. Petrov',
@@ -24,6 +26,8 @@ const LINE_META = {
     findings: line6Data.findings,
     sparkline: line6Data.sparkline,
     acted: [],
+    modelConfidence: 92,
+    modelSignal: 'Staffing cert coverage optimal · no active gaps',
   },
   l3: {
     supervisor: 'M. Chen',
@@ -33,6 +37,8 @@ const LINE_META = {
     findings: [],
     sparkline: [58, 62, 61, 60, 61, 61],
     acted: [],
+    modelConfidence: 79,
+    modelSignal: 'Sensor variance within historical range',
   },
   l2: {
     supervisor: 'J. Park',
@@ -42,6 +48,8 @@ const LINE_META = {
     findings: [],
     sparkline: [36, 37, 38, 38, 37, 38],
     acted: [],
+    modelConfidence: 95,
+    modelSignal: 'All signals within normal bounds',
   },
 }
 
@@ -143,8 +151,17 @@ function LineCard({ line, meta, shiftActed, onClick }) {
           )}
         </div>
 
+        {/* Model signal */}
+        <div className="flex items-center gap-2 py-2 border-t border-rule2 -mx-6 px-6 bg-stone2/60">
+          <Brain size={10} strokeWidth={1.75} className="text-ghost flex-shrink-0" />
+          <span className="font-body text-ghost text-[10px] flex-1 truncate">
+            <span className={`font-medium tabular-nums ${meta.modelConfidence >= 90 ? 'text-ok' : meta.modelConfidence >= 80 ? 'text-muted' : 'text-warn'}`}>{meta.modelConfidence}%</span>
+            {' '}confidence · {meta.modelSignal}
+          </span>
+        </div>
+
         {/* Footer row */}
-        <div className="flex items-center justify-between mt-auto pt-3 border-t border-rule2">
+        <div className="flex items-center justify-between pt-3 border-t border-rule2">
           <div className="flex items-center gap-3">
             <PersonAvatar name={meta.supervisor} size={20} />
             <span className="font-body text-ink2 text-[11px]">{meta.supervisor}</span>

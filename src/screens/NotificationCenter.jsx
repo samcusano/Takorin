@@ -1,8 +1,14 @@
 import { useState } from 'react'
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight, Brain } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useAppState } from '../context/AppState'
 import { VaulDrawer } from '../components/UI'
+
+const INTELLIGENCE_SIGNALS = [
+  { confidence: 87, label: 'Line 4 intervention window closing', detail: 'Staffing mismatch + allergen log unresolved · 27 min remaining in window', route: '/shift', routeLabel: 'ShiftIQ', tone: 'danger' },
+  { confidence: 82, label: 'ConAgra Lot TS-8811 — cross-plant exposure', detail: '2 plants affected · 5,840 units at risk · COA not received', route: '/network', routeLabel: 'Network', tone: 'danger' },
+  { confidence: 74, label: 'FDA inspection in 18 days — 3 evidence gaps remain', detail: 'CAPA-2604-001 and -006 blocking audit export · FSMA 204 traceability incomplete', route: '/capa', routeLabel: 'CAPA Engine', tone: 'warn' },
+]
 
 // Type → visual style mapping
 const TYPE = {
@@ -246,7 +252,7 @@ export default function NotificationCenter({ onClose }) {
  }
 
  const content = (
-  <div className="flex flex-col">
+  <div className="flex flex-col h-full overflow-hidden">
    {/* Header */}
    <div className="px-4 py-3 bg-ink flex-shrink-0">
     <div className="font-display font-bold text-stone text-[15px] leading-tight">Notifications</div>
@@ -271,6 +277,33 @@ export default function NotificationCenter({ onClose }) {
      </button>
     ))}
    </div>
+
+   <div className="flex-1 overflow-y-auto">
+   {/* Intelligence summary — always shown on All tab */}
+   {activeFilter === 'All' && (
+    <div className="border-b-2 border-b-ochre/30 bg-stone">
+     <div className="px-4 py-2.5 border-b border-rule2 flex items-center gap-2">
+      <Brain size={11} strokeWidth={1.75} className="text-muted" />
+      <span className="font-body text-[10px] uppercase tracking-widest text-muted font-medium">Intelligence summary</span>
+      <span className="font-body text-ghost text-[10px] ml-auto">Updated 06:42</span>
+     </div>
+     {INTELLIGENCE_SIGNALS.map((sig, i) => (
+      <div key={i} className={`flex items-start gap-3 px-4 py-3 border-b border-rule2 last:border-b-0 ${sig.tone === 'danger' ? 'bg-danger/[0.02]' : ''}`}>
+       <div className={`display-num text-[13px] font-bold w-8 flex-shrink-0 tabular-nums pt-px ${
+        sig.confidence >= 85 ? 'text-danger' : sig.confidence >= 75 ? 'text-warn' : 'text-muted'
+       }`}>{sig.confidence}%</div>
+       <div className="flex-1 min-w-0">
+        <div className={`font-body font-medium text-[12px] leading-snug mb-0.5 ${sig.tone === 'danger' ? 'text-ink' : 'text-ink'}`}>{sig.label}</div>
+        <div className="font-body text-ghost text-[10px] leading-snug mb-1">{sig.detail}</div>
+        <button type="button" onClick={() => go(sig.route)}
+         className="font-body text-int text-[10px] flex items-center gap-1 hover:text-ink transition-colors">
+         <ArrowRight size={9} />Open in {sig.routeLabel}
+        </button>
+       </div>
+      </div>
+     ))}
+    </div>
+   )}
 
    {/* Standing compliance items */}
    {showCompliance && effectiveStanding.length > 0 && (
@@ -307,6 +340,7 @@ export default function NotificationCenter({ onClose }) {
      No notifications.
     </div>
    )}
+   </div>
   </div>
  )
 

@@ -1,6 +1,7 @@
 import { handoffData, certExpiry, haccpData } from '../data'
 import { Btn, ActionBanner, PersonAvatar, AcceptanceGate, CarryForwardItem } from '../components/UI'
-import { Check, AlertTriangle, Clock } from 'lucide-react'
+import { Check, AlertTriangle, Clock, Brain } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import { useAppState } from '../context/AppState'
 
 const FINDING_TO_CASE = { sf1: 'I.', sf2: 'II.', sf3: 'II.' }
@@ -32,7 +33,8 @@ function ForecastRow({ row }) {
 }
 
 
-function LayoutGrid({ d, signed, setSigned, currentPlant, carryForwardItems, acknowledgedCount, carryForwardCount, allAcknowledged, carryForwardAcknowledged, handleAcknowledgeCarryForward, handleAcceptShift }) {
+function LayoutGrid({ d, signed, setSigned, currentPlant, carryForwardItems, acknowledgedCount, carryForwardCount, allAcknowledged, carryForwardAcknowledged, handleAcknowledgeCarryForward, handleAcceptShift, handoffAccepted }) {
+ const navigate = useNavigate()
  return (
   <div className="flex flex-col flex-1 overflow-hidden">
    <AcceptanceGate
@@ -53,18 +55,35 @@ function LayoutGrid({ d, signed, setSigned, currentPlant, carryForwardItems, ack
      <Btn variant="secondary" onClick={() => setSigned(true)}>Sign off — Kowalski</Btn>
     </ActionBanner>
    )}
-   {signed && allAcknowledged && (
+   {handoffAccepted ? (
+    <div className="flex items-center gap-3 px-5 py-4 bg-ok/[0.08] border-b-2 border-b-ok flex-shrink-0">
+     <Check size={16} strokeWidth={2.5} className="text-ok flex-shrink-0" />
+     <div>
+      <div className="font-body font-semibold text-ok text-[13px]">Shift accepted by M. Santos</div>
+      <div className="font-body text-ok/70 text-[11px] mt-0.5">Handoff complete · Line 4 · April 16, 14:02 · HO-2604161</div>
+     </div>
+    </div>
+   ) : signed && allAcknowledged ? (
     <div className="flex items-center gap-3 px-4 py-3 bg-ok/10 border-b border-ok/20 flex-shrink-0">
      <Check size={12} strokeWidth={2} className="text-ok flex-shrink-0" />
      <span className="font-body text-ok text-[12px]">Ready to accept · All carry-forward items acknowledged</span>
     </div>
-   )}
+   ) : null}
    <div className="flex flex-1 overflow-hidden">
 
     {/* Left: carry-forward queue */}
     <div className="w-[55%] border-r border-rule2 flex flex-col">
-     <div className="px-4 py-2.5 bg-stone2 border-b border-rule2 font-body font-medium text-ink text-[12px] flex-shrink-0">
-      Carry-forward items ({acknowledgedCount}/{carryForwardCount} acknowledged)
+     <div className="px-4 py-2.5 bg-stone2 border-b border-rule2 flex-shrink-0">
+      <div className="font-body font-medium text-ink text-[12px]">
+       Carry-forward items ({acknowledgedCount}/{carryForwardCount} acknowledged)
+      </div>
+      <div className="flex items-center gap-1.5 mt-0.5">
+       <Brain size={9} strokeWidth={1.75} className="text-ghost flex-shrink-0" />
+       <span className="font-body text-ghost text-[10px]">
+        <span className="text-muted font-medium">91%</span>
+        {' '}model confidence · urgency classification based on shift findings and cert records
+       </span>
+      </div>
      </div>
      <div className="overflow-y-auto flex-1">
       {carryForwardCount > 0 ? carryForwardItems.map(item => (
@@ -73,6 +92,7 @@ function LayoutGrid({ d, signed, setSigned, currentPlant, carryForwardItems, ack
         item={item}
         acknowledged={carryForwardAcknowledged.has(item.id)}
         onAcknowledge={handleAcknowledgeCarryForward}
+        onView={() => navigate('/shift')}
        />
       )) : (
        <div className="px-4 py-8 text-center font-body text-ghost text-[11px]">
@@ -131,11 +151,13 @@ function LayoutGrid({ d, signed, setSigned, currentPlant, carryForwardItems, ack
 
 export default function HandoffIQ() {
  const d = handoffData
+ const navigate = useNavigate()
  const { handoffSigned: signed, setHandoffSigned: setSigned,
   carryForwardAcknowledged, setCarryForwardAcknowledged,
   logActivity,
   currentPlant,
-  shiftActed } = useAppState()
+  shiftActed,
+  handoffAccepted, setHandoffAccepted } = useAppState()
 
  const actedFindingIds = Object.keys(shiftActed || {}).filter(id => shiftActed[id])
 
@@ -169,7 +191,7 @@ export default function HandoffIQ() {
  }
 
  const handleAcceptShift = () => {
-  setSigned(true)
+  setHandoffAccepted(true)
   logActivity({ actor: 'M. Santos', action: 'Accepted shift handoff', item: `Line 4 · ${new Date().toLocaleDateString()}`, type: 'acknowledgment' })
  }
 
@@ -177,6 +199,7 @@ export default function HandoffIQ() {
   d, signed, setSigned, currentPlant,
   carryForwardItems, acknowledgedCount, carryForwardCount, allAcknowledged,
   carryForwardAcknowledged, handleAcknowledgeCarryForward, handleAcceptShift,
+  handoffAccepted,
  }
 
  return (

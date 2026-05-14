@@ -2,11 +2,64 @@ import { useState } from 'react'
 import {
  Building2, Package, Truck, AlertTriangle, Shield,
  Users, MapPin, Clock, Lock, CheckCircle2, Tag,
- Brain, Activity
+ Brain, Activity, TrendingDown, Zap, ArrowRight
 } from 'lucide-react'
 import { networkData } from '../data'
 import { useAppState } from '../context/AppState'
 import { ActionBanner, PersonAvatar, Btn, ActionCard, StatusIndicator, ExpandableMetadata, StatCell, Layout } from '../components/UI'
+
+const NETWORK_SIGNALS = [
+ {
+  id: 'sig1',
+  active: true,
+  label: 'ConAgra delivery delays → Line 4 scrap spikes',
+  detail: 'Pattern detected across Salina + Wichita · 3 of 4 occurrences in past 90 days confirmed',
+  tone: 'danger',
+  plants: ['SL-04', 'KS-09'],
+  confidence: 87,
+  action: 'Pre-order buffer recommended before next ConAgra delivery',
+ },
+ {
+  id: 'sig2',
+  active: true,
+  label: 'Allergen changeover delays correlated across lines',
+  detail: 'Salina Line 4 and Wichita Line 2 both show elevated risk on GF-Flatbread SKU transitions',
+  tone: 'warn',
+  plants: ['SL-04', 'KS-09'],
+  confidence: 74,
+  action: 'Standardize allergen changeover checklist across plants',
+ },
+ {
+  id: 'sig3',
+  active: false,
+  label: 'Supplier lead time degradation — predictive alert',
+  detail: 'Requires 3 connected plants · Topeka Plant (KS-02) not yet onboarded',
+  tone: 'muted',
+  plants: ['SL-04', 'KS-09', 'KS-02'],
+  confidence: null,
+  action: null,
+  locked: true,
+ },
+ {
+  id: 'sig4',
+  active: false,
+  label: 'Cross-plant OEE benchmark variance detection',
+  detail: 'Requires 3 connected plants · activates at Topeka onboarding',
+  tone: 'muted',
+  plants: ['SL-04', 'KS-09', 'KS-02'],
+  confidence: null,
+  action: null,
+  locked: true,
+ },
+]
+
+const SUPPLIER_NETWORK = [
+ { name: 'ConAgra Foods', salina: 22, wichita: 31, trend: 'down', note: '3 non-conformances — both plants affected', tone: 'danger' },
+ { name: 'Sysco',         salina: 67, wichita: 71, trend: 'up',   note: null, tone: 'ok' },
+ { name: 'ADM Foods',     salina: 74, wichita: 78, trend: 'up',   note: null, tone: 'ok' },
+ { name: 'Cargill',       salina: 81, wichita: 84, trend: 'up',   note: null, tone: 'ok' },
+ { name: 'Prairie Farms', salina: 55, wichita: 60, trend: 'flat', note: 'Monitor — both below 65th pct.', tone: 'warn' },
+]
 
 const plantMeta = {
  sl: { director: 'J. Crocker', region: 'Salina, KS', initials: 'JC' },
@@ -385,9 +438,57 @@ export default function NetworkView() {
     ))}
    </div>
 
+   {/* Network intelligence signals */}
+   <div>
+    <div className="flex items-center gap-2 mb-3">
+     <Zap size={12} strokeWidth={2} className="text-muted" />
+     <span className="font-body font-medium text-ink text-[13px]">Network intelligence</span>
+     <span className="font-body text-ghost text-[10px] ml-auto">2 active · 2 locked</span>
+    </div>
+    <div className="border border-rule2 divide-y divide-rule2">
+     {NETWORK_SIGNALS.map(sig => (
+      <div key={sig.id} className={`px-4 py-3 ${sig.locked ? 'opacity-50' : sig.tone === 'danger' ? 'bg-danger/[0.02]' : ''}`}>
+       <div className="flex items-start gap-3">
+        <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 mt-1.5 ${
+         sig.locked ? 'bg-rule2' : sig.tone === 'danger' ? 'bg-danger' : sig.tone === 'warn' ? 'bg-warn' : 'bg-ok'
+        }`} />
+        <div className="flex-1 min-w-0">
+         <div className="flex items-start gap-2 mb-0.5">
+          <span className={`font-body font-medium text-[12px] flex-1 leading-snug ${
+           sig.locked ? 'text-ghost' : sig.tone === 'danger' ? 'text-danger' : sig.tone === 'warn' ? 'text-ink' : 'text-ink'
+          }`}>{sig.label}</span>
+          {sig.locked && <Lock size={10} strokeWidth={2} className="text-ghost flex-shrink-0 mt-0.5" />}
+          {!sig.locked && sig.confidence && (
+           <span className="font-body text-ghost text-[10px] flex-shrink-0">{sig.confidence}%</span>
+          )}
+         </div>
+         <div className="font-body text-ghost text-[10px] leading-snug mb-1">{sig.detail}</div>
+         <div className="flex items-center gap-1 flex-wrap">
+          {sig.plants.map(p => (
+           <span key={p} className={`font-body text-[10px] px-1.5 py-px rounded-[3px] ${
+            sig.locked ? 'bg-stone3 text-ghost' : networkData.plants.find(pl => pl.code === p)?.active ? 'bg-danger/10 text-danger' : 'bg-warn/10 text-warn'
+           }`}>{p}</span>
+          ))}
+          {sig.locked && <span className="font-body text-ghost text-[10px] px-1.5 py-px bg-stone3 rounded-[3px]">3 plants required</span>}
+         </div>
+         {sig.action && (
+          <div className="mt-1.5 font-body text-int text-[10px] flex items-center gap-1">
+           <ArrowRight size={9} />{sig.action}
+          </div>
+         )}
+        </div>
+       </div>
+      </div>
+     ))}
+    </div>
+   </div>
+
    {/* Shared Exposure */}
    <div>
-    <div className="font-body font-medium text-ink text-[13px] mb-4">Shared Exposure</div>
+    <div className="flex items-center gap-2 mb-3">
+     <Package size={12} strokeWidth={2} className="text-muted" />
+     <span className="font-body font-medium text-ink text-[13px]">Shared exposure</span>
+    </div>
     <div className="space-y-3">
      {networkData.sharedExposure.map((e, i) => (
       <ActionCard
@@ -466,6 +567,43 @@ export default function NetworkView() {
      </div>
     </div>
    )}
+
+   {/* Supplier standing across network */}
+   <div>
+    <div className="flex items-center gap-2 mb-3">
+     <Truck size={12} strokeWidth={2} className="text-muted" />
+     <span className="font-body font-medium text-ink text-[13px]">Supplier standing · cross-plant</span>
+    </div>
+    <div className="border border-rule2">
+     {/* Header */}
+     <div className="grid px-4 py-2 bg-stone2 border-b border-rule2" style={{ gridTemplateColumns: '1fr 72px 72px 100px' }}>
+      <span className="font-body text-ghost text-[10px] uppercase tracking-widest">Supplier</span>
+      <span className="font-body text-ghost text-[10px] uppercase tracking-widest text-right">Salina</span>
+      <span className="font-body text-ghost text-[10px] uppercase tracking-widest text-right">Wichita</span>
+      <span className="font-body text-ghost text-[10px] uppercase tracking-widest text-right">Trend</span>
+     </div>
+     {SUPPLIER_NETWORK.map((s, i) => (
+      <div key={i} className={`grid px-4 py-3 border-b border-rule2 last:border-b-0 ${s.tone === 'danger' ? 'bg-danger/[0.02]' : ''}`} style={{ gridTemplateColumns: '1fr 72px 72px 100px' }}>
+       <div>
+        <div className={`font-body font-medium text-[12px] ${s.tone === 'danger' ? 'text-danger' : 'text-ink'}`}>{s.name}</div>
+        {s.note && <div className={`font-body text-[10px] mt-0.5 ${s.tone === 'danger' ? 'text-danger/80' : 'text-warn'}`}>{s.note}</div>}
+       </div>
+       <div className={`display-num text-[15px] font-bold text-right self-center ${s.salina < 40 ? 'text-danger' : s.salina < 65 ? 'text-warn' : 'text-ok'}`}>{s.salina}</div>
+       <div className={`display-num text-[15px] font-bold text-right self-center ${s.wichita < 40 ? 'text-danger' : s.wichita < 65 ? 'text-warn' : 'text-ok'}`}>{s.wichita}</div>
+       <div className="flex items-center justify-end gap-1">
+        {s.trend === 'down' && <TrendingDown size={11} strokeWidth={2} className="text-danger" />}
+        <span className={`font-body text-[10px] ${s.tone === 'danger' ? 'text-danger' : s.tone === 'warn' ? 'text-warn' : 'text-ghost'}`}>
+         {s.trend === 'down' ? 'Declining' : s.trend === 'up' ? 'Improving' : 'Stable'}
+        </span>
+       </div>
+      </div>
+     ))}
+     <div className="px-4 py-2 bg-stone2 border-t border-rule2">
+      <span className="font-body text-ghost text-[10px]">Scores = percentile rank across {networkData.plants.length > 1 ? networkData.plants.length : 14} comparable plants · updated weekly</span>
+     </div>
+    </div>
+   </div>
+
    </div>
   </Layout>
  </div>

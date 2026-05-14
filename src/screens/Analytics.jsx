@@ -1,8 +1,9 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useAppState } from '../context/AppState'
 import { openCases, benchmarks } from '../data/capa.js'
 import { goalsData, facility } from '../data'
-import { TrendingUp, TrendingDown, ChevronDown, ChevronUp, Download, Globe2, Brain, Lock } from 'lucide-react'
+import { TrendingUp, TrendingDown, ChevronDown, ChevronUp, Download, Globe2, Brain, Lock, ArrowRight } from 'lucide-react'
 
 // ── Static data ───────────────────────────────────────────────────────────────
 
@@ -311,6 +312,47 @@ export default function Analytics() {
                 </div>
               </div>
             )}
+          </section>
+
+          {/* ── Recovery actions ───────────────────────────────────────── */}
+          <section>
+            <div className="font-body text-ghost text-[10px] uppercase tracking-widest mb-3">Recovery actions</div>
+            <div className="border border-rule2 bg-stone divide-y divide-rule2">
+              {[
+                {
+                  delta: '-0.3pp', tone: 'danger',
+                  label: 'SCADA gap — Oven B sensor stale',
+                  action: 'Restore sensor feed to recover confidence signal',
+                  route: '/readiness', module: 'Data Readiness',
+                },
+                {
+                  delta: '+2.1pp', tone: 'ok',
+                  label: 'Staffing correction — Martinez reassigned',
+                  action: 'Repeat: use ShiftIQ staffing panel to pre-assign for next shift',
+                  route: '/shift', module: 'ShiftIQ',
+                },
+                {
+                  delta: '+1.4pp', tone: 'ok',
+                  label: 'Checklists — 4 overdue items cleared',
+                  action: 'Set up automated startup reminders in ShiftIQ to prevent recurrence',
+                  route: '/shift', module: 'ShiftIQ',
+                },
+              ].map(item => (
+                <div key={item.label} className="flex items-center gap-4 px-4 py-3">
+                  <span className={`font-body font-semibold text-[11px] w-12 flex-shrink-0 tabular-nums ${
+                    item.tone === 'danger' ? 'text-danger' : 'text-ok'
+                  }`}>{item.delta}</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-body font-medium text-ink text-[12px]">{item.label}</div>
+                    <div className="font-body text-ghost text-[10px] mt-0.5">{item.action}</div>
+                  </div>
+                  <Link to={item.route}
+                    className="flex items-center gap-1 font-body text-int text-[10px] hover:text-ink transition-colors flex-shrink-0">
+                    {item.module} <ArrowRight size={9} />
+                  </Link>
+                </div>
+              ))}
+            </div>
           </section>
 
           {/* ── Story cards ────────────────────────────────────────────── */}

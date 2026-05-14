@@ -1,12 +1,20 @@
 import React, { useState, useRef, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import { useFocusTrap, useExitAnimation } from '../lib/utils'
-import { FileText, BarChart2, ShieldCheck, Clock } from 'lucide-react'
+import { FileText, BarChart2, ShieldCheck, Clock, Brain } from 'lucide-react'
 import StatBar from '../components/StatBar.jsx'
 import { Check, X, AlertTriangle, ArrowRight, TrendingUp, ChevronRight } from 'lucide-react'
 import { Urg, SecHd, SP, ActionBanner, Btn, Chip, HoldButton } from '../components/UI'
 import { openCases, patternRows, benchmarks } from '../data/capa.js'
 import { haccpData, goalsData } from '../data'
 import { useAppState } from '../context/AppState'
+
+const SHIFT_END = '22:00'
+function shiftRelativeDue(due) {
+ if (!due) return due
+ if (due.includes('today') || due.includes('Apr 16')) return `Before shift end · ${SHIFT_END} · 7h 58m`
+ return due
+}
 
 const CASE_BORDERS = { cu: 'border-l-danger', cw: 'border-l-warn', co: 'border-l-ok', ca: 'border-l-warn' }
 const BADGE_BG = { 'text-danger': 'bg-danger/10', 'text-warn': 'bg-warn/10', 'text-ok': 'bg-ok/10' }
@@ -176,6 +184,11 @@ function PriorityQueueRow({ c, isSelected, onSelect, isEscalated, isResolved }) 
  <div className={`font-body font-medium text-[11px] leading-snug truncate ${isResolved || isEscalated ? 'text-muted' : 'text-ink'}`}>
  {c.title}
  </div>
+ {c.due && !isResolved && !isEscalated && (
+ <div className={`font-body text-[10px] mt-0.5 leading-snug ${c.dueColor || 'text-muted'}`}>
+ {shiftRelativeDue(c.due)}
+ </div>
+ )}
  {c.priorityReason && !isResolved && !isEscalated && (
  <div className="font-body text-[10px] mt-0.5 leading-snug text-muted">
  {c.priorityReason}
@@ -538,6 +551,14 @@ function LayoutQueue({ visibleCases, blockingEvidenceUploaded, setBlockingEviden
  {/* Left: priority queue */}
  <div className="w-[300px] flex-shrink-0 border-r border-rule2 overflow-y-auto flex flex-col bg-stone">
 
+ {/* Model ranking signal */}
+ <div className="px-4 py-2.5 border-b border-rule2 bg-stone2 flex items-center gap-2 flex-shrink-0">
+  <Brain size={10} strokeWidth={1.75} className="text-ghost flex-shrink-0" />
+  <span className="font-body text-ghost text-[10px]">
+   Ranked by priority score · <span className="text-muted font-medium">88%</span> model confidence · FDA deadline + evidence gaps weighted highest
+  </span>
+ </div>
+
  {/* Ranked items */}
  {sortedQueue.map((c) => (
  <PriorityQueueRow
@@ -617,6 +638,11 @@ function QueueItem({ item, priority, onSelectCase, onShowBlockingCase, blockingE
  <span className={`font-body font-medium text-[10px] px-1.5 py-px rounded-[3px] ${item.badgeColor} ${BADGE_BG[item.badgeColor]||'bg-warn/10'}`}>{item.badge}</span>
  <span className="font-body text-ghost text-[10px]">{item.capaId}</span>
  {item.rootCause && <span className="font-body text-ghost text-[10px]">· {item.rootCause.split(' — ')[0]}</span>}
+ {item.shiftFindingId && (
+  <Link to="/shift" className="font-body text-int text-[10px] flex items-center gap-0.5 hover:text-ink transition-colors">
+   <ArrowRight size={9} />View in ShiftIQ
+  </Link>
+ )}
  </div>
  <div
  className={`font-body font-medium text-[13px] leading-snug mb-1 ${isActionable?'text-ink':'text-ink2'} ${!isBlocking?'cursor-pointer hover:text-ochre transition-colors':''}`}
@@ -626,7 +652,7 @@ function QueueItem({ item, priority, onSelectCase, onShowBlockingCase, blockingE
  </div>
  <div className="font-body text-muted text-[11px] mb-3">
  {item.assigned && <span>{item.assigned} · </span>}
- <span className={item.dueColor||'text-muted'}>{item.due}</span>
+ <span className={item.dueColor||'text-muted'}>{shiftRelativeDue(item.due)}</span>
  {item.description && <span className="text-ghost"> · {item.description.split('.')[0]}.</span>}
  </div>
  <div className="flex gap-2 flex-wrap items-center">
@@ -685,12 +711,13 @@ export default function CapaEngine() {
  const overdueCount = visibleCases.filter(c => c.badge === 'Overdue').length
 
  const statCells = [
- { type: overdueCount > 0 ? 'sa' : 'so', label:'Open cases',
- value: String(openCount), sub: `${overdueCount} overdue`, pct: Math.round(openCount / 7 * 100) },
+ { type: overdueCount > 0 ? 'sa' : 'so', label:'Overdue',
+ value: String(overdueCount), sub: 'Past due date', pct: Math.round(overdueCount / 4 * 100) },
+ { type: openCount > 0 ? 'sw' : 'so', label:'Open cases',
+ value: String(openCount), sub: 'Active queue', pct: Math.round(openCount / 7 * 100) },
  { type: awaitingCount > 0 ? 'sw' : 'so', label:'Awaiting closure',
  value: String(awaitingCount), sub: awaitingCount > 0 ? 'Evidence submitted' : 'None pending', pct: awaitingCount > 0 ? 20 : 0 },
  { type:'so', label:'Closed this quarter', value: String(closedCount), sub:'All evidence-gated', pct:100 },
- { type:'sw', label:'CAPA closure rate', value:'78%', sub:'44th percentile', pct:44 },
  ]
 
  const sharedProps = {

@@ -3,8 +3,94 @@ import { useLocation } from 'react-router-dom'
 import { readinessData } from '../data'
 import { useAppState } from '../context/AppState'
 import { Urg, StatCell, SP, SecHd, Btn, ActionBanner, Spinner, AnimatedCheck, ActionCard, StatusIndicator, MetadataRow, ExpandableMetadata, Chip, RightRail } from '../components/UI'
-import { AlertTriangle, Check, Clock, TrendingUp, Brain, Target, Zap, Shield, Activity, X } from 'lucide-react'
+import { AlertTriangle, Check, Clock, TrendingUp, Brain, Target, Zap, Shield, Activity, X, ChevronDown, ChevronUp } from 'lucide-react'
 import { useFocusTrap, useExitAnimation } from '../lib/utils'
+
+const READINESS_FACTORS = [
+ { label: 'Naming conflict — Ingredient mapping', penalty: 7, tone: 'danger', state: 'MES, ERP, and supplier records use different names for the same ingredient', confidence: 'high', source: 'Cross-system audit · direct', resolvable: true },
+ { label: 'Naming conflict — CTE format mismatch', penalty: 7, tone: 'danger', state: 'Traceability submission blocked — FSMA 204 CTE 2 cannot validate', confidence: 'high', source: 'Cross-system audit · direct', resolvable: true },
+ { label: 'Oven B — no SKU-to-temperature profile', penalty: 6, tone: 'danger', state: 'Sensor readings have no product context — readings cannot be interpreted correctly', confidence: 'high', source: 'SCADA + MES cross-check', resolvable: true },
+ { label: 'SCADA feed stale — Oven B', penalty: 4, tone: 'warn', state: 'Last valid reading 2h 14m ago — confidence penalty applied to Oven B signals', confidence: 'low', source: 'Last reading 2h 14m ago', resolvable: false },
+ { label: 'ERP ingredient map incomplete', penalty: 0, tone: 'warn', state: 'Advisory — ingredient names lack supplier linkage (no score impact)', confidence: 'medium', source: 'ERP data quality scan', resolvable: true },
+ { label: 'Traceability records', penalty: 0, tone: 'ok', state: 'Chain-of-custody metadata present for all active lots', confidence: 'high', source: 'SupplierIQ · direct', resolvable: false },
+]
+const READINESS_BASE = 88
+
+const CONF_DOT = { high: 'bg-ok', medium: 'bg-warn', low: 'bg-ghost' }
+const CONF_LABEL = { high: 'High confidence', medium: 'Medium confidence', low: 'Low confidence' }
+
+function ReadinessScoreExplainer({ score, open, onToggle }) {
+ const penaltyTotal = READINESS_FACTORS.reduce((s, f) => s + f.penalty, 0)
+ return (
+  <div className="border-b border-rule2">
+   {/* Score hero */}
+   <div className="px-4 pt-4 pb-3 bg-stone">
+    <div className="font-body text-ghost text-[10px] uppercase tracking-widest mb-1">Readiness score</div>
+    <div className="flex items-baseline gap-3">
+     <span className={`display-num text-[48px] leading-none font-bold ${score >= 75 ? 'text-ok' : score >= 55 ? 'text-warn' : 'text-danger'}`}>{score}</span>
+     <span className="font-body text-ghost text-[13px]">/ 100</span>
+    </div>
+   </div>
+
+   {/* Why toggle */}
+   <button
+    type="button"
+    onClick={onToggle}
+    className="w-full flex items-center justify-between px-4 py-2.5 bg-stone2 border-t border-rule2 hover:bg-stone3 transition-colors"
+   >
+    <div className="flex items-center gap-2">
+     <Brain size={11} strokeWidth={1.75} className="text-muted" />
+     <span className="font-body text-ghost text-[10px] uppercase tracking-widest">Why {score}?</span>
+    </div>
+    {open ? <ChevronUp size={11} className="text-ghost" /> : <ChevronDown size={11} className="text-ghost" />}
+   </button>
+
+   {open && (
+    <div className="slide-in border-t border-rule2">
+     {/* Base row */}
+     <div className="px-4 py-2 bg-stone border-b border-rule2">
+      <div className="flex items-baseline gap-2">
+       <span className="display-num text-[11px] text-ghost w-8 text-right flex-shrink-0">{READINESS_BASE}</span>
+       <span className="font-body text-ghost text-[10px] flex-1">Base readiness · all sources clean</span>
+      </div>
+     </div>
+     {READINESS_FACTORS.map((f, i) => {
+      const toneText = f.tone === 'danger' ? 'text-danger' : f.tone === 'warn' ? 'text-warn' : 'text-ok'
+      const toneBg = f.tone === 'danger' ? 'bg-danger/[0.03]' : f.tone === 'warn' ? 'bg-warn/[0.02]' : ''
+      return (
+       <div key={i} className={`px-4 py-2.5 border-b border-rule2 last:border-b-0 ${toneBg}`}>
+        <div className="flex items-start gap-2">
+         <span className={`display-num text-[12px] font-bold w-8 text-right flex-shrink-0 leading-none pt-px ${
+          f.penalty > 0 ? toneText : 'text-ghost'
+         }`}>
+          {f.penalty > 0 ? `−${f.penalty}` : '—'}
+         </span>
+         <div className="flex-1 min-w-0">
+          <div className={`font-body font-medium text-[11px] leading-snug ${f.penalty > 0 ? (f.tone === 'danger' ? 'text-danger' : 'text-warn') : 'text-ghost'}`}>
+           {f.label}
+          </div>
+          <div className="font-body text-ghost text-[10px] mt-0.5 leading-snug">{f.state}</div>
+          <div className="flex items-center gap-1 mt-1">
+           <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${CONF_DOT[f.confidence]}`} />
+           <span className="font-body text-ghost text-[9px]">{CONF_LABEL[f.confidence]} · {f.source}</span>
+          </div>
+         </div>
+        </div>
+       </div>
+      )
+     })}
+     {/* Summary */}
+     <div className="px-4 py-2.5 bg-stone2 border-t border-rule2">
+      <div className="flex items-center justify-between">
+       <span className="font-body text-ghost text-[10px]">Resolve all flagged gaps</span>
+       <span className="font-body font-medium text-ok text-[11px]">+{penaltyTotal} pts → {Math.min(100, score + penaltyTotal)}</span>
+      </div>
+     </div>
+    </div>
+   )}
+  </div>
+ )
+}
 
 const toneColor = t => t === 'ok' ? '#3A8A5A' : t === 'danger' ? '#C43820' : '#C4920A'
 const statusCls = t => t === 'ok' ? 'bg-ok/10 text-ok' : t === 'danger' ? 'bg-danger/10 text-danger' : 'bg-warn/10 text-warn'
@@ -140,6 +226,7 @@ export default function DataReadiness() {
  const [exportState, setExportState] = useState('idle')
  const [diagnosticsOpen, setDiagnosticsOpen] = useState(false)
  const [selectedGap, setSelectedGap] = useState(null)
+ const [scoreExplainerOpen, setScoreExplainerOpen] = useState(false)
  const location = useLocation()
  const highlightKey = location.state?.highlight
 
@@ -304,6 +391,7 @@ export default function DataReadiness() {
 
    {/* Right Panel — Agent Brain + module summary */}
    <RightRail>
+    <ReadinessScoreExplainer score={score} open={scoreExplainerOpen} onToggle={() => setScoreExplainerOpen(o => !o)} />
     <div className="p-4">
      <SP title="Readiness by module" sub="How each product is affected">
       {moduleRows.map((r,i) => (

@@ -1,7 +1,18 @@
 import { useState, useRef } from 'react'
 import { useFocusTrap, useExitAnimation } from '../lib/utils'
-import { Check, X, AlertTriangle, Clock, ArrowRight, Wheat, Soup, Milk, Beef, Droplets, History, AlertCircle, Eye } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
+import { Check, X, AlertTriangle, Clock, ArrowRight, History, AlertCircle, Eye, Wheat, Soup, Milk, Beef, Droplets, Truck, ShieldCheck, ClipboardCheck, Brain, ChevronDown, ChevronUp } from 'lucide-react'
+
+const SUPPLIER_RISK_FACTORS = [
+  { label: 'COA missing — Lot TS-8811', penalty: 'blocking', tone: 'danger', state: 'Production start held · ConAgra has not responded', confidence: 'high', source: 'SupplierIQ · direct' },
+  { label: 'FDA inspection in 18 days', penalty: 'time pressure', tone: 'danger', state: 'Traceability submission incomplete — FSMA 204 naming conflict at CTE 2', confidence: 'high', source: 'Regulatory calendar · direct' },
+  { label: 'ConAgra reliability — 22nd percentile', penalty: 'risk signal', tone: 'danger', state: '3 non-conformances in last 30 days across 14 plants', confidence: 'high', source: 'Network intelligence · 14 plants' },
+  { label: '2 lots expiring within 14 days', penalty: 'shelf risk', tone: 'warn', state: 'Mozzarella and Canola oil approaching end of shelf life', confidence: 'medium', source: 'Lot tracking · direct' },
+  { label: 'Price alerts — 2 contracts', penalty: 'advisory', tone: 'warn', state: 'Tomato sauce +14% · ConAgra renewal May 12', confidence: 'medium', source: 'Contract management · direct' },
+]
+
+const CONF_DOT_S = { high: 'bg-ok', medium: 'bg-warn', low: 'bg-ghost' }
+const CONF_LABEL_S = { high: 'High confidence', medium: 'Medium confidence', low: 'Low confidence' }
+import { useNavigate, Link } from 'react-router-dom'
 import { supplierData, supplierAudits, empResultsHistory } from '../data'
 import { useAppState } from '../context/AppState'
 import { Urg, StatCell, SP, SecHd, Btn, Chip, Layout, ActionBanner, ScoreRing, Spinner, AnimatedCheck, MetadataRow, ExpandableMetadata, ActionCard, StatusIndicator } from '../components/UI'
@@ -20,9 +31,15 @@ function CoaPanel({ lot, onClose }) {
       <div className="fixed inset-0 bg-ink/20 z-40" onClick={handleClose} />
       <aside ref={panelRef} role="dialog" aria-modal="true" aria-label="Certificate of Analysis" className={`fixed top-0 right-0 bottom-0 w-full max-w-[400px] bg-stone border-l border-rule2 z-50 flex flex-col ${exiting ? 'slide-right-out' : 'slide-right'}`}>
         <div className="flex items-start justify-between px-5 py-4 border-b border-rule2 bg-stone2 flex-shrink-0">
-          <div>
-            <div className="font-body text-ghost text-[10px] mb-1">Certificate of Analysis</div>
-            <div className="font-display font-bold text-ink text-base">{lot.ing}</div>
+          <div className="flex items-center gap-3">
+            {FOOD_ICONS[lot.ing] && (() => {
+              const IngIcon = FOOD_ICONS[lot.ing]
+              return <IngIcon size={28} strokeWidth={1.5} className="text-ochre flex-shrink-0" aria-hidden="true" />
+            })()}
+            <div>
+              <div className="font-body text-ghost text-[10px] mb-1">Certificate of Analysis</div>
+              <div className="font-display font-bold text-ink text-base">{lot.ing}</div>
+            </div>
           </div>
           <button type="button" onClick={handleClose} aria-label="Close COA panel" className="p-1 text-ghost hover:text-ink transition-colors duration-100 ease-standard cursor-pointer">
             <X size={14} strokeWidth={2} aria-hidden="true" />
@@ -78,14 +95,14 @@ function NetworkBadge({ intel }) {
   )
 }
 
-// ── Food icons ────────────────────────────────────────────────────────────────
+// ── Ingredient icons — lucide.dev ─────────────────────────────────────────────
 
 const FOOD_ICONS = {
-  'Wheat flour': Wheat,
+  'Wheat flour':  Wheat,
   'Tomato sauce': Soup,
-  'Mozzarella':  Milk,
-  'Pepperoni':   Beef,
-  'Canola oil':  Droplets,
+  'Mozzarella':   Milk,
+  'Pepperoni':    Beef,
+  'Canola oil':   Droplets,
 }
 
 // ── AlertChip (strip at top of content) ──────────────────────────────────────
@@ -127,6 +144,7 @@ export default function SupplierIQ() {
   const { coaRequested, setCoaRequested, rfqSent, setRfqSent, readinessResolved, resolvedConflicts, closedCases } = useAppState()
   const [exportState, setExportState] = useState('idle')
   const [coaViewLot, setCoaViewLot] = useState(null)
+  const [riskExplainerOpen, setRiskExplainerOpen] = useState(false)
   const navigate = useNavigate()
   const namingResolved = readinessResolved?.['conflict-0'] || resolvedConflicts?.has?.(0)
   const capaTs8811Closed = closedCases?.includes?.('c3')
@@ -147,9 +165,12 @@ export default function SupplierIQ() {
   const side = (
     <>
       <SP title="FDA inspection" sub="FSMA 204">
-        <div className="flex items-baseline gap-2 px-4 pt-3 pb-2">
-          <span className="display-num text-4xl text-warn">18</span>
-          <span className="font-body text-ghost text-[11px]">days · Region 7 · Salina</span>
+        <div className="flex items-center gap-3 px-4 pt-3 pb-2">
+          <ShieldCheck size={28} strokeWidth={1.5} className="text-warn flex-shrink-0" aria-hidden="true" />
+          <div className="flex items-baseline gap-2">
+            <span className="display-num text-4xl text-warn">18</span>
+            <span className="font-body text-ghost text-[11px]">days · Region 7 · Salina</span>
+          </div>
         </div>
         <div className="mx-4 mb-3 h-1 bg-rule2"><div className="h-full bg-warn" style={{ width: '62%' }} /></div>
         {d.fdaSteps.map((s, i) => {
@@ -196,8 +217,9 @@ export default function SupplierIQ() {
   )
 
   return (
+    <>
+    <CoaPanel lot={coaViewLot} onClose={() => setCoaViewLot(null)} />
     <div className="flex flex-col h-full overflow-hidden content-reveal">
-      <CoaPanel lot={coaViewLot} onClose={() => setCoaViewLot(null)} />
 
       <ActionBanner
         tone="warn"
@@ -208,6 +230,53 @@ export default function SupplierIQ() {
           {exportState === 'loading' ? <><Spinner label="Preparing export" /> Preparing…</> : exportState === 'done' ? <><AnimatedCheck size={11} color="currentColor" /> Exported</> : 'Export audit package'}
         </Btn>
       </ActionBanner>
+
+      {/* Risk context strip */}
+      <div className="flex items-center gap-0 border-b border-rule2 bg-stone flex-shrink-0 divide-x divide-rule2">
+        <div className="flex items-center gap-2.5 px-5 py-2.5">
+          <span className="font-body text-ghost text-[10px] uppercase tracking-widest">FDA inspection</span>
+          <span className="display-num text-[28px] font-bold leading-none text-warn">18</span>
+          <span className="font-body text-warn text-[10px]">days · Region 7</span>
+        </div>
+        <div className="flex items-center gap-2 px-5 py-2.5">
+          <span className="font-body text-ghost text-[10px] uppercase tracking-widest">Blocking</span>
+          <span className="display-num text-[28px] font-bold leading-none text-danger">{blockingLots.length}</span>
+          <span className="font-body text-danger text-[10px]">COA missing</span>
+        </div>
+        <button type="button" onClick={() => setRiskExplainerOpen(o => !o)}
+          className="flex items-center gap-2 px-5 py-2.5 hover:bg-stone2 transition-colors group">
+          <Brain size={11} strokeWidth={1.75} className="text-ghost flex-shrink-0" />
+          <span className="font-body text-ghost text-[10px] uppercase tracking-widest">Supplier risk</span>
+          <span className="font-body text-[13px] font-semibold text-danger px-2 py-0.5 bg-danger/10 rounded-[3px]">HIGH</span>
+          {riskExplainerOpen ? <ChevronUp size={10} className="text-ghost" /> : <ChevronDown size={10} className="text-ghost" />}
+        </button>
+      </div>
+
+      {/* Supplier risk explainer */}
+      {riskExplainerOpen && (
+        <div className="border-b border-rule2 bg-stone slide-in">
+          <div className="px-4 py-2 bg-stone2 border-b border-rule2">
+            <span className="font-body text-ghost text-[10px] uppercase tracking-widest">Why HIGH?</span>
+          </div>
+          {SUPPLIER_RISK_FACTORS.map((f, i) => {
+            const toneText = f.tone === 'danger' ? 'text-danger' : f.tone === 'warn' ? 'text-warn' : 'text-ok'
+            const toneBg = f.tone === 'danger' ? 'bg-danger/[0.03]' : f.tone === 'warn' ? 'bg-warn/[0.02]' : ''
+            return (
+              <div key={i} className={`flex items-start gap-3 px-4 py-2.5 border-b border-rule2 last:border-b-0 ${toneBg}`}>
+                <span className={`font-body font-semibold text-[10px] w-20 flex-shrink-0 pt-px ${toneText}`}>{f.penalty}</span>
+                <div className="flex-1 min-w-0">
+                  <div className={`font-body font-medium text-[11px] leading-snug ${f.tone === 'danger' ? 'text-danger' : 'text-ink'}`}>{f.label}</div>
+                  <div className="font-body text-ghost text-[10px] mt-0.5 leading-snug">{f.state}</div>
+                  <div className="flex items-center gap-1 mt-1">
+                    <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${CONF_DOT_S[f.confidence]}`} />
+                    <span className="font-body text-ghost text-[9px]">{CONF_LABEL_S[f.confidence]} · {f.source}</span>
+                  </div>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      )}
 
       <div className="grid grid-cols-3 md:grid-cols-6 border-b border-rule2 bg-stone flex-shrink-0">
         {d.stats.map((s, i) => <StatCell key={i} {...s} />)}
@@ -238,11 +307,11 @@ export default function SupplierIQ() {
             />
 
             {blockingLots.map((lot, i) => {
-              const Icon = FOOD_ICONS[lot.ing]
               return (
                 <ActionCard
                   key={i}
                   tone="danger"
+                  icon={FOOD_ICONS[lot.ing]}
                   title={`${lot.ing} — COA Missing`}
                   subtitle={`Production start held · ${lot.supplier} · Lot ${lot.delivery}`}
                   metadata={[
@@ -263,6 +332,9 @@ export default function SupplierIQ() {
                         <>
                           <Btn variant="primary" onClick={() => setCoaRequested(true)}>Request COA</Btn>
                           <Btn variant="secondary" onClick={() => setCoaViewLot(lot)}>View specs</Btn>
+                          <Link to="/network" className="font-body text-int text-[10px] flex items-center gap-1 hover:text-ink transition-colors self-center">
+                            <ArrowRight size={9} />Network impact
+                          </Link>
                         </>
                       )}
                     </>
@@ -297,6 +369,7 @@ export default function SupplierIQ() {
               <ActionCard
                 key={s.name}
                 tone="warn"
+                icon={ClipboardCheck}
                 title={`${s.name} — Conditional Audit Approval`}
                 subtitle="Re-audit required before next purchase order"
                 metadata={[
@@ -324,11 +397,11 @@ export default function SupplierIQ() {
             />
 
             {monitoringLots.map((lot, i) => {
-              const Icon = FOOD_ICONS[lot.ing]
               return (
                 <ActionCard
                   key={i}
                   tone={lot.shelfTone === 'danger' ? 'danger' : 'warn'}
+                  icon={FOOD_ICONS[lot.ing] || Droplets}
                   title={`${lot.ing} — ${lot.shelfTone === 'danger' ? 'Expiring soon' : 'Shelf life alert'}`}
                   subtitle={`${lot.supplier} · Lot ${lot.delivery}`}
                   metadata={[
@@ -359,6 +432,7 @@ export default function SupplierIQ() {
             {/* Price alerts */}
             <ActionCard
               tone="warn"
+              icon={Truck}
               title="Price Alerts"
               subtitle="2 active supplier contracts need renegotiation"
               metadata={[
@@ -431,5 +505,6 @@ export default function SupplierIQ() {
 
       </Layout>
     </div>
+    </>
   )
 }

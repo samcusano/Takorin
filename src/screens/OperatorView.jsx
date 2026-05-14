@@ -1,8 +1,8 @@
 import { useState } from 'react'
-import { Flag, ShieldCheck, BookOpen, Clock, ChevronRight, Check, Lock } from 'lucide-react'
+import { Flag, ShieldCheck, BookOpen, Clock, ChevronRight, Check, Lock, AlertTriangle } from 'lucide-react'
 import { handoffData } from '../data'
 import { useAppState } from '../context/AppState'
-import { SecHd, Urg, SP, ActionBanner, PersonAvatar, Btn, Chip, HoldButton } from '../components/UI'
+import { SecHd, Urg, SP, ActionBanner, PersonAvatar, Btn, Chip, HoldButton, Modal } from '../components/UI'
 
 const OPERATORS = [
  { name: 'C. Reyes', role: 'L1 · Pack Line · 14 months', initials: 'CR', station: 'Sauce Dosing (covering)', certPct: 72, certLabel: '72% to L2 Sauce Dosing', certColor: 'bg-warn', certText: 'text-warn' },
@@ -20,7 +20,7 @@ const TRAINING_PATHWAY = {
    { label: 'Allergen changeover procedure', status: 'complete', hours: 1.5 },
    { label: 'HACCP documentation', status: 'in-progress', hours: 3 },
    { label: 'Supervised dosing shifts × 5', status: 'in-progress', hours: 10 },
-   { label: 'L2 Practical assessment', status: 'locked', hours: 1 },
+   { label: 'L2 Practical assessment', status: 'locked', hours: 1, lockedReason: 'Complete supervised dosing shifts first' },
   ],
  },
  'P. Okonkwo': {
@@ -31,7 +31,7 @@ const TRAINING_PATHWAY = {
    { label: 'Advanced CCP management', status: 'complete', hours: 4 },
    { label: 'Yield optimization — Sauce Dosing', status: 'complete', hours: 3 },
    { label: 'Line lead responsibilities', status: 'in-progress', hours: 6 },
-   { label: 'L3 Practical assessment', status: 'locked', hours: 2 },
+   { label: 'L3 Practical assessment', status: 'locked', hours: 2, lockedReason: 'Complete line lead responsibilities first' },
   ],
  },
  'F. Adeyemi': {
@@ -41,30 +41,30 @@ const TRAINING_PATHWAY = {
   modules: [
    { label: 'Microbiological testing basics', status: 'complete', hours: 2 },
    { label: 'FSMA 204 documentation', status: 'in-progress', hours: 3 },
-   { label: 'Environmental monitoring program', status: 'locked', hours: 4 },
-   { label: 'L2 QA assessment', status: 'locked', hours: 1 },
+   { label: 'Environmental monitoring program', status: 'locked', hours: 4, lockedReason: 'Complete FSMA 204 documentation first' },
+   { label: 'L2 QA assessment', status: 'locked', hours: 1, lockedReason: 'Complete environmental monitoring first' },
   ],
  },
 }
 
-function DataCommitmentBanner({ onAcknowledge }) {
+function DataCommitmentOverlay({ onAcknowledge }) {
  return (
-  <div className="border-b border-rule2 bg-stone2 slide-in">
-   <div className="px-5 py-5">
+  <Modal title="Before you start — your data rights">
+   <div className="overflow-y-auto flex-1 px-5 py-5">
     <div className="flex items-start gap-3 mb-4">
      <ShieldCheck size={20} strokeWidth={1.75} className="text-ok flex-shrink-0 mt-0.5" />
      <div>
-      <div className="font-display font-bold text-ink text-[14px] mb-1">Before you start — your data rights</div>
+      <div className="font-display font-bold text-ink text-[16px] leading-snug mb-1">Before you start — your data rights</div>
       <p className="font-body text-ink2 text-[12px] leading-relaxed">Takorin monitors production signals to help you do your job safely and to support your career. Here's exactly what that means for your data.</p>
      </div>
     </div>
-    <div className="space-y-2 mb-4">
+    <div className="space-y-2 mb-5">
      {[
       { icon: Check, label: 'Your supervisor can see', items: ['Your task completion status', 'Shift checklist items you signed or flagged', 'Near-miss reports you submitted'] },
       { icon: Lock, label: 'Not visible to your supervisor', items: ['The reason you dismissed a specific finding', 'Your certification progress score'] },
       { icon: ShieldCheck, label: 'Takorin\'s model training', items: ['Uses anonymized production patterns only — no names attached to training data'] },
      ].map(({ icon: Icon, label, items }) => (
-      <div key={label} className="px-3 py-2.5 bg-stone border border-rule2">
+      <div key={label} className="px-3 py-2.5 bg-stone2 border border-rule2">
        <div className="flex items-center gap-1.5 mb-1.5">
         <Icon size={11} strokeWidth={2} className="text-muted flex-shrink-0" />
         <span className="font-body font-medium text-ink text-[11px]">{label}</span>
@@ -79,9 +79,11 @@ function DataCommitmentBanner({ onAcknowledge }) {
       </div>
      ))}
     </div>
+   </div>
+   <div className="px-5 py-4 border-t border-rule2 flex-shrink-0">
     <Btn variant="primary" onClick={onAcknowledge}>I understand — show my dashboard</Btn>
    </div>
-  </div>
+  </Modal>
  )
 }
 
@@ -97,9 +99,11 @@ const ROLE_TO_OPERATOR = {
 }
 
 export default function OperatorView({ role }) {
+ const isOperatorRole = role === 'operator-reyes' || role === 'operator-okonkwo'
  const defaultOp = (role && ROLE_TO_OPERATOR[role]) || 'C. Reyes'
  const [selected, setSelected] = useState(defaultOp)
- const { taskAssignments, trainingPlans, trainingCompletions, flaggedItems, checklistSigned, nearMisses, operatorAcknowledgments, setOperatorAcknowledgments } = useAppState()
+ const [supervisorCalled, setSupervisorCalled] = useState(false)
+ const { taskAssignments, trainingPlans, trainingCompletions, flaggedItems, checklistSigned, nearMisses, operatorAcknowledgments, setOperatorAcknowledgments, logActivity } = useAppState()
  const dataCommitted = !!operatorAcknowledgments?.['dataCommitment']
 
  const op = OPERATORS.find(o => o.name === selected)
@@ -110,6 +114,10 @@ export default function OperatorView({ role }) {
  const myNearMisses = nearMisses.filter(n => n.station)
 
  return (
+ <>
+ {!dataCommitted && (
+  <DataCommitmentOverlay onAcknowledge={() => setOperatorAcknowledgments(p => ({ ...p, dataCommitment: true }))} />
+ )}
  <div className="flex flex-col h-full overflow-hidden content-reveal">
  <ActionBanner
  tone="muted"
@@ -117,7 +125,8 @@ export default function OperatorView({ role }) {
  body={`${op?.role} · Line 4 · April 16, 2026`}
  />
 
- {/* Operator selector */}
+ {/* Operator selector — director only */}
+ {!isOperatorRole ? (
  <div className="flex border-b border-rule2 bg-stone2 flex-shrink-0">
  {OPERATORS.map(o => (
  <button key={o.name}
@@ -133,10 +142,36 @@ export default function OperatorView({ role }) {
  </button>
  ))}
  </div>
-
- {!dataCommitted && (
-  <DataCommitmentBanner onAcknowledge={() => setOperatorAcknowledgments(p => ({ ...p, dataCommitment: true }))} />
+ ) : (
+ <div className="flex items-center gap-3 px-4 py-2.5 border-b border-rule2 bg-stone2 flex-shrink-0">
+  <PersonAvatar name={selected} size={28} />
+  <div>
+   <div className="font-body font-medium text-ink text-[13px]">{selected}</div>
+   <div className="font-body text-ghost text-[11px]">{op?.station}</div>
+  </div>
+ </div>
  )}
+
+ {/* Line risk + shift context bar */}
+ <div className="flex items-center gap-5 px-4 py-2.5 border-b border-rule2 bg-stone flex-shrink-0">
+  <div className="flex items-center gap-2">
+   <span className="font-body text-ghost text-[10px] uppercase tracking-widest">Line 4 risk</span>
+   <span className="display-num text-[22px] font-bold leading-none text-danger">78</span>
+   <span className="font-body text-[10px] px-1.5 py-px bg-danger/10 text-danger rounded-[3px]">AT RISK</span>
+  </div>
+  <div className="w-px h-5 bg-rule2 flex-shrink-0" />
+  <div className="flex items-center gap-1.5">
+   <Clock size={11} strokeWidth={2} className="text-ghost flex-shrink-0" />
+   <span className="font-body text-ghost text-[10px]">PM shift · 14:00–22:00 · 7h 58m remaining</span>
+  </div>
+ </div>
+
+ {/* Safety context — top priority, always first */}
+ <ActionBanner
+  tone="warn"
+  headline={`Safety requirements for ${op?.station} — review before starting`}
+  body={SAFETY_CONTEXT[selected]}
+ />
 
  <div className="flex flex-1 min-h-0 overflow-hidden">
  <div className="flex-1 overflow-y-auto">
@@ -158,17 +193,9 @@ export default function OperatorView({ role }) {
  </div>
  ))}
 
- {/* Safety context for today */}
- <div className="border-t border-rule2">
- <SecHd tag="Safety context" title={`${op?.station} — today's requirements`} badge={<Urg level="warn">Review before starting</Urg>} />
- <div className="px-4 py-4 border-b border-rule2 border-l-2 border-l-warn bg-warn/[0.02]">
- <div className="font-body text-ink2 text-[14px] leading-relaxed">
- {SAFETY_CONTEXT[selected]}
- </div>
- </div>
- <div className="px-4 py-3 font-body text-ghost text-[11px]">
- If you cannot complete a safety check, use the Flag button in ShiftIQ checklist — do not leave it unsigned without a reason.
- </div>
+ {/* Safety note */}
+ <div className="px-4 py-3 border-t border-rule2 font-body text-ghost text-[11px]">
+  If you cannot complete a safety check, use the Flag button in ShiftIQ checklist — do not leave it unsigned without a reason.
  </div>
 
  {/* Flagged items */}
@@ -252,6 +279,9 @@ export default function OperatorView({ role }) {
        mod.status === 'complete' ? 'text-ghost line-through' : mod.status === 'locked' ? 'text-ghost' : 'text-ink font-medium'
       }`}>{mod.label}</div>
       <div className="font-body text-ghost text-[10px] mt-0.5">{mod.hours}h</div>
+      {mod.status === 'locked' && mod.lockedReason && (
+       <div className="font-body text-ghost text-[10px] mt-0.5 italic">{mod.lockedReason}</div>
+      )}
      </div>
     </div>
    ))}
@@ -272,5 +302,29 @@ export default function OperatorView({ role }) {
  })()}
  </div>
  </div>
+
+ {/* Operator escalation FAB */}
+ <button
+  type="button"
+  onClick={() => {
+   if (!supervisorCalled) {
+    setSupervisorCalled(true)
+    logActivity({ actor: selected, action: 'Requested supervisor assistance', item: op?.station || 'Station', type: 'escalation' })
+   }
+  }}
+  className={`fixed bottom-6 right-6 z-20 flex items-center gap-2 px-4 py-2.5 min-h-[40px] font-body text-[12px] font-medium rounded-[3px] transition-colors duration-100 ${
+   supervisorCalled
+    ? 'bg-ok text-white shadow-[0_4px_20px_rgba(58,138,90,0.3)]'
+    : 'bg-danger text-white shadow-[0_4px_20px_rgba(196,56,32,0.35)] hover:bg-danger/90'
+  }`}
+  aria-label="Request supervisor assistance"
+ >
+  {supervisorCalled
+   ? <><Check size={14} />Supervisor notified</>
+   : <><AlertTriangle size={14} />I need my supervisor</>
+  }
+ </button>
+
+ </>
  )
 }
