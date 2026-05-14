@@ -124,11 +124,12 @@ function SectionLabel({ tone, label, sub }) {
 
 export default function SupplierIQ() {
   const d = supplierData
-  const { coaRequested, setCoaRequested, rfqSent, setRfqSent, readinessResolved } = useAppState()
+  const { coaRequested, setCoaRequested, rfqSent, setRfqSent, readinessResolved, resolvedConflicts, closedCases } = useAppState()
   const [exportState, setExportState] = useState('idle')
   const [coaViewLot, setCoaViewLot] = useState(null)
   const navigate = useNavigate()
-  const namingResolved = readinessResolved?.['conflict-0']
+  const namingResolved = readinessResolved?.['conflict-0'] || resolvedConflicts?.has?.(0)
+  const capaTs8811Closed = closedCases?.includes?.('c3')
 
   const handleExport = () => {
     setExportState('loading')
@@ -151,22 +152,29 @@ export default function SupplierIQ() {
           <span className="font-body text-ghost text-[11px]">days · Region 7 · Salina</span>
         </div>
         <div className="mx-4 mb-3 h-1 bg-rule2"><div className="h-full bg-warn" style={{ width: '62%' }} /></div>
-        {d.fdaSteps.map((s, i) => (
+        {d.fdaSteps.map((s, i) => {
+          const isTraceabilityStep = i === 2
+          const effectiveTone = isTraceabilityStep && namingResolved ? 'ok' : s.tone
+          const effectiveStatus = isTraceabilityStep && namingResolved ? 'Clear' : s.status
+          const effectiveStatusColor = isTraceabilityStep && namingResolved ? 'text-ok' : s.statusColor
+          const effectiveSub = isTraceabilityStep && namingResolved ? 'Naming conflicts resolved in Data Readiness' : s.sub
+          return (
           <div key={i} className="flex items-start gap-2.5 px-4 py-2.5 border-b border-rule2 last:border-b-0">
             <div className={`w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 ${
-              s.tone === 'ok' ? 'bg-ok/20' : s.tone === 'gap' ? 'bg-danger/20' : 'bg-stone3'
+              effectiveTone === 'ok' ? 'bg-ok/20' : effectiveTone === 'gap' ? 'bg-danger/20' : 'bg-stone3'
             }`}>
-              {s.tone === 'ok'   && <Check size={10} strokeWidth={2} className="text-ok" />}
-              {s.tone === 'gap'  && <X size={10} strokeWidth={2} className="text-danger" />}
-              {s.tone === 'pend' && <div className="w-1.5 h-1.5 rounded-full bg-ghost" />}
+              {effectiveTone === 'ok'   && <Check size={10} strokeWidth={2} className="text-ok" />}
+              {effectiveTone === 'gap'  && <X size={10} strokeWidth={2} className="text-danger" />}
+              {effectiveTone === 'pend' && <div className="w-1.5 h-1.5 rounded-full bg-ghost" />}
             </div>
             <div className="flex-1 min-w-0">
               <div className="font-body font-medium text-ink text-[11px]">{s.label}</div>
-              <div className="font-body text-ghost text-[10px]">{s.sub}</div>
+              <div className="font-body text-ghost text-[10px]">{effectiveSub}</div>
             </div>
-            <span className={`font-body font-semibold text-[10px] flex-shrink-0 ${s.statusColor}`}>{s.status}</span>
+            <span className={`font-body font-semibold text-[10px] flex-shrink-0 ${effectiveStatusColor}`}>{effectiveStatus}</span>
           </div>
-        ))}
+          )
+        })}
       </SP>
 
       <SP title="Open gaps" sub="3 active">
