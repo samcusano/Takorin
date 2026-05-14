@@ -6,7 +6,7 @@ import {
  Gauge,
  Building2, ChevronDown, Globe2,
  LayoutDashboard, MapPin, ShieldCheck, AlertTriangle,
- LayoutGrid, FileText,
+ LayoutGrid, BarChart2,
 } from 'lucide-react'
 import { useAppState, PLANTS } from '../context/AppState'
 import { commandData } from '../data'
@@ -21,7 +21,7 @@ const modules = [
 const foundation = [
  { id:'readiness', label:'Data Readiness', path:'/readiness', icon:Gauge, badge:'64', badgeType:'score' },
  { id:'network', label:'Network View', path:'/network', icon:Globe2, badge:null },
- { id:'digest', label:'Weekly Digest', path:'/digest', icon:FileText, badge:null },
+ { id:'analytics', label:'Analytics', path:'/analytics', icon:BarChart2, badge:null },
 ]
 
 function Badge({ badge, badgeType }) {
