@@ -34,7 +34,7 @@ function EmptyLine({ name }) {
  return (
  <div className="flex flex-col items-center justify-center h-full py-12 px-4">
  <div className="font-body text-ghost text-[12px] text-center leading-relaxed">
- No live data for {name}<br />Pilot limited to Line 4
+ No data for {name}<br />Pilot runs on Line 4 only
  </div>
  </div>
  )
@@ -43,7 +43,7 @@ function EmptyLine({ name }) {
 function ScoreBadge({ score }) {
  return (
   <span
-   className={`display-num text-3xl ${riskColorClass(score)}`}
+   className={`display-num text-[64px] leading-none ${riskColorClass(score)}`}
    aria-label={`Risk score ${score} — ${riskLabel(score)}`}
   >{score}</span>
  )
@@ -85,7 +85,7 @@ function AgentTimeline({ timeline, sparkline, score }) {
  )
 }
 
-const TONE_HEX = { danger: '#D94F2A', warn: '#C4920A', ok: '#3A8A5A' }
+const TONE_HEX = { danger: '#C43820', warn: '#C4920A', ok: '#3A8A5A' }
 function SignalCard({ sig }) {
  const c = TONE_HEX[sig.tone] ?? '#3A8A5A'
  return (
@@ -141,7 +141,7 @@ function OperatorPanel({ name, onClose, onSelectOperator }) {
  <>
  <div className="fixed inset-0 z-40 bg-ink/20" onClick={handleClose} />
  <div ref={panelRef} role="dialog" aria-modal="true" aria-label={`Operator profile — ${name}`} className={`fixed right-0 top-0 bottom-0 z-50 w-[340px] bg-stone border-l border-rule2 flex flex-col overflow-hidden ${exiting ? 'slide-right-out' : 'slide-right'}`}>
- <div className="flex items-center gap-3 px-4 py-3 border-b border-rule2 bg-stone2 flex-shrink-0" style={{ borderTop:'3px solid #D94F2A' }}>
+ <div className="flex items-center gap-3 px-4 py-3 border-b border-rule2 bg-stone2 flex-shrink-0" style={{ borderTop:'3px solid #C43820' }}>
  <PersonAvatar name={name} size={32} />
  <div className="flex-1 min-w-0">
  <div className="font-body font-medium text-ink text-[13px]">{name}</div>
@@ -203,7 +203,7 @@ function OperatorPanel({ name, onClose, onSelectOperator }) {
  <div className="px-4 py-2 border-b border-rule2 bg-stone2 font-body text-muted text-[10px]">Certification progress</div>
  <div className="px-4 py-3">
  <div className="font-body text-ghost text-[10px] mb-2">{meta.certLabel}</div>
- <div style={{ height:5, background:'#D8D2C8', marginBottom:8 }}>
+ <div style={{ height:5, background:'#CAC2B6', marginBottom:8 }}>
  <div style={{ height:'100%', width:`${meta.certPct}%`, background:certC, transition:'width 500ms cubic-bezier(0.19,0.91,0.38,1)' }} />
  </div>
  <span className="display-num text-xl" style={{ color: certC }}>{meta.certPct}%</span>

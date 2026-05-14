@@ -114,19 +114,19 @@ function LineCard({ line, meta, shiftActed, onClick }) {
       aria-label={`${line.name} — risk score ${line.score} — ${zone}`}
     >
       {/* Top accent bar */}
-      <div className={`h-0.5 w-full ${isAtRisk ? 'bg-danger' : isWatch ? 'bg-warn' : 'bg-ok'}`} />
+      <div className={`h-1 w-full ${isAtRisk ? 'bg-danger' : isWatch ? 'bg-warn' : 'bg-ok'}`} />
 
-      <div className="p-5 flex flex-col gap-4 flex-1">
+      <div className="p-6 flex flex-col gap-5 flex-1">
         {/* Header row */}
         <div className="flex items-start justify-between">
           <div>
-            <div className="font-display font-bold text-ink text-[16px] leading-none">{line.name}</div>
+            <div className="font-display font-bold text-ink text-[20px] leading-none">{line.name}</div>
             <div className="font-body text-ghost text-[11px] mt-1">{meta.shiftLabel}</div>
           </div>
           <div className="flex items-center gap-2">
             <MiniSparkline data={meta.sparkline} color={sparkColor} />
             <div className="text-right">
-              <div className={`display-num text-3xl leading-none font-bold ${scoreColor}`}>{line.score}</div>
+              <div className={`display-num text-[52px] leading-none ${scoreColor}`}>{line.score}</div>
               <div className={`font-body text-[9px] uppercase tracking-widest mt-0.5 ${scoreColor}`}>{zone}</div>
             </div>
           </div>
@@ -139,7 +139,7 @@ function LineCard({ line, meta, shiftActed, onClick }) {
               {topFinding.title}
             </p>
           ) : (
-            <p className="font-body text-[12px] text-ghost leading-snug">No active findings — shift running clean</p>
+            <p className="font-body text-[12px] text-ghost leading-snug">Running clean — no findings</p>
           )}
         </div>
 
@@ -179,13 +179,13 @@ export default function PlantOverview() {
   return (
     <div className="flex flex-col h-full overflow-hidden content-reveal">
       {/* Header bar */}
-      <div className={`flex items-center justify-between px-5 py-3 border-b border-rule2 flex-shrink-0 ${
-        critCount > 0 ? 'bg-danger/[0.04]' : watchCount > 0 ? 'bg-warn/[0.03]' : 'bg-stone2'
+      <div className={`flex items-center justify-between px-6 py-4 border-b-2 flex-shrink-0 ${
+        critCount > 0 ? 'bg-danger/[0.08] border-b-danger' : watchCount > 0 ? 'bg-warn/[0.08] border-b-warn' : 'bg-stone2 border-b-rule2'
       }`}>
         <div>
           <div className="flex items-center gap-2.5">
             <Activity size={14} strokeWidth={1.75} className={critCount > 0 ? 'text-danger' : watchCount > 0 ? 'text-warn' : 'text-ok'} />
-            <span className="font-display font-bold text-ink text-[15px]">{currentPlant?.name || facility.name}</span>
+            <span className="font-display font-bold text-ink text-[18px]">{currentPlant?.name || facility.name}</span>
             <span className="font-body text-ghost text-[11px]">· April 16, 2026 · AM shift</span>
           </div>
           <div className="flex items-center gap-3 mt-1.5">
@@ -216,8 +216,8 @@ export default function PlantOverview() {
       </div>
 
       {/* Card grid */}
-      <div className="flex-1 overflow-y-auto p-5">
-        <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))' }}>
+      <div className="flex-1 overflow-y-auto p-6">
+        <div className="grid gap-5" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))' }}>
           {lines.map(line => (
             <LineCard
               key={line.id}
@@ -242,7 +242,7 @@ export default function PlantOverview() {
               {label} · {range}
             </span>
           ))}
-          <span className="ml-auto font-body text-ghost text-[10px]">Click any card to open ShiftIQ for that line</span>
+          <span className="ml-auto font-body text-ghost text-[10px]">Select a line to open ShiftIQ</span>
         </div>
       </div>
     </div>

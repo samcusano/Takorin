@@ -13,7 +13,7 @@ const WEEK_OEE = [
   { day: 'Today Apr 16', line4: 81, line6: null, line3: null, line2: null },
 ]
 
-const LINE_COLORS = { line4: '#D94F2A', line6: '#3A8A5A', line3: '#C4920A', line2: '#3A7FD4' }
+const LINE_COLORS = { line4: '#C43820', line6: '#3A8A5A', line3: '#C4920A', line2: '#3A7FD4' }
 const LINE_LABELS = { line4: 'Line 4', line6: 'Line 6', line3: 'Line 3', line2: 'Line 2' }
 
 function OEESparkline() {
@@ -34,7 +34,7 @@ function OEESparkline() {
           const y = pad + chartH - ((v - minV) / (maxV - minV)) * chartH
           return (
             <g key={v}>
-              <line x1={pad} x2={w - pad} y1={y} y2={y} stroke="#D8D2C8" strokeWidth="0.5" strokeDasharray="3,3" />
+              <line x1={pad} x2={w - pad} y1={y} y2={y} stroke="#CAC2B6" strokeWidth="0.5" strokeDasharray="3,3" />
               <text x={pad - 2} y={y + 3} fontSize="8" fill="#A8A098" textAnchor="end">{v}</text>
             </g>
           )

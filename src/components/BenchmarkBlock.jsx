@@ -15,7 +15,7 @@ export default function BenchmarkBlock({ metric, rank, total, score, delta, delt
  <div className="flex items-baseline gap-2 px-4 pb-2">
  <span
  className="font-display text-3xl font-bold tracking-tight leading-none"
- style={{ color: percentile >= 60 ? '#3A8A5A' : percentile >= 40 ? '#C4920A' : '#D94F2A' }}
+ style={{ color: percentile >= 60 ? '#3A8A5A' : percentile >= 40 ? '#C4920A' : '#C43820' }}
  >
  {score}
  </span>
@@ -28,7 +28,7 @@ export default function BenchmarkBlock({ metric, rank, total, score, delta, delt
 
  <div className="flex items-center gap-2 px-4 pb-3">
  <div className="flex-1 h-2 relative" style={{
- background: 'linear-gradient(to right, #D94F2A, #C4920A, #8A6A3A, #3A8A5A)'
+ background: 'linear-gradient(to right, #C43820, #C4920A, #8A6A3A, #3A8A5A)'
  }}>
  <div
  className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-4 h-4 rounded-full bg-ink border-2 border-stone shadow-sm"
@@ -56,7 +56,7 @@ export default function BenchmarkBlock({ metric, rank, total, score, delta, delt
  {zones && (
  <div className="px-4 py-2.5 border-t border-rule">
  <div className="h-1.5 relative mb-2" style={{
- background: `linear-gradient(to right, #D94F2A 0%, #D94F2A ${zones[0].pct}%, #C4920A ${zones[0].pct}%, #8A6A3A ${zones[1].pct}%, #3A8A5A ${zones[1].pct}%, #3A8A5A 100%)`
+ background: `linear-gradient(to right, #C43820 0%, #C43820 ${zones[0].pct}%, #C4920A ${zones[0].pct}%, #8A6A3A ${zones[1].pct}%, #3A8A5A ${zones[1].pct}%, #3A8A5A 100%)`
  }}>
  {zones.map((z, i) => z.mark && (
  <div key={i} className="absolute top-1/2 -translate-y-1/2 w-px h-3 bg-ink" style={{ left: `${z.mark}%` }} />

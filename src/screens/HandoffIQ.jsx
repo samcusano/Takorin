@@ -47,10 +47,10 @@ function LayoutGrid({ d, signed, setSigned, currentPlant, carryForwardItems, ack
    {!signed && (
     <ActionBanner
      tone="ok"
-     headline={`Shift handoff awaiting outgoing signature — ${currentPlant?.name || 'Salina Campus'} · Line 4`}
+     headline="Kowalski needs to sign before Santos can accept the shift"
      body="D. Kowalski signing off · Incoming: M. Santos · April 16, 14:02"
     >
-     <Btn variant="secondary" onClick={() => setSigned(true)}>Sign handoff — Kowalski</Btn>
+     <Btn variant="secondary" onClick={() => setSigned(true)}>Sign off — Kowalski</Btn>
     </ActionBanner>
    )}
    {signed && allAcknowledged && (
