@@ -6,6 +6,7 @@ const Ctx = createContext(null)
 export const PLANTS = {
  sl: { id:'sl', name:'Salina Campus', code:'SL-04', region:'Salina, KS',  director:'J. Crocker',  readinessScore:64, complianceState:'blocked' },
  ks: { id:'ks', name:'Wichita Plant', code:'KS-09', region:'Wichita, KS', director:'T. Okonkwo',  readinessScore:88, complianceState:'clear'   },
+ co: { id:'co', name:'Denver Plant',  code:'CO-07', region:'Denver, CO',   director:'M. Rodriguez', readinessScore:92, complianceState:'clear'  },
 }
 
 export function AppStateProvider({ children }) {

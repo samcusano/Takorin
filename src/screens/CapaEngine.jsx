@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useFocusTrap, useExitAnimation } from '../lib/utils'
-import { FileText, BarChart2, ShieldCheck, Clock, Brain } from 'lucide-react'
+import { FileText, BarChart2, ShieldCheck, Clock, Brain, Search } from 'lucide-react'
 import StatBar from '../components/StatBar.jsx'
 import { Check, X, AlertTriangle, ArrowRight, TrendingUp, ChevronRight } from 'lucide-react'
 import { Urg, SecHd, SP, ActionBanner, Btn, Chip, HoldButton } from '../components/UI'
@@ -173,31 +173,38 @@ function PriorityQueueRow({ c, isSelected, onSelect, isEscalated, isResolved }) 
  return (
  <button type="button" onClick={onSelect}
  className={`w-full text-left border-b border-rule2 border-l-2 transition-colors ${borderColor} ${rowBg} ${isResolved || isEscalated ? 'opacity-50' : 'hover:bg-stone3'}`}>
- <div className="flex gap-3 px-4 py-3">
+ <div className="flex items-start gap-3 px-4 py-3">
  <div className="flex-1 min-w-0">
- <div className="flex items-center gap-1.5 mb-0.5 flex-wrap">
- <Chip tone={isEscalated ? 'muted' : isResolved ? 'ok' : c.badgeColor === 'text-danger' ? 'danger' : c.badgeColor === 'text-ok' ? 'ok' : 'warn'}>
- {isEscalated ? 'Delegated' : isResolved ? 'Resolved' : c.badge}
- </Chip>
- <span className="font-body text-ghost text-[10px]">{c.capaId}</span>
+  <div className="flex items-center gap-1.5 mb-0.5 flex-wrap">
+  <Chip tone={isEscalated ? 'muted' : isResolved ? 'ok' : c.badgeColor === 'text-danger' ? 'danger' : c.badgeColor === 'text-ok' ? 'ok' : 'warn'}>
+   {isEscalated ? 'Delegated' : isResolved ? 'Resolved' : c.badge}
+  </Chip>
+  <span className="font-body text-ghost text-[10px]">{c.capaId}</span>
+  </div>
+  <div className={`font-body font-medium text-[11px] leading-snug truncate ${isResolved || isEscalated ? 'text-muted' : 'text-ink'}`}>
+  {c.title}
+  </div>
+  {c.due && !isResolved && !isEscalated && (
+  <div className={`font-body text-[10px] mt-0.5 leading-snug ${c.dueColor || 'text-muted'}`}>
+   {shiftRelativeDue(c.due)}
+  </div>
+  )}
+  {c.priorityReason && !isResolved && !isEscalated && (
+  <div className="font-body text-[10px] mt-0.5 leading-snug text-ghost">
+   {c.priorityReason}
+  </div>
+  )}
+  {isEscalated && (
+  <div className="font-body text-[10px] mt-0.5 text-ghost">Delegated — moved to bottom</div>
+  )}
  </div>
- <div className={`font-body font-medium text-[11px] leading-snug truncate ${isResolved || isEscalated ? 'text-muted' : 'text-ink'}`}>
- {c.title}
- </div>
- {c.due && !isResolved && !isEscalated && (
- <div className={`font-body text-[10px] mt-0.5 leading-snug ${c.dueColor || 'text-muted'}`}>
- {shiftRelativeDue(c.due)}
- </div>
+ {score > 0 && !isResolved && !isEscalated && (
+  <div className={`display-num text-[13px] font-bold flex-shrink-0 tabular-nums ${
+   score >= 80 ? 'text-danger/50' : score >= 55 ? 'text-warn/50' : 'text-ghost/40'
+  }`}>
+   {score}
+  </div>
  )}
- {c.priorityReason && !isResolved && !isEscalated && (
- <div className="font-body text-[10px] mt-0.5 leading-snug text-muted">
- {c.priorityReason}
- </div>
- )}
- {isEscalated && (
- <div className="font-body text-[10px] mt-0.5 text-ghost">Delegated — moved to bottom</div>
- )}
- </div>
  </div>
  </button>
  )
@@ -307,8 +314,8 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
  <div className="flex-1 overflow-y-auto">
  {/* ── Recommended action (the operative section) ── */}
  {!isClosed && !actionTaken && (
- <div className="px-4 py-5 border-b border-rule2 bg-stone3">
- <div className="font-body text-muted text-[10px] mb-3">
+ <div className={`px-4 py-5 border-b border-rule2 border-l-2 ${isBlocking ? 'border-l-danger bg-danger/[0.02]' : c.type === 'ca' ? 'border-l-ok bg-ok/[0.015]' : 'border-l-warn bg-stone2'}`}>
+ <div className="font-body text-ghost text-[10px] uppercase tracking-widest mb-3">
  Recommended action
  </div>
 
@@ -317,19 +324,19 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
  <div className="grid grid-cols-2 gap-4 mb-4">
  {c.expectedImpact && (
  <div className="flex items-start gap-2">
-  <Check size={13} strokeWidth={2} className="text-ok flex-shrink-0 mt-0.5" />
+  <Check size={12} strokeWidth={2} className="text-ok flex-shrink-0 mt-0.5" />
   <div>
-   <div className="font-body text-muted text-[10px] mb-1">If you act</div>
-   <div className="font-body text-ink text-[11px] leading-relaxed">{c.expectedImpact}</div>
+   <div className="font-body text-ghost text-[10px] mb-1">If you act</div>
+   <div className="font-body text-ink text-[12px] leading-snug">{c.expectedImpact}</div>
   </div>
  </div>
  )}
  {c.riskIfIgnored && (
  <div className="flex items-start gap-2">
-  <X size={13} strokeWidth={2} className="text-danger flex-shrink-0 mt-0.5" />
+  <X size={12} strokeWidth={2} className="text-danger flex-shrink-0 mt-0.5" />
   <div>
-   <div className="font-body text-muted text-[10px] mb-1">If you delay</div>
-   <div className="font-body text-ink text-[11px] leading-relaxed">{c.riskIfIgnored}</div>
+   <div className="font-body text-ghost text-[10px] mb-1">If you delay</div>
+   <div className="font-body text-ink text-[12px] leading-snug">{c.riskIfIgnored}</div>
   </div>
  </div>
  )}
@@ -491,9 +498,10 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
  )
 }
 
-function LayoutQueue({ visibleCases, blockingEvidenceUploaded, setBlockingEvidenceUploaded, onShowBlockingCase }) {
+function LayoutQueue({ visibleCases, blockingEvidenceUploaded, setBlockingEvidenceUploaded }) {
  const { closedCases, setClosedCases, closureRecords, setClosureRecords, logActivity } = useAppState()
  const [escalatedIds, setEscalatedIds] = useState(new Set())
+ const [searchQuery, setSearchQuery] = useState('')
 
  // Build sorted queue: blocking case first (score 95), then cases by priorityScore, escalated to bottom
  const baseItems = [
@@ -507,6 +515,14 @@ function LayoutQueue({ visibleCases, blockingEvidenceUploaded, setBlockingEviden
  .map(id => baseItems.find(c => c.id === id))
  .filter(Boolean)
  const sortedQueue = [...nonEscalated, ...escalatedItems]
+
+ const filteredQueue = searchQuery
+  ? sortedQueue.filter(c =>
+     c.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+     (c.capaId || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+     (c.assigned || '').toLowerCase().includes(searchQuery.toLowerCase())
+    )
+  : sortedQueue
 
  const [selectedId, setSelectedId] = useState(sortedQueue[0]?.id || null)
 
@@ -551,6 +567,26 @@ function LayoutQueue({ visibleCases, blockingEvidenceUploaded, setBlockingEviden
  {/* Left: priority queue */}
  <div className="w-[300px] flex-shrink-0 border-r border-rule2 overflow-y-auto flex flex-col bg-stone">
 
+ {/* Search */}
+ <div className="px-3 py-2 border-b border-rule2 flex-shrink-0">
+  <div className="flex items-center gap-2 bg-stone2 px-2 py-1.5 border border-rule2">
+   <Search size={11} strokeWidth={2} className="text-ghost flex-shrink-0" />
+   <input
+    type="text"
+    value={searchQuery}
+    onChange={e => setSearchQuery(e.target.value)}
+    placeholder="Search cases…"
+    aria-label="Search CAPA cases"
+    className="flex-1 font-body text-[11px] text-ink bg-transparent outline-none placeholder:text-ghost"
+   />
+   {searchQuery && (
+    <button type="button" onClick={() => setSearchQuery('')} aria-label="Clear search" className="text-ghost hover:text-muted transition-colors">
+     <X size={10} strokeWidth={2} />
+    </button>
+   )}
+  </div>
+ </div>
+
  {/* Model ranking signal */}
  <div className="px-4 py-2.5 border-b border-rule2 bg-stone2 flex items-center gap-2 flex-shrink-0">
   <Brain size={10} strokeWidth={1.75} className="text-ghost flex-shrink-0" />
@@ -560,7 +596,7 @@ function LayoutQueue({ visibleCases, blockingEvidenceUploaded, setBlockingEviden
  </div>
 
  {/* Ranked items */}
- {sortedQueue.map((c) => (
+ {(searchQuery ? filteredQueue : sortedQueue).map((c) => (
  <PriorityQueueRow
  key={c.id}
  c={c}
@@ -578,6 +614,9 @@ function LayoutQueue({ visibleCases, blockingEvidenceUploaded, setBlockingEviden
  <div className="font-body text-ghost text-[11px]">No open cases.</div>
  </div>
  </div>
+ )}
+ {sortedQueue.length > 0 && searchQuery && filteredQueue.length === 0 && (
+ <div className="px-4 py-8 text-center font-body text-ghost text-[11px]">No cases match "{searchQuery}"</div>
  )}
  </div>
 
@@ -611,99 +650,14 @@ function LayoutQueue({ visibleCases, blockingEvidenceUploaded, setBlockingEviden
  )
 }
 
-function QueueItem({ item, priority, onSelectCase, onShowBlockingCase, blockingEvidenceUploaded, setBlockingEvidenceUploaded }) {
- const { closedCases, setClosedCases, logActivity } = useAppState()
- const [escalated, setEscalated] = useState(false)
- const [confirming, setConfirming] = useState(false)
- const blockingFileRef = useRef(null)
-
- const isOverdue = item.badge === 'Overdue'
- const isAwaiting = item.type === 'ca'
- const isBlocking = item.id === 'blocking'
- const isActionable = isOverdue || isAwaiting || isBlocking
-
- const numColor = isOverdue||isBlocking ? 'text-danger' : isAwaiting ? 'text-warn' : 'text-ghost'
- const leftBorder = isOverdue||isBlocking ? 'border-l-danger' : isAwaiting ? 'border-l-warn' : 'border-l-rule2'
- const rowBg = isOverdue||isBlocking ? 'bg-danger/[0.015]' : isAwaiting ? 'bg-warn/[0.015]' : ''
-
- if (!isBlocking && closedCases.includes(item.id)) return null
-
- return (
- <div className={`flex gap-5 px-4 py-5 border-b border-rule2 border-l-2 ${leftBorder} ${rowBg}`}>
- <div className={`display-num text-2xl flex-shrink-0 w-8 text-right leading-none pt-0.5 ${numColor}`}>
- {String(priority).padStart(2,'0')}
- </div>
- <div className="flex-1 min-w-0">
- <div className="flex items-center gap-2 mb-1.5 flex-wrap">
- <span className={`font-body font-medium text-[10px] px-1.5 py-px rounded-[3px] ${item.badgeColor} ${BADGE_BG[item.badgeColor]||'bg-warn/10'}`}>{item.badge}</span>
- <span className="font-body text-ghost text-[10px]">{item.capaId}</span>
- {item.rootCause && <span className="font-body text-ghost text-[10px]">· {item.rootCause.split(' — ')[0]}</span>}
- {item.shiftFindingId && (
-  <Link to="/shift" className="font-body text-int text-[10px] flex items-center gap-0.5 hover:text-ink transition-colors">
-   <ArrowRight size={9} />View in ShiftIQ
-  </Link>
- )}
- </div>
- <div
- className={`font-body font-medium text-[13px] leading-snug mb-1 ${isActionable?'text-ink':'text-ink2'} ${!isBlocking?'cursor-pointer hover:text-ochre transition-colors':''}`}
- onClick={() => !isBlocking && onSelectCase(item)}
- >
- {item.title}
- </div>
- <div className="font-body text-muted text-[11px] mb-3">
- {item.assigned && <span>{item.assigned} · </span>}
- <span className={item.dueColor||'text-muted'}>{shiftRelativeDue(item.due)}</span>
- {item.description && <span className="text-ghost"> · {item.description.split('.')[0]}.</span>}
- </div>
- <div className="flex gap-2 flex-wrap items-center">
- {isBlocking ? (
- <>
- <input ref={blockingFileRef} type="file" className="hidden"
- onChange={() => { setBlockingEvidenceUploaded(true); logActivity({actor:'J. Crocker',action:'Uploaded evidence for CAPA-2604-006',item:'CAPA-2604-006',type:'evidence'}) }} />
- <Btn variant="primary" onClick={() => blockingFileRef.current?.click()}>Upload evidence</Btn>
- <button type="button" onClick={onShowBlockingCase} className="flex items-center gap-1 font-body text-[11px] px-3 py-1.5 text-muted hover:text-ink transition-colors">View case <ArrowRight size={10} /></button>
- </>
- ) : isAwaiting ? (
- confirming ? (
- <>
- <span className="font-body text-ink2 text-[10px]">Close {item.capaId}?</span>
- <Btn variant="secondary" onClick={()=>setConfirming(false)}>Cancel</Btn>
- <Btn variant="primary" onClick={()=>{setClosedCases(p=>[...p,item.id]);logActivity({actor:'J. Crocker',action:`Approved and closed ${item.capaId}`,item:item.capaId,type:'capa'});setConfirming(false)}}>Confirm close</Btn>
- </>
- ) : (
- <>
- <Btn variant="primary" onClick={()=>setConfirming(true)}>Approve & close</Btn>
- <Btn variant="secondary">Return</Btn>
- <button type="button" onClick={()=>onSelectCase(item)} className="font-body text-[11px] px-2 py-1 text-muted hover:text-ink transition-colors">View {item.evidenceFiles.length} files</button>
- </>
- )
- ) : (
- <>
- {escalated
- ? <span className="font-body text-ok text-[11px]">Escalated to director ✓</span>
- : <Btn variant="primary" onClick={()=>setEscalated(true)}>{item.primaryLabel}</Btn>
- }
- <button type="button" onClick={()=>onSelectCase(item)} className="flex items-center gap-1 font-body text-[11px] px-3 py-1.5 text-muted hover:text-ink transition-colors">Open case file <ArrowRight size={10} /></button>
- </>
- )}
- </div>
- </div>
- </div>
- )
-}
-
 // ── Main screen ───────────────────────────────────────────────────────────────
 
 export default function CapaEngine() {
- const { closedCases, setClosedCases, blockingEvidenceUploaded, setBlockingEvidenceUploaded, activityLog, logActivity } = useAppState()
- const blockingFileRef = useRef(null)
- const [selectedCase, setSelectedCase] = useState(null)
- const [exportClicked, setExportClicked] = useState(false)
+ const { closedCases, setClosedCases, blockingEvidenceUploaded, setBlockingEvidenceUploaded, logActivity } = useAppState()
  const [escalated, setEscalated] = useState(false)
  const [showReassign, setShowReassign] = useState(false)
  const [reassignTarget, setReassignTarget] = useState('')
  const [reassignDone, setReassignDone] = useState(false)
- const [showBlockingCase, setShowBlockingCase] = useState(false)
  const visibleCases = openCases.filter(c => !closedCases.includes(c.id))
  const openCount = visibleCases.length
  const awaitingCount = visibleCases.filter(c => c.type === 'ca').length
@@ -720,31 +674,8 @@ export default function CapaEngine() {
  { type:'so', label:'Closed this quarter', value: String(closedCount), sub:'All evidence-gated', pct:100 },
  ]
 
- const sharedProps = {
- visibleCases,
- blockingEvidenceUploaded,
- setBlockingEvidenceUploaded,
- onSelectCase: setSelectedCase,
- onShowBlockingCase: () => setShowBlockingCase(true),
- }
-
  return (
  <div className="flex flex-col h-full overflow-hidden content-reveal">
- {/* Shared slide-over panels */}
- <CaseDetailPanel caseData={selectedCase} onClose={() => setSelectedCase(null)} />
- {showBlockingCase && (
- <CaseDetailPanel
- caseData={{
- capaId:'CAPA-2604-006', title:'Pack Line QA pre-check — evidence missing',
- badge:'Incomplete', badgeColor:'text-danger', assigned:'QA Tech T. Osei',
- due:'Apr 16 — today', dueColor:'text-danger', source:'Manual — QA audit',
- rootCauseTags:['Documentation','QA process'], regulatory:['GMP 21 CFR 110','FSMA 204'],
- evidenceFiles:[],
- activity:[{ time:'Apr 16 · 09:00', text:'Case created. Pack Line QA pre-check log missing for this shift.' }],
- }}
- onClose={() => setShowBlockingCase(false)}
- />
- )}
 
  {/* Shared banner */}
  <ActionBanner
@@ -774,27 +705,11 @@ export default function CapaEngine() {
 
  <StatBar cells={statCells} />
 
- {/* Evidence blocker banner */}
- {!blockingEvidenceUploaded && (
- <div className="flex items-center gap-3 px-4 py-2.5 bg-danger/10 border-b border-danger/30 flex-shrink-0">
- <AlertTriangle size={16} strokeWidth={2} className="text-danger flex-shrink-0" />
- <div className="flex-1 min-w-0">
- <div className="font-body text-[12px] font-medium text-ink">CAPA-2604-006 missing evidence — FDA audit export blocked</div>
- <div className="font-body text-muted text-[10px] mt-0.5">Pack Line QA pre-check log has no attached file. Upload to unblock the FSMA 204 audit package.</div>
- </div>
- <input ref={blockingFileRef} type="file" className="hidden"
- onChange={() => { setBlockingEvidenceUploaded(true); logActivity({actor:'J. Crocker',action:'Uploaded evidence for CAPA-2604-006',item:'CAPA-2604-006',type:'evidence'}) }} />
- <Btn variant="primary" className="flex-shrink-0" onClick={() => blockingFileRef.current?.click()}>Upload evidence</Btn>
- </div>
- )}
- {blockingEvidenceUploaded && (
- <div className="flex items-center gap-2 px-4 py-2.5 bg-ok/10 border-b border-ok/20 font-body text-ok text-[11px] slide-in flex-shrink-0">
- <Check size={12} strokeWidth={2} className="text-ok flex-shrink-0" />
- CAPA-2604-006 evidence uploaded · FDA audit package unblocked · Export now available
- </div>
- )}
-
- <LayoutQueue {...sharedProps} />
+ <LayoutQueue
+  visibleCases={visibleCases}
+  blockingEvidenceUploaded={blockingEvidenceUploaded}
+  setBlockingEvidenceUploaded={setBlockingEvidenceUploaded}
+ />
  </div>
  )
 }

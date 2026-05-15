@@ -1,78 +1,120 @@
-import { useState, useRef } from 'react'
-import { useFocusTrap, useExitAnimation } from '../lib/utils'
-import { Check, X, AlertTriangle, Clock, ArrowRight, History, AlertCircle, Eye, Wheat, Soup, Milk, Beef, Droplets, Truck, ShieldCheck, ClipboardCheck, Brain, ChevronDown, ChevronUp } from 'lucide-react'
+import { useState } from 'react'
+import { Check, X, AlertTriangle, Clock, ArrowRight, History, AlertCircle, Eye, Wheat, Soup, Milk, Beef, Droplets, Truck, ShieldCheck, ClipboardCheck } from 'lucide-react'
 
-const SUPPLIER_RISK_FACTORS = [
-  { label: 'COA missing — Lot TS-8811', penalty: 'blocking', tone: 'danger', state: 'Production start held · ConAgra has not responded', confidence: 'high', source: 'SupplierIQ · direct' },
-  { label: 'FDA inspection in 18 days', penalty: 'time pressure', tone: 'danger', state: 'Traceability submission incomplete — FSMA 204 naming conflict at CTE 2', confidence: 'high', source: 'Regulatory calendar · direct' },
-  { label: 'ConAgra reliability — 22nd percentile', penalty: 'risk signal', tone: 'danger', state: '3 non-conformances in last 30 days across 14 plants', confidence: 'high', source: 'Network intelligence · 14 plants' },
-  { label: '2 lots expiring within 14 days', penalty: 'shelf risk', tone: 'warn', state: 'Mozzarella and Canola oil approaching end of shelf life', confidence: 'medium', source: 'Lot tracking · direct' },
-  { label: 'Price alerts — 2 contracts', penalty: 'advisory', tone: 'warn', state: 'Tomato sauce +14% · ConAgra renewal May 12', confidence: 'medium', source: 'Contract management · direct' },
-]
 
-const CONF_DOT_S = { high: 'bg-ok', medium: 'bg-warn', low: 'bg-ghost' }
-const CONF_LABEL_S = { high: 'High confidence', medium: 'Medium confidence', low: 'Low confidence' }
 import { useNavigate, Link } from 'react-router-dom'
 import { supplierData, supplierAudits, empResultsHistory } from '../data'
 import { useAppState } from '../context/AppState'
-import { Urg, StatCell, SP, SecHd, Btn, Chip, Layout, ActionBanner, ScoreRing, Spinner, AnimatedCheck, MetadataRow, ExpandableMetadata, ActionCard, StatusIndicator } from '../components/UI'
+import { Urg, SP, SecHd, Btn, Chip, Layout, ActionBanner, ScoreRing, Spinner, AnimatedCheck, MetadataRow, ExpandableMetadata, ActionCard, StatusIndicator, SlidePanel } from '../components/UI'
+import StatBar from '../components/StatBar.jsx'
 
 // ── CoaPanel ──────────────────────────────────────────────────────────────────
 
-function CoaPanel({ lot, onClose }) {
-  const panelRef = useRef(null)
-  const { exiting, exit } = useExitAnimation(200)
-  useFocusTrap(panelRef, !!lot)
-  if (!lot) return null
-  const handleClose = () => exit(onClose)
-  const coaPass = lot.coaTone === 'ok'
-  return (
-    <>
-      <div className="fixed inset-0 bg-ink/20 z-40" onClick={handleClose} />
-      <aside ref={panelRef} role="dialog" aria-modal="true" aria-label="Certificate of Analysis" className={`fixed top-0 right-0 bottom-0 w-full max-w-[400px] bg-stone border-l border-rule2 z-50 flex flex-col ${exiting ? 'slide-right-out' : 'slide-right'}`}>
-        <div className="flex items-start justify-between px-5 py-4 border-b border-rule2 bg-stone2 flex-shrink-0">
-          <div className="flex items-center gap-3">
-            {FOOD_ICONS[lot.ing] && (() => {
-              const IngIcon = FOOD_ICONS[lot.ing]
-              return <IngIcon size={28} strokeWidth={1.5} className="text-ochre flex-shrink-0" aria-hidden="true" />
-            })()}
-            <div>
-              <div className="font-body text-ghost text-[10px] mb-1">Certificate of Analysis</div>
-              <div className="font-display font-bold text-ink text-base">{lot.ing}</div>
-            </div>
-          </div>
-          <button type="button" onClick={handleClose} aria-label="Close COA panel" className="p-1 text-ghost hover:text-ink transition-colors duration-100 ease-standard cursor-pointer">
-            <X size={14} strokeWidth={2} aria-hidden="true" />
-          </button>
-        </div>
-        <div className="flex-1 overflow-y-auto p-5">
-          {/* Lot Profile */}
-          <div className="mb-6">
-            <div className="font-body font-medium text-ink text-[13px] mb-3">Lot Profile</div>
-            <div className="space-y-1">
-              <MetadataRow icon={Soup} label="Ingredient" value={lot.ing} tone="ink" />
-              <MetadataRow icon={AlertTriangle} label="Supplier & Lot" value={lot.supplier} sub={`Lot ${lot.delivery}`} tone="muted" />
-              <MetadataRow icon={Clock} label="Purchase Order" value={lot.po} tone="muted" />
-              <MetadataRow icon={Check} label="COA Status" value={lot.coa} tone={coaPass ? 'ok' : 'danger'} />
-              <MetadataRow icon={AlertCircle} label="Shelf Life" value={`${lot.shelf} days remaining`} tone={lot.shelfTone} />
-            </div>
-          </div>
+const LAB_RESULTS_PASS = [
+  { label: 'Microbial count', value: '< 100 CFU/g' },
+  { label: 'pH level',        value: '4.2'          },
+  { label: 'Moisture',        value: '12.4%'        },
+  { label: 'Certification',   value: 'SQF Level 2'  },
+]
 
-          {/* Lab Results */}
-          <ExpandableMetadata title="Lab Results" defaultOpen={true} tone="muted">
-            <div className="space-y-2">
-              <MetadataRow label="Test Date" value={coaPass ? 'Apr 12, 2026' : 'Pending receipt'} tone={coaPass ? 'ok' : 'warn'} details={<StatusIndicator status={coaPass ? 'complete' : 'pending'} tone={coaPass ? 'ok' : 'warn'} />} />
-              <MetadataRow label="Microbial Count" value={coaPass ? '< 100 CFU/g' : 'Not tested'} tone={coaPass ? 'ok' : 'muted'} details={coaPass ? '✓' : ''} />
-              <MetadataRow label="pH Level" value={coaPass ? '4.2' : 'Not tested'} tone={coaPass ? 'ok' : 'muted'} details={coaPass ? '✓' : ''} />
-              <MetadataRow label="Moisture %" value={coaPass ? '12.4%' : 'Not tested'} tone={coaPass ? 'ok' : 'muted'} details={coaPass ? '✓' : ''} />
+const LAB_RESULTS_PENDING = [
+  'Microbial count',
+  'pH level',
+  'Moisture %',
+  'Test certification',
+]
+
+function CoaPanel({ lot, onClose }) {
+  if (!lot) return null
+  const coaPass   = lot.coaTone === 'ok'
+  const shelfPct  = Math.min(100, Math.round((lot.shelf / 45) * 100))
+  const shelfColor = lot.shelfTone === 'ok' ? 'bg-ok' : lot.shelfTone === 'warn' ? 'bg-warn' : 'bg-danger'
+  const shelfText  = lot.shelfTone === 'ok' ? 'text-ok' : lot.shelfTone === 'warn' ? 'text-warn' : 'text-danger'
+  const supplierName = lot.supplier.split(' · ')[0]
+  const lotCode      = lot.supplier.split(' · ')[1] || lot.delivery
+
+  return (
+    <SlidePanel
+      title={lot.ing}
+      subtitle={supplierName}
+      onClose={onClose}
+      footer={<Btn variant="secondary" onClick={onClose}>Close</Btn>}
+    >
+      {/* ── COA status hero ─────────────────────────────────────────── */}
+      <div className={`px-5 py-5 border border-rule2 ${coaPass ? 'bg-ok/[0.035] border-ok/25' : 'bg-danger/[0.035] border-danger/25'}`}>
+        <div className={`font-body text-[10px] uppercase tracking-widest mb-2 ${coaPass ? 'text-ok' : 'text-danger'}`}>
+          Certificate of Analysis
+        </div>
+        <div className={`font-display font-bold text-[28px] leading-none mb-1.5 ${coaPass ? 'text-ok' : 'text-danger'}`}>
+          {coaPass ? 'Verified' : 'Pending receipt'}
+        </div>
+        <div className="font-body text-ghost text-[11px]">
+          {coaPass
+            ? 'Validated Apr 12, 2026 · All parameters within specification'
+            : `Not received · Hold active until COA confirmed by ${supplierName}`}
+        </div>
+      </div>
+
+      {/* ── Lot identity ─────────────────────────────────────────────── */}
+      <div>
+        <div className="font-body text-ghost text-[10px] uppercase tracking-widest mb-3">Lot details</div>
+        <div className="space-y-3">
+          {[
+            { label: 'Ingredient',  value: lot.ing               },
+            { label: 'Supplier',    value: supplierName           },
+            { label: 'Lot',         value: lotCode                },
+            { label: 'PO date',     value: lot.po                 },
+            { label: 'Received',    value: lot.deliveryTime       },
+          ].map(({ label, value }) => (
+            <div key={label} className="flex items-baseline justify-between border-b border-rule2 pb-2">
+              <span className="font-body text-ghost text-[11px]">{label}</span>
+              <span className="font-body font-medium text-ink text-[12px]">{value}</span>
             </div>
-          </ExpandableMetadata>
+          ))}
         </div>
-        <div className="px-5 py-3 border-t border-rule2 bg-stone2 flex-shrink-0">
-          <Btn variant="secondary" onClick={handleClose}>Close</Btn>
+      </div>
+
+      {/* ── Shelf life bar ───────────────────────────────────────────── */}
+      <div>
+        <div className="flex items-baseline justify-between mb-2">
+          <span className="font-body text-ghost text-[10px] uppercase tracking-widest">Shelf life</span>
+          <span className={`display-num text-[24px] font-bold leading-none ${shelfText}`}>{lot.shelf}<span className="font-body text-[11px] font-normal text-ghost ml-1">days</span></span>
         </div>
-      </aside>
-    </>
+        <div className="h-2 bg-rule2 rounded-full overflow-hidden mb-1">
+          <div className={`h-full rounded-full ${shelfColor} transition-all`} style={{ width: `${shelfPct}%` }} />
+        </div>
+        <div className="font-body text-ghost text-[10px]">{lot.shelf} of 45 days remaining · standard shelf life</div>
+      </div>
+
+      {/* ── Lab results ──────────────────────────────────────────────── */}
+      <div>
+        <div className="font-body text-ghost text-[10px] uppercase tracking-widest mb-3">
+          Lab results{coaPass ? ' · Apr 12, 2026' : ' · Pending'}
+        </div>
+        {coaPass ? (
+          <div className="grid grid-cols-2 gap-px bg-rule2">
+            {LAB_RESULTS_PASS.map(r => (
+              <div key={r.label} className="bg-stone px-4 py-3.5">
+                <div className="font-body text-ghost text-[10px] mb-1.5">{r.label}</div>
+                <div className="flex items-center justify-between">
+                  <span className="font-body font-medium text-ink text-[13px]">{r.value}</span>
+                  <Check size={12} strokeWidth={2.5} className="text-ok" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-px bg-rule2">
+            {LAB_RESULTS_PENDING.map(label => (
+              <div key={label} className="bg-stone px-4 py-3.5">
+                <div className="font-body text-ghost text-[10px] mb-1.5">{label}</div>
+                <div className="font-body text-warn text-[11px] font-medium">Not tested</div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </SlidePanel>
   )
 }
 
@@ -144,7 +186,6 @@ export default function SupplierIQ() {
   const { coaRequested, setCoaRequested, rfqSent, setRfqSent, readinessResolved, resolvedConflicts, closedCases } = useAppState()
   const [exportState, setExportState] = useState('idle')
   const [coaViewLot, setCoaViewLot] = useState(null)
-  const [riskExplainerOpen, setRiskExplainerOpen] = useState(false)
   const navigate = useNavigate()
   const namingResolved = readinessResolved?.['conflict-0'] || resolvedConflicts?.has?.(0)
   const capaTs8811Closed = closedCases?.includes?.('c3')
@@ -165,12 +206,9 @@ export default function SupplierIQ() {
   const side = (
     <>
       <SP title="FDA inspection" sub="FSMA 204">
-        <div className="flex items-center gap-3 px-4 pt-3 pb-2">
-          <ShieldCheck size={28} strokeWidth={1.5} className="text-warn flex-shrink-0" aria-hidden="true" />
-          <div className="flex items-baseline gap-2">
-            <span className="display-num text-4xl text-warn">18</span>
-            <span className="font-body text-ghost text-[11px]">days · Region 7 · Salina</span>
-          </div>
+        <div className="flex items-baseline gap-2 px-4 pt-3 pb-2">
+          <span className="display-num text-4xl text-warn">18</span>
+          <span className="font-body text-ghost text-[11px]">days · Region 7 · Salina</span>
         </div>
         <div className="mx-4 mb-3 h-1 bg-rule2"><div className="h-full bg-warn" style={{ width: '62%' }} /></div>
         {d.fdaSteps.map((s, i) => {
@@ -243,44 +281,13 @@ export default function SupplierIQ() {
           <span className="display-num text-[28px] font-bold leading-none text-danger">{blockingLots.length}</span>
           <span className="font-body text-danger text-[10px]">COA missing</span>
         </div>
-        <button type="button" onClick={() => setRiskExplainerOpen(o => !o)}
-          className="flex items-center gap-2 px-5 py-2.5 hover:bg-stone2 transition-colors group">
-          <Brain size={11} strokeWidth={1.75} className="text-ghost flex-shrink-0" />
-          <span className="font-body text-ghost text-[10px] uppercase tracking-widest">Supplier risk</span>
-          <span className="font-body text-[13px] font-semibold text-danger px-2 py-0.5 bg-danger/10 rounded-[3px]">HIGH</span>
-          {riskExplainerOpen ? <ChevronUp size={10} className="text-ghost" /> : <ChevronDown size={10} className="text-ghost" />}
-        </button>
       </div>
 
-      {/* Supplier risk explainer */}
-      {riskExplainerOpen && (
-        <div className="border-b border-rule2 bg-stone slide-in">
-          <div className="px-4 py-2 bg-stone2 border-b border-rule2">
-            <span className="font-body text-ghost text-[10px] uppercase tracking-widest">Why HIGH?</span>
-          </div>
-          {SUPPLIER_RISK_FACTORS.map((f, i) => {
-            const toneText = f.tone === 'danger' ? 'text-danger' : f.tone === 'warn' ? 'text-warn' : 'text-ok'
-            const toneBg = f.tone === 'danger' ? 'bg-danger/[0.03]' : f.tone === 'warn' ? 'bg-warn/[0.02]' : ''
-            return (
-              <div key={i} className={`flex items-start gap-3 px-4 py-2.5 border-b border-rule2 last:border-b-0 ${toneBg}`}>
-                <span className={`font-body font-semibold text-[10px] w-20 flex-shrink-0 pt-px ${toneText}`}>{f.penalty}</span>
-                <div className="flex-1 min-w-0">
-                  <div className={`font-body font-medium text-[11px] leading-snug ${f.tone === 'danger' ? 'text-danger' : 'text-ink'}`}>{f.label}</div>
-                  <div className="font-body text-ghost text-[10px] mt-0.5 leading-snug">{f.state}</div>
-                  <div className="flex items-center gap-1 mt-1">
-                    <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${CONF_DOT_S[f.confidence]}`} />
-                    <span className="font-body text-ghost text-[9px]">{CONF_LABEL_S[f.confidence]} · {f.source}</span>
-                  </div>
-                </div>
-              </div>
-            )
-          })}
-        </div>
-      )}
 
-      <div className="grid grid-cols-3 md:grid-cols-6 border-b border-rule2 bg-stone flex-shrink-0">
-        {d.stats.map((s, i) => <StatCell key={i} {...s} />)}
-      </div>
+      <StatBar cells={d.stats.map(s => ({
+        label: s.label, value: s.value, sub: s.sub, pct: s.fill,
+        type: s.tone === 'danger' ? 'sa' : s.tone === 'warn' ? 'sw' : 'so',
+      }))} />
 
       {/* Alert strip — populated with active alerts */}
       <div className="flex items-center gap-2 px-4 py-2 border-b border-rule2 bg-stone2 flex-shrink-0">
@@ -289,9 +296,6 @@ export default function SupplierIQ() {
         )}
         {monitoringLots.length > 1 && (
           <AlertChip count={monitoringLots.length - 1} tone="warn" label={(monitoringLots.length - 1) === 1 ? 'expiring' : 'expiring'} />
-        )}
-        {namingResolved === false && (
-          <AlertChip count={1} tone="danger" label="naming conflict" />
         )}
       </div>
 
@@ -428,6 +432,21 @@ export default function SupplierIQ() {
                 </ActionCard>
               )
             })}
+
+            {/* ConAgra reliability — network signal, not lot-tracking data */}
+            <ActionCard
+              tone="warn"
+              icon={AlertTriangle}
+              title="ConAgra reliability — 22nd percentile"
+              subtitle="Network signal · 3 non-conformances in last 30 days across 14 plants"
+              metadata={['High confidence', 'Network intelligence · 14 plants', 'Pattern: delivery delays → scrap spikes']}
+              status={null}
+              actions={
+                <Link to="/network" className="font-body text-int text-[10px] flex items-center gap-1 hover:text-ink transition-colors self-center">
+                  <ArrowRight size={9} />View in Network
+                </Link>
+              }
+            />
 
             {/* Price alerts */}
             <ActionCard

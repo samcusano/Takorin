@@ -116,7 +116,7 @@ function LineCard({ line, meta, shiftActed, onClick }) {
     <button
       type="button"
       onClick={onClick}
-      className={`group flex flex-col w-full text-left bg-stone border rounded-sm transition-all duration-150 hover:border-ink/30 hover:shadow-[0_2px_12px_rgba(16,15,13,0.08)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ochre ${
+      className={`group flex flex-col w-full text-left bg-stone border rounded-sm transition-all duration-150 hover:border-ink/30 hover:shadow-raise focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ochre ${
         isAtRisk ? 'border-danger/30' : isWatch ? 'border-warn/20' : 'border-rule2'
       }`}
       aria-label={`${line.name} — risk score ${line.score} — ${zone}`}
@@ -151,20 +151,18 @@ function LineCard({ line, meta, shiftActed, onClick }) {
           )}
         </div>
 
-        {/* Model signal */}
-        <div className="flex items-center gap-2 py-2 border-t border-rule2 -mx-6 px-6 bg-stone2/60">
-          <Brain size={10} strokeWidth={1.75} className="text-ghost flex-shrink-0" />
-          <span className="font-body text-ghost text-[10px] flex-1 truncate">
-            <span className={`font-medium tabular-nums ${meta.modelConfidence >= 90 ? 'text-ok' : meta.modelConfidence >= 80 ? 'text-muted' : 'text-warn'}`}>{meta.modelConfidence}%</span>
-            {' '}confidence · {meta.modelSignal}
-          </span>
-        </div>
-
         {/* Footer row */}
         <div className="flex items-center justify-between pt-3 border-t border-rule2">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5">
             <PersonAvatar name={meta.supervisor} size={20} />
-            <span className="font-body text-ink2 text-[11px]">{meta.supervisor}</span>
+            <div>
+              <div className="font-body text-ink2 text-[11px]">{meta.supervisor}</div>
+              <div className="flex items-center gap-1 mt-0.5">
+                <Brain size={8} strokeWidth={1.75} className="text-ghost flex-shrink-0" />
+                <span className={`font-body tabular-nums text-[10px] font-medium ${meta.modelConfidence >= 90 ? 'text-ok' : meta.modelConfidence >= 80 ? 'text-muted' : 'text-warn'}`}>{meta.modelConfidence}%</span>
+                <span className="font-body text-ghost text-[10px] truncate max-w-[120px]">· {meta.modelSignal}</span>
+              </div>
+            </div>
           </div>
           <div className="flex items-center gap-3">
             <span className="flex items-center gap-1 font-body text-ghost text-[10px]">

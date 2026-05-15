@@ -35,25 +35,6 @@ const FILTER = {
 // Log types that are the director's own actions or system noise — exclude from feed
 const EXCLUDE_TYPES = new Set(['intervention', 'system'])
 
-const sampleStanding = [
-  {
-    id: 'sample-capa-001',
-    severity: 'danger',
-    title: 'CAPA-2604-001 overdue by 7 days',
-    body: 'Sensor A-7 bearing failure evidence still missing from QA package. Assigned to D. Kowalski.',
-    link: '/capa',
-    linkLabel: 'Review CAPA',
-  },
-  {
-    id: 'sample-fda-18d',
-    severity: 'warn',
-    title: 'FDA inspection in 18 days — Region 7',
-    body: 'Traceability submission 82% complete. Close evidence gaps before the inspection window.',
-    link: '/readiness',
-    linkLabel: 'Open readiness',
-  },
-]
-
 const sampleActivity = [
   {
     id: 'sample-supplier',
@@ -93,7 +74,7 @@ function NotifItem({ item, read, onRead, onNavigate }) {
    <div className="px-4 py-3 flex gap-3">
     <div className="flex-1 min-w-0">
      <div className="flex items-center gap-2 mb-1">
-      <span className={`font-body font-medium text-[10px] px-1.5 py-px rounded-[3px] ${s.chip}`}>{s.label}</span>
+      <span className={`font-body font-medium text-[10px] px-1.5 py-px rounded-btn ${s.chip}`}>{s.label}</span>
       <span className="font-body text-ghost text-[10px]">{item.time}</span>
      </div>
      <div className="font-body font-medium text-ink text-[12px] leading-snug mb-0.5">{item.title}</div>
@@ -122,37 +103,9 @@ function NotifItem({ item, read, onRead, onNavigate }) {
  )
 }
 
-function StandingItem({ item, onNavigate }) {
- const severityBar  = item.severity === 'danger' ? 'border-l-danger' : 'border-l-warn'
- const severityRow  = item.severity === 'danger' ? 'bg-danger/[0.03]' : ''
- const severityChip = item.severity === 'danger' ? 'bg-danger/10 text-danger' : 'bg-warn/10 text-warn'
-
- return (
-  <div className={`border-b border-rule2 border-l-2 ${severityBar} ${severityRow}`}>
-   <div className="px-4 py-3">
-    <div className="flex items-center gap-2 mb-1">
-     <span className={`font-body font-medium text-[10px] px-1.5 py-px ${severityChip}`}>Active</span>
-     <span className="font-body text-ghost text-[10px]">Compliance</span>
-    </div>
-    <div className="font-body font-medium text-ink text-[12px] leading-snug mb-0.5">{item.title}</div>
-    <div className="font-body text-muted text-[11px] leading-relaxed">{item.body}</div>
-    {item.link && (
-     <button
-      type="button"
-      onClick={() => onNavigate(item.link)}
-      className="font-body text-int text-[10px] mt-1.5 flex items-center gap-1 transition-colors hover:text-ink"
-     >
-      <ArrowRight size={12} />{item.linkLabel}
-     </button>
-    )}
-   </div>
-  </div>
- )
-}
-
 export default function NotificationCenter({ onClose }) {
  const {
-  allergenOverride, nearMisses, blockingEvidenceUploaded,
+  allergenOverride, nearMisses,
   operatorAcknowledgments, activityLog,
  } = useAppState()
  const navigate = useNavigate()
@@ -161,34 +114,6 @@ export default function NotificationCenter({ onClose }) {
 
  const markRead = (id) => setRead(p => new Set([...p, id]))
  const go = (path) => { onClose?.(); navigate(path) }
-
- // ── Standing compliance items — persist until underlying state resolves ──
- const standing = [
-  !blockingEvidenceUploaded && {
-   id: 'capa-006-evidence',
-   severity: 'danger',
-   title: 'CAPA-2604-006 — evidence required before export',
-   body: 'Pack Line QA pre-check log must be attached to unblock the FDA audit package. Assigned to T. Osei.',
-   link: '/capa',
-   linkLabel: 'Open in CAPA Engine',
-  },
-  {
-   id: 'fda-18d',
-   severity: 'warn',
-   title: 'FDA inspection in 18 days — Region 7, Salina',
-   body: '38% of pre-flight checklist complete. CAPA-2604-001 and CAPA-2604-006 evidence gaps remain open. FSMA 204 traceability submission has a naming conflict at CTE 2.',
-   link: '/capa',
-   linkLabel: 'Open in CAPA Engine',
-  },
-  {
-   id: 'capa-001-overdue',
-   severity: 'danger',
-   title: 'CAPA-2604-001 overdue by 7 days',
-   body: 'Sensor A-7 bearing failure root cause. No corrective measure submitted by assigned owner (D. Kowalski). Second auto-escalation sent at 09:15.',
-   link: '/capa',
-   linkLabel: 'Open in CAPA Engine',
-  },
- ].filter(Boolean)
 
  // ── Activity events from dynamic state ──────────────────────────────────
  const dynamicEvents = [
@@ -234,20 +159,17 @@ export default function NotificationCenter({ onClose }) {
   ...logEvents.filter(e => !(DYNAMIC_COVERS[e.type] && dynamicTypes.has(e.type))),
  ]
 
- const effectiveStanding = [...sampleStanding, ...standing]
  const effectiveActivity = [...sampleActivity, ...mergedActivity]
 
  // ── Filter ───────────────────────────────────────────────────────────────
- const showCompliance = activeFilter === 'All' || activeFilter === 'Compliance'
  const filteredActivity = effectiveActivity.filter(FILTER[activeFilter] || FILTER.All)
-
- const totalUnread = effectiveStanding.length + effectiveActivity.filter(e => !read.has(e.id)).length
+ const totalUnread = effectiveActivity.filter(e => !read.has(e.id)).length
 
  // Filter tab counts
  const counts = {
   All: totalUnread,
   Safety: effectiveActivity.filter(FILTER.Safety).length,
-  Compliance: effectiveStanding.length,
+  Compliance: effectiveActivity.filter(FILTER.Compliance).length,
   People: effectiveActivity.filter(FILTER.People).length,
  }
 
@@ -272,7 +194,7 @@ export default function NotificationCenter({ onClose }) {
      >
       <span className={`font-body text-[11px] ${activeFilter === f ? 'text-ink' : 'text-muted'}`}>{f}</span>
       {counts[f] > 0 && (
-       <span className="font-body text-muted text-[10px] px-1.5 py-px bg-stone3 rounded-[3px]">{counts[f]}</span>
+       <span className="font-body text-muted text-[10px] px-1.5 py-px bg-stone3 rounded-btn">{counts[f]}</span>
       )}
      </button>
     ))}
@@ -305,18 +227,6 @@ export default function NotificationCenter({ onClose }) {
     </div>
    )}
 
-   {/* Standing compliance items */}
-   {showCompliance && effectiveStanding.length > 0 && (
-    <>
-     <div className="px-4 py-2 bg-stone2 border-b border-rule2">
-      <span className="font-body text-[10px] uppercase tracking-widest text-muted font-medium">Requires attention</span>
-     </div>
-     {effectiveStanding.map(item => (
-      <StandingItem key={item.id} item={item} onNavigate={go} />
-     ))}
-    </>
-   )}
-
    {/* Activity feed */}
    {filteredActivity.length > 0 && (
     <>
@@ -329,15 +239,9 @@ export default function NotificationCenter({ onClose }) {
     </>
    )}
 
-   {filteredActivity.length === 0 && !showCompliance && (
+   {filteredActivity.length === 0 && (
     <div className="px-4 py-10 text-center font-body text-ghost text-[12px]">
-     No {activeFilter.toLowerCase()} events today.
-    </div>
-   )}
-
-   {filteredActivity.length === 0 && showCompliance && effectiveStanding.length === 0 && (
-    <div className="px-4 py-10 text-center font-body text-ghost text-[12px]">
-     No notifications.
+     {activeFilter === 'All' ? 'No notifications.' : `No ${activeFilter.toLowerCase()} events today.`}
     </div>
    )}
    </div>

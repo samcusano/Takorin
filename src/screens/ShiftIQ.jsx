@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useSearchParams, Link } from 'react-router-dom'
 import { useFocusTrap, useExitAnimation, riskColorClass, riskLabel, riskBgColor } from '../lib/utils'
-import { shiftData, line6Data, haccpData, productionRate, crewHoursData } from '../data'
+import { shiftData, line6Data, wichitaData, denverData, haccpData, productionRate, crewHoursData } from '../data'
 import {
  Urg, StatCell, SecHd, CaseCard, Layout,
  Btn, ConsequenceNotice, PageHead, ActionBanner, MetricCard, ScoreRing,
@@ -56,15 +56,22 @@ function AgentTimeline({ timeline, sparkline, score }) {
  const [explainerOpen, setExplainerOpen] = useState(false)
  return (
  <div className="border-b border-rule2">
- <MetricCard
- title={`${zone} — Line 4`}
- value={score}
- valueColor={scoreTextColor}
- waveformData={sparkline}
- waveformColor={scoreColor}
- waveformHeight={40}
- meta={{ label: 'Trend', value: 'Rising · 06:12–06:42' }}
- />
+ {/* EFB-style primary instrument */}
+ <div className="px-4 pt-5 pb-4 border-b border-rule2 bg-stone">
+  <div className="flex items-start justify-between gap-3">
+   <div>
+    <div className="font-body text-ghost text-[10px] uppercase tracking-widest mb-3">Line 4 · AM shift</div>
+    <div className={`display-num text-[64px] leading-none ${scoreTextColor}`}>{score}</div>
+    <div className={`font-body font-medium text-[10px] uppercase tracking-widest mt-1.5 ${scoreTextColor}`}>{zone}</div>
+   </div>
+   <div className="pt-5 flex-shrink-0">
+    <WaveformSparkline data={sparkline} color={scoreColor} width={64} height={44} />
+   </div>
+  </div>
+  <div className="font-body text-ghost text-[10px] mt-3 pt-2.5 border-t border-rule2">
+   Rising · 06:12–06:42
+  </div>
+ </div>
  <ScoreExplainer score={score} open={explainerOpen} onToggle={() => setExplainerOpen(o => !o)} />
  {/* Timeline rows */}
  {timeline.map((row, i) => (
@@ -93,7 +100,7 @@ const SCORE_FACTORS = [
  { label: 'Startup checklists', contribution: 9, tone: 'warn', state: '7 of 13 signed · 4 overdue at shift start', confidence: 'high', source: 'Checklist system · direct' },
  { label: 'Sensor A-7 variance', contribution: 6, tone: 'warn', state: 'Micro-variance count 4/5 · bearing suspect', confidence: 'medium', source: 'SCADA · 3-hr rolling' },
  { label: 'CCP-1 & CCP-3', contribution: 0, tone: 'ok', state: 'Both within limits · no contribution to score', confidence: 'high', source: 'Sensor verified · direct' },
- { label: 'SCADA — Oven B', contribution: 0, tone: 'warn', state: 'Sensor stale · confidence penalty applied', confidence: 'low', source: 'Last reading 2h 14m ago' },
+ { label: 'SCADA — Oven B', contribution: 0, tone: 'warn', state: 'Sensor stale · confidence penalty applied', confidence: 'low', source: 'Last reading 2h 14m ago', tip: 'SCADA (Supervisory Control and Data Acquisition) — the sensor network feeding live oven readings. Stale data reduces model confidence.' },
 ]
 
 const CONF_DOT = { high: 'bg-ok', medium: 'bg-warn', low: 'bg-ghost' }
@@ -131,7 +138,7 @@ function ScoreExplainer({ score, open, onToggle }) {
       const toneText = f.tone === 'danger' ? 'text-danger' : f.tone === 'warn' ? 'text-warn' : 'text-ok'
       const toneBg   = f.tone === 'danger' ? 'bg-danger/[0.03]' : f.tone === 'warn' ? 'bg-warn/[0.02]' : ''
       return (
-       <div key={i} className={`px-4 py-2.5 border-b border-rule2 last:border-b-0 ${toneBg}`}>
+       <div key={i} className={`px-4 py-2.5 border-b border-rule2 last:border-b-0 ${toneBg}`} title={f.tip || undefined}>
         <div className="flex items-start gap-2">
          <span className={`display-num text-[12px] font-bold w-8 text-right flex-shrink-0 leading-none pt-px ${
           f.contribution > 0 ? toneText : 'text-ghost'
@@ -180,7 +187,7 @@ function SignalCard({ sig }) {
  <div className={`font-body text-[12px] font-medium truncate ${sig.tone === 'danger' ? 'text-danger' : 'text-ink'}`}>{sig.name}</div>
  <div className="font-body text-ghost text-[10px]">{sig.sub}</div>
  </div>
- <span className={`font-body font-medium text-[10px] px-2 py-0.5 flex-shrink-0 rounded-[3px] ${
+ <span className={`font-body font-medium text-[10px] px-2 py-0.5 flex-shrink-0 rounded-btn ${
  sig.tone === 'ok' ? 'bg-ok/10 text-ok' : sig.tone === 'danger' ? 'bg-danger/10 text-danger' : 'bg-warn/10 text-warn'
  }`}>{sig.status}</span>
  </div>
@@ -328,7 +335,7 @@ function OperatorPanel({ name, onClose, onSelectOperator }) {
  {/* Operator avatar tabs at bottom */}
  <div className="border-t border-rule2 bg-stone2 flex items-center justify-center gap-2 px-3 py-2.5 flex-shrink-0">
   {Object.keys(OP_META).map(opName => (
-   <button
+   <button type="button"
     key={opName}
     type="button"
     onClick={() => onSelectOperator?.(opName)}
@@ -369,82 +376,102 @@ function CrewRow({ m, onView }) {
  )
 }
 
-function Finding({ f, onAct }) {
- const [acked, setAcked] = useState(null)
+function Finding({ f, onAct, onDismiss, dismissed }) {
+ const [acked, setAcked] = useState(false)
+ const [removing, setRemoving] = useState(false)
  const [showDismiss, setShowDismiss] = useState(false)
- const [dismissed, setDismissed] = useState(false)
- const [dismissReason, setDismissReason] = useState('')
+ const [dismissPos, setDismissPos] = useState({ top: 0, left: 0 })
  const [showed, setShowed] = useState(false)
+ const dismissBtnRef = useRef(null)
 
- const handleAct = (action) => {
- onAct(f.id)
- setAcked('actioning')
- setShowed(true)
+ const handleAct = () => {
+  onAct(f.id)
+  setAcked(true)
+  setShowed(true)
+  setTimeout(() => setRemoving(true), 700)
+ }
+
+ const openDismiss = () => {
+  if (dismissBtnRef.current) {
+   const r = dismissBtnRef.current.getBoundingClientRect()
+   setDismissPos({ top: r.bottom + 4, left: r.left })
+  }
+  setShowDismiss(true)
  }
 
  const borderColor = f.urgency === 'danger' ? 'border-l-danger' : f.urgency === 'warn' ? 'border-l-warn' : 'border-l-rule'
 
  return (
- <>
- <div className={`border-l-2 ${borderColor} border-b border-rule2 ${dismissed ? 'opacity-50' : ''}`}>
- <div className="p-4 space-y-2">
- <p className="font-body text-ink font-medium text-[13px] leading-snug">{f.title}</p>
- <p className="font-body text-ink2 text-[12px] leading-relaxed">{f.desc}</p>
- <p className="font-body text-ghost text-[11px] flex items-start gap-1"><ChevronRight size={11} className="flex-shrink-0 mt-px" />{f.evidence}</p>
- <div className="flex gap-1.5 flex-wrap">
-  {f.source && <Chip tone="muted">{f.source}</Chip>}
-  {f.capaId && (
-   <Link to="/capa" className="font-body text-warn text-[10px] flex items-center gap-1 hover:text-ink transition-colors">
-    <ArrowRight size={9} />{f.capaId}
-   </Link>
-  )}
- </div>
- <div className="flex gap-2 pt-1 relative">
- {f.actions.map((a, i) => (
- <Btn key={i} variant={i === 0 ? 'primary' : 'secondary'} onClick={() => handleAct(a)}>
- {a}
- </Btn>
- ))}
- <Btn variant="secondary" onClick={() => setShowDismiss(!showDismiss)}>Dismiss</Btn>
- {showDismiss && !dismissed && (
-  <div className="absolute top-full left-0 mt-1 bg-stone border border-rule2 rounded-md px-2 py-1 shadow-md z-10">
-   <button type="button" onClick={() => setShowDismiss(false)} 
-    className="flex items-center justify-center w-6 h-6 rounded hover:bg-stone2 transition-colors mb-1"
-    aria-label="Close dismiss selector">
-    <X size={14} strokeWidth={2} className="text-ink" />
-   </button>
-   {[
-    'Already handled by outgoing supervisor',
-    'Not applicable — SKU change in progress', 
-    'Assessment is incorrect — false positive'
-   ].map(reason => (
-    <button
-     key={reason}
-     type="button"
-     onClick={() => {
-      setDismissed(true)
-      setShowDismiss(false)
-     }}
-     className="block w-full text-left font-body text-ink text-[11px] px-2 py-1 hover:bg-stone2 transition-colors rounded"
-     aria-label={`Dismiss: ${reason}`}>
-     {reason}
-    </button>
-   ))}
-  </div>
- )}
- </div>
- {acked && (
- <div className="flex items-center gap-1.5 font-body text-ink2 text-[10px]">
- <div className={`w-1.5 h-1.5 rounded-full ${acked === 'actioning' ? 'bg-ok' : 'bg-danger'}`} />
- {acked === 'actioning' ? 'Actioning' : 'Dismissed'}
- </div>
- )}
- </div>
- </div>
- <ConsequenceNotice show={showed && f.consequence}>
- {f.consequence}
- </ConsequenceNotice>
- </>
+  <>
+   <div style={{
+    display: 'grid',
+    gridTemplateRows: removing ? '0fr' : '1fr',
+    opacity: removing ? 0 : 1,
+    transition: 'grid-template-rows 350ms ease-in-out, opacity 280ms ease-in-out',
+   }}>
+    <div className={`overflow-hidden border-l-2 ${borderColor} border-b border-rule2 ${dismissed ? 'opacity-40 pointer-events-none' : ''}`}>
+     {acked ? (
+      <div className="flex items-center justify-center py-5">
+       <div className="flex items-center justify-center w-10 h-10 rounded-full border border-ok/20 bg-ok/5">
+        <AnimatedCheck size={18} color="#3A8A5A" />
+       </div>
+      </div>
+     ) : (
+      <div className="p-4 space-y-2">
+       <p className="font-body text-ink font-medium text-[13px] leading-snug">{f.title}</p>
+       <p className="font-body text-ink2 text-[12px] leading-relaxed">{f.desc}</p>
+       <p className="font-body text-ghost text-[11px] flex items-start gap-1"><ChevronRight size={11} className="flex-shrink-0 mt-px" />{f.evidence}</p>
+       <div className="flex gap-1.5 flex-wrap">
+        {f.source && <Chip tone="muted">{f.source}</Chip>}
+        {f.capaId && (
+         <Link to="/capa" className="font-body text-warn text-[10px] flex items-center gap-1 hover:text-ink transition-colors">
+          <ArrowRight size={9} />{f.capaId}
+         </Link>
+        )}
+       </div>
+       <div className="flex gap-2 pt-1">
+        {f.actions.map((a, i) => (
+         <Btn key={i} variant={i === 0 ? 'primary' : 'secondary'} onClick={handleAct}>
+          {a}
+         </Btn>
+        ))}
+        <div ref={dismissBtnRef}>
+         <Btn variant="secondary" onClick={showDismiss ? () => setShowDismiss(false) : openDismiss}>Dismiss</Btn>
+        </div>
+       </div>
+      </div>
+     )}
+    </div>
+   </div>
+   {showDismiss && (
+    <div
+     className="fixed z-50 bg-stone border border-rule2 shadow-raise min-w-[260px] plant-drop-in"
+     style={{ top: dismissPos.top, left: dismissPos.left }}>
+     <div className="plant-drop-in-content">
+      <div className="px-3 py-2.5 border-b border-rule2">
+       <span className="font-body font-medium text-ink text-[11px]">Flag as dismissed</span>
+      </div>
+      {[
+       'Already handled by outgoing supervisor',
+       'Not applicable — SKU change in progress',
+       'Assessment is incorrect — false positive',
+      ].map(reason => (
+       <button type="button"
+        key={reason}
+        onClick={() => { onDismiss(f.id, f.title, reason); setShowDismiss(false) }}
+        className="flex items-center gap-2.5 w-full text-left font-body text-ink text-[11px] px-3 py-2.5 border-b border-rule2 last:border-b-0 hover:bg-stone2 transition-colors"
+        aria-label={`Dismiss: ${reason}`}>
+        <Flag size={10} strokeWidth={2} className="text-warn flex-shrink-0" />
+        {reason}
+       </button>
+      ))}
+     </div>
+    </div>
+   )}
+   <ConsequenceNotice show={showed && f.consequence}>
+    {f.consequence}
+   </ConsequenceNotice>
+  </>
  )
 }
 
@@ -458,7 +485,7 @@ function CrewAvatarStack({ crew, onSelect, size = 34 }) {
  return (
   <div className="flex items-center">
    {shown.map((m, i) => (
-    <button key={m.name} type="button"
+    <button type="button" key={m.name} type="button"
      onClick={() => onSelect(m.name)}
      title={m.name}
      className={`relative hover:z-10 transition-transform hover:scale-110 cursor-pointer ${i > 0 ? '-ml-2' : ''}`}
@@ -509,7 +536,7 @@ function LineDropdown({ lines, activeLine, onSelect, triggerRef, onClose }) {
 
  return (
   <div ref={dropRef} className="fixed z-[40] plant-drop-in" style={{ top: pos.top, left: pos.left }}>
-   <div className="w-[260px] bg-sidebar border border-sidebar-border rounded-2xl shadow-[0_24px_60px_rgba(0,0,0,0.5)] overflow-hidden">
+   <div className="w-[260px] bg-sidebar border border-sidebar-border rounded-2xl shadow-raise overflow-hidden">
     <div className="plant-drop-in-content">
      <div className="px-4 py-2.5 border-b border-sidebar-border">
       <p className="font-body text-sidebar-ghost/40 text-[10px] uppercase tracking-widest">Select line</p>
@@ -520,7 +547,7 @@ function LineDropdown({ lines, activeLine, onSelect, triggerRef, onClose }) {
       const isActive = line.id === activeLine
       const hasPilotData = line.id === 'l4' || line.id === 'l6'
       return (
-       <button key={line.id} type="button"
+       <button type="button" key={line.id} type="button"
         aria-pressed={isActive}
         disabled={!hasPilotData}
         onClick={() => { if (hasPilotData) { onSelect(line.id); onClose() } }}
@@ -553,7 +580,6 @@ function LineDropdown({ lines, activeLine, onSelect, triggerRef, onClose }) {
 }
 
 export default function ShiftIQ() {
- const d = shiftData
  const [searchParams] = useSearchParams()
  const initialLine = searchParams.get('line') || 'l4'
  const [activeLine, setActiveLine] = useState(initialLine)
@@ -573,10 +599,12 @@ export default function ShiftIQ() {
  pilotExpanded, setPilotExpanded,
  viewingRole,
  } = useAppState()
+ const d = currentPlant?.id === 'ks' ? wichitaData : currentPlant?.id === 'co' ? denverData : shiftData
  const [predActioned, setPredActioned] = useState(false)
  const [overrideMode, setOverrideMode] = useState(false)
  const [overrideReason, setOverrideReason] = useState('')
  const [overrideShake, setOverrideShake] = useState(false)
+ const [overrideConfirmed, setOverrideConfirmed] = useState(false)
  const [showNearMiss, setShowNearMiss] = useState(false)
  const [nearMissForm, setNearMissForm] = useState({ station:'', what:'', action:'', atRisk: false })
  const [nearMissSubmitted, setNearMissSubmitted] = useState(false)
@@ -587,6 +615,25 @@ export default function ShiftIQ() {
  const [viewingOperator, setViewingOperator] = useState(null)
  const [lineDropOpen, setLineDropOpen] = useState(false)
  const [checklistDrawerOpen, setChecklistDrawerOpen] = useState(false)
+ const [signalHealthOpen, setSignalHealthOpen] = useState(false)
+ const [pendingDismiss, setPendingDismiss] = useState(new Map())
+ const [permanentDismiss, setPermanentDismiss] = useState(new Set())
+
+ const handleDismiss = (id, title, reason) => {
+  const timeoutId = setTimeout(() => {
+   setPermanentDismiss(prev => new Set([...prev, id]))
+   setPendingDismiss(prev => { const m = new Map(prev); m.delete(id); return m })
+  }, 6000)
+  setPendingDismiss(prev => new Map([...prev, [id, { timeoutId, title }]]))
+  logActivity({ actor: lineSupervisor, action: `Dismissed finding: ${reason}`, item: id, type: 'intervention' })
+ }
+
+ const handleUndoDismiss = (id) => {
+  const entry = pendingDismiss.get(id)
+  if (!entry) return
+  clearTimeout(entry.timeoutId)
+  setPendingDismiss(prev => { const m = new Map(prev); m.delete(id); return m })
+ }
  const [showExpansionGate, setShowExpansionGate] = useState(false)
  const [expansionStep, setExpansionStep] = useState(0)
  const [dataOwner, setDataOwner] = useState('')
@@ -608,21 +655,22 @@ export default function ShiftIQ() {
  }, [])
 
  const countdownFmt = `${String(Math.floor(countdown / 60)).padStart(2, '0')}:${String(countdown % 60).padStart(2, '0')}`
- const activeLined = d.lines.find(l => l.id === activeLine)
- const hasLiveData = activeLine === 'l4' || activeLine === 'l6'
- const lineD = activeLine === 'l6' ? line6Data : d
- const lineScore = activeLine === 'l6' ? line6Data.score : d.score
- const lineSupervisor = activeLine === 'l6' ? line6Data.supervisor : 'D. Kowalski'
+ const activeLined = d.lines.find(l => l.id === activeLine) ?? d.lines[0]
+ const isSalina = !currentPlant?.id || currentPlant.id === 'sl'
+ const lineD = isSalina && activeLine === 'l6' ? line6Data : d
+ const lineScore = lineD.score
+ const lineSupervisor = lineD.supervisor || 'D. Kowalski'
+ const hasLiveData = true
  const scoreColor = riskColorClass(lineScore)
 
  return (
  <div className="flex flex-col h-full overflow-hidden">
  <ActionBanner
  tone="warn"
- headline={`3 interventions pending · ${currentPlant?.name || 'Salina Campus'} · Line 4 · ${countdownFmt} remaining`}
+ headline={`${lineD.findings?.filter(f => !permanentDismiss.has(f.id) && f.urgency !== 'watch').length || 0} pending · ${currentPlant?.name || 'Salina Campus'} · ${lineD.line} · ${countdownFmt} remaining`}
  body={escalatedShift
  ? 'Director notified — escalation logged. Act on findings before the window closes.'
- : 'Risk score 78 — above intervention threshold. Two actionable findings. Act before the window closes.'}
+ : 'Risk score 78 — above threshold. Two actionable findings. Act before end of shift.'}
  >
  <Btn variant="secondary" onClick={() => { setCol1Tab('tasks'); setShowNearMiss(true) }}>
  + Near miss
@@ -641,13 +689,13 @@ export default function ShiftIQ() {
 
  {/* Line switcher */}
  {(() => {
-  const al = d.lines.find(l => l.id === activeLine)
+  const al = d.lines.find(l => l.id === activeLine) ?? d.lines[0]
   const sc = riskColorClass(al.score)
   const zone = riskLabel(al.score)
   return (
    <>
    <div className="flex items-center gap-3 px-4 py-2.5 border-b border-rule2 bg-stone2 flex-shrink-0">
-    <button
+    <button type="button"
      ref={lineTriggerRef}
      type="button"
      onClick={() => setLineDropOpen(o => !o)}
@@ -669,9 +717,6 @@ export default function ShiftIQ() {
     <div className="ml-auto flex items-center gap-3">
      <CrewAvatarStack crew={lineD.crew} onSelect={setViewingOperator} size={22} />
      <span className="font-body text-ghost text-[10px]">18 workers</span>
-     <Link to="/analytics" className="font-body text-int text-[10px] flex items-center gap-1 hover:text-ink transition-colors">
-      <BarChart2 size={10} />OEE analysis
-     </Link>
     </div>
    </div>
    {lineDropOpen && (
@@ -741,7 +786,7 @@ export default function ShiftIQ() {
    { id: 'orders', label: 'Orders' },
    { id: 'tasks', label: pendingTaskCount > 0 ? `Tasks \u00b7 ${pendingTaskCount}` : 'Tasks' },
   ].map(tab => (
-   <button key={tab.id} type="button"
+   <button type="button" key={tab.id} type="button"
    onClick={() => setCol1Tab(tab.id)}
    className={`px-4 py-2 font-body text-[10px] uppercase tracking-widest font-medium border-b-2 transition-colors cursor-pointer ${
     col1Tab === tab.id ? 'border-b-ochre text-ink' : 'border-b-transparent text-ghost hover:text-muted'
@@ -767,29 +812,51 @@ export default function ShiftIQ() {
  </div>
  </div>
  </div>
- {!overrideMode ? (
  <div className="flex gap-2">
  <Btn variant="primary" onClick={() => setChecklistSigned(p => ({ ...p, allergen: new Date().toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' }) }))}>Sign log now — Okonkwo</Btn>
- <Btn variant="secondary" onClick={() => setOverrideMode(true)}>Override — log reason</Btn>
+ <div className="relative">
+  <Btn variant="secondary" onClick={() => { setOverrideMode(o => !o); setOverrideReason(''); setOverrideShake(false) }}>Override — log reason</Btn>
+  {overrideMode && (
+   <div className="absolute top-full left-0 mt-1 bg-stone border border-rule2 shadow-raise z-20 w-[300px] plant-drop-in">
+    <div className="plant-drop-in-content p-3 space-y-2">
+     <input
+      type="text" placeholder="Override reason (required)…"
+      value={overrideReason}
+      onChange={e => { setOverrideReason(e.target.value); setOverrideShake(false) }}
+      className={`w-full font-body text-ink text-[11px] bg-stone border border-danger/30 px-2 py-1.5 ${overrideShake ? 'shake-error' : ''}`}
+      autoFocus
+     />
+     <div className="flex gap-2">
+      <button
+       type="button"
+       disabled={!overrideReason.trim() || overrideConfirmed}
+       onClick={() => {
+        if (!overrideReason.trim()) { setOverrideShake(true); return }
+        setOverrideConfirmed(true)
+        setTimeout(() => {
+         setAllergenOverride(overrideReason)
+         setOverrideMode(false)
+         setOverrideConfirmed(false)
+         logActivity({ actor:'D. Kowalski', action:`Allergen override: "${overrideReason}"`, item:'Allergen changeover log', type:'override' })
+        }, 650)
+       }}
+       style={{ transition: 'background-color 180ms ease, color 180ms ease, border-color 180ms ease' }}
+       className={`inline-flex items-center justify-center gap-2 px-4 py-2.5 font-body font-medium text-[12px] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
+        overrideConfirmed
+         ? 'bg-ok/[0.08] border border-ok/30 text-ok'
+         : 'bg-ink text-stone hover:bg-ink2 border-0'
+       }`}>
+       {overrideConfirmed
+        ? <><AnimatedCheck size={13} color="currentColor" />Override logged</>
+        : 'Override'}
+      </button>
+      <button type="button" onClick={() => { setOverrideMode(false); setOverrideReason('') }} className="font-body text-[11px] px-2 py-1.5 text-ghost">Cancel</button>
+     </div>
+    </div>
+   </div>
+  )}
  </div>
- ) : (
- <div className="space-y-2 slide-in">
- <input
- type="text" placeholder="Override reason (required)…"
- value={overrideReason}
- onChange={e => { setOverrideReason(e.target.value); setOverrideShake(false) }}
- className={`w-full font-body text-ink text-[11px] bg-stone border border-danger/30 px-2 py-1.5 ${overrideShake ? 'shake-error' : ''}`}
- autoFocus
- />
- <div className="flex gap-2">
- <Btn variant="primary" disabled={!overrideReason.trim()} onClick={() => {
- if (!overrideReason.trim()) { setOverrideShake(true); return }
- setAllergenOverride(overrideReason); setOverrideMode(false); logActivity({ actor:'D. Kowalski', action:`Allergen override: "${overrideReason}"`, item:'Allergen changeover log', type:'override' })
- }}>Confirm override — auto-CAPA created</Btn>
- <button type="button" onClick={() => setOverrideMode(false)} className="font-body text-[11px] px-2 py-1.5 text-ghost">Cancel</button>
  </div>
- </div>
- )}
  </div>
  )}
  {allergenOverride && (
@@ -808,168 +875,203 @@ export default function ShiftIQ() {
  <div className="flex items-baseline gap-3 px-4 py-2 border-b border-rule2">
  <Urg level="critical">3 pending · 27 min</Urg>
  </div>
- {d.findings.map(f => (
- <Finding key={f.id} f={f} onAct={(id) => {
-  setActed(p => ({ ...p, [id]: true }))
-  if (id === 'sf3') {
-   setPredActioned(true)
-   setMaintenanceTickets(p => [...p.filter(t => t.id !== 'MT-001'), { id:'MT-001', equipment:'Sensor A-7 · Conveyor Line 4', issue:'Micro-variance count 4/5 — bearing inspection before next shift', urgency:'warn', status:'open', requestedBy:'D. Kowalski', createdAt:'13:40' }])
-  }
- }} />
+ {d.findings
+  .filter(f => !permanentDismiss.has(f.id))
+  .map(f => (
+ <Finding key={f.id} f={f}
+  dismissed={pendingDismiss.has(f.id)}
+  onDismiss={handleDismiss}
+  onAct={(id) => {
+   setActed(p => ({ ...p, [id]: true }))
+   if (id === 'sf3') {
+    setPredActioned(true)
+    setMaintenanceTickets(p => [...p.filter(t => t.id !== 'MT-001'), { id:'MT-001', equipment:'Sensor A-7 · Conveyor Line 4', issue:'Micro-variance count 4/5 — bearing inspection before next shift', urgency:'warn', status:'open', requestedBy:'D. Kowalski', createdAt:'13:40' }])
+   }
+  }} />
  ))}
  </>
  )}
 
  {col1Tab === 'tasks' && (
  <>
- {/* Maintenance tickets */}
-  {maintenanceTickets.length > 0 && (
-  <>
-   <div className="px-4 py-2 border-b border-rule2 bg-stone2 font-body uppercase tracking-widest text-ghost text-[10px] font-medium">Maintenance tickets</div>
-   {maintenanceTickets.map((t, i) => (
-   <div key={i} className="flex items-start gap-2 px-4 py-2.5 border-b border-rule2">
-    <div className={`w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0 ${t.urgency === 'danger' ? 'bg-danger' : 'bg-warn'}`} />
-    <div className="flex-1 min-w-0">
-    <div className="font-body font-medium text-ink text-[11px] truncate">{t.equipment}</div>
-    <div className="font-body text-ghost text-[10px]">{t.issue}</div>
-    <div className="flex items-center gap-2 mt-1">
-     <span className={`font-body font-medium text-[10px] px-1.5 py-px rounded-[3px] ${t.status === 'open' ? 'bg-warn/10 text-warn' : 'bg-ok/10 text-ok'}`}>{t.status}</span>
-     <span className="font-body text-ghost text-[10px]">{t.createdAt} · {t.requestedBy}</span>
-    </div>
-    </div>
-    {t.status === 'open' && (
-    <button type="button" onClick={() => setMaintenanceTickets(p => p.map((x,j) => j===i ? {...x, status:'closed'} : x))}
-     className="font-body text-[10px] px-1.5 py-0.5 bg-stone3 text-muted hover:bg-ok/10 hover:text-ok transition-colors flex-shrink-0">Close</button>
+  {/* ── Header ───────────────────────────────────────────────────────── */}
+  <div className="flex items-center justify-between px-5 py-2.5 border-b border-rule2 bg-stone2 flex-shrink-0">
+   <div className="flex items-center gap-2">
+    <span className="font-body text-ghost text-[10px] uppercase tracking-widest">Tasks</span>
+    {pendingTaskCount > 0 && (
+     <span className="font-body text-warn text-[10px] font-medium">{pendingTaskCount} pending</span>
     )}
    </div>
-   ))}
-  </>
+   <button type="button" onClick={() => setShowTaskForm(true)}
+    className="font-body text-[10px] text-muted hover:text-ink transition-colors px-2 py-0.5 border border-rule2 hover:border-ink/30">
+    + Assign
+   </button>
+  </div>
+
+  {/* ── Assigned tasks ────────────────────────────────────────────────── */}
+  {Object.entries(taskAssignments).flatMap(([op, tasks]) =>
+   tasks.map((t, i) => (
+    <div key={op + i} className={`flex items-start gap-3 px-5 py-3.5 border-b border-rule2 border-l-2 ${
+     t.done ? 'border-l-ok opacity-40' : 'border-l-rule2'
+    }`}>
+     <button type="button" aria-label={t.done ? 'Completed' : 'Mark complete'}
+      onClick={() => !t.done && setTaskAssignments(p => ({...p, [op]: p[op].map((x,j) => j===i ? {...x, done:true} : x)}))}
+      className={`w-5 h-5 rounded-full flex-shrink-0 flex items-center justify-center mt-0.5 transition-colors ${
+       t.done ? 'bg-ok' : 'border-2 border-rule2 hover:border-ok hover:bg-ok/10 cursor-pointer'
+      }`}>
+      {t.done && <Check size={10} strokeWidth={2.5} className="text-white" />}
+     </button>
+     <div className="flex-1 min-w-0">
+      <div className={`font-body font-medium text-[13px] leading-snug ${t.done ? 'line-through text-ghost' : 'text-ink'}`}>
+       {t.label}
+      </div>
+      <div className="font-body text-ghost text-[10px] mt-0.5">{op} · {t.dueTime}</div>
+     </div>
+    </div>
+   ))
   )}
 
- {/* Task assignment */}
- <div className="border-t border-rule2 px-4 py-3">
- <div className="flex items-center justify-between mb-2">
- <span className="font-body text-ghost text-[10px] uppercase tracking-widest">Assigned tasks</span>
- <button type="button" onClick={() => setShowTaskForm(p => !p)} className="font-body text-ghost text-[10px] hover:text-muted transition-colors">+ Assign</button>
- </div>
- {Object.entries(taskAssignments).flatMap(([op, tasks]) => tasks.map((t,i) => (
- <div key={op+i} className={`flex items-center gap-2 py-1.5 border-b border-rule2 last:border-b-0 ${t.done ? 'opacity-50' : ''}`}>
- <button type="button" onClick={() => setTaskAssignments(p => ({...p, [op]: p[op].map((x,j) => j===i ? {...x, done:true} : x)}))}
- className={`w-3.5 h-3.5 flex-shrink-0 border ${t.done ? 'bg-ok border-ok' : 'border-rule2 hover:border-ok'} transition-colors`} />
- <div className="flex-1 min-w-0">
- <div className={`font-body text-[10px] ${t.done ? 'line-through text-ghost' : 'text-ink'}`}>{t.label}</div>
- <div className="font-body text-ghost text-[10px]">{op} · {t.dueTime}</div>
- </div>
- </div>
- )))}
- {showTaskForm && (
-  <div className="fixed inset-0 bg-ink/50 z-50 flex items-center justify-center p-4">
-   <div className="bg-stone border border-rule2 rounded-lg shadow-lg max-w-sm w-full">
-    <div className="px-4 py-3 border-b border-rule2">
-     <div className="font-body font-medium text-ink text-[13px]">Assign task</div>
-    </div>
-    <div className="p-4 space-y-4">
-     <div>
-      <div className="font-body text-ghost text-[10px] mb-2">Assign to</div>
-      <div className="grid grid-cols-3 gap-2">
-       {[
-        { name: 'A. Martinez', avatar: 'A. Martinez' },
-        { name: 'C. Reyes', avatar: 'C. Reyes' },
-        { name: 'P. Okonkwo', avatar: 'P. Okonkwo' },
-        { name: 'F. Adeyemi', avatar: 'F. Adeyemi' },
-        { name: 'T. Osei', avatar: 'T. Osei' }
-       ].map(person => (
-        <button
-         key={person.name}
-         type="button"
-         onClick={() => setTaskForm(p => ({...p, assignee: person.name}))}
-         className={`flex flex-col items-center gap-1 p-2 rounded border transition-colors ${
-          taskForm.assignee === person.name ? 'border-ok bg-ok/5' : 'border-rule2 hover:border-muted'
-         }`}>
-         <PersonAvatar name={person.avatar} size={32} />
-         <span className="font-body text-[10px] text-ink truncate w-full text-center">{person.name.split(' ')[0]}</span>
-        </button>
-       ))}
-      </div>
-     </div>
-     <div>
-      <div className="font-body text-ghost text-[10px] mb-2">Due time</div>
-      <div className="grid grid-cols-2 gap-2">
-       {[
-        'Today',
-        'Tomorrow',
-        'Monday morning',
-        'Pick date/time'
-       ].map(time => (
-        <button
-         key={time}
-         type="button"
-         onClick={() => setTaskForm(p => ({...p, dueTime: time}))}
-         className={`font-body text-[11px] px-3 py-2 rounded border transition-colors ${
-          taskForm.dueTime === time ? 'border-ok bg-ok/5 text-ok' : 'border-rule2 bg-stone hover:border-muted text-ink'
-         }`}>
-         {time}
-        </button>
-       ))}
-      </div>
-     </div>
-     <input aria-label="Task description" placeholder="Task description" value={taskForm.label} onChange={e => setTaskForm(p => ({...p, label: e.target.value}))}
-      className="w-full font-body text-ink text-[11px] bg-stone border border-rule2 px-3 py-2 rounded" />
-     <div className="flex gap-2">
-      <Btn variant="primary" disabled={!taskForm.assignee || !taskForm.label || !taskForm.dueTime} onClick={() => {
-       const { assignee, label, dueTime } = taskForm
-       setTaskAssignments(p => ({...p, [assignee]: [...(p[assignee]||[]), { label, dueTime, done: false, id: Date.now() }]}))
-       setTaskForm({ assignee:'', label:'', dueTime:'' }); setShowTaskForm(false)
-      }}>Assign task</Btn>
-      <button type="button" onClick={() => setShowTaskForm(false)} className="font-body text-[11px] text-ghost px-3 py-2">Cancel</button>
-     </div>
-    </div>
+  {Object.values(taskAssignments).flat().length === 0 && (
+   <div className="px-5 py-6 font-body text-ghost text-[12px]">
+    No tasks assigned — use + Assign to add tasks for operators
    </div>
-  </div>
- )}
- </div>
+  )}
 
- {/* Near-miss reporting */}
- <div className="border-t border-rule2 px-4 py-3">
- {!showNearMiss && !nearMissSubmitted && (
- <button type="button" onClick={() => setShowNearMiss(true)} className="font-body text-ghost text-[11px] hover:text-muted transition-colors">
- + Log a near-miss
- </button>
- )}
- {showNearMiss && !nearMissSubmitted && (
- <div className="slide-in space-y-2">
- <div className="font-body text-ghost text-[10px] uppercase tracking-widest">Near-miss report</div>
- <select aria-label="Station where near-miss occurred" value={nearMissForm.station} onChange={e => setNearMissForm(p => ({...p, station: e.target.value}))}
- className="w-full font-body text-ink text-[11px] bg-stone border border-rule2 px-2 py-1 cursor-pointer">
- <option value="">Station…</option>
- <option>Sauce Dosing</option>
- <option>Oven Station B</option>
- <option>Pack Line</option>
- <option>Topping Line</option>
- </select>
- <textarea aria-label="What happened" placeholder="What happened?" value={nearMissForm.what} onChange={e => setNearMissForm(p => ({...p, what: e.target.value}))}
- className="w-full font-body text-ink text-[11px] bg-stone border border-rule2 px-2 py-1 h-16 resize-none" />
- <input aria-label="Corrective step taken" placeholder="Corrective step taken" value={nearMissForm.action} onChange={e => setNearMissForm(p => ({...p, action: e.target.value}))}
- className="w-full font-body text-ink text-[11px] bg-stone border border-rule2 px-2 py-1" />
- <label className="flex items-center gap-2 font-body text-muted text-[11px] cursor-pointer">
- <input type="checkbox" checked={nearMissForm.atRisk} onChange={e => setNearMissForm(p => ({...p, atRisk: e.target.checked}))} />
- Anyone at risk of injury?
- </label>
- <div className="flex gap-2">
- <Btn variant="primary" disabled={!nearMissForm.station || !nearMissForm.what} onClick={() => {
- const t = new Date().toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' })
- setNearMisses(p => [...p, { ...nearMissForm, time: t }])
- logActivity({ actor:'D. Kowalski', action:`Near-miss reported — ${nearMissForm.station}`, item: nearMissForm.what, type:'near_miss' })
- setNearMissSubmitted(true); setShowNearMiss(false)
- }}>Submit — auto-CAPA created</Btn>
- <button type="button" onClick={() => setShowNearMiss(false)} className="font-body text-[11px] px-2 py-1 text-ghost">Cancel</button>
- </div>
- </div>
- )}
- {nearMissSubmitted && (
- <div className="font-body text-ok text-[11px] slide-in">Near-miss logged · CAPA created · Assigned to Kowalski for review</div>
- )}
- </div>
+  {/* ── Maintenance tickets ───────────────────────────────────────────── */}
+  {maintenanceTickets.length > 0 && (
+   <>
+    <div className="px-5 py-2 border-b border-t border-rule2 bg-stone2 flex-shrink-0">
+     <span className="font-body text-ghost text-[10px] uppercase tracking-widest">Maintenance</span>
+    </div>
+    {maintenanceTickets.map((t, i) => (
+     <div key={i} className={`flex items-start gap-3 px-5 py-3.5 border-b border-rule2 border-l-2 ${
+      t.status === 'closed' ? 'border-l-ok opacity-40' : t.urgency === 'danger' ? 'border-l-danger bg-danger/[0.015]' : 'border-l-warn'
+     }`}>
+      <div className="flex-1 min-w-0">
+       <div className="font-body font-medium text-ink text-[12px] leading-snug">{t.equipment}</div>
+       <div className="font-body text-ghost text-[10px] mt-0.5 leading-snug">{t.issue}</div>
+       <div className="flex items-center gap-2 mt-1.5">
+        <span className={`font-body text-[10px] font-medium px-1.5 py-px rounded-btn ${t.status === 'closed' ? 'bg-ok/10 text-ok' : 'bg-warn/10 text-warn'}`}>{t.status}</span>
+        <span className="font-body text-ghost text-[10px]">{t.createdAt} · {t.requestedBy}</span>
+       </div>
+      </div>
+      {t.status === 'open' ? (
+       <button type="button"
+        onClick={() => setMaintenanceTickets(p => p.map((x,j) => j===i ? {...x, status:'closed'} : x))}
+        className="flex items-center justify-center w-10 h-10 rounded-full border-2 border-rule2 hover:border-ok hover:text-ok transition-colors flex-shrink-0 cursor-pointer"
+        aria-label={`Resolve: ${t.equipment}`}>
+        <Check size={18} strokeWidth={2} className="text-ghost" />
+       </button>
+      ) : (
+       <div className="flex items-center justify-center w-10 h-10 rounded-full border border-ok/20 bg-ok/5 flex-shrink-0">
+        <AnimatedCheck size={18} color="#3A8A5A" />
+       </div>
+      )}
+     </div>
+    ))}
+   </>
+  )}
+
+  {/* ── Near-miss reporting ───────────────────────────────────────────── */}
+  <div className="border-t border-rule2 px-5 py-3">
+   {!showNearMiss && !nearMissSubmitted && (
+    <button type="button" onClick={() => setShowNearMiss(true)}
+     className="font-body text-ghost text-[11px] hover:text-muted transition-colors">
+     + Log a near-miss
+    </button>
+   )}
+   {showNearMiss && !nearMissSubmitted && (
+    <div className="slide-in space-y-2">
+     <div className="font-body text-ghost text-[10px] uppercase tracking-widest">Near-miss report</div>
+     <select aria-label="Station where near-miss occurred" value={nearMissForm.station} onChange={e => setNearMissForm(p => ({...p, station: e.target.value}))}
+      className="w-full font-body text-ink text-[11px] bg-stone border border-rule2 px-2 py-1 cursor-pointer">
+      <option value="">Station…</option>
+      <option>Sauce Dosing</option>
+      <option>Oven Station B</option>
+      <option>Pack Line</option>
+      <option>Topping Line</option>
+     </select>
+     <textarea aria-label="What happened" placeholder="What happened?" value={nearMissForm.what} onChange={e => setNearMissForm(p => ({...p, what: e.target.value}))}
+      className="w-full font-body text-ink text-[11px] bg-stone border border-rule2 px-2 py-1 h-16 resize-none" />
+     <input aria-label="Corrective step taken" placeholder="Corrective step taken" value={nearMissForm.action} onChange={e => setNearMissForm(p => ({...p, action: e.target.value}))}
+      className="w-full font-body text-ink text-[11px] bg-stone border border-rule2 px-2 py-1" />
+     <label className="flex items-center gap-2 font-body text-muted text-[11px] cursor-pointer">
+      <input type="checkbox" checked={nearMissForm.atRisk} onChange={e => setNearMissForm(p => ({...p, atRisk: e.target.checked}))} />
+      Anyone at risk of injury?
+     </label>
+     <div className="flex gap-2">
+      <Btn variant="primary" disabled={!nearMissForm.station || !nearMissForm.what} onClick={() => {
+       const t = new Date().toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' })
+       setNearMisses(p => [...p, { ...nearMissForm, time: t }])
+       logActivity({ actor:'D. Kowalski', action:`Near-miss reported — ${nearMissForm.station}`, item: nearMissForm.what, type:'near_miss' })
+       setNearMissSubmitted(true); setShowNearMiss(false)
+      }}>Submit — auto-CAPA created</Btn>
+      <button type="button" onClick={() => setShowNearMiss(false)} className="font-body text-[11px] px-2 py-1 text-ghost">Cancel</button>
+     </div>
+    </div>
+   )}
+   {nearMissSubmitted && (
+    <div className="font-body text-ok text-[11px] slide-in">Near-miss logged · CAPA created · Assigned to Kowalski for review</div>
+   )}
+  </div>
+
+  {/* ── Assign task drawer ────────────────────────────────────────────── */}
+  <VaulDrawer
+   open={showTaskForm}
+   onClose={() => { setShowTaskForm(false); setTaskForm({ assignee:'', label:'', dueTime:'' }) }}
+   title="Assign task"
+   maxHeight="72vh"
+   maxWidth="480px"
+  >
+   <div className="p-5 space-y-5">
+    <div>
+     <div className="font-body text-ghost text-[10px] uppercase tracking-widest mb-3">Assign to</div>
+     <div className="grid grid-cols-5 gap-2">
+      {['A. Martinez','C. Reyes','P. Okonkwo','F. Adeyemi','T. Osei'].map(name => (
+       <button type="button" key={name} type="button"
+        onClick={() => setTaskForm(p => ({...p, assignee: name}))}
+        className={`flex flex-col items-center gap-1.5 p-2 border transition-colors ${
+         taskForm.assignee === name ? 'border-ok bg-ok/[0.05]' : 'border-rule2 hover:border-muted'
+        }`}>
+        <PersonAvatar name={name} size={32} />
+        <span className="font-body text-[10px] text-ink truncate w-full text-center">{name.split(' ')[0]}</span>
+       </button>
+      ))}
+     </div>
+    </div>
+    <div>
+     <div className="font-body text-ghost text-[10px] uppercase tracking-widest mb-3">Due</div>
+     <div className="grid grid-cols-2 gap-2">
+      {['Before shift end','Tomorrow AM','This week','No deadline'].map(time => (
+       <button type="button" key={time} type="button"
+        onClick={() => setTaskForm(p => ({...p, dueTime: time}))}
+        className={`font-body text-[11px] px-3 py-2.5 border text-left transition-colors ${
+         taskForm.dueTime === time ? 'border-ok bg-ok/[0.05] text-ok' : 'border-rule2 hover:border-muted text-ink'
+        }`}>
+        {time}
+       </button>
+      ))}
+     </div>
+    </div>
+    <div>
+     <div className="font-body text-ghost text-[10px] uppercase tracking-widest mb-2">Task</div>
+     <input aria-label="Task description" placeholder="Describe the task…"
+      value={taskForm.label} onChange={e => setTaskForm(p => ({...p, label: e.target.value}))}
+      className="w-full font-body text-ink text-[12px] bg-stone border border-rule2 px-3 py-2.5 focus:outline-none focus:border-ochre" />
+    </div>
+    <Btn variant="primary"
+     disabled={!taskForm.assignee || !taskForm.label || !taskForm.dueTime}
+     onClick={() => {
+      const { assignee, label, dueTime } = taskForm
+      setTaskAssignments(p => ({...p, [assignee]: [...(p[assignee]||[]), { label, dueTime, done: false, id: Date.now() }]}))
+      setTaskForm({ assignee:'', label:'', dueTime:'' })
+      setShowTaskForm(false)
+     }}>
+     Assign task
+    </Btn>
+   </div>
+  </VaulDrawer>
+
  </>
  )}
  {false && /* checklist moved to FAB drawer below */ (
@@ -1011,7 +1113,7 @@ export default function ShiftIQ() {
     <div className="flex gap-2">
      {['negative','positive'].map(r => (
      <button type="button" key={r} onClick={() => setEmpForm(p => ({...p, [item.key]: {...p[item.key], result: r}}))}
-      className={`font-body font-medium text-[10px] px-2 py-1 rounded-[3px] transition-colors ${empForm[item.key]?.result === r ? (r === 'negative' ? 'bg-ok text-white' : 'bg-danger text-white') : 'bg-stone3 text-muted'}`}>
+      className={`font-body font-medium text-[10px] px-2 py-1 rounded-btn transition-colors ${empForm[item.key]?.result === r ? (r === 'negative' ? 'bg-ok text-white' : 'bg-danger text-white') : 'bg-stone3 text-muted'}`}>
       {r.charAt(0).toUpperCase() + r.slice(1)}
      </button>
      ))}
@@ -1069,13 +1171,24 @@ export default function ShiftIQ() {
   {/* Agent timeline */}
   {hasLiveData && <AgentTimeline timeline={lineD.agentTimeline} sparkline={lineD.sparkline} score={lineScore} />}
 
-  {/* Signal health */}
+  {/* Signal health — collapsible */}
   {hasLiveData && (
   <div className="border-t border-rule2">
-   <div className="px-4 py-2.5 bg-stone2 border-b border-rule2">
-   <span className="font-body text-ghost text-[10px] uppercase tracking-widest">Signal health</span>
-   </div>
-   {lineD.signals.map((sig, i) => <SignalCard key={i} sig={sig} />)}
+   <button type="button" onClick={() => setSignalHealthOpen(o => !o)}
+    className="flex items-center justify-between w-full px-4 py-2.5 bg-stone2 border-b border-rule2 hover:bg-stone3 transition-colors">
+    <span className="font-body text-ghost text-[10px] uppercase tracking-widest">Signal health</span>
+    <div className="flex items-center gap-2">
+     <span className={`font-body text-[10px] ${lineD.signals.some(s => s.tone === 'danger') ? 'text-danger' : lineD.signals.some(s => s.tone === 'warn') ? 'text-warn' : 'text-ok'}`}>
+      {lineD.signals.filter(s => s.tone !== 'ok').length > 0 ? `${lineD.signals.filter(s => s.tone !== 'ok').length} flagged` : 'All clear'}
+     </span>
+     {signalHealthOpen ? <ChevronUp size={11} className="text-ghost" /> : <ChevronDown size={11} className="text-ghost" />}
+    </div>
+   </button>
+   {signalHealthOpen && (
+    <div className="slide-in">
+     {lineD.signals.map((sig, i) => <SignalCard key={i} sig={sig} />)}
+    </div>
+   )}
   </div>
   )}
 
@@ -1175,7 +1288,7 @@ export default function ShiftIQ() {
   {/* Crew — shown when pilot panel is collapsed */}
   {!pilotExpanded && hasLiveData && (
   <div className="border-t border-rule2">
-   <div className="px-4 py-2 bg-stone2 border-b border-rule2 font-body text-ghost text-[10px] uppercase tracking-widest">Crew</div>
+   <div className="px-4 py-2.5 border-b border-rule2 font-body text-ghost text-[10px] uppercase tracking-widest">Crew</div>
    {lineD.crew.map((m, i) => <CrewRow key={i} m={m} onView={setViewingOperator} />)}
   </div>
   )}
@@ -1195,7 +1308,7 @@ export default function ShiftIQ() {
  {/* Expansion gate modal */}
  {showExpansionGate && !pilotExpanded && (
   <div className="fixed inset-0 bg-ink/40 z-50 flex items-center justify-center p-6">
-   <div className="bg-stone border border-rule2 w-full max-w-[480px] shadow-[0_24px_60px_rgba(16,15,13,0.3)]">
+   <div className="bg-stone border border-rule2 w-full max-w-[480px] shadow-raise">
     <div className="px-5 py-4 border-b border-rule2 bg-stone2">
      <div className="font-body text-muted text-[10px] mb-1">Pilot expansion</div>
      <div className="font-display font-bold text-ink text-[16px]">Expand to all lines</div>
@@ -1284,7 +1397,7 @@ export default function ShiftIQ() {
     type="button"
     onClick={() => setChecklistDrawerOpen(true)}
     aria-label={`Open shift checklist — ${remaining > 0 ? `${remaining} items remaining` : 'all signed'}`}
-    className="fixed bottom-6 right-6 z-20 flex items-center gap-2 px-4 py-2.5 min-h-[40px] bg-ink text-stone font-body text-[12px] font-medium rounded-[3px] shadow-[0_4px_20px_rgba(10,9,6,0.25)] hover:bg-ink2 transition-[background-color,box-shadow] duration-100 ease-standard"
+    className="fixed bottom-6 right-6 z-20 flex items-center gap-2 px-4 py-2.5 min-h-[40px] bg-ink text-stone font-body text-[12px] font-medium rounded-btn shadow-raise hover:bg-ink2 transition-[background-color,box-shadow] duration-100 ease-standard"
    >
     {remaining > 0
      ? <><ListChecks size={14} /><span>Checklist</span><span className="w-4 h-4 flex items-center justify-center bg-warn text-white text-[10px] font-bold rounded-sm flex-shrink-0">{remaining}</span></>
@@ -1359,7 +1472,7 @@ export default function ShiftIQ() {
          {showFlagForm ? <X size={18} strokeWidth={2} className="text-ink" /> : <Flag size={18} strokeWidth={2} className="text-ghost" />}
         </button>
         {showFlagForm && (
-         <div className="absolute top-0 right-0 flex items-center gap-1 bg-stone border border-rule2 rounded-md px-2 py-1 shadow-md z-10">
+         <div className="absolute top-0 right-0 flex items-center gap-1 bg-stone border border-rule2 rounded-md px-2 py-1 shadow-raise z-10">
           <button type="button" onClick={() => setFlagForm(p => { const n = {...p}; delete n[item.key]; return n })} 
            className="flex items-center justify-center w-6 h-6 rounded hover:bg-stone2 transition-colors"
            aria-label="Close flag selector">
@@ -1368,7 +1481,7 @@ export default function ShiftIQ() {
           {FLAG_REASONS.map(({ value, label, Icon }) => {
            const active = flagForm[item.key]?.reason === value
            return (
-            <button
+            <button type="button"
              key={value}
              type="button"
              onClick={() => {
@@ -1401,7 +1514,7 @@ export default function ShiftIQ() {
      <div className="flex gap-2">
       {['negative','positive'].map(r => (
       <button type="button" key={r} onClick={() => setEmpForm(p => ({...p, [item.key]: {...p[item.key], result: r}}))}
-       className={`font-body font-medium text-[10px] px-2 py-1 rounded-[3px] transition-colors ${empForm[item.key]?.result === r ? (r === 'negative' ? 'bg-ok text-white' : 'bg-danger text-white') : 'bg-stone3 text-muted'}`}>
+       className={`font-body font-medium text-[10px] px-2 py-1 rounded-btn transition-colors ${empForm[item.key]?.result === r ? (r === 'negative' ? 'bg-ok text-white' : 'bg-danger text-white') : 'bg-stone3 text-muted'}`}>
        {r.charAt(0).toUpperCase() + r.slice(1)}
       </button>
       ))}
@@ -1426,6 +1539,25 @@ export default function ShiftIQ() {
    )
   })}
  </VaulDrawer>
+
+ {/* Dismiss undo toasts */}
+ {[...pendingDismiss.entries()].map(([id, { title }]) => (
+  <div key={id} className="fixed bottom-4 left-[calc(240px+1rem)] z-[70]">
+   <div className="flex flex-col bg-ink border border-ink2 slide-in overflow-hidden">
+    <div className="flex items-center gap-4 px-4 py-2.5">
+     <span className="font-body text-stone text-[11px] flex-1 min-w-0 truncate">Dismissed: {title}</span>
+     <button type="button" onClick={() => handleUndoDismiss(id)}
+      className="font-body font-medium text-[11px] text-ochre hover:text-ochre/80 flex-shrink-0 transition-colors min-h-[44px] px-2">
+      Undo
+     </button>
+    </div>
+    <div className="h-px bg-ink2">
+     <div className="undo-countdown h-full bg-ochre" />
+    </div>
+   </div>
+  </div>
+ ))}
+
  </div>
  )
 }
