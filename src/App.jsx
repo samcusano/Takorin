@@ -5,7 +5,6 @@ import ErrorBoundary from './components/ErrorBoundary'
 import { useAppState } from './context/AppState'
 
 const CommandSurface   = lazy(() => import('./screens/CommandSurface'))
-const PlantOverview    = lazy(() => import('./screens/PlantOverview'))
 const ShiftIQ          = lazy(() => import('./screens/ShiftIQ'))
 const HandoffIQ        = lazy(() => import('./screens/HandoffIQ'))
 const SupplierIQ       = lazy(() => import('./screens/SupplierIQ'))
@@ -17,6 +16,7 @@ const Analytics        = lazy(() => import('./screens/Analytics'))
 const NotificationCenter = lazy(() => import('./screens/NotificationCenter'))
 const DesignLabPage    = lazy(() => import('./__design_lab/DesignLabPage'))
 const AnalyticsLabPage = lazy(() => import('./__design_lab/AnalyticsLabPage'))
+const VizLabPage       = lazy(() => import('./__design_lab/VizLabPage'))
 
 function ScreenLoader() {
  return <div className="flex-1 flex items-center justify-center font-body text-ghost text-[11px]">Loading…</div>
@@ -55,8 +55,8 @@ export default function App() {
  <Suspense fallback={<ScreenLoader />}>
  <Routes>
  <Route path="/" element={<Navigate to="/plant" replace />} />
- <Route path="/plant" element={<ErrorBoundary><PlantOverview /></ErrorBoundary>} />
- <Route path="/command" element={<ErrorBoundary><CommandSurface /></ErrorBoundary>} />
+ <Route path="/plant" element={<ErrorBoundary><CommandSurface /></ErrorBoundary>} />
+ <Route path="/command" element={<Navigate to="/plant" replace />} />
  <Route path="/shift" element={<ErrorBoundary><ShiftIQ /></ErrorBoundary>} />
  <Route path="/handoff" element={<ErrorBoundary><HandoffIQ /></ErrorBoundary>} />
  <Route path="/supplier" element={<ErrorBoundary><SupplierIQ /></ErrorBoundary>} />
@@ -69,6 +69,7 @@ export default function App() {
  <Route path="/notifications" element={<ErrorBoundary><NotificationCenter /></ErrorBoundary>} />
  <Route path="/__design_lab" element={<DesignLabPage />} />
  <Route path="/__analytics_lab" element={<AnalyticsLabPage />} />
+ <Route path="/__viz_lab" element={<VizLabPage />} />
  </Routes>
  </Suspense>
  </main>

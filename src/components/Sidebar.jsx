@@ -5,12 +5,13 @@ import {
  Activity, Handshake, Truck, ClipboardCheck,
  Gauge,
  Building2, ChevronDown, Globe2,
- LayoutDashboard, MapPin, ShieldCheck, AlertTriangle,
+ MapPin, ShieldCheck, AlertTriangle,
  LayoutGrid, BarChart2, Bell, User,
 } from 'lucide-react'
 import { useAppState, PLANTS } from '../context/AppState'
 import { commandData } from '../data'
 import { PersonAvatar } from './UI'
+import NotificationCenter from '../screens/NotificationCenter'
 
 const modules = [
  { id:'shift', label:'ShiftIQ', path:'/shift', icon:Activity, badge:'3', badgeType:'alert' },
@@ -30,12 +31,12 @@ function Badge({ badge, badgeType }) {
  <span className="ml-auto w-1.5 h-1.5 rounded-full bg-ok beat" />
  )
  if (badgeType === 'score') return (
- <span className="ml-auto text-[10px] font-semibold px-1.5 py-0.5 bg-ochre text-stone font-body rounded-[3px]">
+ <span className="ml-auto text-[10px] font-semibold px-1.5 py-0.5 bg-ochre text-stone font-body rounded-btn">
  {badge}
  </span>
  )
  return (
- <span className="ml-auto text-[10px] font-semibold px-1.5 py-0.5 bg-danger text-white rounded-[3px]">
+ <span className="ml-auto text-[10px] font-semibold px-1.5 py-0.5 bg-danger text-white rounded-btn">
  {badge}
  </span>
  )
@@ -74,50 +75,44 @@ function SideItem({ to, icon: Icon, label, badge, badgeType, disabled, id, onDis
  )
 }
 
-function CommandSurfaceItem() {
+function PlantItem() {
  const { commandAcknowledged } = useAppState() || {}
  const acknowledged = commandAcknowledged || new Set()
  const activeCount = commandData.items.filter(
- i => !acknowledged.has(i.id) && i.urgency !== 'watch'
+  i => !acknowledged.has(i.id) && i.urgency !== 'watch'
  ).length
  const criticalCount = commandData.items.filter(
- i => !acknowledged.has(i.id) && i.urgency === 'danger'
+  i => !acknowledged.has(i.id) && i.urgency === 'danger'
  ).length
-
  return (
- <NavLink
- to="/command"
- className={({ isActive }) =>
- `flex items-center gap-3 px-4 py-3 text-sm transition-colors duration-100 border-l-2 border-b border-sidebar-border ` +
- (isActive
- ? `border-l-ochre bg-ochre/10 text-stone font-medium`
- : `border-l-transparent text-stone/70 hover:bg-sidebar-2 hover:text-stone`)
- }
- >
- {({ isActive }) => (<>
- <LayoutDashboard
- size={15}
- strokeWidth={1.75}
- className="flex-shrink-0"
- />
- <span className="font-body flex-1">Command</span>
- {activeCount > 0 && (
- <span className={`ml-auto text-[10px] font-semibold px-1.5 py-0.5 ${
- criticalCount > 0 ? 'bg-danger text-white' : 'bg-warn/20 text-warn'
- }`}>
- {activeCount}
- </span>
- )}
- </>)}
- </NavLink>
+  <NavLink
+   to="/plant"
+   className={({ isActive }) =>
+    `flex items-center gap-3 px-4 py-2.5 text-sm transition-colors duration-100 border-l-2 ` +
+    (isActive
+     ? `border-ochre bg-ochre/10 text-stone font-medium`
+     : `border-transparent text-stone/70 hover:bg-sidebar-2 hover:text-stone`)
+   }
+  >
+   {() => (<>
+    <LayoutGrid size={15} strokeWidth={1.75} className="flex-shrink-0" />
+    <span className="font-body flex-1">Plant Overview</span>
+    {activeCount > 0 && (
+     <span className={`ml-auto text-[10px] font-semibold px-1.5 py-0.5 ${
+      criticalCount > 0 ? 'bg-danger text-white' : 'bg-warn/20 text-warn'
+     }`}>
+      {activeCount}
+     </span>
+    )}
+   </>)}
+  </NavLink>
  )
 }
 
 
-const AVAILABLE_PLANTS = [PLANTS.sl, PLANTS.ks]
+const AVAILABLE_PLANTS = [PLANTS.sl, PLANTS.ks, PLANTS.co]
 const DISABLED_PLANTS = [
  { name: 'Topeka Plant', code: 'KS-02' },
- { name: 'Denver Plant', code: 'CO-07' },
 ]
 
 function PlantDropdown({ triggerRef, onClose, complianceState, currentPlant, setCurrentPlant }) {
@@ -161,7 +156,7 @@ function PlantDropdown({ triggerRef, onClose, complianceState, currentPlant, set
    style={{ left: 0, top: Math.max(8, pos.top) }}
   >
    {/* Card */}
-   <div className="w-[240px] bg-sidebar border border-sidebar-border rounded-2xl shadow-[0_24px_60px_rgba(0,0,0,0.5)] overflow-hidden">
+   <div className="w-[240px] bg-sidebar border border-sidebar-border rounded-2xl shadow-raise overflow-hidden">
     <div className="plant-drop-in-content">
 
      {/* Header */}
@@ -262,7 +257,7 @@ function UserDropdown({ triggerRef, onClose, viewingRole, setViewingRole }) {
  }, [onClose, triggerRef])
 
  const roles = [
-  { id: 'director',         name: 'J. Crocker',  role: 'Plant Director',  route: '/command' },
+  { id: 'director',         name: 'J. Crocker',  role: 'Plant Director',  route: '/plant' },
   { id: 'supervisor',       name: 'D. Kowalski', role: 'Supervisor · L4', route: '/shift' },
   { id: 'operator-reyes',   name: 'C. Reyes',    role: 'Operator · L1',   route: '/operator' },
   { id: 'operator-okonkwo', name: 'P. Okonkwo',  role: 'Operator · L2',   route: '/operator' },
@@ -274,7 +269,7 @@ function UserDropdown({ triggerRef, onClose, viewingRole, setViewingRole }) {
    className="fixed z-50 plant-drop-in"
    style={{ left: 0, top: Math.max(8, pos.top) }}
   >
-   <div className="w-[240px] bg-sidebar border border-sidebar-border rounded-2xl shadow-[0_24px_60px_rgba(0,0,0,0.5)] overflow-hidden" style={{ maxHeight: 'calc(100vh - 24px)' }}>
+   <div className="w-[240px] bg-sidebar border border-sidebar-border rounded-2xl shadow-raise overflow-hidden" style={{ maxHeight: 'calc(100vh - 24px)' }}>
     <div className="plant-drop-in-content">
 
      {/* Header */}
@@ -319,6 +314,7 @@ export default function Sidebar() {
  const plantTriggerRef = useRef(null)
  const [userOpen, setUserOpen] = useState(false)
  const userTriggerRef = useRef(null)
+ const [notifOpen, setNotifOpen] = useState(false)
  const [toast, setToast] = useState(null)
  const { blockingEvidenceUploaded, allergenOverride, checklistSigned, nearMisses, maintenanceTickets, viewingRole, setViewingRole, currentPlant, setCurrentPlant } = useAppState() || {}
 
@@ -399,11 +395,7 @@ export default function Sidebar() {
   </>
  ) : (
   <>
-   {/* Plant Overview — entry point */}
-   <SideItem to="/plant" id="plant" icon={LayoutGrid} label="Plant Overview" badge={null} />
-
-   {/* Command Surface */}
-   <CommandSurfaceItem />
+   <PlantItem />
 
    <div className="px-4 pt-3 pb-1 text-[10px] tracking-widest uppercase text-stone/40 font-body font-medium">
    Intelligence
@@ -421,7 +413,13 @@ export default function Sidebar() {
    <div className="px-4 pt-4 pb-1 text-[10px] tracking-widest uppercase text-ghost font-body font-medium">
    Activity
    </div>
-   <SideItem to="/notifications" id="notifications" icon={Bell} label="Notifications" badge="4" badgeType="alert" />
+   <button type="button" onClick={() => setNotifOpen(true)}
+    className="flex items-center gap-3 px-4 py-2.5 w-full text-left transition-colors hover:bg-sidebar2 text-stone/80">
+    <Bell size={15} strokeWidth={1.75} className="flex-shrink-0" />
+    <span className="font-body text-[13px]">Notifications</span>
+    <span className="ml-auto text-[10px] font-semibold px-1.5 py-0.5 bg-danger text-white rounded-btn">4</span>
+   </button>
+   {notifOpen && <NotificationCenter onClose={() => setNotifOpen(false)} />}
   </>
  )}
 

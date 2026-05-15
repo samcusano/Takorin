@@ -1,611 +1,454 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import {
- Building2, Package, Truck, AlertTriangle, Shield,
- Users, MapPin, Clock, Lock, CheckCircle2, Tag,
- Brain, Activity, TrendingDown, Zap, ArrowRight
+ AlertTriangle, Lock, CheckCircle2,
+ Brain, TrendingDown, ChevronDown
 } from 'lucide-react'
 import { networkData } from '../data'
 import { useAppState } from '../context/AppState'
-import { ActionBanner, PersonAvatar, Btn, ActionCard, StatusIndicator, ExpandableMetadata, StatCell, Layout } from '../components/UI'
+import { ActionBanner, Btn, HoldButton } from '../components/UI'
+import { useFocusTrap } from '../lib/utils'
+
+// ── Intelligence signals ───────────────────────────────────────────────────────
 
 const NETWORK_SIGNALS = [
  {
-  id: 'sig1',
-  active: true,
+  id: 'sig1', active: true, confidence: 87, tone: 'danger',
+  supplier: 'ConAgra Foods',
   label: 'ConAgra delivery delays → Line 4 scrap spikes',
-  detail: 'Pattern detected across Salina + Wichita · 3 of 4 occurrences in past 90 days confirmed',
-  tone: 'danger',
-  plants: ['SL-04', 'KS-09'],
-  confidence: 87,
+  detail: 'Pattern confirmed across Salina + Wichita · 3 of 4 occurrences in past 90 days',
   action: 'Pre-order buffer recommended before next ConAgra delivery',
  },
  {
-  id: 'sig2',
-  active: true,
+  id: 'sig2', active: true, confidence: 74, tone: 'warn',
+  supplier: null,
   label: 'Allergen changeover delays correlated across lines',
-  detail: 'Salina Line 4 and Wichita Line 2 both show elevated risk on GF-Flatbread SKU transitions',
-  tone: 'warn',
-  plants: ['SL-04', 'KS-09'],
-  confidence: 74,
+  detail: 'Both plants show elevated risk on GF-Flatbread SKU transitions — pattern holds across 6 shifts',
   action: 'Standardize allergen changeover checklist across plants',
  },
- {
-  id: 'sig3',
-  active: false,
-  label: 'Supplier lead time degradation — predictive alert',
-  detail: 'Requires 3 connected plants · Topeka Plant (KS-02) not yet onboarded',
-  tone: 'muted',
-  plants: ['SL-04', 'KS-09', 'KS-02'],
-  confidence: null,
-  action: null,
-  locked: true,
- },
- {
-  id: 'sig4',
-  active: false,
-  label: 'Cross-plant OEE benchmark variance detection',
-  detail: 'Requires 3 connected plants · activates at Topeka onboarding',
-  tone: 'muted',
-  plants: ['SL-04', 'KS-09', 'KS-02'],
-  confidence: null,
-  action: null,
-  locked: true,
- },
+ { id: 'sig3', locked: true, label: 'Supplier lead time degradation — predictive alert',  detail: 'Requires 3 connected plants · Topeka Plant (KS-02) not yet onboarded' },
+ { id: 'sig4', locked: true, label: 'Cross-plant OEE benchmark variance detection',        detail: 'Requires 3 connected plants · activates at Topeka onboarding' },
 ]
+
+// ── Supplier master data ───────────────────────────────────────────────────────
 
 const SUPPLIER_NETWORK = [
  { name: 'ConAgra Foods', salina: 22, wichita: 31, trend: 'down', note: '3 non-conformances — both plants affected', tone: 'danger' },
- { name: 'Sysco',         salina: 67, wichita: 71, trend: 'up',   note: null, tone: 'ok' },
- { name: 'ADM Foods',     salina: 74, wichita: 78, trend: 'up',   note: null, tone: 'ok' },
- { name: 'Cargill',       salina: 81, wichita: 84, trend: 'up',   note: null, tone: 'ok' },
- { name: 'Prairie Farms', salina: 55, wichita: 60, trend: 'flat', note: 'Monitor — both below 65th pct.', tone: 'warn' },
+ { name: 'Sysco',         salina: 67, wichita: 71, trend: 'up',   note: null,                                         tone: 'ok'     },
+ { name: 'ADM Foods',     salina: 74, wichita: 78, trend: 'up',   note: null,                                         tone: 'ok'     },
+ { name: 'Cargill',       salina: 81, wichita: 84, trend: 'up',   note: null,                                         tone: 'ok'     },
+ { name: 'Prairie Farms', salina: 55, wichita: 60, trend: 'flat', note: 'Monitor — both below 65th pct.',             tone: 'warn'   },
 ]
 
-const plantMeta = {
- sl: { director: 'J. Crocker', region: 'Salina, KS', initials: 'JC' },
- tx: { director: 'R. Martinez', region: 'Houston, TX', initials: 'RM' },
- ks: { director: 'T. Okonkwo', region: 'Wichita, KS', initials: 'TO' },
-}
+const EXTRA_EXPOSURES = [
+ { lotId: 'PF-4420', supplier: 'Prairie Farms', ingredient: 'Mozzarella', affectedPlants: ['ks'], totalUnits: 1840, note: 'Shelf life at 8 days — rotation priority' },
+]
 
-function PlantCard({ plant, sharedLots }) {
- const meta = plantMeta[plant.id]
- const isAtRisk = plant.status === 'at-risk'
- const scoreColor = plant.score >= 80 ? 'text-ok' : plant.score >= 65 ? 'text-warn' : 'text-danger'
+const PLANT_CODE = { sl: 'SL-04', ks: 'KS-09', co: 'CO-07' }
 
- return (
- <div className={`border border-rule2 border-l-2 ${isAtRisk ? 'border-l-danger bg-danger/[0.03]' : 'border-l-ok bg-stone'}`}>
- {/* Header */}
- <div className="px-3.5 pt-3 pb-2.5 border-b border-rule2">
- <div className="flex items-start justify-between gap-2 mb-1">
- <div className="flex items-center gap-1.5">
- <Building2 size={12} strokeWidth={2} className="text-muted flex-shrink-0 mt-px" />
- <span className="font-body font-medium text-ink text-[13px]">{plant.name}</span>
- </div>
- <div className="flex items-center gap-1 flex-shrink-0">
- <div className={`w-1.5 h-1.5 rounded-full ${isAtRisk ? 'bg-danger beat' : 'bg-ok'}`} />
- <span className={`font-body text-[10px] ${isAtRisk ? 'text-danger' : 'text-ok'}`}>
- {isAtRisk ? 'At risk' : 'Clear'}
- </span>
- </div>
- </div>
- <div className="flex items-center gap-1.5">
- <MapPin size={9} strokeWidth={2} className="text-ghost" />
- <span className="font-body text-ghost text-[10px]">{meta.region}</span>
- {plant.active && (
- <span className="font-body text-[10px] px-1.5 py-px bg-ochre/20 text-ochre ml-1 rounded-[3px]">This plant</span>
- )}
- </div>
- </div>
+// ── Layer 1: Exposure Command Surface ─────────────────────────────────────────
+// Temporal. Conditional. Only present when active exposures exist.
+// Grouped by exposure object — supplier × plant × lot × FSMA window.
 
- {/* Score */}
- <div className="px-3.5 py-2.5 border-b border-rule2 flex items-center justify-between gap-3">
- <div>
- <div className="font-body text-ghost text-[10px] mb-1">Readiness</div>
- <div className="flex items-baseline gap-2">
- <span className={`display-num text-2xl ${scoreColor}`}>{plant.score}</span>
- <span className="font-body text-ghost text-[10px]">/ 100</span>
- </div>
- </div>
- <div className="text-right">
- <div className="font-body text-ghost text-[10px] mb-1.5">Director</div>
- <div className="flex items-center gap-1.5 justify-end">
- <span className="font-body text-ink text-[11px]">{meta.director}</span>
- <PersonAvatar name={meta.director} size={26} />
- </div>
- </div>
- </div>
+function ExposureOverlay({ triggerRef, active, actions, onAction, onBulkAction, onClose }) {
+ const overlayRef = useRef(null)
+ const [pos, setPos] = useState({ top: 60 })
+ useFocusTrap(overlayRef)
 
- {/* Lots */}
- <div className="px-3.5 py-2.5">
- <div className="font-body text-ghost text-[10px] uppercase tracking-widest mb-1.5">Active lots</div>
- <div className="flex gap-1 flex-wrap">
- {plant.lots.map(l => {
- const shared = sharedLots.find(s => s.lotId === l)
- return (
- <span key={l} className={`inline-flex items-center gap-1 font-body font-medium text-[10px] px-1.5 py-0.5 ${
- shared?.risk === 'danger' ? 'bg-danger/10 text-danger'
- : shared?.risk === 'warn' ? 'bg-warn/10 text-warn'
- : 'bg-stone3 text-muted'
- }`}>
- {shared && <Package size={7} strokeWidth={2} />}
- {l}
- </span>
- )
- })}
- </div>
- </div>
- </div>
- )
-}
-
-function ContactCard({ plant }) {
- const meta = plantMeta[plant.id]
- const isAtRisk = plant.status === 'at-risk'
- const scoreColor = plant.score >= 80 ? 'text-ok' : plant.score >= 65 ? 'text-warn' : 'text-danger'
- return (
- <div className={`border border-rule2 border-l-2 ${isAtRisk ? 'border-l-danger bg-danger/[0.02]' : 'border-l-ok bg-stone'}`}>
-  <div className="px-3.5 pt-3.5 pb-2 flex items-start gap-3">
-  <PersonAvatar name={meta.director} size={40} />
-  <div className="flex-1 min-w-0">
-   <div className="font-body font-medium text-ink text-[13px]">{meta.director}</div>
-   <div className="font-body text-ghost text-[11px]">Plant Director</div>
-   <div className="flex items-center gap-1 mt-1">
-   <MapPin size={9} strokeWidth={2} className="text-ghost" />
-   <span className="font-body text-ghost text-[10px]">{meta.region}</span>
-   </div>
-  </div>
-  <div className="text-right flex-shrink-0">
-   <div className={`display-num text-2xl ${scoreColor}`}>{plant.score}</div>
-   <div className={`font-body text-[10px] mt-0.5 ${isAtRisk ? 'text-danger' : 'text-ok'}`}>
-   {isAtRisk ? 'At risk' : 'Clear'}
-   </div>
-  </div>
-  </div>
-  <div className="px-3.5 pb-2.5 flex items-center gap-1.5">
-  <span className="font-body text-[10px] px-1.5 py-px bg-stone3 text-muted rounded-[3px]">{plant.code}</span>
-  {plant.active && <span className="font-body text-[10px] px-1.5 py-px bg-ochre/20 text-ochre rounded-[3px]">This plant</span>}
-  </div>
- </div>
- )
-}
-
-function ExposureRow({ exposure }) {
- const isDanger = exposure.risk === 'danger'
- const riskColor = isDanger ? 'text-danger' : 'text-warn'
- const borderTone = isDanger ? 'border-l-danger bg-danger/[0.03]' : 'border-l-warn bg-warn/[0.02]'
- return (
- <div className={`border-b border-rule2 last:border-b-0 border-l-2 ${borderTone}`}>
- <div className="grid px-4 py-3" style={{ gridTemplateColumns: '1fr 130px 110px' }}>
- <div>
- <div className="flex items-center gap-1.5 mb-0.5">
- <Package size={11} strokeWidth={2} className={riskColor} />
- <span className={`font-body font-medium text-[13px] ${riskColor}`}>{exposure.ingredient}</span>
- </div>
- <div className="flex items-center gap-1 mb-1">
- <Truck size={9} strokeWidth={2} className="text-ghost" />
- <span className="font-body text-ghost text-[10px]">{exposure.supplier} · Lot {exposure.lotId}</span>
- </div>
- <div className={`font-body text-[10px] ${riskColor}`}>{exposure.note}</div>
- </div>
- <div className="flex flex-col justify-center">
- <div className="flex items-center gap-1 mb-1.5">
- <Users size={9} strokeWidth={2} className="text-ghost" />
- <span className="font-body text-ghost text-[10px] uppercase tracking-widest">Plants</span>
- </div>
- <div className="flex gap-1 flex-wrap">
- {exposure.affectedPlants.map(p => {
- const plant = networkData.plants.find(pl => pl.id === p)
- return (
- <span key={p} className={`font-body font-medium text-[10px] px-1.5 py-0.5 ${
- plant?.active ? 'bg-danger/10 text-danger' : 'bg-warn/10 text-warn'
- }`}>
- {plant?.code}
- </span>
- )
- })}
- </div>
- </div>
- <div className="flex flex-col justify-center text-right">
- <div className={`display-num text-xl ${riskColor}`}>{exposure.totalUnits.toLocaleString()}</div>
- <div className="font-body text-ghost text-[10px]">units at risk</div>
- </div>
- </div>
- </div>
- )
-}
-
-function ExposureActions({ exposure, actions, onAction }) {
- return (
- <div className="flex gap-2 px-4 pb-3 flex-wrap">
- {actions[exposure.lotId] ? (
- <div className="font-body text-ok text-[10px] slide-in flex items-center gap-1">
- <CheckCircle2 size={10} strokeWidth={2} className="flex-shrink-0" />
- {actions[exposure.lotId] === 'hold' && 'Hold issued to all affected plants · Takorin TX-11 notified'}
- {actions[exposure.lotId] === 'notify' && 'Plant TX-11 director notified · Response expected within 1 hour'}
- {actions[exposure.lotId] === 'capa' && 'CAPA shared to TX-11 · Case mirrored in their register'}
- </div>
- ) : (
- <>
- <Btn variant="primary" className="inline-flex items-center gap-1" onClick={() => onAction(exposure.lotId, 'hold')}><AlertTriangle size={9} strokeWidth={2} />Issue hold — all plants</Btn>
- <Btn variant="secondary" onClick={() => onAction(exposure.lotId, 'notify')}>Notify TX-11 director</Btn>
- <Btn variant="secondary" onClick={() => onAction(exposure.lotId, 'capa')}>Share CAPA to TX-11</Btn>
- </>
- )}
- </div>
- )
-}
-
-export default function NetworkView() {
- const { readinessScore, plantActions, setPlantActions } = useAppState()
- const score = readinessScore
- const displayPlants = networkData.plants.map(plant => ({ ...plant, status: 'at-risk' }))
- const atRiskCount = displayPlants.filter(p => p.status === 'at-risk').length
- const isUnlocked = score >= 70
- const [localActions] = useState({})
- const [containmentMode, setContainmentMode] = useState(false)
- const [activeLot, setActiveLot] = useState(null)
- const actions = { ...localActions, ...plantActions }
- const handleAction = (lotId, type) => {
-  setPlantActions(p => ({ ...p, [lotId]: type }))
-  if (type === 'hold') {
-   setContainmentMode(true)
-   setActiveLot(lotId)
+ useEffect(() => {
+  if (triggerRef.current) {
+   const r = triggerRef.current.getBoundingClientRect()
+   setPos({ top: r.bottom })
   }
- }
+ }, [triggerRef])
+
+ useEffect(() => {
+  const onMouse = (e) => {
+   if (!overlayRef.current?.contains(e.target) &&
+       triggerRef.current && !triggerRef.current.contains(e.target))
+    onClose()
+  }
+  const onKey = (e) => { if (e.key === 'Escape') onClose() }
+  document.addEventListener('mousedown', onMouse)
+  document.addEventListener('keydown', onKey)
+  return () => {
+   document.removeEventListener('mousedown', onMouse)
+   document.removeEventListener('keydown', onKey)
+  }
+ }, [onClose, triggerRef])
 
  return (
- <div className="flex flex-col h-full overflow-hidden content-reveal">
-  {/* Top Bar — Trust & Readiness Strip */}
-  <div className="border-b border-rule2 bg-stone3/60 px-4 py-4 flex items-center gap-6 flex-shrink-0">
-   <div className="flex items-center gap-2">
-    <Shield size={16} className="text-muted" />
-    <span className="font-body text-ghost text-[10px] uppercase tracking-wider">Network</span>
-    <span className="font-body font-medium text-ink text-[11px]">3 plants connected</span>
-   </div>
-   <div className="flex items-center gap-2">
-    <AlertTriangle size={16} className="text-muted" />
-    <span className="font-body text-ghost text-[10px] uppercase tracking-wider">Risks</span>
-    <span className="font-body font-medium text-ink text-[11px]">{atRiskCount} plants at risk</span>
-   </div>
-   <div className="flex items-center gap-2">
-    <Activity size={16} className="text-muted" />
-    <span className="font-body text-ghost text-[10px] uppercase tracking-wider">Mode</span>
-    <span className={`font-body font-medium text-[11px] px-2 py-0.5 rounded-[3px] ${containmentMode ? 'bg-danger/10 text-danger' : 'bg-ok/10 text-ok'}`}>
-     {containmentMode ? 'Containment' : 'Monitor'}
-    </span>
+  <div ref={overlayRef} className="fixed z-50 plant-drop-in"
+   style={{ left: 0, right: 0, top: Math.max(8, pos.top) }}>
+   <div className="plant-drop-in-content bg-stone border-b-2 border-b-danger/30 shadow-raise">
+    {active.map(e => {
+     const plantCodes = e.affectedPlants.map(id => PLANT_CODE[id] || id).join(' · ')
+     const isCross    = e.affectedPlants.length > 1
+     const action     = actions[e.lotId]
+     return (
+      <div key={e.lotId} className="px-4 py-3 first:pt-4">
+       <div className={`border border-rule2 border-l-2 ${
+        action ? 'border-l-ok opacity-60' : isCross ? 'border-l-danger' : 'border-l-warn'
+       }`}>
+        {/* Card header */}
+        <div className="flex items-baseline justify-between px-4 pt-3 pb-1.5">
+         <span className="font-body font-semibold text-ink text-[13px]">{e.supplier}</span>
+         <span className="font-mono text-ghost text-[10px]">Lot {e.lotId}</span>
+        </div>
+        {/* Ingredient + units */}
+        <div className="px-4 pb-2">
+         <span className="font-body text-ghost text-[10px]">
+          {e.ingredient || e.supplier} · {e.totalUnits.toLocaleString()} units
+         </span>
+        </div>
+        {/* Plant chips + note + FSMA */}
+        <div className="flex items-center gap-2 px-4 pb-3 flex-wrap">
+         {e.affectedPlants.map(id => (
+          <span key={id} className={`font-body text-[10px] font-medium px-1.5 py-0.5 rounded-btn ${
+           isCross ? 'bg-danger/10 text-danger' : 'bg-warn/10 text-warn'
+          }`}>{PLANT_CODE[id] || id}</span>
+         ))}
+         {e.note && (
+          <span className={`font-body text-[10px] ${isCross ? 'text-danger/70' : 'text-warn/70'}`}>
+           · {e.note}
+          </span>
+         )}
+         <span className="font-body text-ghost text-[10px] ml-auto">24h FSMA</span>
+        </div>
+        {/* Action row */}
+        {action ? (
+         <div className="flex items-center gap-1.5 px-4 pb-3 border-t border-rule2 pt-2.5">
+          <CheckCircle2 size={11} strokeWidth={2} className="text-ok flex-shrink-0" />
+          <span className="font-body text-ok text-[10px]">
+           {action === 'hold' ? 'Hold issued · MES frozen · ERP locked' : 'Notified'}
+          </span>
+         </div>
+        ) : (
+         <div className="flex items-center gap-2 px-4 pb-3 border-t border-rule2 pt-2.5">
+          <HoldButton
+           label={`Hold — ${plantCodes}`}
+           holdLabel="Holding..."
+           doneLabel="Hold issued"
+           tone="danger"
+           duration={1200}
+           onConfirm={() => onAction(e.lotId, 'hold')}
+          />
+          <Btn variant="secondary" onClick={() => onAction(e.lotId, 'notify')}>Notify</Btn>
+         </div>
+        )}
+       </div>
+      </div>
+     )
+    })}
+    {active.length > 1 && (
+     <div className="px-4 py-4 border-t border-rule2 flex items-center gap-3">
+      <HoldButton
+       label={`Hold all ${active.length} exposures`}
+       holdLabel="Holding all..."
+       doneLabel="All held"
+       tone="danger"
+       duration={1500}
+       onConfirm={() => { onBulkAction('hold'); onClose() }}
+      />
+      <Btn variant="secondary" onClick={() => { onBulkAction('notify'); onClose() }}>
+       Notify all directors
+      </Btn>
+     </div>
+    )}
    </div>
   </div>
+ )
+}
 
-  <ActionBanner
-   tone={containmentMode ? "danger" : "muted"}
-   headline={containmentMode
-    ? `Containment active — ${activeLot} hold issued across network`
-    : isUnlocked
-     ? 'Network view — cross-plant risk correlation active'
-     : 'Network view — locked until Data Readiness ≥ 70'}
-   body={containmentMode
-    ? 'All affected plants notified. Monitor CAPA progress and FSMA 204 compliance.'
-    : isUnlocked
-     ? 'Supplier issues and lot exposure visible across all plants in the Takorin network.'
-     : `Current readiness: ${score}/100. Resolve naming conflicts and context gaps to unlock cross-plant correlation.`}
-  />
+function ExposureCommandSurface({ exposures, actions, containmentMode, onAction, onBulkAction }) {
+ const active = exposures.filter(e => !actions[e.lotId])
+ const [open, setOpen] = useState(false)
+ const triggerRef = useRef(null)
 
-  {!isUnlocked && !containmentMode && (
-   <div className="flex items-center gap-3 px-4 py-4 bg-stone3/60 border-b border-rule2 flex-shrink-0">
-    <div className="w-8 h-8 bg-stone3 border border-rule2 flex items-center justify-center flex-shrink-0">
-     <Lock size={14} strokeWidth={2} className="text-ghost" />
-    </div>
-    <div className="flex-1">
-     <div className="font-body font-medium text-ink text-[13px]">Cross-plant correlation requires Data Readiness ≥ 70</div>
-     <div className="font-body text-muted text-[11px] mt-0.5">
-      Current score: {score}/100 — {70 - score} points needed. Resolve ingredient naming conflicts and Oven B sensor context gaps.
-     </div>
-    </div>
-    <div className="flex-shrink-0">
-     <div className="h-1.5 w-32 bg-rule2 relative">
-      <div
-       className={`absolute inset-y-0 left-0 transition-[width] duration-500 ease-enter ${score >= 75 ? 'bg-ok' : 'bg-warn'}`}
-       style={{ width: `${score}%` }}
-      />
-     </div>
-     <div className="flex justify-between font-body text-ghost text-[10px] mt-0.5">
-      <span>{score}</span><span>100</span>
-     </div>
-    </div>
-   </div>
-  )}
+ if (active.length === 0) return null
 
-  {/* Main Content Area */}
-  <Layout side={
-   <div className="p-4">
-    <div className="border border-rule2 p-4 mb-4">
-     <div className="flex items-start gap-3">
-      <Brain size={20} className="text-muted mt-0.5" />
-      <div className="flex-1">
-       <div className="font-body font-medium text-ink text-[13px] mb-2">Network Risk Analysis</div>
-       <div className="font-body text-ink2 text-[12px] leading-relaxed mb-3">
-        {containmentMode
-         ? 'Hold active on TS-8811. Track CAPA completion and FSMA submission across Salina and Houston before the 24-hour window closes.'
-         : 'Cross-plant lot exposure on TS-8811 requires immediate action. Issue a network hold to contain 5,840 units and maintain FSMA 204 compliance.'}
-       </div>
-       <div className="space-y-1.5 border border-rule2 p-2">
-        <div className="flex justify-between text-[10px]">
-         <span className="font-body text-ghost">Cross-plant exposure</span>
-         <span className="font-body font-medium text-danger">1 critical lot · TS-8811</span>
-        </div>
-        <div className="flex justify-between text-[10px]">
-         <span className="font-body text-ghost">Containment readiness</span>
-         <span className="font-body font-medium text-ok">High · freeze within 1h</span>
-        </div>
-        <div className="flex justify-between text-[10px]">
-         <span className="font-body text-ghost">FSMA compliance</span>
-         <span className="font-body font-medium text-warn">24h window · simultaneous</span>
-        </div>
-       </div>
-      </div>
-     </div>
-    </div>
+ const totalUnits    = active.reduce((s, e) => s + e.totalUnits, 0)
+ const allPlantCodes = [...new Set(active.flatMap(e => e.affectedPlants))].map(id => PLANT_CODE[id] || id)
 
-    <div className="border border-rule2 p-4 mb-4">
-     <div className="font-body font-medium text-ink text-[13px] mb-3">What you should do next</div>
-     <div className="space-y-2">
-      {containmentMode ? (
-       <>
-        <div className="p-2 border border-ok/20">
-         <div className="font-body font-medium text-ink text-[11px]">Monitor plant acknowledgments</div>
-         <div className="font-body text-ghost text-[10px]">Impact: confirms full network hold</div>
-        </div>
-        <div className="p-2 border border-ok/20">
-         <div className="font-body font-medium text-ink text-[11px]">Complete CAPA documentation</div>
-         <div className="font-body text-ghost text-[10px]">Impact: closes FSMA 24h compliance window</div>
-        </div>
-       </>
-      ) : (
-       <>
-        <div className="p-2 border border-ok/20">
-         <div className="font-body font-medium text-ink text-[11px]">Issue hold — all plants</div>
-         <div className="font-body text-ghost text-[10px]">Impact: contains 5,840 units across network</div>
-        </div>
-        <div className="p-2 border border-ok/20">
-         <div className="font-body font-medium text-ink text-[11px]">Notify TX-11 director</div>
-         <div className="font-body text-ghost text-[10px]">Impact: triggers CAPA coordination</div>
-        </div>
-       </>
-      )}
-     </div>
-    </div>
+ return (
+  <>
+   <button type="button"
+    ref={triggerRef}
+    onClick={() => setOpen(o => !o)}
+    className="w-full flex items-center gap-3 px-6 py-3.5 border-b-2 border-b-danger/30 bg-danger/[0.025] flex-shrink-0 text-left"
+   >
+    <div className="w-2 h-2 rounded-full bg-danger flex-shrink-0 beat" />
+    <span className="font-body font-semibold text-ink text-[13px] flex-1">
+     {active.length} active exposure{active.length > 1 ? 's' : ''}
+    </span>
+    <span className="font-body text-ghost text-[10px]">
+     {totalUnits.toLocaleString()} units · {allPlantCodes.join(' · ')} · 24h FSMA
+    </span>
+    <ChevronDown
+     size={13}
+     strokeWidth={2}
+     className={`text-ghost flex-shrink-0 transition-transform duration-150 ${open ? 'rotate-180' : ''}`}
+    />
+   </button>
+   {open && (
+    <ExposureOverlay
+     triggerRef={triggerRef}
+     active={active}
+     actions={actions}
+     onAction={onAction}
+     onBulkAction={onBulkAction}
+     onClose={() => setOpen(false)}
+    />
+   )}
+  </>
+ )
+}
 
-    <ExpandableMetadata title="Recall Simulation" tone="muted">
-     <div className="space-y-3">
-      <div className="p-3 border border-rule2">
-       <div className="font-body font-medium text-ink text-[11px] mb-2">If TS-8811 recalled today:</div>
-       <div className="space-y-1 text-[10px]">
-        <div className="flex justify-between">
-         <span className="font-body text-ghost">Plants affected:</span>
-         <span className="font-body font-medium text-danger">2/3</span>
-        </div>
-        <div className="flex justify-between">
-         <span className="font-body text-ghost">Units contained:</span>
-         <span className="font-body font-medium text-ok">5,840</span>
-        </div>
-        <div className="flex justify-between">
-         <span className="font-body text-ghost">Containment time:</span>
-         <span className="font-body font-medium text-warn">24h</span>
-        </div>
-        <div className="flex justify-between">
-         <span className="font-body text-ghost">FSMA compliance:</span>
-         <span className="font-body font-medium text-ok">Achievable</span>
-        </div>
-       </div>
-      </div>
-      <div className="p-3 border border-rule2">
-       <div className="font-body font-medium text-ink text-[11px] mb-2">Without network correlation:</div>
-       <div className="space-y-1 text-[10px]">
-        <div className="flex justify-between">
-         <span className="font-body text-ghost">Detection delay:</span>
-         <span className="font-body font-medium text-danger">48-72h</span>
-        </div>
-        <div className="flex justify-between">
-         <span className="font-body text-ghost">Additional exposure:</span>
-         <span className="font-body font-medium text-danger">+2,300 units</span>
-        </div>
-        <div className="flex justify-between">
-         <span className="font-body text-ghost">FSMA violation risk:</span>
-         <span className="font-body font-medium text-danger">High</span>
-        </div>
-       </div>
-      </div>
-     </div>
-    </ExpandableMetadata>
-   </div>
-  }>
-   <div className="p-4 pb-32 space-y-6">
-    {/* Network Overview */}
-    <div className="grid grid-cols-4 gap-4">
-    {[
-     { v: '3', l: 'Plants connected', Icon: Building2, tone: 'text-ink' },
-     { v: `${atRiskCount}`, l: 'Plants at risk', Icon: AlertTriangle, tone: 'text-danger' },
-     { v: '5', l: 'Shared lot numbers', Icon: Tag, tone: 'text-warn' },
-     { v: '5,840', l: 'Units exposed', Icon: Shield, tone: 'text-danger' },
-    ].map(({ v, l, Icon, tone }, i) => (
-     <div key={i} className="p-3 border border-rule2">
-      <div className="flex items-center gap-2 mb-2">
-       <Icon size={14} strokeWidth={2} className="text-muted" />
-       <span className="font-body text-ghost text-[10px] uppercase tracking-wider">{l}</span>
-      </div>
-      <div className={`display-num text-2xl ${tone}`}>{v}</div>
-     </div>
-    ))}
+// ── Layer 2: Supplier Risk Registry ───────────────────────────────────────────
+// Persistent. Analytical. System of record.
+// Rows scale to N suppliers. Affected plants always inline — never hidden.
+
+const COL = '1fr 72px 96px 160px 90px 76px'
+
+function SupplierRegistry({ rows }) {
+ const lockedSignals = NETWORK_SIGNALS.filter(s => s.locked)
+ return (
+  <div className="flex-1 overflow-y-auto flex flex-col">
+   {/* Column headers */}
+   <div className="grid px-6 py-2 bg-stone2 border-b border-rule2 flex-shrink-0"
+    style={{ gridTemplateColumns: COL }}>
+    <span className="font-body text-ghost text-[10px] uppercase tracking-widest">Supplier</span>
+    <span className="font-body text-ghost text-[10px] uppercase tracking-widest text-right">Net. Risk</span>
+    <span className="font-body text-ghost text-[10px] uppercase tracking-widest text-center">Exposures</span>
+    <span className="font-body text-ghost text-[10px] uppercase tracking-widest">Affected Plants</span>
+    <span className="font-body text-ghost text-[10px] uppercase tracking-widest text-right">Trend</span>
+    <span className="font-body text-ghost text-[10px] uppercase tracking-widest text-right">Confidence</span>
    </div>
 
-   {/* Network intelligence signals */}
-   <div>
-    <div className="flex items-center gap-2 mb-3">
-     <Zap size={12} strokeWidth={2} className="text-muted" />
-     <span className="font-body font-medium text-ink text-[13px]">Network intelligence</span>
-     <span className="font-body text-ghost text-[10px] ml-auto">2 active · 2 locked</span>
-    </div>
-    <div className="border border-rule2 divide-y divide-rule2">
-     {NETWORK_SIGNALS.map(sig => (
-      <div key={sig.id} className={`px-4 py-3 ${sig.locked ? 'opacity-50' : sig.tone === 'danger' ? 'bg-danger/[0.02]' : ''}`}>
-       <div className="flex items-start gap-3">
-        <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 mt-1.5 ${
-         sig.locked ? 'bg-rule2' : sig.tone === 'danger' ? 'bg-danger' : sig.tone === 'warn' ? 'bg-warn' : 'bg-ok'
-        }`} />
-        <div className="flex-1 min-w-0">
-         <div className="flex items-start gap-2 mb-0.5">
-          <span className={`font-body font-medium text-[12px] flex-1 leading-snug ${
-           sig.locked ? 'text-ghost' : sig.tone === 'danger' ? 'text-danger' : sig.tone === 'warn' ? 'text-ink' : 'text-ink'
-          }`}>{sig.label}</span>
-          {sig.locked && <Lock size={10} strokeWidth={2} className="text-ghost flex-shrink-0 mt-0.5" />}
-          {!sig.locked && sig.confidence && (
-           <span className="font-body text-ghost text-[10px] flex-shrink-0">{sig.confidence}%</span>
-          )}
+   {/* Supplier rows */}
+   <div className="flex-1">
+    {rows.map(s => {
+     const riskColor  = s.networkRisk < 40 ? 'text-danger' : s.networkRisk < 65 ? 'text-warn' : 'text-ok'
+     const hasExposure = s.activeExposureCount > 0
+     return (
+      <div key={s.name}
+       className={`grid items-center px-6 py-3.5 border-b border-rule2 border-l-2 ${
+        hasExposure ? 'border-l-danger bg-danger/[0.02]' : 'border-l-transparent'
+       }`}
+       style={{ gridTemplateColumns: COL }}>
+
+       {/* Supplier */}
+       <div className="flex items-center gap-2 min-w-0 pr-3">
+        {hasExposure && <div className="w-1.5 h-1.5 rounded-full bg-danger flex-shrink-0 beat" />}
+        <div className="min-w-0">
+         <div className={`font-body font-medium text-[12px] truncate ${hasExposure ? 'text-danger' : 'text-ink'}`}>
+          {s.name}
          </div>
-         <div className="font-body text-ghost text-[10px] leading-snug mb-1">{sig.detail}</div>
-         <div className="flex items-center gap-1 flex-wrap">
-          {sig.plants.map(p => (
-           <span key={p} className={`font-body text-[10px] px-1.5 py-px rounded-[3px] ${
-            sig.locked ? 'bg-stone3 text-ghost' : networkData.plants.find(pl => pl.code === p)?.active ? 'bg-danger/10 text-danger' : 'bg-warn/10 text-warn'
-           }`}>{p}</span>
-          ))}
-          {sig.locked && <span className="font-body text-ghost text-[10px] px-1.5 py-px bg-stone3 rounded-[3px]">3 plants required</span>}
-         </div>
-         {sig.action && (
-          <div className="mt-1.5 font-body text-int text-[10px] flex items-center gap-1">
-           <ArrowRight size={9} />{sig.action}
+         {s.note && (
+          <div className={`font-body text-[10px] mt-0.5 truncate ${hasExposure ? 'text-danger/70' : 'text-ghost'}`}>
+           {s.note}
           </div>
          )}
         </div>
        </div>
-      </div>
-     ))}
-    </div>
-   </div>
 
-   {/* Shared Exposure */}
-   <div>
-    <div className="flex items-center gap-2 mb-3">
-     <Package size={12} strokeWidth={2} className="text-muted" />
-     <span className="font-body font-medium text-ink text-[13px]">Shared exposure</span>
-    </div>
-    <div className="space-y-3">
-     {networkData.sharedExposure.map((e, i) => (
-      <ActionCard
-       key={i}
-       tone="danger"
-       title={`${e.lotId} — Cross-plant exposure`}
-       subtitle={`${e.affectedPlants.length} plants affected · ${e.totalUnits.toLocaleString()} units at risk`}
-       metadata={[
-        `Supplier: ${e.supplier}`,
-        `Delivery: ${e.deliveryDate}`,
-        'FSMA 204 traceability gap'
-       ]}
-       status={actions[e.lotId] ? <StatusIndicator status="complete" tone="ok" /> : null}
-       actions={
-        actions[e.lotId] ? (
-         <div className="font-body text-ok text-[10px] flex items-center gap-1">
-          <CheckCircle2 size={10} />
-          {actions[e.lotId] === 'hold' && 'Hold issued to all affected plants'}
-          {actions[e.lotId] === 'notify' && 'Plant directors notified'}
-          {actions[e.lotId] === 'capa' && 'CAPA shared across network'}
-         </div>
+       {/* Network Risk — worst score across connected plants */}
+       <div className={`display-num text-[18px] font-bold text-right ${riskColor}`}>
+        {s.networkRisk}
+       </div>
+
+       {/* Exposure Count */}
+       <div className="flex justify-center">
+        {s.activeExposureCount > 0 ? (
+         <span className="font-body text-danger text-[10px] font-medium px-2 py-0.5 bg-danger/10 rounded-btn whitespace-nowrap">
+          {s.activeExposureCount} active
+         </span>
         ) : (
-         <div className="flex gap-2">
-          <Btn variant="primary" onClick={() => handleAction(e.lotId, 'hold')}>
-           Issue hold — all plants
-          </Btn>
-          <Btn variant="secondary" onClick={() => handleAction(e.lotId, 'notify')}>
-           Notify directors
-          </Btn>
-         </div>
-        )
-       }
-      >
-       <div className="flex gap-1 flex-wrap mt-2">
-        {e.affectedPlants.map(p => {
-         const plant = networkData.plants.find(pl => pl.id === p)
-         return (
-          <span key={p} className={`font-body font-medium text-[10px] px-2 py-1 rounded-[3px] ${
-           plant?.active ? 'bg-danger/10 text-danger' : 'bg-warn/10 text-warn'
-          }`}>
-           {plant?.code}
-          </span>
-         )
-        })}
+         <span className="font-body text-ghost text-[10px]">—</span>
+        )}
        </div>
-      </ActionCard>
-     ))}
-    </div>
-   </div>
 
-   {/* Containment Mode UI */}
-   {containmentMode && activeLot && (
-    <div className="border border-danger bg-danger/[0.03] p-4">
-     <div className="flex items-start gap-3">
-      <AlertTriangle size={20} className="text-danger mt-0.5" />
-      <div className="flex-1">
-       <div className="font-body font-medium text-ink text-[13px] mb-2">Containment Active</div>
-       <div className="font-body text-ink2 text-[12px] leading-relaxed mb-3">
-        Hold issued for {activeLot} across all affected plants. Systems frozen, notifications sent.
+       {/* Affected Plants — always inline, never hidden */}
+       <div className="font-body text-[11px] min-w-0">
+        {s.affectedPlantCodes.length > 0 ? (
+         <span className={hasExposure ? 'text-danger' : 'text-ink'}>
+          {s.affectedPlantCodes.join(' · ')}
+         </span>
+        ) : (
+         <span className="text-ghost">—</span>
+        )}
        </div>
-       <div className="grid grid-cols-3 gap-4 text-[11px]">
-        <div className="flex items-center gap-2">
-         <CheckCircle2 size={12} className="text-ok" />
-         <span className="font-body text-ghost">MES frozen</span>
-        </div>
-        <div className="flex items-center gap-2">
-         <CheckCircle2 size={12} className="text-ok" />
-         <span className="font-body text-ghost">ERP locked</span>
-        </div>
-        <div className="flex items-center gap-2">
-         <Clock size={12} className="text-warn" />
-         <span className="font-body text-ghost">CAPA pending</span>
-        </div>
-       </div>
-      </div>
-     </div>
-    </div>
-   )}
 
-   {/* Supplier standing across network */}
-   <div>
-    <div className="flex items-center gap-2 mb-3">
-     <Truck size={12} strokeWidth={2} className="text-muted" />
-     <span className="font-body font-medium text-ink text-[13px]">Supplier standing · cross-plant</span>
-    </div>
-    <div className="border border-rule2">
-     {/* Header */}
-     <div className="grid px-4 py-2 bg-stone2 border-b border-rule2" style={{ gridTemplateColumns: '1fr 72px 72px 100px' }}>
-      <span className="font-body text-ghost text-[10px] uppercase tracking-widest">Supplier</span>
-      <span className="font-body text-ghost text-[10px] uppercase tracking-widest text-right">Salina</span>
-      <span className="font-body text-ghost text-[10px] uppercase tracking-widest text-right">Wichita</span>
-      <span className="font-body text-ghost text-[10px] uppercase tracking-widest text-right">Trend</span>
-     </div>
-     {SUPPLIER_NETWORK.map((s, i) => (
-      <div key={i} className={`grid px-4 py-3 border-b border-rule2 last:border-b-0 ${s.tone === 'danger' ? 'bg-danger/[0.02]' : ''}`} style={{ gridTemplateColumns: '1fr 72px 72px 100px' }}>
-       <div>
-        <div className={`font-body font-medium text-[12px] ${s.tone === 'danger' ? 'text-danger' : 'text-ink'}`}>{s.name}</div>
-        {s.note && <div className={`font-body text-[10px] mt-0.5 ${s.tone === 'danger' ? 'text-danger/80' : 'text-warn'}`}>{s.note}</div>}
-       </div>
-       <div className={`display-num text-[15px] font-bold text-right self-center ${s.salina < 40 ? 'text-danger' : s.salina < 65 ? 'text-warn' : 'text-ok'}`}>{s.salina}</div>
-       <div className={`display-num text-[15px] font-bold text-right self-center ${s.wichita < 40 ? 'text-danger' : s.wichita < 65 ? 'text-warn' : 'text-ok'}`}>{s.wichita}</div>
+       {/* Trend */}
        <div className="flex items-center justify-end gap-1">
-        {s.trend === 'down' && <TrendingDown size={11} strokeWidth={2} className="text-danger" />}
-        <span className={`font-body text-[10px] ${s.tone === 'danger' ? 'text-danger' : s.tone === 'warn' ? 'text-warn' : 'text-ghost'}`}>
+        {s.trend === 'down' && <TrendingDown size={10} strokeWidth={2} className="text-danger flex-shrink-0" />}
+        <span className={`font-body text-[10px] ${
+         hasExposure || s.tone === 'danger' ? 'text-danger' :
+         s.tone === 'warn' ? 'text-warn' : 'text-ghost'
+        }`}>
          {s.trend === 'down' ? 'Declining' : s.trend === 'up' ? 'Improving' : 'Stable'}
         </span>
        </div>
+
+       {/* Confidence — from intelligence signal if applicable */}
+       <div className="text-right">
+        {s.confidence != null ? (
+         <span className={`display-num text-[14px] font-bold ${
+          s.confidence >= 85 ? 'text-danger' : s.confidence >= 70 ? 'text-warn' : 'text-ghost'
+         }`}>{s.confidence}%</span>
+        ) : (
+         <span className="font-body text-ghost text-[10px]">—</span>
+        )}
+       </div>
       </div>
-     ))}
-     <div className="px-4 py-2 bg-stone2 border-t border-rule2">
-      <span className="font-body text-ghost text-[10px]">Scores = percentile rank across {networkData.plants.length > 1 ? networkData.plants.length : 14} comparable plants · updated weekly</span>
-     </div>
-    </div>
+     )
+    })}
    </div>
 
+   {/* Locked intelligence signals — growth indicators */}
+   {lockedSignals.length > 0 && (
+    <div className="border-t border-rule2 flex-shrink-0">
+     <div className="px-6 py-2 bg-stone2 border-b border-rule2 flex items-center gap-2">
+      <Brain size={10} strokeWidth={1.75} className="text-ghost" />
+      <span className="font-body text-ghost text-[10px] uppercase tracking-widest">
+       {lockedSignals.length} intelligence signals locked — activate at 3 connected plants
+      </span>
+     </div>
+     {lockedSignals.map(sig => (
+      <div key={sig.id} className="flex items-start gap-3 px-6 py-3 border-b border-rule2 last:border-b-0 opacity-40">
+       <Lock size={10} strokeWidth={2} className="text-ghost flex-shrink-0 mt-0.5" />
+       <div className="flex-1 min-w-0">
+        <div className="font-body text-ghost text-[11px] leading-snug">{sig.label}</div>
+        <div className="font-body text-ghost text-[10px] mt-0.5">{sig.detail}</div>
+       </div>
+      </div>
+     ))}
+    </div>
+   )}
+
+   {/* Registry footer */}
+   <div className="px-6 py-2 border-t border-rule2 bg-stone2 flex-shrink-0">
+    <span className="font-body text-ghost text-[10px]">
+     Net. Risk = lowest percentile rank across connected plants · Updated weekly · Confidence = AI signal strength
+    </span>
    </div>
-  </Layout>
- </div>
+  </div>
+ )
+}
+
+// ── Network summary bar — always-visible header ───────────────────────────────
+// Replaces the generic ActionBanner. Shows plant risk + intelligence signals.
+
+const PLANTS_NET = [
+ { code: 'SL-04', name: 'Salina',  id: 'sl', risk: 22 },
+ { code: 'KS-09', name: 'Wichita', id: 'ks', risk: 31 },
+ { code: 'CO-07', name: 'Denver',  id: 'co', risk: 67 },
+]
+
+function NetworkSummaryBar({ activeExposures, containmentMode }) {
+ const activeSignals = NETWORK_SIGNALS.filter(s => s.active)
+ const exposedPlants = new Set(activeExposures.flatMap(e => e.affectedPlants))
+ const hasAny        = activeExposures.length > 0
+
+ return (
+  <div className={`flex border-b-2 flex-shrink-0 ${
+   containmentMode ? 'border-b-ok/30 bg-ok/[0.02]'
+   : hasAny        ? 'border-b-danger/30 bg-danger/[0.02]'
+   :                  'border-b-rule2 bg-stone'
+  }`}>
+
+   {/* Plant risk tiles */}
+   <div className="flex border-r border-rule2">
+    {PLANTS_NET.map(p => {
+     const hasExposure = exposedPlants.has(p.id)
+     const riskColor   = p.risk < 40 ? 'text-danger' : p.risk < 65 ? 'text-warn' : 'text-ok'
+     return (
+      <div key={p.code} className={`px-5 py-4 border-r border-rule2 last:border-r-0 ${hasExposure ? 'bg-danger/[0.025]' : ''}`}>
+       <div className="flex items-center gap-1.5 mb-1">
+        {hasExposure && <div className="w-1.5 h-1.5 rounded-full bg-danger beat flex-shrink-0" />}
+        <span className="font-body text-ghost text-[10px]">{p.code} · {p.name}</span>
+       </div>
+       <div className={`display-num text-[22px] font-bold leading-none ${riskColor}`}>
+        {p.risk}
+        <span className="font-body text-ghost text-[10px] font-normal ml-1">pct.</span>
+       </div>
+       <div className="font-body text-ghost text-[9px] mt-0.5">network risk</div>
+      </div>
+     )
+    })}
+   </div>
+
+   {/* Active intelligence signals */}
+   <div className="flex-1 px-6 py-4 flex flex-col justify-center gap-2.5">
+    <div className="font-body text-ghost text-[9px] uppercase tracking-widest mb-0.5">Active signals</div>
+    {activeSignals.map(sig => (
+     <div key={sig.id} className="flex items-start gap-3">
+      <span className={`display-num text-[14px] font-bold flex-shrink-0 tabular-nums leading-none mt-px ${
+       sig.confidence >= 85 ? 'text-danger' : 'text-warn'
+      }`}>{sig.confidence}%</span>
+      <span className="font-body text-muted text-[11px] leading-snug">{sig.label}</span>
+     </div>
+    ))}
+   </div>
+
+   {/* Containment indicator */}
+   {containmentMode && (
+    <div className="flex items-center gap-2 px-6 border-l border-rule2">
+     <CheckCircle2 size={14} strokeWidth={2} className="text-ok" />
+     <div>
+      <div className="font-body font-medium text-ok text-[12px]">Containment active</div>
+      <div className="font-body text-ghost text-[10px]">All lots held · FSMA 204 documentation in progress</div>
+     </div>
+    </div>
+   )}
+  </div>
+ )
+}
+
+// ── Main ──────────────────────────────────────────────────────────────────────
+
+export default function NetworkView() {
+ const { plantActions, setPlantActions } = useAppState()
+
+ const exposures       = [...(networkData.sharedExposure || []), ...EXTRA_EXPOSURES]
+ const activeExposures = exposures.filter(e => !plantActions[e.lotId])
+ const containmentMode = exposures.length > 0 && exposures.every(e => plantActions[e.lotId] === 'hold')
+ const hasExposure     = activeExposures.length > 0
+
+ const handleAction = (lotId, type) => {
+  setPlantActions(p => ({ ...p, [lotId]: type }))
+ }
+
+ const handleBulkAction = (type) => {
+  const updates = {}
+  activeExposures.forEach(e => { updates[e.lotId] = type })
+  setPlantActions(p => ({ ...p, ...updates }))
+ }
+
+ // Compute registry rows — network risk = worst score, confidence from signals, plants always inline
+ const registryRows = SUPPLIER_NETWORK.map(s => {
+  const networkRisk = Math.min(s.salina, s.wichita)
+  const supplierActive = activeExposures.filter(e => e.supplier === s.name)
+  const affectedPlantCodes = [...new Set(supplierActive.flatMap(e =>
+   e.affectedPlants.map(id => PLANT_CODE[id] || id)
+  ))]
+  const signal = NETWORK_SIGNALS.find(sig => sig.active && sig.supplier === s.name)
+  return { ...s, networkRisk, activeExposureCount: supplierActive.length, affectedPlantCodes, confidence: signal?.confidence ?? null }
+ }).sort((a, b) => {
+  if (a.activeExposureCount !== b.activeExposureCount) return b.activeExposureCount - a.activeExposureCount
+  return a.networkRisk - b.networkRisk
+ })
+
+ return (
+  <div className="flex flex-col h-full overflow-hidden content-reveal">
+   <NetworkSummaryBar activeExposures={activeExposures} containmentMode={containmentMode} />
+   <ExposureCommandSurface
+    exposures={exposures}
+    actions={plantActions}
+    containmentMode={containmentMode}
+    onAction={handleAction}
+    onBulkAction={handleBulkAction}
+   />
+   <SupplierRegistry rows={registryRows} />
+  </div>
  )
 }

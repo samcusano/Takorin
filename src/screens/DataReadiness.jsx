@@ -1,501 +1,824 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import { readinessData } from '../data'
 import { useAppState } from '../context/AppState'
-import { Urg, StatCell, SP, SecHd, Btn, ActionBanner, Spinner, AnimatedCheck, ActionCard, StatusIndicator, MetadataRow, ExpandableMetadata, Chip, RightRail } from '../components/UI'
-import { AlertTriangle, Check, Clock, TrendingUp, Brain, Target, Zap, Shield, Activity, X, ChevronDown, ChevronUp } from 'lucide-react'
-import { useFocusTrap, useExitAnimation } from '../lib/utils'
+import { HoldButton, Btn } from '../components/UI'
+import { Check, AlertTriangle, ChevronDown, ChevronUp, Zap } from 'lucide-react'
 
-const READINESS_FACTORS = [
- { label: 'Naming conflict — Ingredient mapping', penalty: 7, tone: 'danger', state: 'MES, ERP, and supplier records use different names for the same ingredient', confidence: 'high', source: 'Cross-system audit · direct', resolvable: true },
- { label: 'Naming conflict — CTE format mismatch', penalty: 7, tone: 'danger', state: 'Traceability submission blocked — FSMA 204 CTE 2 cannot validate', confidence: 'high', source: 'Cross-system audit · direct', resolvable: true },
- { label: 'Oven B — no SKU-to-temperature profile', penalty: 6, tone: 'danger', state: 'Sensor readings have no product context — readings cannot be interpreted correctly', confidence: 'high', source: 'SCADA + MES cross-check', resolvable: true },
- { label: 'SCADA feed stale — Oven B', penalty: 4, tone: 'warn', state: 'Last valid reading 2h 14m ago — confidence penalty applied to Oven B signals', confidence: 'low', source: 'Last reading 2h 14m ago', resolvable: false },
- { label: 'ERP ingredient map incomplete', penalty: 0, tone: 'warn', state: 'Advisory — ingredient names lack supplier linkage (no score impact)', confidence: 'medium', source: 'ERP data quality scan', resolvable: true },
- { label: 'Traceability records', penalty: 0, tone: 'ok', state: 'Chain-of-custody metadata present for all active lots', confidence: 'high', source: 'SupplierIQ · direct', resolvable: false },
+// ── Resolution queue data ─────────────────────────────────────────────────────
+
+const CLUSTER_A = {
+  type: 'cluster',
+  id: 'cluster-a',
+  label: 'Supplier data normalization block',
+  severity: 'critical',
+  combinedGain: 18,
+  gainLabel: '+18 readiness · unlocks FSMA export',
+  why: 'Both issues trace to a single root cause — ERP sync introduced mismatched field formats across supplier records and CTE events. Resolving together prevents re-occurrence and restores cross-plant traceability.',
+  memberKeys: ['conflict-0', 'conflict-1'],
+  memberLabels: [
+    { key: 'conflict-0', label: 'Supplier lot normalization conflict' },
+    { key: 'conflict-1', label: 'CTE traceability format mismatch' },
+  ],
+  totalPoints: 14,
+  detectedAgo: '14h ago',
+  systemsImpacted: ['ERP', 'SupplierIQ', 'FSMA 204 export'],
+  confidenceDrop: 18,
+  unlocks: ['FSMA export certification', 'SupplierIQ high-confidence mode'],
+  blockedBy: null,
+  aiAssessment: {
+    text: 'Root cause originates from ConAgra lot formatting variance introduced after the last ERP sync update. Both naming conflicts trace to the same upstream schema change — resolving one without the other will regenerate the error on the next sync cycle.',
+    confidence: 92,
+  },
+  fixSequence: [
+    { step: 'Validate ERP schema mappings against current supplier lot format', duration: '8 min' },
+    { step: 'Reconcile supplier lot aliases across MES and ERP ingredient master', duration: '9 min' },
+    { step: 'Regenerate CTE lineage references and verify FSMA 204 export', duration: '5 min' },
+  ],
+  estimatedMinutes: 22,
+  autoEligible: false,
+  riskForecast: [
+    { hours: 12, consequence: 'FSMA export failure likely — traceability chain incomplete' },
+    { hours: 24, consequence: 'SupplierIQ confidence may fall below operational threshold' },
+    { hours: 48, consequence: 'Cross-plant lot tracing unavailable during FDA audit window' },
+  ],
+}
+
+const ISSUE_CTX = {
+  type: 'issue',
+  id: 'ctx-0',
+  key: 'ctx-0',
+  label: 'Oven B — SKU context gap',
+  severity: 'high',
+  points: 12,
+  gainLabel: '+12 readiness · restores ShiftIQ CCP accuracy',
+  detectedAgo: '11 days ago',
+  systemsImpacted: ['ShiftIQ CCP-3', 'Model context layer', 'Oven B risk signals'],
+  confidenceDrop: 12,
+  unlocks: ['ShiftIQ CCP accuracy', 'Oven B risk signal reliability'],
+  blockedBy: null,
+  action: 'Add SKU profiles',
+  aiAssessment: {
+    text: 'Oven B has operated without SKU-to-temperature profiles for 11 days. The model is generating false positives at 23% above baseline. GF-Flatbread and Pepperoni are the highest-priority profiles to add — they account for 78% of Oven B runtime.',
+    confidence: 89,
+  },
+  fixSequence: [
+    { step: 'List active SKUs running through Oven B from production schedule', duration: '5 min' },
+    { step: 'Define target temperature range per SKU from production specs', duration: '12 min' },
+    { step: 'Upload profiles to context layer and verify ShiftIQ readings update', duration: '5 min' },
+  ],
+  estimatedMinutes: 22,
+  autoEligible: true,
+  autoSafeReason: [
+    'Deterministic mapping exists from production specs',
+    'No audit conflict detected in current shift',
+    'Prior approval pattern matches this SKU class',
+  ],
+  riskForecast: [
+    { hours: 12, consequence: 'ShiftIQ CCP evaluations remain unreliable for Oven B' },
+    { hours: 24, consequence: 'Model confidence in Oven B signals may fall below 70%' },
+  ],
+}
+
+const ISSUE_SCADA = {
+  type: 'issue',
+  id: 'scada',
+  key: 'scada',
+  label: 'SCADA feed degraded — Oven B',
+  severity: 'moderate',
+  points: 4,
+  permanent: true,
+  gainLabel: '+4 readiness · requires maintenance',
+  detectedAgo: '2h 14m ago',
+  systemsImpacted: ['SCADA sensor network', 'Oven B data pipeline', 'Model confidence'],
+  confidenceDrop: 4,
+  unlocks: [],
+  blockedBy: 'Maintenance ticket MT-2604-019',
+  aiAssessment: {
+    text: 'Intermittent packet loss on the Oven B SCADA pipeline — likely a hardware fault on the Zone 3 network switch. Maintenance ticket MT-2604-019 is tracking this. No automated resolution is possible from this interface.',
+    confidence: 78,
+  },
+  fixSequence: [
+    { step: 'Contact maintenance team — reference MT-2604-019', duration: 'External' },
+    { step: 'Verify pipeline restoration via SCADA admin panel', duration: '5 min' },
+    { step: 'Confirm model confidence recovery after stabilization', duration: '~30 min' },
+  ],
+  estimatedMinutes: null,
+  autoEligible: false,
+  riskForecast: [
+    { hours: 8,  consequence: 'Oven B confidence penalty increases from −4 to −8' },
+    { hours: 24, consequence: 'Extended downtime may trigger compliance flag in audit log' },
+  ],
+}
+
+const ISSUE_ERP = {
+  type: 'issue',
+  id: 'erp',
+  key: 'erp',
+  label: 'ERP ingredient map incomplete',
+  severity: 'moderate',
+  points: 6,
+  gainLabel: '+6 readiness · improves traceability coverage',
+  detectedAgo: '3 days ago',
+  systemsImpacted: ['ERP ingredient master', 'Supplier lot database', 'FSMA traceability'],
+  confidenceDrop: 6,
+  unlocks: ['Full ingredient chain-of-custody', 'Supplier linkage for FSMA 204'],
+  blockedBy: null,
+  action: 'Map ingredient names',
+  aiAssessment: {
+    text: '14 ingredient records in ERP lack supplier linkage — introduced during the April 9 ingredient master migration. Without these links, chain-of-custody traceability is incomplete for FSMA 204 reporting.',
+    confidence: 84,
+  },
+  fixSequence: [
+    { step: 'Run ERP ingredient audit to identify all unlinked records', duration: '10 min' },
+    { step: 'Map each ingredient to the correct supplier record using lot intake data', duration: '15 min' },
+    { step: 'Verify linkage in the next ingredient import cycle', duration: '5 min' },
+  ],
+  estimatedMinutes: 30,
+  autoEligible: false,
+  riskForecast: [
+    { hours: 24, consequence: 'Traceability gap persists through next regulatory cycle' },
+    { hours: 72, consequence: 'FSMA 204 audit export may flag incomplete ingredient provenance' },
+  ],
+}
+
+const ISSUE_TRACE = {
+  type: 'issue',
+  id: 'traceability',
+  key: 'traceability',
+  label: 'Supplier lot traceability incomplete',
+  severity: 'high',
+  points: 8,
+  gainLabel: '+8 readiness · restores FSMA lot chain',
+  detectedAgo: '6 days ago',
+  systemsImpacted: ['Supplier lot intake', 'FSMA 204 traceability module', 'SupplierIQ'],
+  confidenceDrop: 8,
+  unlocks: ['Complete lot chain-of-custody', 'FSMA 204 export readiness'],
+  blockedBy: null,
+  action: 'Add lot metadata',
+  aiAssessment: {
+    text: '3 incoming lots from ConAgra and ADM are missing required chain-of-custody metadata — specifically harvest/production date and handler certification number. These fields are mandatory for FSMA 204 compliance.',
+    confidence: 91,
+  },
+  fixSequence: [
+    { step: 'Contact ConAgra and ADM to request missing metadata for open lots', duration: 'External' },
+    { step: 'Update the lot intake form to require all mandatory fields', duration: '10 min' },
+    { step: 'Validate a sample lot trace end-to-end through the traceability module', duration: '15 min' },
+  ],
+  estimatedMinutes: null,
+  autoEligible: false,
+  riskForecast: [
+    { hours: 12, consequence: 'Affected lots cannot be included in FSMA 204 traceability report' },
+    { hours: 48, consequence: 'FDA inspection may flag lot provenance gaps if unresolved' },
+  ],
+}
+
+const ISSUE_CHECK = {
+  type: 'issue',
+  id: 'checklists',
+  key: 'checklists',
+  label: 'Checklist items unsynced with MES',
+  severity: 'moderate',
+  points: 4,
+  gainLabel: '+4 readiness · closes operator-to-MES gap',
+  detectedAgo: '9 days ago',
+  systemsImpacted: ['ShiftIQ checklist', 'MES workflow engine'],
+  confidenceDrop: 4,
+  unlocks: ['ShiftIQ-to-MES verification loop', 'Startup check auditability'],
+  blockedBy: null,
+  action: 'Map checklist steps',
+  aiAssessment: {
+    text: '3 startup checklist items in ShiftIQ have no corresponding MES workflow mapping — operator sign-off is logged but cannot be verified against machine-side completion. These items were added during the March ShiftIQ update and were never linked to MES.',
+    confidence: 96,
+  },
+  fixSequence: [
+    { step: 'Identify the 3 unlinked checklist items in ShiftIQ admin', duration: '5 min' },
+    { step: 'Match each item to the corresponding MES workflow step', duration: '10 min' },
+    { step: 'Test the sync and confirm items update MES state on completion', duration: '5 min' },
+  ],
+  estimatedMinutes: 20,
+  autoEligible: true,
+  autoSafeReason: [
+    'Mapping is deterministic — exact MES step identifiers are known',
+    'No audit conflict — both systems agree on the checklist items',
+    'Zero production impact during sync',
+  ],
+  riskForecast: [
+    { hours: 24, consequence: 'Operator sign-offs remain unverifiable against MES for these 3 items' },
+  ],
+}
+
+// ── Trend sparkline ───────────────────────────────────────────────────────────
+
+const TREND_DAYS = [
+  { day: 'M', delta: +1 },
+  { day: 'T', delta: +2 },
+  { day: 'W', delta: +3 },
+  { day: 'T', delta: +1 },
+  { day: 'F', delta: +2 },
+  { day: 'S', delta: 0  },
+  { day: 'T', delta: -3, current: true },
 ]
-const READINESS_BASE = 88
 
-const CONF_DOT = { high: 'bg-ok', medium: 'bg-warn', low: 'bg-ghost' }
-const CONF_LABEL = { high: 'High confidence', medium: 'Medium confidence', low: 'Low confidence' }
+function TrendChart() {
+  const w = 224, h = 52, padT = 6, padB = 16, padL = 4, padR = 4
+  const chartW = w - padL - padR
+  const chartH = h - padT - padB
+  const maxAbs  = 4
+  const barW    = Math.floor(chartW / TREND_DAYS.length) - 3
+  const baseline = padT + chartH / 2
+  const xOf = (i) => padL + i * (chartW / TREND_DAYS.length) + (chartW / TREND_DAYS.length - barW) / 2
+  const hOf = (d) => Math.max(2, Math.abs(d) / maxAbs * (chartH / 2))
 
-function ReadinessScoreExplainer({ score, open, onToggle }) {
- const penaltyTotal = READINESS_FACTORS.reduce((s, f) => s + f.penalty, 0)
- return (
-  <div className="border-b border-rule2">
-   {/* Score hero */}
-   <div className="px-4 pt-4 pb-3 bg-stone">
-    <div className="font-body text-ghost text-[10px] uppercase tracking-widest mb-1">Readiness score</div>
-    <div className="flex items-baseline gap-3">
-     <span className={`display-num text-[48px] leading-none font-bold ${score >= 75 ? 'text-ok' : score >= 55 ? 'text-warn' : 'text-danger'}`}>{score}</span>
-     <span className="font-body text-ghost text-[13px]">/ 100</span>
-    </div>
-   </div>
+  return (
+    <svg width="100%" viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="xMidYMid meet"
+      role="img" aria-label="7-day readiness trend: +6 net this week, -3 today from ERP mismatch">
+      {/* Baseline */}
+      <line x1={padL} x2={w - padR} y1={baseline} y2={baseline} stroke="#CAC2B6" strokeWidth="0.5" />
+      {TREND_DAYS.map((d, i) => {
+        const x    = xOf(i)
+        const barH = hOf(d.delta)
+        const isPos = d.delta >= 0
+        const barY  = isPos ? baseline - barH : baseline
+        const color = d.current
+          ? (d.delta < 0 ? '#C43820' : '#3A8A5A')
+          : (isPos ? '#3A8A5A' : '#C43820')
+        const opacity = d.current ? 0.9 : 0.5
+        return (
+          <g key={i}>
+            <rect x={x} y={barY} width={barW} height={barH} fill={color} opacity={opacity} rx="1" />
+            <text x={x + barW / 2} y={h - 3} fontSize="7.5" fill={d.current ? '#686058' : '#B8B0A4'}
+              textAnchor="middle" fontWeight={d.current ? '600' : '400'}>{d.day}</text>
+          </g>
+        )
+      })}
+    </svg>
+  )
+}
 
-   {/* Why toggle */}
-   <button
-    type="button"
-    onClick={onToggle}
-    className="w-full flex items-center justify-between px-4 py-2.5 bg-stone2 border-t border-rule2 hover:bg-stone3 transition-colors"
-   >
-    <div className="flex items-center gap-2">
-     <Brain size={11} strokeWidth={1.75} className="text-muted" />
-     <span className="font-body text-ghost text-[10px] uppercase tracking-widest">Why {score}?</span>
-    </div>
-    {open ? <ChevronUp size={11} className="text-ghost" /> : <ChevronDown size={11} className="text-ghost" />}
-   </button>
+// ── Left rail: Readiness Instrument ──────────────────────────────────────────
 
-   {open && (
-    <div className="slide-in border-t border-rule2">
-     {/* Base row */}
-     <div className="px-4 py-2 bg-stone border-b border-rule2">
-      <div className="flex items-baseline gap-2">
-       <span className="display-num text-[11px] text-ghost w-8 text-right flex-shrink-0">{READINESS_BASE}</span>
-       <span className="font-body text-ghost text-[10px] flex-1">Base readiness · all sources clean</span>
+const ALL_SCORED_ISSUES = [
+  { key: 'conflict-0', points: 7 },
+  { key: 'conflict-1', points: 7 },
+  { key: 'ctx-0',      points: 12 },
+  { key: 'erp',        points: 6 },
+  { key: 'traceability', points: 8 },
+  { key: 'checklists', points: 4 },
+]
+
+function ReadinessInstrument({ score, resolved }) {
+  const zone     = score >= 75 ? 'Clear' : score >= 55 ? 'Moderate risk' : 'Blocked'
+  const zoneText = score >= 75 ? 'text-ok' : score >= 55 ? 'text-warn' : 'text-danger'
+
+  const totalGain = ALL_SCORED_ISSUES
+    .filter(i => !resolved[i.key])
+    .reduce((s, i) => s + i.points, 0)
+
+  const projected     = Math.min(100, score + totalGain)
+  const shiftIQConf   = resolved['ctx-0'] ? 84 : 72
+  const supplierIQConf= (resolved['conflict-0'] && resolved['conflict-1']) ? 91 : resolved['conflict-0'] ? 71 : 58
+  const fsmaBlocked   = !resolved['conflict-0'] || !resolved['conflict-1']
+
+  const moduleRows = [
+    { label: 'ShiftIQ confidence',    value: `${shiftIQConf}%`,    ok: shiftIQConf >= 75 },
+    { label: 'SupplierIQ confidence', value: `${supplierIQConf}%`, ok: supplierIQConf >= 75 },
+    { label: 'FSMA traceability',     value: fsmaBlocked ? 'At risk' : 'Clear', ok: !fsmaBlocked, danger: fsmaBlocked },
+  ]
+
+  return (
+    <div className="px-5 pt-5 pb-4 border-b border-rule2 flex-shrink-0">
+      <div className="font-body text-ghost text-[10px] uppercase tracking-widest mb-3">Data Readiness</div>
+
+      {/* Score */}
+      <div className="flex items-baseline gap-3 mb-1">
+        <span key={score} className={`display-num text-[64px] leading-none score-tick ${zoneText}`}>{score}</span>
+        <div className="pb-1">
+          <div className={`font-body font-semibold text-[12px] ${zoneText}`}>{zone}</div>
+        </div>
       </div>
-     </div>
-     {READINESS_FACTORS.map((f, i) => {
-      const toneText = f.tone === 'danger' ? 'text-danger' : f.tone === 'warn' ? 'text-warn' : 'text-ok'
-      const toneBg = f.tone === 'danger' ? 'bg-danger/[0.03]' : f.tone === 'warn' ? 'bg-warn/[0.02]' : ''
-      return (
-       <div key={i} className={`px-4 py-2.5 border-b border-rule2 last:border-b-0 ${toneBg}`}>
-        <div className="flex items-start gap-2">
-         <span className={`display-num text-[12px] font-bold w-8 text-right flex-shrink-0 leading-none pt-px ${
-          f.penalty > 0 ? toneText : 'text-ghost'
-         }`}>
-          {f.penalty > 0 ? `−${f.penalty}` : '—'}
-         </span>
-         <div className="flex-1 min-w-0">
-          <div className={`font-body font-medium text-[11px] leading-snug ${f.penalty > 0 ? (f.tone === 'danger' ? 'text-danger' : 'text-warn') : 'text-ghost'}`}>
-           {f.label}
-          </div>
-          <div className="font-body text-ghost text-[10px] mt-0.5 leading-snug">{f.state}</div>
-          <div className="flex items-center gap-1 mt-1">
-           <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${CONF_DOT[f.confidence]}`} />
-           <span className="font-body text-ghost text-[9px]">{CONF_LABEL[f.confidence]} · {f.source}</span>
-          </div>
-         </div>
+
+      {/* Projected */}
+      {totalGain > 0 ? (
+        <div className="flex items-baseline gap-1.5 mb-4">
+          <span className="font-body text-ghost text-[10px]">Projected after queued fixes:</span>
+          <span className="display-num text-[13px] font-bold text-ok">{projected}</span>
+          <span className="font-body text-ok text-[10px]">(+{totalGain})</span>
         </div>
-       </div>
-      )
-     })}
-     {/* Summary */}
-     <div className="px-4 py-2.5 bg-stone2 border-t border-rule2">
-      <div className="flex items-center justify-between">
-       <span className="font-body text-ghost text-[10px]">Resolve all flagged gaps</span>
-       <span className="font-body font-medium text-ok text-[11px]">+{penaltyTotal} pts → {Math.min(100, score + penaltyTotal)}</span>
+      ) : (
+        <div className="flex items-center gap-1.5 mb-4">
+          <Check size={10} strokeWidth={2.5} className="text-ok" />
+          <span className="font-body text-ok text-[10px]">All scored gaps resolved</span>
+        </div>
+      )}
+
+      {/* Module confidence */}
+      <div className="space-y-1.5 mb-4">
+        {moduleRows.map(m => (
+          <div key={m.label} className="flex items-baseline justify-between">
+            <span className="font-body text-ghost text-[10px]">{m.label}</span>
+            <span className={`display-num text-[11px] font-bold tabular-nums ${m.danger ? 'text-danger' : m.ok ? 'text-ok' : 'text-warn'}`}>
+              {m.value}
+            </span>
+          </div>
+        ))}
       </div>
-     </div>
+
+      {/* Trend chart */}
+      <div className="border-t border-rule2 pt-3">
+        <div className="flex items-baseline justify-between mb-2">
+          <div className="flex items-baseline gap-1.5">
+            <span className="display-num text-[11px] font-bold text-ok">+6</span>
+            <span className="font-body text-ghost text-[10px]">this week</span>
+          </div>
+          <div className="flex items-baseline gap-1">
+            <span className="display-num text-[11px] font-bold text-danger">−3</span>
+            <span className="font-body text-ghost text-[9px]">ERP mismatch</span>
+          </div>
+        </div>
+        <TrendChart />
+      </div>
     </div>
-   )}
-  </div>
- )
+  )
 }
 
-const toneColor = t => t === 'ok' ? '#3A8A5A' : t === 'danger' ? '#C43820' : '#C4920A'
-const statusCls = t => t === 'ok' ? 'bg-ok/10 text-ok' : t === 'danger' ? 'bg-danger/10 text-danger' : 'bg-warn/10 text-warn'
+// ── Left rail: Resolution Queue ───────────────────────────────────────────────
 
-// Design A — compact table grid
-function SourceRowTable({ s }) {
- const c = toneColor(s.tone)
- return (
- <div className={`grid border-b border-rule2 last:border-b-0 hover:bg-stone2 transition-colors ${
- s.tone === 'danger' ? 'bg-danger/[0.03]' : s.tone === 'warn' ? 'bg-warn/[0.02]' : ''
- }`} style={{ gridTemplateColumns:'1fr 88px 80px 88px 110px' }}>
- <div className="px-4 py-3">
- <div className="font-body font-medium text-ink text-[13px]">{s.name}</div>
- <div className="font-body text-ghost text-[11px]">{s.sub}</div>
- </div>
- <div className="flex flex-col justify-center px-3 gap-1">
- <span className="font-display font-extrabold leading-none text-[11px]" style={{ color: c }}>{s.score}</span>
- <div style={{ height:3, background:'#CAC2B6' }}>
- <div style={{ height:'100%', width:`${s.score}%`, background:c, transition:'width 500ms cubic-bezier(0.19,0.91,0.38,1)' }} />
- </div>
- </div>
- <div className="flex items-center px-3">
- <span className={`font-body text-[11px] ${s.tone === 'danger' ? 'text-danger' : 'text-ghost'}`}>{s.freshness}</span>
- </div>
- <div className="flex flex-col justify-center px-3 gap-1">
- <div style={{ height:3, background:'#CAC2B6' }}>
- <div style={{ height:'100%', width:`${s.consistency}%`, background:c, transition:'width 500ms cubic-bezier(0.19,0.91,0.38,1)' }} />
- </div>
- <span className={`font-body text-[10px] ${s.tone==='ok'?'text-ghost':s.tone==='danger'?'text-danger':'text-warn'}`}>{s.consistency}%</span>
- </div>
- <div className="flex items-center justify-center px-2">
- <span className={`font-body font-medium text-[10px] px-2 py-0.5 rounded-[3px] ${statusCls(s.tone)}`}>{s.status}</span>
- </div>
- </div>
- )
+function QueueClusterRow({ cluster, resolved, selected, onSelect }) {
+  const allResolved = cluster.memberKeys.every(k => resolved[k])
+  const isSelected  = selected === cluster.id
+  return (
+    <button type="button" onClick={() => onSelect(cluster.id)}
+      className={`w-full text-left px-4 py-3.5 border-b border-rule2 border-l-2 transition-colors ${
+        isSelected        ? 'border-l-ochre bg-ochre/[0.06]'
+        : allResolved     ? 'border-l-ok opacity-40'
+        : 'border-l-warn bg-warn/[0.02] hover:bg-stone2'
+      }`}>
+      {/* Cluster badge */}
+      <div className="flex items-center gap-1.5 mb-1.5">
+        <span className={`font-body text-[9px] px-1.5 py-px rounded-btn font-semibold uppercase tracking-wider ${
+          allResolved ? 'bg-ok/10 text-ok' : 'bg-ochre/15 text-ochre'
+        }`}>
+          {allResolved ? 'Resolved' : 'High impact cluster'}
+        </span>
+      </div>
+      <div className={`font-body font-medium text-[12px] leading-snug mb-1 ${allResolved ? 'text-ghost line-through' : 'text-ink'}`}>
+        {cluster.label}
+      </div>
+      {!allResolved && (
+        <>
+          <div className="font-body text-ochre text-[10px] mb-1.5">Resolve together → {cluster.gainLabel}</div>
+          <div className="space-y-0.5">
+            {cluster.memberLabels.map((m, i) => (
+              <div key={m.key} className="flex items-center gap-1.5">
+                <span className="font-body text-ghost text-[10px]">{i + 1}.</span>
+                <span className={`font-body text-[10px] ${resolved[m.key] ? 'text-ok line-through' : 'text-muted'}`}>{m.label}</span>
+                {resolved[m.key] && <Check size={8} strokeWidth={2.5} className="text-ok" />}
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+    </button>
+  )
 }
 
-function DiagnosticsPanel({ open, selectedGap, score, onClose }) {
- const panelRef = useRef(null)
- const { exiting, exit } = useExitAnimation(200)
- useFocusTrap(panelRef, open)
- if (!open) return null
- const handleClose = () => exit(onClose)
- return (
-  <>
-   <div className="fixed inset-0 bg-ink/20 z-40" onClick={handleClose} />
-   <aside ref={panelRef} role="dialog" aria-modal="true" aria-label={selectedGap ? 'Review gap' : 'Readiness diagnostics'} className={`fixed top-0 right-0 bottom-0 w-full max-w-[500px] bg-stone border-l border-rule2 z-50 flex flex-col ${exiting ? 'slide-right-out' : 'slide-right'}`}>
-    <div className="flex items-start justify-between px-5 py-4 border-b border-rule2 bg-stone2">
-     <div>
-      <div className="font-body text-ghost text-[10px] mb-1">{selectedGap ? 'Review gap' : 'Readiness diagnostics'}</div>
-      <div className="font-display font-bold text-ink text-base">{selectedGap ? selectedGap.title : 'Degraded readiness overview'}</div>
-     </div>
-     <button type="button" onClick={handleClose} aria-label="Close diagnostics panel" className="p-1 text-ghost hover:text-ink transition-colors duration-100 ease-standard">
-      <X size={14} strokeWidth={2} aria-hidden="true" />
-     </button>
-    </div>
-    <div className="flex-1 overflow-y-auto p-5">
-     {selectedGap ? (
-      <>
-       <div className="font-body font-medium text-ink text-[13px] mb-2">{selectedGap.title}</div>
-       <div className="font-body text-ghost text-[11px] leading-relaxed mb-4">{selectedGap.details}</div>
-       <div className="grid gap-3 sm:grid-cols-2 mb-4">
-        <div className="border border-rule2 p-3">
-         <div className="font-body text-[10px] text-muted mb-2">Recommended fix</div>
-         <div className="font-body text-[11px] text-ink">Standardize the gap mapping across MES, ERP and checklist sources. Assign a plant data owner to validate the mapping and close the loop.</div>
+function QueueIssueRow({ item, resolved, selected, onSelect }) {
+  const isResolved = !item.permanent && resolved[item.key]
+  const isSelected = selected === item.id
+  const borderColor = isSelected   ? 'border-l-ochre'
+    : isResolved   ? 'border-l-ok'
+    : item.severity === 'high' ? 'border-l-danger'
+    : item.permanent ? 'border-l-warn'
+    : 'border-l-rule2'
+  return (
+    <button type="button" onClick={() => onSelect(item.id)}
+      className={`w-full text-left px-4 py-3 border-b border-rule2 border-l-2 transition-colors ${borderColor} ${
+        isSelected ? 'bg-ochre/[0.06]' : isResolved ? 'opacity-40' : 'hover:bg-stone2'
+      }`}>
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex-1 min-w-0">
+          <div className={`font-body font-medium text-[11px] leading-snug ${isResolved ? 'text-ghost line-through' : 'text-ink'}`}>
+            {item.label}
+          </div>
+          {item.permanent && !isResolved && (
+            <div className="font-body text-warn text-[10px] mt-0.5">Needs maintenance</div>
+          )}
+          {isResolved && <div className="font-body text-ok text-[10px] mt-0.5">Resolved</div>}
         </div>
-        <div className="border border-rule2 p-3">
-         <div className="font-body text-[10px] text-muted mb-2">Affected systems</div>
-         <div className="space-y-1 font-body text-[11px] text-ink">
-          <div>• MES schedule</div>
-          <div>• ERP ingredient master</div>
-          <div>• Checklist system</div>
-         </div>
-        </div>
-       </div>
-       <div className="border border-rule2 p-3">
-        <div className="font-body text-[10px] text-muted mb-2">Next steps</div>
-        <ol className="list-decimal list-inside font-body text-[11px] text-ink space-y-1">
-         <li>Review the gap details and source mappings.</li>
-         <li>Assign corrective action to operations or QA.</li>
-         <li>Confirm update in the source systems and rerun readiness evaluation.</li>
-        </ol>
-       </div>
-      </>
-     ) : (
-      <>
-       <div className="font-body font-medium text-ink text-[13px] mb-2">How the readiness picture breaks down</div>
-       <div className="font-body text-ghost text-[11px] leading-relaxed mb-4">Diagnostic detail for the current degraded readiness state, including the largest gaps and next actions that restore cross-plant trust.</div>
-       <div className="grid gap-3 sm:grid-cols-2 mb-4">
-        <div className="border border-rule2 p-3">
-         <div className="font-body text-[10px] text-muted mb-2">Current readiness</div>
-         <div className="font-body text-2xl font-medium text-ink">{score}/100</div>
-         <div className="font-body text-[10px] text-warn mt-1">Degraded</div>
-        </div>
-        <div className="border border-rule2 p-3">
-         <div className="font-body text-[10px] text-muted mb-2">Connected sources</div>
-         <div className="font-body text-[11px] text-ink">5 of 5</div>
-         <div className="font-body text-[10px] text-ghost mt-1">All feeds live, but naming and context gaps remain.</div>
-        </div>
-       </div>
-       <div className="border border-rule2 p-3 mb-4">
-        <div className="font-body text-[10px] text-muted mb-2">Key gaps</div>
-        <ul className="space-y-2 font-body text-[11px] text-ink">
-         <li>• 2 active naming conflicts across MES / ERP / supplier fields.</li>
-         <li>• 1 critical context gap on Oven B sensor mapping.</li>
-         <li>• SCADA output is stale for 3 days on a critical process feed.</li>
-        </ul>
-       </div>
-       <div className="border border-rule2 p-3">
-        <div className="font-body text-[10px] text-muted mb-2">Recommended actions</div>
-        <div className="space-y-2 font-body text-[11px] text-ink">
-         <div>• Set canonical ingredient names for all MES/ERP/supplier references.</div>
-         <div>• Map SKU-to-temperature profiles for Oven B.</div>
-         <div>• Restore and validate the Oven B SCADA feed.</div>
-        </div>
-       </div>
-      </>
-     )}
-    </div>
-    <div className="px-5 py-3 border-t border-rule2 bg-stone2 flex-shrink-0">
-     <Btn variant="secondary" onClick={handleClose}>Close</Btn>
-    </div>
-   </aside>
-  </>
- )
+        {!isResolved && (
+          <span className={`display-num text-[11px] font-bold tabular-nums flex-shrink-0 ${
+            item.permanent ? 'text-ghost/50' : 'text-ok'
+          }`}>
+            +{item.points}
+          </span>
+        )}
+      </div>
+      {item.blockedBy && !isResolved && (
+        <div className="font-body text-ghost text-[9px] mt-1">Blocked by: {item.blockedBy}</div>
+      )}
+    </button>
+  )
 }
+
+function ResolutionQueue({ selected, onSelect, resolved }) {
+  const [advisoryOpen, setAdvisoryOpen] = useState(false)
+  return (
+    <div className="flex-1 overflow-y-auto">
+      <div className="px-4 py-2 border-b border-rule2 bg-stone2 flex-shrink-0">
+        <span className="font-body text-ghost text-[10px] uppercase tracking-widest">AI Resolution Queue</span>
+      </div>
+
+      {/* Cluster */}
+      <QueueClusterRow cluster={CLUSTER_A} resolved={resolved} selected={selected} onSelect={onSelect} />
+
+      {/* Individual issues */}
+      <div className="px-4 py-1.5 border-b border-rule2 bg-stone2 flex-shrink-0">
+        <span className="font-body text-ghost text-[9px] uppercase tracking-widest">Individual issues</span>
+      </div>
+      <QueueIssueRow item={ISSUE_CTX}   resolved={resolved} selected={selected} onSelect={onSelect} />
+      <QueueIssueRow item={ISSUE_TRACE} resolved={resolved} selected={selected} onSelect={onSelect} />
+      <QueueIssueRow item={ISSUE_ERP}   resolved={resolved} selected={selected} onSelect={onSelect} />
+      <QueueIssueRow item={ISSUE_CHECK} resolved={resolved} selected={selected} onSelect={onSelect} />
+      <QueueIssueRow item={ISSUE_SCADA} resolved={resolved} selected={selected} onSelect={onSelect} />
+
+      {/* Advisory */}
+      <button type="button" onClick={() => setAdvisoryOpen(v => !v)}
+        className="w-full flex items-center justify-between px-4 py-2 border-b border-rule2 bg-stone2 hover:bg-stone3 transition-colors">
+        <span className="font-body text-ghost text-[9px] uppercase tracking-widest">Advisory · no score impact</span>
+        {advisoryOpen ? <ChevronUp size={10} className="text-ghost" /> : <ChevronDown size={10} className="text-ghost" />}
+      </button>
+      {advisoryOpen && ADVISORY_ITEMS.map(a => (
+        <div key={a.key} className="px-4 py-2.5 border-b border-rule2 border-l-2 border-l-rule2">
+          <div className="font-body text-muted text-[11px]">{a.label}</div>
+          <div className="font-body text-ghost text-[10px] mt-0.5">{a.detail}</div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+// ── Right workspace components ─────────────────────────────────────────────────
+
+function ResolutionFeedback({ feedback, onDismiss }) {
+  useEffect(() => {
+    const t = setTimeout(onDismiss, 5000)
+    return () => clearTimeout(t)
+  }, [])
+  return (
+    <div className="flex-shrink-0 px-8 py-4 border-b-2 border-b-ok/30 bg-ok/[0.04] slide-in">
+      <div className="flex items-center gap-2 mb-3">
+        <Check size={14} strokeWidth={2.5} className="text-ok flex-shrink-0" />
+        <span className="font-body font-semibold text-ok text-[13px]">{feedback.label} — resolved</span>
+      </div>
+      <div className="grid grid-cols-3 gap-6">
+        {[
+          { label: 'Readiness', from: feedback.prevScore, to: feedback.newScore, unit: '', gain: true },
+          { label: 'ShiftIQ confidence', from: `${feedback.prevShiftIQ}%`, to: `${feedback.newShiftIQ}%`, gain: feedback.newShiftIQ > feedback.prevShiftIQ },
+          { label: 'SupplierIQ confidence', from: `${feedback.prevSupplierIQ}%`, to: `${feedback.newSupplierIQ}%`, gain: feedback.newSupplierIQ > feedback.prevSupplierIQ },
+        ].map(r => (
+          <div key={r.label}>
+            <div className="font-body text-ghost text-[10px] mb-1">{r.label}</div>
+            <div className="flex items-baseline gap-2">
+              <span className="display-num text-[14px] text-ghost tabular-nums">{r.from}</span>
+              <span className="font-body text-ghost text-[10px]">→</span>
+              <span className={`display-num text-[18px] font-bold tabular-nums ${r.gain ? 'text-ok' : 'text-ink'}`}>{r.to}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+      {feedback.downgradedCount > 0 && (
+        <div className="font-body text-ok/80 text-[10px] mt-2.5">
+          {feedback.downgradedCount} dependent {feedback.downgradedCount === 1 ? 'issue' : 'issues'} downgraded from Critical → Warning
+        </div>
+      )}
+    </div>
+  )
+}
+
+function SectionLabel({ children }) {
+  return (
+    <div className="font-body text-ghost text-[10px] uppercase tracking-widest mb-2">{children}</div>
+  )
+}
+
+function WorkspacePanel({ item, isCluster, resolved, onResolve, onResolveCluster }) {
+  const [confirming, setConfirming] = useState(false)
+  const [autoConfirming, setAutoConfirming] = useState(false)
+
+  const isResolved = isCluster
+    ? item.memberKeys.every(k => resolved[k])
+    : (!item.permanent && resolved[item.key])
+
+  const severityColor = item.severity === 'critical' ? 'text-danger'
+    : item.severity === 'high' ? 'text-danger'
+    : item.severity === 'moderate' ? 'text-warn'
+    : 'text-ghost'
+
+  const severityLabel = item.severity === 'critical' ? 'Critical'
+    : item.severity === 'high' ? 'High'
+    : item.severity === 'moderate' ? 'Moderate'
+    : 'Low'
+
+  return (
+    <div className="flex-1 overflow-y-auto">
+      <div className="max-w-[680px] px-8 py-6 space-y-7">
+
+        {/* Issue context */}
+        <div>
+          <div className="flex items-center gap-2 mb-2">
+            {isCluster && <span className="font-body text-[10px] px-1.5 py-px bg-ochre/15 text-ochre rounded-btn font-semibold uppercase tracking-wider">Cluster</span>}
+            <span className={`font-body text-[10px] font-medium ${severityColor}`}>{severityLabel}</span>
+            {item.detectedAgo && <span className="font-body text-ghost text-[10px]">· Detected {item.detectedAgo}</span>}
+            {isResolved && <span className="font-body text-ok text-[10px] flex items-center gap-1"><Check size={10} strokeWidth={2.5} />Resolved</span>}
+          </div>
+          <h2 className="font-display font-bold text-ink text-[22px] leading-snug mb-3">{item.label}</h2>
+          <div className="grid grid-cols-3 gap-4">
+            {item.systemsImpacted?.length > 0 && (
+              <div>
+                <div className="font-body text-ghost text-[10px] mb-1">Systems impacted</div>
+                <div className="font-body text-muted text-[11px]">{item.systemsImpacted.join(' · ')}</div>
+              </div>
+            )}
+            {item.confidenceDrop > 0 && (
+              <div>
+                <div className="font-body text-ghost text-[10px] mb-1">Confidence degradation</div>
+                <div className="display-num text-[16px] font-bold text-danger">−{item.confidenceDrop}%</div>
+              </div>
+            )}
+            {item.unlocks?.length > 0 && (
+              <div>
+                <div className="font-body text-ghost text-[10px] mb-1">Unlocks</div>
+                <div className="space-y-0.5">
+                  {item.unlocks.map(u => (
+                    <div key={u} className="font-body text-ok text-[10px]">· {u}</div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+          {item.blockedBy && (
+            <div className="flex items-center gap-2 mt-3 px-3 py-2 bg-warn/[0.06] border border-warn/20 rounded-btn">
+              <AlertTriangle size={11} strokeWidth={2} className="text-warn flex-shrink-0" />
+              <span className="font-body text-warn text-[11px]">Blocked by: {item.blockedBy}</span>
+            </div>
+          )}
+          {isCluster && (
+            <div className="mt-3 px-3 py-2 bg-stone2 border border-rule2 rounded-btn">
+              <div className="font-body text-ghost text-[10px] mb-1">Why grouped</div>
+              <div className="font-body text-muted text-[11px] leading-relaxed">{item.why}</div>
+            </div>
+          )}
+        </div>
+
+        {/* AI Assessment */}
+        {item.aiAssessment && (
+          <div>
+            <SectionLabel>AI Assessment</SectionLabel>
+            <div className="border border-rule2 bg-stone2 px-4 py-3.5 rounded-btn">
+              <div className="flex items-start justify-between gap-3 mb-2">
+                <div className="font-body text-ink text-[12px] leading-relaxed flex-1">{item.aiAssessment.text}</div>
+                <span className="font-mono text-[11px] font-bold text-ochre flex-shrink-0 px-2 py-0.5 bg-ochre/10 rounded-btn">
+                  {item.aiAssessment.confidence}%
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Fix Sequencing */}
+        {item.fixSequence?.length > 0 && (
+          <div>
+            <SectionLabel>Recommended resolution order</SectionLabel>
+            <div className="border border-rule2 bg-stone divide-y divide-rule2 rounded-btn">
+              {item.fixSequence.map((step, i) => (
+                <div key={i} className="flex items-center gap-4 px-4 py-3">
+                  <span className="display-num text-[13px] font-bold text-ghost/60 flex-shrink-0 w-4">{i + 1}</span>
+                  <span className="font-body text-ink text-[12px] flex-1">{step.step}</span>
+                  <span className="font-mono text-ghost text-[10px] flex-shrink-0">{step.duration}</span>
+                </div>
+              ))}
+              {item.estimatedMinutes && (
+                <div className="flex items-center justify-between px-4 py-2.5 bg-stone2">
+                  <span className="font-body text-ghost text-[10px]">Estimated completion</span>
+                  <span className="font-body text-muted text-[11px] font-medium">{item.estimatedMinutes} minutes</span>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Auto-remediation */}
+        {item.autoEligible && !isResolved && (
+          <div>
+            <SectionLabel>Automatic remediation</SectionLabel>
+            <div className="border border-rule2 bg-stone px-4 py-4 rounded-btn">
+              <div className="flex items-center gap-2 mb-3">
+                <Zap size={12} strokeWidth={2} className="text-ochre flex-shrink-0" />
+                <span className="font-body font-semibold text-ink text-[12px]">Eligible for automatic remediation</span>
+              </div>
+              <div className="space-y-1 mb-4">
+                <div className="font-body text-ghost text-[10px] mb-1.5">Safe to auto-resolve because:</div>
+                {item.autoSafeReason.map(r => (
+                  <div key={r} className="flex items-center gap-2">
+                    <Check size={9} strokeWidth={2.5} className="text-ok flex-shrink-0" />
+                    <span className="font-body text-muted text-[10px]">{r}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="border-t border-rule2 pt-3">
+                <div className="font-body text-ghost text-[10px] mb-2">Human confirmation required — action will be logged for audit.</div>
+                {autoConfirming ? (
+                  <div className="flex gap-2">
+                    <Btn variant="primary" onClick={() => { setAutoConfirming(false); onResolve(item.key, item.points, item.label) }}>
+                      Confirm automatic reconciliation
+                    </Btn>
+                    <Btn variant="secondary" onClick={() => setAutoConfirming(false)}>Cancel</Btn>
+                  </div>
+                ) : (
+                  <Btn variant="secondary" onClick={() => setAutoConfirming(true)}>
+                    Run automatic reconciliation
+                  </Btn>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Risk Forecast */}
+        {item.riskForecast?.length > 0 && !isResolved && (
+          <div>
+            <SectionLabel>Projected risk if unresolved</SectionLabel>
+            <div className="space-y-2">
+              {item.riskForecast.map(r => (
+                <div key={r.hours} className="flex items-start gap-4 px-4 py-3 border border-rule2 bg-stone rounded-btn">
+                  <div className="flex-shrink-0 text-right w-14">
+                    <div className="display-num text-[14px] font-bold text-muted tabular-nums">{r.hours}h</div>
+                  </div>
+                  <div className="font-body text-muted text-[11px] leading-snug">{r.consequence}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Resolution action */}
+        {!isResolved && !item.permanent && (
+          <div className="border-t border-rule2 pt-6">
+            {isCluster ? (
+              <>
+                <div className="font-body text-ghost text-[10px] mb-3">Resolving this cluster closes {item.memberKeys.length} issues and adds +{item.totalPoints} pts readiness.</div>
+                {confirming ? (
+                  <div className="flex gap-2">
+                    <Btn variant="primary" onClick={() => { setConfirming(false); onResolveCluster(item) }}>Confirm resolution</Btn>
+                    <Btn variant="secondary" onClick={() => setConfirming(false)}>Cancel</Btn>
+                  </div>
+                ) : (
+                  <HoldButton label={`Hold to resolve cluster — +${item.totalPoints} pts readiness`}
+                    holdLabel="Keep holding to confirm cluster resolution…"
+                    doneLabel="Cluster resolved"
+                    duration={2000} tone="ok"
+                    onConfirm={() => onResolveCluster(item)} />
+                )}
+              </>
+            ) : (
+              <HoldButton label={`Hold to resolve — ${item.gainLabel}`}
+                holdLabel="Keep holding to confirm…"
+                doneLabel="Resolved"
+                duration={1500} tone="ok"
+                onConfirm={() => onResolve(item.key, item.points, item.label)} />
+            )}
+          </div>
+        )}
+
+        {/* Permanent item info */}
+        {item.permanent && (
+          <div className="border-t border-rule2 pt-6">
+            <div className="flex items-center gap-2 px-4 py-3 bg-warn/[0.06] border border-warn/20 rounded-btn">
+              <AlertTriangle size={12} strokeWidth={2} className="text-warn flex-shrink-0" />
+              <span className="font-body text-warn text-[11px]">Resolution requires external action — cannot be completed from this interface</span>
+            </div>
+          </div>
+        )}
+
+        {/* Resolved state */}
+        {isResolved && (
+          <div className="flex items-center gap-2 px-4 py-3 bg-ok/[0.06] border border-ok/20 rounded-btn">
+            <Check size={13} strokeWidth={2} className="text-ok flex-shrink-0" />
+            <span className="font-body font-medium text-ok text-[12px]">Resolved — downstream systems updating</span>
+          </div>
+        )}
+
+      </div>
+    </div>
+  )
+}
+
+function EmptyWorkspace() {
+  return (
+    <div className="flex-1 flex flex-col items-center justify-center text-center px-8">
+      <div className="font-display font-bold text-ink text-[17px] mb-2">Select an issue to begin</div>
+      <div className="font-body text-ghost text-[12px] max-w-[320px] leading-relaxed">
+        Choose a cluster or individual issue from the queue. The workspace will show full context, AI assessment, and resolution steps.
+      </div>
+    </div>
+  )
+}
+
+// ── Main ──────────────────────────────────────────────────────────────────────
 
 export default function DataReadiness() {
- const { readinessScore: score, setReadinessScore: setScore,
- readinessResolved: resolved, setReadinessResolved: setResolved,
- resolvedConflicts, setResolvedConflicts } = useAppState()
- const [showConsequence, setShowConsequence] = useState(false)
- const [exportState, setExportState] = useState('idle')
- const [diagnosticsOpen, setDiagnosticsOpen] = useState(false)
- const [selectedGap, setSelectedGap] = useState(null)
- const [scoreExplainerOpen, setScoreExplainerOpen] = useState(false)
- const location = useLocation()
- const highlightKey = location.state?.highlight
+  const { readinessScore: score, setReadinessScore: setScore,
+    readinessResolved: resolved, setReadinessResolved: setResolved,
+    resolvedConflicts, setResolvedConflicts } = useAppState()
 
- const handleExport = () => {
- setExportState('loading')
- setTimeout(() => setExportState('done'), 1500)
- }
+  const [selectedId, setSelectedId] = useState(CLUSTER_A.id)
+  const [resolvedFeedback, setResolvedFeedback] = useState(null)
+  const location = useLocation()
 
- useEffect(() => {
- if (highlightKey) {
- const el = document.getElementById(highlightKey)
- if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' })
- }
- }, [highlightKey])
+  useEffect(() => {
+    const key = location.state?.highlight
+    if (key) {
+      if (['conflict-0', 'conflict-1'].includes(key)) setSelectedId(CLUSTER_A.id)
+      else if (key === 'ctx-0') setSelectedId(ISSUE_CTX.id)
+      else if (key === 'scada') setSelectedId(ISSUE_SCADA.id)
+    }
+  }, [location.state])
 
- const resolveItem = (key, points) => {
- if (resolved[key]) return
- setResolved(p => ({ ...p, [key]: true }))
- setScore(s => Math.min(100, s + points))
- setShowConsequence(true)
- if (key.startsWith('conflict-')) {
-  const idx = parseInt(key.split('-')[1], 10)
-  setResolvedConflicts(prev => new Set([...prev, idx]))
- }
- }
+  const captureState = () => ({
+    score,
+    shiftIQ:    resolved['ctx-0'] ? 84 : 72,
+    supplierIQ: (resolved['conflict-0'] && resolved['conflict-1']) ? 91 : resolved['conflict-0'] ? 71 : 58,
+  })
 
- const supplierIQConf =
- resolved['conflict-0'] && resolved['conflict-1'] ? 84 :
- resolved['conflict-0'] ? 71 : 58
- const shiftIQConf = resolved['ctx-0'] ? 75 : 61
+  const resolveItem = (key, points, label) => {
+    if (resolved[key]) return
+    const before = captureState()
+    setResolved(p => ({ ...p, [key]: true }))
+    setScore(s => Math.min(100, s + points))
+    if (key.startsWith('conflict-')) {
+      const idx = parseInt(key.split('-')[1], 10)
+      setResolvedConflicts(prev => new Set([...prev, idx]))
+    }
+    const after = {
+      shiftIQ:    key === 'ctx-0' ? 84 : before.shiftIQ,
+      supplierIQ: (key === 'conflict-0' || key === 'conflict-1') ? 91 : before.supplierIQ,
+    }
+    setResolvedFeedback({ label, prevScore: before.score, newScore: Math.min(100, before.score + points), prevShiftIQ: before.shiftIQ, newShiftIQ: after.shiftIQ, prevSupplierIQ: before.supplierIQ, newSupplierIQ: after.supplierIQ, downgradedCount: 0 })
+  }
 
- const moduleRows = [
- { n:'ShiftIQ', s:'Risk score · Interventions', v: shiftIQConf, c: shiftIQConf >= 75 ? 'text-ok' : 'text-warn' },
- { n:'HandoffIQ', s:'Workforce · Certs', v: 91, c: 'text-ok' },
- { n:'SupplierIQ', s:'COA · Lot traceability', v: supplierIQConf, c: supplierIQConf >= 75 ? 'text-ok' : 'text-warn' },
- { n:'CAPA Engine', s:'Root cause · Evidence', v: 88, c: 'text-ok' },
- ]
-
- const dataGaps = [
-  { title: 'ERP ingredient map incomplete', details: 'Ingredient names missing supplier linkage', tone: 'warn', badge: 'Context gap' },
-  { title: 'Checklist items unsynced', details: '3 startup checks are not mapped to the MES workflow', tone: 'warn', badge: 'Data gap' },
-  { title: 'Supplier lot traceability weak', details: 'Incoming lots lack full chain-of-custody metadata', tone: 'warn', badge: 'Traceability gap' },
- ]
- const activeRiskCount = readinessData.conflicts.length + 1 + dataGaps.length
-
- return (
- <div className="flex flex-col h-full overflow-hidden content-reveal">
-  {score < 75 && (
-   <ActionBanner
-    tone="warn"
-    headline="Action Required — system in degraded mode"
-    body={`Readiness score: ${score}/100. Resolve naming conflicts and context gaps to restore full operational trust.`}
-   >
-    <Btn variant="primary" onClick={handleExport}>
-     {exportState === 'loading' ? <><Spinner label="Preparing" /> Preparing…</> :
-      exportState === 'done' ? <><AnimatedCheck size={11} color="currentColor" /> Exported</> :
-      'Export readiness report'}
-    </Btn>
-    <Btn variant="secondary" onClick={() => setDiagnosticsOpen(true)}>View diagnostics</Btn>
-   </ActionBanner>
-  )}
-
-  {/* Top stats row — Readiness overview */}
-  <div className="border-b border-rule2 bg-stone3/60 px-4 py-4">
-   <div className="grid grid-cols-5 gap-3">
-    {readinessData.stats.map((stat, idx) => (
-     <StatCell key={idx} label={stat.label} value={stat.value} sub={stat.sub} tone={stat.tone} fill={stat.fill} />
-    ))}
-   </div>
-  </div>
-
-  {/* Main Content Area */}
-  <div className="flex flex-1 overflow-hidden">
-   {/* Center Panel — Operational Reality Feed */}
-   <div className="flex-1 overflow-y-auto">
-    <div className="p-4 space-y-6">
-     {/* Active Risk Cards */}
-     <div>
-      <div className="font-body font-medium text-ink text-[13px] mb-4">Active Risk Cards</div>
-      <div className="space-y-3">
-       {readinessData.conflicts.map((c, i) => (
-        <ActionCard
-         key={i}
-         tone="danger"
-         title={c.title}
-         subtitle="Cross-plant correlation blocked"
-         metadata={[
-          `${c.variants.length} conflicting names`,
-          'Affects 3 modules',
-          'Impact: False correlations'
-         ]}
-         status={resolved[`conflict-${i}`] ? <StatusIndicator status="complete" tone="ok" /> : null}
-         actions={
-          resolved[`conflict-${i}`] ? (
-           <span className="font-body text-ok text-[10px] flex items-center gap-1">
-            <Check size={10} /> Canonical name set
-           </span>
-          ) : (
-           <Btn variant="primary" onClick={() => resolveItem(`conflict-${i}`, c.points)}>
-            Set canonical name
-           </Btn>
-          )
-         }
-        >
-         <div className="flex flex-col gap-3 mt-2">
-          <div className="flex flex-wrap items-center gap-2 text-[10px] text-ink">
-           <span className="font-body text-ghost">MES:</span>
-           <span className="font-mono px-2 py-1 bg-stone2 rounded">{c.variants[0]}</span>
-           <span className="text-ghost">→</span>
-           <span className="font-mono px-2 py-1 bg-stone2 rounded">{c.variants[1] || c.variants[0]}</span>
-           <Chip tone="warn">Mismatch</Chip>
-          </div>
-          <div className="flex gap-1 flex-wrap">
-           {c.variants.map((v, j) => (
-            <span key={j} className={`font-body font-medium text-[10px] px-2 py-1 rounded-[3px] ${j === 0 ? 'bg-stone3 text-ink2' : 'bg-danger/10 text-danger'}`}>
-             {v}
-            </span>
-           ))}
-          </div>
-         </div>
-        </ActionCard>
-       ))}
-
-       {/* Context Gap */}
-       <ActionCard
-        tone="danger"
-        title="Oven Station B — no SKU-to-temperature profile mapping"
-        subtitle="Sensor readings without product context"
-        metadata={[
-         'Oven B reports continuously',
-         'Affects risk evaluation',
-         'Impact: False positives/negatives'
-        ]}
-        status={resolved['ctx-0'] ? <StatusIndicator status="complete" tone="ok" /> : null}
-        actions={
-         resolved['ctx-0'] ? (
-          <span className="font-body text-ok text-[10px] flex items-center gap-1">
-           <Check size={10} /> Profile added
-          </span>
-         ) : (
-          <Btn variant="primary" onClick={() => resolveItem('ctx-0', 12)}>
-           Add SKU profiles
-          </Btn>
-         )
+  const resolveCluster = (cluster) => {
+    const before = captureState()
+    let totalPoints = 0
+    const newResolved = { ...resolved }
+    const pointMap = Object.fromEntries(ALL_SCORED_ISSUES.map(i => [i.key, i.points]))
+    cluster.memberKeys.forEach(key => {
+      if (!resolved[key]) {
+        newResolved[key] = true
+        totalPoints += (pointMap[key] || 0)
+        if (key.startsWith('conflict-')) {
+          const idx = parseInt(key.split('-')[1], 10)
+          setResolvedConflicts(prev => new Set([...prev, idx]))
         }
-       />
-       {dataGaps.map((gap, idx) => (
-        <ActionCard
-         key={idx}
-         tone={gap.tone}
-         title={gap.title}
-         subtitle={gap.details}
-         metadata={[<Chip key="badge" tone={gap.tone}>{gap.badge}</Chip>]}
-         actions={<Btn variant="secondary" onClick={() => setSelectedGap(gap)}>Review gap</Btn>}
-        />
-       ))}
+      }
+    })
+    setResolved(newResolved)
+    setScore(s => Math.min(100, s + totalPoints))
+    const newSupplierIQ = (newResolved['conflict-0'] && newResolved['conflict-1']) ? 91 : before.supplierIQ
+    setResolvedFeedback({ label: cluster.label, prevScore: before.score, newScore: Math.min(100, before.score + totalPoints), prevShiftIQ: before.shiftIQ, newShiftIQ: before.shiftIQ, prevSupplierIQ: before.supplierIQ, newSupplierIQ, downgradedCount: 2 })
+  }
+
+  const allItems = [CLUSTER_A, ISSUE_CTX, ISSUE_SCADA, ISSUE_ERP, ISSUE_TRACE, ISSUE_CHECK]
+  const selectedItem = allItems.find(i => i.id === selectedId)
+  const isCluster = selectedItem?.type === 'cluster'
+
+  return (
+    <div className="flex h-full overflow-hidden content-reveal">
+
+      {/* Left rail */}
+      <div className="w-[280px] flex-shrink-0 border-r border-rule2 flex flex-col overflow-hidden bg-stone">
+        <ReadinessInstrument score={score} resolved={resolved} />
+        <ResolutionQueue selected={selectedId} onSelect={setSelectedId} resolved={resolved} />
       </div>
-     </div>
+
+      {/* Right workspace */}
+      <div className="flex-1 overflow-hidden flex flex-col bg-stone">
+        {resolvedFeedback && (
+          <ResolutionFeedback feedback={resolvedFeedback} onDismiss={() => setResolvedFeedback(null)} />
+        )}
+        {selectedItem ? (
+          <WorkspacePanel
+            item={selectedItem}
+            isCluster={isCluster}
+            resolved={resolved}
+            onResolve={resolveItem}
+            onResolveCluster={resolveCluster}
+          />
+        ) : (
+          <EmptyWorkspace />
+        )}
+      </div>
 
     </div>
-   </div>
-
-   {/* Right Panel — Agent Brain + module summary */}
-   <RightRail>
-    <ReadinessScoreExplainer score={score} open={scoreExplainerOpen} onToggle={() => setScoreExplainerOpen(o => !o)} />
-    <div className="p-4">
-     <SP title="Readiness by module" sub="How each product is affected">
-      {moduleRows.map((r,i) => (
-       <div key={i} className="flex items-center justify-between px-4 py-2.5 border-b border-rule2 last:border-b-0">
-        <div>
-         <div className="font-body font-medium text-ink text-[12px]">{r.n}</div>
-         <div className="font-body text-ghost text-[10px]">{r.s}</div>
-        </div>
-        <div className="text-right">
-         <div className={`display-num text-base ${r.c}`}>{r.v}%</div>
-         <div className="font-body text-ghost text-[10px]">confidence</div>
-        </div>
-       </div>
-      ))}
-      <div className="px-4 py-2 font-body text-ghost text-[10px]">
-       {supplierIQConf < 84
-        ? `SupplierIQ at ${supplierIQConf}% — resolving naming conflicts raises it to ~84%.`
-        : 'SupplierIQ restored to 84% — naming conflicts resolved.'}
-      </div>
-     </SP>
-
-     <SP title="What happens at 90+" sub="Readiness unlocks" className="mt-4">
-      {readinessData.unlocks.map((u, i) => (
-       <div key={i} className="flex gap-2 px-4 py-3 border-b border-rule2 last:border-b-0">
-        <svg className="w-3.5 h-3.5 stroke-ok flex-shrink-0 mt-0.5" fill="none" strokeWidth={2} viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
-        <div>
-         <div className="font-body font-medium text-ink text-[12px]">{u.title}</div>
-         <div className="font-body text-ghost text-[10px] mt-0.5">{u.sub}</div>
-        </div>
-       </div>
-      ))}
-     </SP>
-
-     <div className="border border-rule2 p-4 my-4">
-      <div className="flex items-start gap-3">
-       <Brain size={20} className="text-muted mt-0.5" />
-       <div className="flex-1">
-        <div className="font-body font-medium text-ink text-[13px] mb-2">Agent Recommendation</div>
-        <div className="font-body text-ink2 text-[12px] leading-relaxed mb-3">
-         Based on naming conflicts and missing context mappings, recommendation confidence is degraded to 60%.
-         Resolving these gaps will restore cross-plant correlation and improve AI reliability.
-        </div>
-        <div className="flex items-center gap-4 text-[11px]">
-         <div className="flex items-center gap-1">
-          <Target size={12} className="text-muted" />
-          <span className="font-body text-ghost">Confidence:</span>
-          <span className="font-body font-medium text-ink">60%</span>
-         </div>
-         <div className="flex items-center gap-1">
-          <TrendingUp size={12} className="text-muted" />
-          <span className="font-body text-ghost">Potential gain:</span>
-          <span className="font-body font-medium text-ok">+24 pts</span>
-         </div>
-        </div>
-       </div>
-      </div>
-     </div>
-
-     <div className="border border-rule2 p-4 mb-4">
-      <div className="font-body font-medium text-ink text-[13px] mb-3">What you should do next</div>
-      <div className="space-y-2">
-       <div className="p-2 border border-ok/20">
-        <div className="font-body font-medium text-ink text-[11px]">Resolve naming conflicts</div>
-        <div className="font-body text-ghost text-[10px]">Impact: +14 pts readiness</div>
-       </div>
-       <div className="p-2 border border-ok/20">
-        <div className="font-body font-medium text-ink text-[11px]">Add SKU temperature profiles</div>
-        <div className="font-body text-ghost text-[10px]">Impact: +12 pts readiness</div>
-       </div>
-      </div>
-     </div>
-
-     <ExpandableMetadata title="Simulation: What if?" tone="muted">
-      <div className="space-y-3">
-       <div className="p-3 border border-rule2">
-        <div className="font-body font-medium text-ink text-[11px] mb-2">If all gaps resolved:</div>
-        <div className="space-y-1 text-[10px]">
-         <div className="flex justify-between">
-          <span className="font-body text-ghost">Readiness score:</span>
-          <span className="font-body font-medium text-ok">84/100</span>
-         </div>
-         <div className="flex justify-between">
-          <span className="font-body text-ghost">Recommendation confidence:</span>
-          <span className="font-body font-medium text-ok">78%</span>
-         </div>
-         <div className="flex justify-between">
-          <span className="font-body text-ghost">False positive rate:</span>
-          <span className="font-body font-medium text-ok">-35%</span>
-         </div>
-        </div>
-       </div>
-      </div>
-     </ExpandableMetadata>
-    </div>
-   </RightRail>
-  </div>
-
-  <DiagnosticsPanel
-   open={diagnosticsOpen || !!selectedGap}
-   selectedGap={selectedGap}
-   score={score}
-   onClose={() => { setDiagnosticsOpen(false); setSelectedGap(null) }}
-  />
-
- </div>
- )
+  )
 }

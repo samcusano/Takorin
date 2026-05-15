@@ -38,6 +38,7 @@
     --color-danger: #C43820;
     --color-int: #3A7FD4;
     --color-ochre: #B86E1A;
+    --radius-btn: 3px;
     --radius-sm: 4px;
     --radius-md: 10px;
     --radius-lg: 16px;
@@ -247,6 +248,12 @@
   }
   .content-reveal { animation: contentReveal 150ms var(--ease-enter) both; }
 
+  @keyframes scoreTick {
+    0%   { transform: scale(1.06); opacity: 0.7; }
+    100% { transform: scale(1);    opacity: 1; }
+  }
+  .score-tick { animation: scoreTick 350ms var(--ease-spring) both; }
+
   /* Vaul-style bottom drawer — springs up, exits fast */
   @keyframes drawerIn {
     from { transform: translateY(100%); opacity: 0.8; }
@@ -279,6 +286,7 @@
     .drawer-out             { animation: fadeIn 0.1s ease both; }
     .slide-right-out        { animation: none; }
     .check-draw             { animation: none; stroke-dashoffset: 0; opacity: 1; }
+    .score-tick             { animation: none; }
     .flash-success          { animation: none; display: none; }
     .shake-error            { animation: none; }
     .badge-pulse            { animation: none; }

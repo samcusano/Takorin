@@ -36,7 +36,7 @@ export function useFocusTrap(containerRef, isActive = true) {
     const el = containerRef.current
     if (!el) return
     const getFocusable = () => [...el.querySelectorAll(FOCUSABLE)]
-    getFocusable()[0]?.focus()
+    getFocusable()[0]?.focus({ preventScroll: true })
     function onKey(e) {
       if (e.key !== 'Tab') return
       const items = getFocusable()

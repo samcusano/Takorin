@@ -3,9 +3,7 @@ import { useRef, useEffect, useMemo, useId, useState, useCallback } from 'react'
 import { X, ArrowRight, ChevronRight, Check } from 'lucide-react'
 import BoringAvatar from 'boring-avatars'
 import { useFocusTrap, useExitAnimation } from '../lib/utils'
-import { designTokens } from '../lib/designSystem'
-
-const AVATAR_PALETTE = [designTokens.colors.ink, designTokens.colors.ochre, designTokens.colors.stone, designTokens.colors.rule2, designTokens.colors.muted]
+const AVATAR_PALETTE = ['#0A0906', '#B86E1A', '#FAF8F4', '#CAC2B6', '#5A5448']
 
 export function PersonAvatar({ name, size = 28 }) {
  return <BoringAvatar size={size} name={name} variant="beam" colors={AVATAR_PALETTE} />
@@ -20,7 +18,7 @@ export function Urg({ level = 'info', children }) {
  info: 'text-muted bg-stone3',
  }[level]
  return (
- <span className={`inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 font-body rounded-[3px] ${cls}`}>
+ <span className={`inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 font-body rounded-btn ${cls}`}>
  <span className="w-1 h-1 rounded-full bg-current flex-shrink-0" />
  {children}
  </span>
@@ -126,13 +124,12 @@ export function ActionBanner({ tone = 'warn', headline, body, children, footer }
 
 // ── Button variants
 export function Btn({ variant = 'primary', icon: Icon, onClick, disabled, children, className = '', style }) {
- const base = 'font-body font-medium text-[12px] px-4 py-2.5 min-h-[40px] inline-flex items-center justify-center gap-2 transition-[background-color,box-shadow,opacity,transform] duration-100 ease-standard active:scale-[0.97] cursor-pointer border-0 disabled:opacity-50 disabled:cursor-not-allowed rounded-[3px]'
- const defaults = { primary: ArrowRight, secondary: ChevronRight }
- const IconComp = Icon || defaults[variant]
+ const base = 'font-body font-medium text-[12px] px-4 py-2.5 min-h-[40px] inline-flex items-center justify-center gap-2 transition-[background-color,box-shadow,opacity,transform] duration-100 ease-standard active:scale-[0.97] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed rounded-btn'
+ const IconComp = Icon
  const cls = {
- primary:   'bg-ink text-stone hover:bg-ink2 hover:shadow-[0_2px_6px_rgba(16,15,13,0.18)]',
- secondary: 'border border-rule2 bg-stone2 text-muted hover:border-ghost hover:bg-stone3 hover:shadow-[0_1px_3px_rgba(16,15,13,0.06)]',
- }[variant] ?? 'bg-ink text-stone hover:bg-ink2'
+ primary:   'bg-ink text-stone border-0 hover:bg-ink2 hover:shadow-raise',
+ secondary: 'border border-rule2 bg-stone text-ink hover:bg-stone2',
+ }[variant] ?? 'bg-ink text-stone border-0 hover:bg-ink2'
  return (
  <button type="button" className={`${base} ${cls} ${className}`} onClick={onClick} disabled={disabled} style={style}>
   {IconComp && <IconComp size={12} className="flex-shrink-0" aria-hidden="true" />}
@@ -151,7 +148,7 @@ export function Chip({ tone = 'ok', children }) {
  int: 'text-int bg-int/10',
  }[tone]
  return (
- <span className={`inline-flex items-center gap-1 font-body font-medium text-[10px] px-2 py-0.5 rounded-[3px] ${cls}`}>
+ <span className={`inline-flex items-center gap-1 font-body font-medium text-[10px] px-2 py-0.5 rounded-btn ${cls}`}>
  <span className="w-1 h-1 rounded-full bg-current" />
  {children}
  </span>
@@ -179,7 +176,7 @@ export function Dot({ level = 'empty' }) {
 // Default color logic: higher pct = better (supplier quality scores).
 // For risk scores (higher = worse), pass an explicit color prop.
 export function ScoreRing({ pct = 0, size = 32, color }) {
- const defaultColor = pct >= 75 ? designTokens.colors.ok : pct >= 60 ? designTokens.colors.warn : designTokens.colors.danger
+ const defaultColor = pct >= 75 ? 'var(--color-ok)' : pct >= 60 ? 'var(--color-warn)' : 'var(--color-danger)'
  const c = color || defaultColor
  const barH = size <= 40 ? 3 : 5
  const numSize = size <= 40 ? 11 : Math.round(size * 0.26)
@@ -187,15 +184,15 @@ export function ScoreRing({ pct = 0, size = 32, color }) {
  return (
  <div className="flex flex-col gap-1 flex-shrink-0" style={{ width: w }}>
  <span className="font-display font-extrabold leading-none" style={{ fontSize: numSize, color: c }}>{pct}</span>
- <div style={{ height: barH, background: designTokens.colors.rule2 }}>
- <div style={{ height: '100%', width: `${pct}%`, background: c, transition: `width ${designTokens.durations.data} ${designTokens.easing.enter}` }} />
+ <div style={{ height: barH, background: 'var(--color-rule-2)' }}>
+ <div style={{ height: '100%', width: `${pct}%`, background: c, transition: 'width var(--dur-data) var(--ease-enter)' }} />
  </div>
  </div>
 )
 }
 
 // ── Page header
-export function PageHead({ over, title, accent = designTokens.colors.ochre, meta = [], children }) {
+export function PageHead({ over, title, accent = 'var(--color-ochre)', meta = [], children }) {
  return (
  <div className="px-6 py-8 border-b border-rule2 bg-stone" style={{ borderLeft: `6px solid ${accent}`, boxShadow: '0 1px 3px rgba(10,9,6,0.04)' }}>
  <div className="font-body font-semibold text-ghost text-[10px] uppercase tracking-widest mb-3">{over}</div>
@@ -335,7 +332,7 @@ export function Modal({ onClose, title, children }) {
 export function ConsequenceNotice({ show, children }) {
  if (!show) return null
  return (
- <div className="flex items-center gap-2 px-4 py-2 bg-ok/10 border-t border-ok/20 font-body text-ok text-[11px] slide-in">
+ <div role="status" aria-live="polite" className="flex items-center gap-2 px-4 py-2 bg-ok/10 border-t border-ok/20 font-body text-ok text-[11px] slide-in">
  <svg className="w-3 h-3 stroke-current flex-shrink-0" fill="none" strokeWidth={2} viewBox="0 0 24 24">
  <polyline points="20 6 9 17 4 12" />
  </svg>
@@ -377,6 +374,13 @@ export function VaulDrawer({ open, onClose, title, badge, children, maxHeight = 
 
  useEffect(() => {
   if (!open) return
+  const prev = document.body.style.overflow
+  document.body.style.overflow = 'hidden'
+  return () => { document.body.style.overflow = prev }
+ }, [open])
+
+ useEffect(() => {
+  if (!open) return
   const onKey = (e) => { if (e.key === 'Escape') exit(onClose) }
   document.addEventListener('keydown', onKey)
   return () => document.removeEventListener('keydown', onKey)
@@ -393,8 +397,8 @@ export function VaulDrawer({ open, onClose, title, badge, children, maxHeight = 
     role="dialog"
     aria-modal="true"
     aria-label={typeof title === 'string' ? title : undefined}
-    className={`relative z-10 bg-stone flex flex-col overflow-hidden rounded-t-2xl mx-auto w-full ${exiting ? 'drawer-out' : 'drawer-in'}`}
-    style={{ maxHeight, width: `min(100%, ${maxWidth})`, boxShadow: designTokens.shadows.card }}
+    className={`relative z-10 bg-stone flex flex-col overflow-hidden rounded-t-2xl mx-auto w-full shadow-raise ${exiting ? 'drawer-out' : 'drawer-in'}`}
+    style={{ maxHeight, width: `min(100%, ${maxWidth})` }}
    >
     {/* Header — only if title provided */}
     {title && (
@@ -454,6 +458,26 @@ export function HoldButton({ label, holdLabel, doneLabel, duration = 1500, onCon
   setProgress(0)
  }, [holding, done])
 
+ const startHoldKB = useCallback((e) => {
+  if ((e.key !== ' ' && e.key !== 'Enter') || done || disabled || holding) return
+  e.preventDefault()
+  setHolding(true)
+  startRef.current = Date.now()
+  const tick = () => {
+   const elapsed = Date.now() - startRef.current
+   const pct = Math.min(100, (elapsed / duration) * 100)
+   setProgress(pct)
+   if (pct < 100) { rafRef.current = requestAnimationFrame(tick) }
+   else { setDone(true); setHolding(false); onConfirm?.() }
+  }
+  rafRef.current = requestAnimationFrame(tick)
+ }, [done, disabled, holding, duration, onConfirm])
+
+ const stopHoldKB = useCallback((e) => {
+  if (e.key !== ' ' && e.key !== 'Enter') return
+  stopHold()
+ }, [stopHold])
+
  useEffect(() => () => cancelAnimationFrame(rafRef.current), [])
 
  const TONES = {
@@ -470,6 +494,8 @@ export function HoldButton({ label, holdLabel, doneLabel, duration = 1500, onCon
    onPointerUp={stopHold}
    onPointerLeave={stopHold}
    onPointerCancel={stopHold}
+   onKeyDown={startHoldKB}
+   onKeyUp={stopHoldKB}
    disabled={done || disabled}
    style={{ touchAction: 'none', userSelect: 'none' }}
    className={`relative overflow-hidden font-body font-medium text-[12px] px-4 py-3 w-full text-left cursor-pointer border transition-colors ${done ? t.done : 'border-rule2 bg-stone hover:bg-stone2'} ${disabled ? 'opacity-50 cursor-not-allowed' : ''} ${className}`}
@@ -689,7 +715,7 @@ export function ActionCard({ tone = 'danger', title, subtitle, metadata, actions
     )}
    </div>
    {actions && (
-    <div className="px-4 pb-3 flex gap-2 flex-wrap border-t border-rule2">
+    <div className="px-4 pb-3 flex gap-2 flex-wrap">
      {actions}
     </div>
    )}
@@ -745,5 +771,41 @@ export function ExpandableSection({ title, children, defaultOpen = false }) {
    </button>
    {open && <div>{children}</div>}
   </div>
+ )
+}
+
+// ── SlidePanel — shared chrome for all right-side slide-over panels ────────────
+// Handles backdrop, animation, focus trap, header, scrollable body, optional footer.
+export function SlidePanel({ title, subtitle, icon: Icon, accentColor, ariaLabel, onClose, footer, children, maxWidth = '400px' }) {
+ const panelRef = useRef(null)
+ const { exiting, exit } = useExitAnimation(200)
+ useFocusTrap(panelRef, true)
+ const handleClose = () => exit(onClose)
+ return (
+  <>
+   <div className="fixed inset-0 bg-ink/20 z-40" onClick={handleClose} />
+   <aside ref={panelRef} role="dialog" aria-modal="true" aria-label={ariaLabel || title}
+    className={`fixed top-0 right-0 bottom-0 w-full bg-stone border-l border-rule2 z-50 flex flex-col ${exiting ? 'slide-right-out' : 'slide-right'}`}
+    style={{ maxWidth }}>
+    <div className="flex items-start justify-between px-5 py-4 border-b border-rule2 bg-stone2 flex-shrink-0"
+     style={accentColor ? { borderTop: `3px solid ${accentColor}` } : undefined}>
+     <div className="flex items-center gap-3 min-w-0">
+      {Icon && <Icon size={26} strokeWidth={1.5} className="text-ochre flex-shrink-0" aria-hidden="true" />}
+      <div className="min-w-0">
+       {subtitle && <div className="font-body text-ghost text-[10px] mb-1">{subtitle}</div>}
+       <div className="font-display font-bold text-ink text-base leading-snug">{title}</div>
+      </div>
+     </div>
+     <button type="button" onClick={handleClose} aria-label="Close panel"
+      className="p-1 text-ghost hover:text-ink transition-colors duration-100 flex-shrink-0 ml-2">
+      <X size={14} strokeWidth={2} />
+     </button>
+    </div>
+    <div className="flex-1 overflow-y-auto p-5 space-y-4">{children}</div>
+    {footer && (
+     <div className="px-5 py-3 border-t border-rule2 bg-stone2 flex-shrink-0">{footer}</div>
+    )}
+   </aside>
+  </>
  )
 }

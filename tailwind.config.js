@@ -41,6 +41,12 @@ export default {
         'spring': 'cubic-bezier(0.16, 1, 0.3, 1)',
         'inout':  'cubic-bezier(0.42, 0, 0.58, 1)',
       },
+      borderRadius: {
+        'btn': '3px',
+      },
+      boxShadow: {
+        'raise': '0 8px 32px rgba(10, 9, 6, 0.18)',
+      },
     },
   },
   plugins: [],
