@@ -109,6 +109,7 @@ export function AppStateProvider({ children }) {
  const setCurrentPlant = (p) => { _setCurrentPlant(p); setWorkerModeState(p.workerMode) }
  const setWorkerMode = (m) => setWorkerModeState(m)
  const [viewingRole, setViewingRole] = useState('director')
+ const [agentPanelOpen, setAgentPanelOpen] = useState(false)
  const acknowledgeCommand = (id) => setCommandAcknowledged(prev => new Set([...prev, id]))
  const [activityLog, setActivityLog] = useState([
  { time:'14:02', actor:'M. Santos', action:'Signed shift handoff', item:'HO-2604161', type:'handoff' },
@@ -162,6 +163,7 @@ export function AppStateProvider({ children }) {
  viewingRole, setViewingRole,
  pilotExpanded, setPilotExpanded,
  handoffAccepted, setHandoffAccepted,
+ agentPanelOpen, setAgentPanelOpen,
  }}>
  {children}
  </Ctx.Provider>

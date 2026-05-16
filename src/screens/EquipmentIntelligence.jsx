@@ -62,9 +62,9 @@ function EquipmentCard({ eq, selected, onClick }) {
 
 function SPCChart({ eqId }) {
   const data = spcData[eqId]
-  if (!data) return (
+  if (!data || !data.points || data.points.length < 2) return (
     <div className="flex items-center justify-center h-full font-body text-ghost text-[11px]">
-      No SPC data available
+      {!data ? 'No SPC data available' : 'Insufficient data — 2 runs minimum'}
     </div>
   )
 

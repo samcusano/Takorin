@@ -47,6 +47,12 @@ export const interventions = [
     kpiDelta: { metric: 'Hold duration', before: '18h avg (corrective)', after: '2.3h', direction: 'improvement', pct: 87 },
     wasReversed: false,
     attributionConfidence: 0.81,
+    operatorConfirmation: {
+      confirmedBy: 'C. Reyes',
+      confirmedAt: 'May 14, 09:22',
+      station: 'Vessel F-047 monitoring',
+      note: 'Post-hold benzaldehyde reading taken and logged · 0.51 mg/L · Within spec',
+    },
   },
   {
     id: 'INT-2026-038-01',
@@ -203,6 +209,12 @@ export const interventions = [
     kpiDelta: { metric: 'CAPA resolution time', before: '14d avg', after: '6d', direction: 'improvement', pct: 57 },
     wasReversed: false,
     attributionConfidence: 0.88,
+    operatorConfirmation: {
+      confirmedBy: 'P. Okonkwo',
+      confirmedAt: 'May 13, 14:30',
+      station: 'QA Check Station',
+      note: 'CAPA evidence package assembled and submitted via QA portal',
+    },
   },
 ]
 
@@ -217,7 +229,8 @@ export const interventionSummary = {
   humanRejected: 1,
   avgDwellTimeMs: 22467,
   avgAttributionConfidence: 0.71,
-  lowDwellDecisions: 1, // decisions with <5s dwell time
+  lowDwellDecisions: 1,
+  operatorConfirmed: 2, // outcomes confirmed by operator station action
 }
 
 export const kpiTargets = [

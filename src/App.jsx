@@ -4,25 +4,20 @@ import Sidebar from './components/Sidebar'
 import ErrorBoundary from './components/ErrorBoundary'
 import TrustStrip from './components/TrustStrip'
 import { useAppState } from './context/AppState'
+import AgentControlPanel from './components/AgentControlPanel'
 
-const PlantOverview    = lazy(() => import('./screens/PlantOverview'))
-const CommandSurface   = lazy(() => import('./screens/CommandSurface'))
-const ShiftIQ          = lazy(() => import('./screens/ShiftIQ'))
-const HandoffIQ        = lazy(() => import('./screens/HandoffIQ'))
-const SupplierIQ       = lazy(() => import('./screens/SupplierIQ'))
-const CAPAEngine       = lazy(() => import('./screens/CapaEngine'))
-const DataReadiness    = lazy(() => import('./screens/DataReadiness'))
-const NetworkView      = lazy(() => import('./screens/NetworkView'))
-const OperatorView     = lazy(() => import('./screens/OperatorView'))
-const Analytics        = lazy(() => import('./screens/Analytics'))
-const NotificationCenter = lazy(() => import('./screens/NotificationCenter'))
-const RobotFleet       = lazy(() => import('./screens/RobotFleet'))
-const ResourceAllocation = lazy(() => import('./screens/ResourceAllocation'))
+const PlantOverview         = lazy(() => import('./screens/PlantOverview'))
+const ShiftIQ               = lazy(() => import('./screens/ShiftIQ'))
+const SupplierIQ            = lazy(() => import('./screens/SupplierIQ'))
+const CAPAEngine            = lazy(() => import('./screens/CapaEngine'))
+const DataReadiness         = lazy(() => import('./screens/DataReadiness'))
+const OperatorView          = lazy(() => import('./screens/OperatorView'))
+const Analytics             = lazy(() => import('./screens/Analytics'))
+const NotificationCenter    = lazy(() => import('./screens/NotificationCenter'))
 const AgentControl          = lazy(() => import('./screens/AgentControl'))
 const DesignLab             = lazy(() => import('./screens/DesignLab'))
 const BatchIntelligence     = lazy(() => import('./screens/BatchIntelligence'))
 const CompliancePolicy      = lazy(() => import('./screens/CompliancePolicy'))
-const QualityIntelligence   = lazy(() => import('./screens/QualityIntelligence'))
 const ProcessHierarchy      = lazy(() => import('./screens/ProcessHierarchy'))
 const IntegrationHub        = lazy(() => import('./screens/IntegrationHub'))
 const KnowledgeVault        = lazy(() => import('./screens/KnowledgeVault'))
@@ -43,12 +38,13 @@ const ROLE_LABELS = {
 }
 
 export default function App() {
- const { viewingRole, setViewingRole } = useAppState()
+ const { viewingRole, setViewingRole, agentPanelOpen, setAgentPanelOpen } = useAppState()
  const roleInfo = viewingRole ? ROLE_LABELS[viewingRole] : null
 
  return (
  <div className="flex h-screen bg-stone overflow-hidden">
  <Sidebar />
+ <AgentControlPanel open={agentPanelOpen} onClose={() => setAgentPanelOpen(false)} />
  <main className="flex-1 flex flex-col overflow-hidden ml-[240px]">
  <TrustStrip />
  {roleInfo && (
@@ -70,7 +66,7 @@ export default function App() {
  <Routes>
  <Route path="/" element={<Navigate to="/plant" replace />} />
  <Route path="/plant" element={<ErrorBoundary><PlantOverview /></ErrorBoundary>} />
- <Route path="/command" element={<ErrorBoundary><CommandSurface /></ErrorBoundary>} />
+ <Route path="/command" element={<Navigate to="/plant" replace />} />
  <Route path="/shift" element={<ErrorBoundary><ShiftIQ /></ErrorBoundary>} />
  <Route path="/handoff" element={<Navigate to="/shift" replace />} />
  <Route path="/supplier" element={<ErrorBoundary><SupplierIQ /></ErrorBoundary>} />

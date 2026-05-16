@@ -192,9 +192,9 @@ export default function ExecutionAuthority() {
         {/* Summary stats */}
         <div className="flex-shrink-0 grid grid-cols-2 gap-px bg-rule2 border-b border-rule2">
           {[
-            { label: 'Success rate', val: `${Math.round(executionSummary.successRate * 100)}%`, tone: 'text-ok' },
-            { label: 'Escalation rate', val: `${Math.round(executionSummary.escalationRate * 100)}%`, tone: 'text-warn' },
-            { label: 'Rollback rate', val: `${Math.round(executionSummary.rollbackRate * 100)}%`, tone: 'text-muted' },
+            { label: 'Success rate', val: executionSummary.successRate != null ? `${Math.round(executionSummary.successRate * 100)}%` : '—', tone: 'text-ok' },
+            { label: 'Escalation rate', val: executionSummary.escalationRate != null ? `${Math.round(executionSummary.escalationRate * 100)}%` : '—', tone: 'text-warn' },
+            { label: 'Rollback rate', val: executionSummary.rollbackRate != null ? `${Math.round(executionSummary.rollbackRate * 100)}%` : '—', tone: 'text-muted' },
             { label: 'Avg monitor', val: executionSummary.avgMonitoringWindow, tone: 'text-ink' },
           ].map(({ label, val, tone }) => (
             <div key={label} className="bg-stone px-3 py-2">

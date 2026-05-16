@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { interventions, interventionSummary, kpiTargets } from '../data/interventions'
 import { AlertTriangle, CheckCircle2, XCircle, ArrowRight, RotateCcw, Clock, AlertCircle, TrendingUp, TrendingDown } from 'lucide-react'
 
+
 const OUTCOME_CFG = {
   positive: { label: 'Positive',  dot: 'bg-ok',     badge: 'bg-ok/10 text-ok border border-ok/30',       border: 'border-l-ok' },
   negative: { label: 'Negative',  dot: 'bg-danger',  badge: 'bg-danger/10 text-danger border border-danger/30', border: 'border-l-danger' },
@@ -83,7 +84,7 @@ function EventChain({ entry, compact = false }) {
         {entry.kpiDelta && (
           <div className="font-body text-[9px] text-muted leading-snug">{entry.kpiDelta.metric}</div>
         )}
-        <div className="font-body text-ghost text-[9px]">{Math.round(entry.attributionConfidence * 100)}% attribution</div>
+        <div className="font-body text-ghost text-[9px]">{entry.attributionConfidence != null ? `${Math.round(entry.attributionConfidence * 100)}%` : '—'} attribution</div>
       </div>
     </div>
   )
@@ -247,7 +248,25 @@ function InterventionDetail({ entry }) {
               </span>
             )}
           </div>
-          <div className="font-body text-ghost text-[9px] mt-1.5">Attribution confidence: {Math.round(entry.attributionConfidence * 100)}%</div>
+          <div className="font-body text-ghost text-[9px] mt-1.5">Attribution confidence: {entry.attributionConfidence != null ? `${Math.round(entry.attributionConfidence * 100)}%` : '—'}</div>
+        </div>
+      )}
+
+      {/* Operator confirmation — closes the causal chain */}
+      {entry.operatorConfirmation ? (
+        <div className="flex items-start gap-3 px-4 py-3 border border-ok/30 bg-ok/[0.04] border-l-4 border-l-ok">
+          <CheckCircle2 size={12} strokeWidth={2} className="text-ok flex-shrink-0 mt-0.5" />
+          <div className="flex-1 min-w-0">
+            <div className="font-body text-ghost text-[9px] uppercase tracking-widest mb-0.5">Operator confirmation</div>
+            <div className="font-body font-medium text-ink text-[11px]">{entry.operatorConfirmation.confirmedBy} · {entry.operatorConfirmation.station}</div>
+            <div className="font-body text-ok text-[10px]">{entry.operatorConfirmation.note}</div>
+            <div className="font-body text-ghost text-[9px] mt-0.5">{entry.operatorConfirmation.confirmedAt}</div>
+          </div>
+        </div>
+      ) : (
+        <div className="flex items-center gap-2 px-4 py-3 border border-rule2 bg-stone2">
+          <div className="w-1.5 h-1.5 rounded-full bg-ghost flex-shrink-0" />
+          <span className="font-body text-ghost text-[10px]">No operator confirmation — outcome attributed from telemetry only</span>
         </div>
       )}
 
