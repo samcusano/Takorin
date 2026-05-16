@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { Flag, ShieldCheck, Clock, Check, Lock, AlertTriangle, Activity, CheckCircle2 } from 'lucide-react'
-import { operatorContextData } from '../data'
+import { Flag, ShieldCheck, Clock, Check, Lock, AlertTriangle, Activity, CheckCircle2, Calendar, TrendingDown } from 'lucide-react'
+import { operatorContextData, absenceData, certProjections, fatigueData } from '../data'
 import { useAppState } from '../context/AppState'
 import { SecHd, Urg, PersonAvatar, Btn, Modal } from '../components/UI'
 
@@ -63,9 +63,9 @@ function DataCommitmentOverlay({ onAcknowledge }) {
     </div>
     <div className="space-y-2 mb-5">
      {[
-      { icon: Check,       label: 'Your supervisor can see',      items: ['Your task completion status', 'Shift checklist items you signed or flagged', 'Near-miss reports you submitted'] },
+      { icon: Check,       label: 'Your supervisor can see',      items: ['Your task completion status', 'Shift checklist items you signed or flagged', 'Near-miss reports you submitted', 'Your hours worked this week and consecutive shifts', 'Your fatigue status (a scheduling signal, not a performance rating)'] },
       { icon: Lock,        label: 'Not visible to your supervisor', items: ['The reason you dismissed a specific finding', 'Your certification progress score'] },
-      { icon: ShieldCheck, label: 'Takorin\'s model training',    items: ['Uses anonymized production patterns only — no names attached to training data'] },
+      { icon: ShieldCheck, label: 'How your data is used',    items: ['Fatigue and hours data is used for scheduling only — it does not affect your performance review', 'You can see your own fatigue and hours data in your dashboard at any time', 'Anonymized production patterns only used for model training — no names attached'] },
      ].map(({ icon: Icon, label, items }) => (
       <div key={label} className="px-3 py-2.5 bg-stone2 border border-rule2">
        <div className="flex items-center gap-1.5 mb-1.5">
@@ -446,11 +446,127 @@ function TrainingPanel({ selected, op }) {
  )
 }
 
+// ── Roster Overview (director only) ──────────────────────────────────────────
+
+function RosterOverview() {
+ return (
+  <div className="flex-1 overflow-y-auto bg-stone p-5 space-y-5">
+
+   {/* Absence alerts */}
+   {absenceData.today.length > 0 && (
+    <div className="space-y-2">
+     <h2 className="font-body text-ghost text-[10px] uppercase tracking-widest">Today's absences</h2>
+     {absenceData.today.map((a, i) => (
+      <div key={i} className="flex items-start gap-3 px-4 py-3 bg-danger/5 border border-danger/30 rounded-sm">
+       <AlertTriangle size={13} className="text-danger mt-0.5 flex-shrink-0" />
+       <div className="flex-1">
+        <div className="font-body text-stone font-medium text-[12px]">{a.operator} — {a.role}</div>
+        <div className="font-body text-ghost text-[10px] mt-0.5">{a.line} · {a.shift} shift · Called out {a.calloutTime}</div>
+        {a.backfill
+         ? <div className="font-body text-ok text-[10px] mt-0.5">Covered by {a.backfill}</div>
+         : <div className="font-body text-danger text-[10px] mt-0.5 font-medium">{a.note}</div>}
+       </div>
+      </div>
+     ))}
+    </div>
+   )}
+
+   {/* Coverage gaps */}
+   {absenceData.coverageGaps.length > 0 && (
+    <div className="space-y-2">
+     <h2 className="font-body text-ghost text-[10px] uppercase tracking-widest">Coverage gaps</h2>
+     <div className="bg-sidebar border border-sidebar-border rounded-sm overflow-hidden">
+      {absenceData.coverageGaps.map((gap, i) => (
+       <div key={i} className={`flex items-center gap-3 px-4 py-2.5 ${i < absenceData.coverageGaps.length - 1 ? 'border-b border-sidebar-border' : ''}`}>
+        <span className={`font-body text-[10px] px-1.5 py-0.5 font-medium ${gap.status === 'danger' ? 'text-danger bg-danger/10' : 'text-warn bg-warn/10'}`}>
+         {gap.status === 'danger' ? 'Critical' : 'Gap'}
+        </span>
+        <span className="font-body text-stone text-[12px] flex-1">{gap.cert} — {gap.line} {gap.shift}</span>
+        <span className="font-body text-ghost text-[10px]">{gap.available}/{gap.required} available</span>
+        <span className="font-body text-ghost text-[10px]">{gap.date}</span>
+       </div>
+      ))}
+     </div>
+    </div>
+   )}
+
+   {/* Fatigue status */}
+   <div className="space-y-2">
+    <h2 className="font-body text-ghost text-[10px] uppercase tracking-widest">Fatigue & hours</h2>
+    <div className="bg-sidebar border border-sidebar-border rounded-sm overflow-hidden">
+     {fatigueData.operators.map((op, i) => (
+      <div key={i} className={`flex items-center gap-3 px-4 py-2.5 ${i < fatigueData.operators.length - 1 ? 'border-b border-sidebar-border' : ''}`}>
+       <PersonAvatar name={op.name} size={24} />
+       <span className="font-body text-stone text-[12px] flex-1">{op.name}</span>
+       <span className="font-body text-ghost text-[10px]">{op.hoursThisWeek}h this week</span>
+       <span className="font-body text-ghost text-[10px]">{op.consecutiveShifts} consecutive</span>
+       <span className={`font-body text-[10px] px-1.5 py-0.5 ${op.fatigueTone === 'warn' ? 'text-warn bg-warn/10' : op.fatigueTone === 'danger' ? 'text-danger bg-danger/10' : op.fatigueTone === 'muted' ? 'text-ghost bg-sidebar-3' : 'text-ok bg-ok/10'}`}>
+        {op.fatigueTone === 'warn' ? 'Watch' : op.fatigueTone === 'danger' ? 'At limit' : op.fatigueTone === 'muted' ? 'Absent' : 'OK'}
+       </span>
+      </div>
+     ))}
+    </div>
+   </div>
+
+   {/* 90-day cert projections */}
+   <div className="space-y-2">
+    <div className="flex items-center justify-between">
+     <h2 className="font-body text-ghost text-[10px] uppercase tracking-widest">Cert expiries — next 90 days</h2>
+     <div className="flex items-center gap-3 text-[10px] font-body text-ghost">
+      <span className="text-danger">{certProjections.riskSummary.dangerCount} expiring now</span>
+      <span className="text-warn">{certProjections.riskSummary.warnCount} within 60d</span>
+      <span className="text-danger font-medium">{certProjections.riskSummary.noReplacementCount} no backup</span>
+     </div>
+    </div>
+    <div className="bg-sidebar border border-sidebar-border rounded-sm overflow-hidden">
+     {certProjections.expirations.map((exp, i) => (
+      <div key={i} className={`flex items-center gap-3 px-4 py-2.5 ${i < certProjections.expirations.length - 1 ? 'border-b border-sidebar-border' : ''}`}>
+       <span className={`w-2 h-2 rounded-full flex-shrink-0 ${exp.tone === 'danger' ? 'bg-danger' : exp.tone === 'warn' ? 'bg-warn' : 'bg-ok'}`} />
+       <PersonAvatar name={exp.operator} size={20} />
+       <div className="flex-1 min-w-0">
+        <span className="font-body text-stone text-[12px] font-medium">{exp.operator}</span>
+        <span className="font-body text-ghost text-[10px] ml-2">{exp.cert}</span>
+       </div>
+       <span className={`font-body text-[10px] ${exp.tone === 'danger' ? 'text-danger' : exp.tone === 'warn' ? 'text-warn' : 'text-ghost'}`}>
+        {exp.daysRemaining === 0 ? 'Expired today' : `${exp.daysRemaining}d`}
+       </span>
+       {!exp.replacementReady
+        ? <span className="font-body text-[9px] text-danger bg-danger/10 px-1.5 py-0.5">No backup</span>
+        : <span className="font-body text-[9px] text-ok bg-ok/10 px-1.5 py-0.5">Backup ready</span>}
+      </div>
+     ))}
+    </div>
+   </div>
+
+   {/* Upcoming absences */}
+   <div className="space-y-2">
+    <h2 className="font-body text-ghost text-[10px] uppercase tracking-widest">Upcoming absences</h2>
+    <div className="bg-sidebar border border-sidebar-border rounded-sm overflow-hidden">
+     {absenceData.upcoming.map((a, i) => (
+      <div key={i} className={`flex items-center gap-3 px-4 py-2.5 ${i < absenceData.upcoming.length - 1 ? 'border-b border-sidebar-border' : ''}`}>
+       <span className={`font-body text-[10px] px-1.5 py-0.5 font-medium ${a.impact === 'ok' ? 'text-ok bg-ok/10' : a.impact === 'warn' ? 'text-warn bg-warn/10' : 'text-ghost bg-sidebar-3'}`}>
+        {a.type === 'planned' ? 'Planned' : 'Unplanned'}
+       </span>
+       <span className="font-body text-stone text-[12px] flex-1">{a.operator} — {a.line} {a.shift}</span>
+       {a.backfill
+        ? <span className="font-body text-ok text-[10px]">→ {a.backfill}</span>
+        : <span className="font-body text-warn text-[10px]">No backfill</span>}
+       <span className="font-body text-ghost text-[10px]">{a.date}</span>
+      </div>
+     ))}
+    </div>
+   </div>
+
+  </div>
+ )
+}
+
 // ── Main ──────────────────────────────────────────────────────────────────────
 
 export default function OperatorView({ role }) {
  const isOperatorRole = role === 'operator-reyes' || role === 'operator-okonkwo'
  const [directorSelected, setDirectorSelected] = useState('C. Reyes')
+ const [directorTab, setDirectorTab] = useState('operator')
  const [supervisorCalled, setSupervisorCalled] = useState(false)
  // When in operator mode, always derive from role prop (not state) so switching
  // roles via the user dropdown immediately shows the correct operator.
@@ -504,9 +620,27 @@ export default function OperatorView({ role }) {
 
    {/* Operator selector — director only / hero bar for operators */}
    {!isOperatorRole ? (
+    <>
+    {/* Director tab switcher */}
+    <div className="flex items-center gap-1 px-4 py-2 border-b border-rule2 bg-stone2 flex-shrink-0">
+     {[{id:'operator',label:'Operator Detail'},{id:'roster',label:'Roster Overview'}].map(t => (
+      <button key={t.id} type="button"
+       onClick={() => setDirectorTab(t.id)}
+       className={`font-body text-[11px] px-3 py-1 border transition-colors ${
+        directorTab === t.id ? 'bg-ochre/10 border-ochre/40 text-ochre' : 'bg-transparent border-transparent text-stone/50 hover:text-stone/80'
+       }`}
+      >
+       {t.label}
+       {t.id === 'roster' && absenceData.today.length > 0 && (
+        <span className="ml-1 font-body text-[9px] bg-danger/20 text-danger px-1 py-0.5">{absenceData.today.length}</span>
+       )}
+      </button>
+     ))}
+    </div>
+    {directorTab === 'roster' ? <RosterOverview /> : (
     <div className="flex border-b border-rule2 bg-stone2 flex-shrink-0">
      {OPERATORS.map(o => (
-      <button type="button" key={o.name} type="button" aria-pressed={selected === o.name}
+      <button type="button" key={o.name} aria-pressed={selected === o.name}
        onClick={() => { setDirectorSelected(o.name); setSupervisorCalled(false) }}
        className={`flex items-center gap-2.5 px-4 py-2.5 border-r border-rule2 border-b-2 transition-colors ${
         selected === o.name ? 'border-b-ochre bg-stone' : 'border-b-transparent hover:bg-stone3'
@@ -519,6 +653,8 @@ export default function OperatorView({ role }) {
       </button>
      ))}
     </div>
+    )}
+    </>
    ) : (
     <div className="flex items-center gap-3 px-4 py-2.5 border-b border-rule2 bg-stone2 flex-shrink-0">
      <PersonAvatar name={selected} size={28} />
@@ -528,6 +664,9 @@ export default function OperatorView({ role }) {
      </div>
     </div>
    )}
+
+   {/* Operator detail — hidden when director is viewing roster */}
+   {(!isOperatorRole && directorTab === 'roster') ? null : (<>
 
    {/* Layer 1: Operational State Header */}
    <OperationalStateHeader ctx={ctx} />
@@ -560,6 +699,33 @@ export default function OperatorView({ role }) {
      <div className="border-t border-rule2">
       <TaskSection selected={selected} tasks={tasks} flags={flags} nearMisses={nms} />
      </div>
+
+     {/* My data — visible to operator, scheduling use only */}
+     {isOperatorRole && (() => {
+      const myFatigue = fatigueData.operators.find(o => o.name.includes(selected.split('.')[1]?.trim()) || selected.includes(o.name.split('.')[0]))
+      if (!myFatigue) return null
+      return (
+       <div className="border-t border-rule2 px-4 py-3">
+        <div className="font-body text-ghost text-[10px] uppercase tracking-widest mb-2">My scheduling data</div>
+        <p className="font-body text-ghost text-[10px] mb-2">Used for shift scheduling only — not part of your performance review.</p>
+        <div className="grid grid-cols-3 gap-2">
+         {[
+          { label: 'Hours this week', value: `${myFatigue.hoursThisWeek}h` },
+          { label: 'Consecutive shifts', value: String(myFatigue.consecutiveShifts) },
+          { label: 'Last rest', value: myFatigue.lastRestPeriod ? `${myFatigue.lastRestPeriod}h ago` : '—' },
+         ].map(({ label, value }) => (
+          <div key={label} className="bg-stone2 px-3 py-2 border border-rule2">
+           <div className="display-num text-[18px] text-ink">{value}</div>
+           <div className="font-body text-ghost text-[9px] mt-0.5">{label}</div>
+          </div>
+         ))}
+        </div>
+        {myFatigue.note && (
+         <p className="font-body text-warn text-[10px] mt-2">{myFatigue.note}</p>
+        )}
+       </div>
+      )
+     })()}
     </div>
 
     {/* Right rail: training pathway — stable shell */}
@@ -588,6 +754,7 @@ export default function OperatorView({ role }) {
     }
    </button>
 
+  </>)}
   </div>
   </>
  )

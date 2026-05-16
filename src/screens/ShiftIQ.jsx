@@ -420,7 +420,29 @@ function Finding({ f, onAct, onDismiss, dismissed }) {
       <div className="p-4 space-y-2">
        <p className="font-body text-ink font-medium text-[13px] leading-snug">{f.title}</p>
        <p className="font-body text-ink2 text-[12px] leading-relaxed">{f.desc}</p>
-       <p className="font-body text-ghost text-[11px] flex items-start gap-1"><ChevronRight size={11} className="flex-shrink-0 mt-px" />{f.evidence}</p>
+       {f.evidence && (() => {
+        const isPrecedent = f.evidence.toLowerCase().startsWith('precedent:')
+        const sourceLine = f.evidence.match(/Line\s\d+/)?.[0] || null
+        const isCurrentLine = sourceLine === shiftData.line
+        const poolSize = f.precedentPool ?? null
+        const smallPool = poolSize !== null && poolSize < 5
+        return (
+         <div className="space-y-1">
+          <p className="font-body text-ghost text-[11px] flex items-start gap-1">
+           <ChevronRight size={11} className="flex-shrink-0 mt-px" />{f.evidence}
+           {isPrecedent && sourceLine && !isCurrentLine && (
+            <span className="ml-1 font-body text-[9px] text-warn bg-warn/10 px-1 py-0.5 flex-shrink-0">cross-line</span>
+           )}
+          </p>
+          {isPrecedent && smallPool && (
+           <p className="font-body text-warn text-[10px] pl-4">⚠ Small precedent pool ({poolSize} case{poolSize !== 1 ? 's' : ''}) — treat this match with caution</p>
+          )}
+          {isPrecedent && sourceLine && !isCurrentLine && (
+           <p className="font-body text-warn text-[10px] pl-4">Precedent from {sourceLine}, not {shiftData.line} — equipment characteristics may differ</p>
+          )}
+         </div>
+        )
+       })()}
        <div className="flex gap-1.5 flex-wrap">
         {f.source && <Chip tone="muted">{f.source}</Chip>}
         {f.capaId && (
@@ -598,7 +620,21 @@ export default function ShiftIQ() {
  currentPlant,
  pilotExpanded, setPilotExpanded,
  viewingRole,
+ addQuietPeriod, clearQuietPeriod, activeQuietPeriod,
  } = useAppState()
+ const [quietForm, setQuietForm] = useState({ open: false, reason: '', endTime: '' })
+ const handleSetQuietPeriod = () => {
+  addQuietPeriod({
+   line: 'Line 4',
+   startTime: new Date().toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' }),
+   endTime: quietForm.endTime || '+60 min',
+   reason: quietForm.reason || 'Planned operational event',
+   setBy: 'D. Kowalski',
+  })
+  setQuietForm({ open: false, reason: '', endTime: '' })
+  logActivity({ actor: 'D. Kowalski', action: 'Quiet period set — Compliance Monitor in log-only mode', item: 'Line 4', type: 'compliance' })
+ }
+ const currentQuiet = activeQuietPeriod?.('Line 4')
  const d = currentPlant?.id === 'ks' ? wichitaData : currentPlant?.id === 'co' ? denverData : shiftData
  const [predActioned, setPredActioned] = useState(false)
  const [overrideMode, setOverrideMode] = useState(false)
@@ -665,6 +701,57 @@ export default function ShiftIQ() {
 
  return (
  <div className="flex flex-col h-full overflow-hidden">
+
+ {/* Quiet period banner + controls */}
+ {currentQuiet ? (
+  <div className="flex items-center gap-3 px-5 py-2.5 bg-ok/[0.06] border-b-2 border-b-ok/30 flex-shrink-0">
+   <div className="w-1.5 h-1.5 rounded-full bg-ok flex-shrink-0" />
+   <div className="flex-1 font-body text-[11px]">
+    <span className="font-medium text-ok">Quiet period active — </span>
+    <span className="text-muted">{currentQuiet.reason} · Compliance Monitor in log-only mode · Until {currentQuiet.endTime}</span>
+   </div>
+   <button type="button" onClick={() => clearQuietPeriod(currentQuiet.id)}
+    className="font-body text-ghost text-[10px] hover:text-danger transition-colors flex-shrink-0">
+    End quiet period
+   </button>
+  </div>
+ ) : (
+  quietForm.open ? (
+   <div className="flex items-center gap-2 px-5 py-2 bg-stone2 border-b border-rule2 flex-shrink-0">
+    <span className="font-body text-ghost text-[10px] flex-shrink-0">Quiet period:</span>
+    <input
+     type="text"
+     value={quietForm.reason}
+     onChange={e => setQuietForm(p => ({...p, reason: e.target.value}))}
+     placeholder="Reason (e.g. Allergen changeover)"
+     className="font-body text-ink text-[11px] bg-stone border border-rule2 px-2 py-1 flex-1 focus:outline-none focus:border-rule"
+    />
+    <input
+     type="text"
+     value={quietForm.endTime}
+     onChange={e => setQuietForm(p => ({...p, endTime: e.target.value}))}
+     placeholder="Until (e.g. 10:30)"
+     className="font-body text-ink text-[11px] bg-stone border border-rule2 px-2 py-1 w-24 focus:outline-none focus:border-rule"
+    />
+    <button type="button" onClick={handleSetQuietPeriod}
+     className="font-body text-[11px] px-3 py-1 bg-ink text-stone hover:bg-ink2 transition-colors">
+     Set
+    </button>
+    <button type="button" onClick={() => setQuietForm({ open:false, reason:'', endTime:'' })}
+     className="font-body text-ghost text-[10px] hover:text-muted transition-colors">
+     Cancel
+    </button>
+   </div>
+  ) : (
+   <div className="flex items-center justify-end px-5 py-1.5 border-b border-rule2 bg-stone2 flex-shrink-0">
+    <button type="button" onClick={() => setQuietForm(p => ({...p, open:true}))}
+     className="font-body text-ghost text-[10px] hover:text-muted transition-colors">
+     + Set quiet period
+    </button>
+   </div>
+  )
+ )}
+
  <ActionBanner
  tone="warn"
  headline={`${lineD.findings?.filter(f => !permanentDismiss.has(f.id) && f.urgency !== 'watch').length || 0} pending · ${currentPlant?.name || 'Salina Campus'} · ${lineD.line} · ${countdownFmt} remaining`}

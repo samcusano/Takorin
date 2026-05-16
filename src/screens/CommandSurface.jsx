@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { riskLabel } from '../lib/utils'
-import { Check, ArrowRight, AlertTriangle } from 'lucide-react'
+import { Check, ArrowRight, AlertTriangle, Cpu } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { commandData, facility, shiftData, networkData } from '../data'
 import { Btn, HoldButton } from '../components/UI'
@@ -94,8 +94,17 @@ function CommandBanner({ critItems, watchItems, pendingIds, readiness, activeExp
 // ── Layer 2: Triage Queue ─────────────────────────────────────────────────────
 // Stacked urgency groups, not columns. Compact rows with temporal labels.
 
-function TriageRow({ item, isPending, onAcknowledge }) {
+const ESC_STATE_CFG = {
+ open:         { label: 'Open',         color: 'text-ghost' },
+ assigned:     { label: 'Assigned',     color: 'text-muted' },
+ acknowledged: { label: 'Active',       color: 'text-ok'    },
+ escalated:    { label: 'Escalated',    color: 'text-danger' },
+ resolved:     { label: 'Resolved',     color: 'text-ok'    },
+}
+
+function TriageRow({ item, isPending, onAcknowledge, escalation }) {
  const navigate = useNavigate()
+ const { updateEscalationState, directorOnFloor, floorBackup } = useAppState()
 
  if (isPending) {
   return (
@@ -112,45 +121,83 @@ function TriageRow({ item, isPending, onAcknowledge }) {
  const isNow = item.timeWindow === 'now'
  const holdTone = item.urgency === 'danger' ? 'danger' : 'warn'
 
+ // When escalated to director, show a "delegated" state so they know it bounced
+ const escCfg = escalation ? ESC_STATE_CFG[escalation.state] || ESC_STATE_CFG.open : null
+ const isEscalatedToDirector = escalation?.state === 'escalated'
+ const isDelegated = escalation?.state === 'acknowledged' && escalation?.owner !== 'J. Crocker'
+
  return (
-  <div className={`flex items-center gap-3 px-4 py-3 border-b border-rule2 border-l-2 ${borderCls} ${isWatch ? 'bg-stone2/30' : ''}`}>
-   <div className="flex-1 min-w-0">
-    <div className="flex items-center gap-2 mb-0.5">
-     <span className="font-body text-[10px] font-medium" style={{ color: item.moduleAccent }}>{item.moduleLabel}</span>
-     <span className={`font-body text-[10px] ${timeCls}`}>
-      {isNow && !prefersReducedMotion && (
-       <span className="inline-block w-1 h-1 rounded-full bg-current mr-0.5 align-middle animate-pulse" aria-hidden="true" />
+  <div className={`border-b border-rule2 border-l-2 ${borderCls} ${isWatch ? 'bg-stone2/30' : isEscalatedToDirector ? 'bg-danger/[0.015]' : ''}`}>
+   <div className="flex items-center gap-3 px-4 py-3">
+    <div className="flex-1 min-w-0">
+     <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+      <span className="font-body text-[10px] font-medium" style={{ color: item.moduleAccent }}>{item.moduleLabel}</span>
+      <span className={`font-body text-[10px] ${timeCls}`}>
+       {isNow && !prefersReducedMotion && (
+        <span className="inline-block w-1 h-1 rounded-full bg-current mr-0.5 align-middle animate-pulse" aria-hidden="true" />
+       )}
+       {item.timeLabel}
+      </span>
+      {/* Escalation state badge */}
+      {escCfg && (
+       <span className={`font-body text-[9px] ${escCfg.color}`}>
+        {escalation.state === 'acknowledged' && escalation.owner
+         ? `${escalation.owner} responding`
+         : escalation.state === 'escalated'
+           ? `↑ Escalated to you`
+           : escCfg.label}
+       </span>
       )}
-      {item.timeLabel}
-     </span>
+     </div>
+     <p className={`font-body text-[12px] leading-snug truncate ${isWatch ? 'text-ink2' : 'text-ink'}`}>{item.title}</p>
+     {/* Ownership sub-line — only when not the director's turn */}
+     {isDelegated && (
+      <p className="font-body text-[10px] text-ghost mt-0.5">
+       {escalation.owner} has this · Not your turn
+      </p>
+     )}
+     {isEscalatedToDirector && !directorOnFloor && (
+      <p className="font-body text-[10px] text-danger mt-0.5">
+       No response · Escalated to you — act now
+      </p>
+     )}
+     {isEscalatedToDirector && directorOnFloor && (
+      <p className="font-body text-[10px] text-warn mt-0.5">
+       Escalation paused · {floorBackup} notified as backup
+      </p>
+     )}
     </div>
-    <p className={`font-body text-[12px] leading-snug truncate ${isWatch ? 'text-ink2' : 'text-ink'}`}>{item.title}</p>
-   </div>
-   <div className="flex items-center gap-1.5 flex-shrink-0">
-    {MODULE_ROUTES[item.module] && (
-     <button type="button" onClick={() => navigate(MODULE_ROUTES[item.module])}
-      className="p-1 text-ghost hover:text-int transition-colors" aria-label={`View in ${item.moduleLabel}`}>
-      <ArrowRight size={11} strokeWidth={2} />
-     </button>
-    )}
-    {isWatch ? (
-     <Btn variant="secondary" onClick={() => onAcknowledge(item.id, item.title, item.moduleLabel)}>Noted</Btn>
-    ) : (
-     <HoldButton
-      label="Hold"
-      holdLabel="Hold…"
-      doneLabel="Done"
-      duration={isNow ? 1500 : 1000}
-      tone={holdTone}
-      onConfirm={() => onAcknowledge(item.id, item.title, item.moduleLabel)}
-     />
-    )}
+    <div className="flex items-center gap-1.5 flex-shrink-0">
+     {MODULE_ROUTES[item.module] && (
+      <button type="button" onClick={() => navigate(MODULE_ROUTES[item.module])}
+       className="p-1 text-ghost hover:text-int transition-colors" aria-label={`View in ${item.moduleLabel}`}>
+       <ArrowRight size={11} strokeWidth={2} />
+      </button>
+     )}
+     {isWatch ? (
+      <Btn variant="secondary" onClick={() => onAcknowledge(item.id, item.title, item.moduleLabel)}>Noted</Btn>
+     ) : isDelegated ? (
+      <Btn variant="secondary" onClick={() => onAcknowledge(item.id, item.title, item.moduleLabel)}>Dismiss</Btn>
+     ) : (
+      <HoldButton
+       label="Hold"
+       holdLabel="Hold…"
+       doneLabel="Done"
+       duration={isNow ? 1500 : 1000}
+       tone={holdTone}
+       onConfirm={() => {
+        onAcknowledge(item.id, item.title, item.moduleLabel)
+        updateEscalationState(item.id, 'resolved', 'J. Crocker')
+       }}
+      />
+     )}
+    </div>
    </div>
   </div>
  )
 }
 
-function TriageSection({ label, urgency, items, pendingIds, onAcknowledge }) {
+function TriageSection({ label, urgency, items, pendingIds, onAcknowledge, escalationStates }) {
  const visibleCount = items.filter(i => !pendingIds.has(i.id)).length
  if (items.length === 0) return null
  const hdrColor = { danger: 'text-danger', warn: 'text-warn', watch: 'text-ghost' }[urgency]
@@ -163,13 +210,19 @@ function TriageSection({ label, urgency, items, pendingIds, onAcknowledge }) {
     <span className={`font-body font-semibold text-[10px] uppercase tracking-widest ${hdrColor}`}>{label}</span>
    </div>
    {items.map(item => (
-    <TriageRow key={item.id} item={item} isPending={pendingIds.has(item.id)} onAcknowledge={onAcknowledge} />
+    <TriageRow
+     key={item.id}
+     item={item}
+     isPending={pendingIds.has(item.id)}
+     onAcknowledge={onAcknowledge}
+     escalation={escalationStates?.[item.id]}
+    />
    ))}
   </div>
  )
 }
 
-function TriageQueue({ critItems, warnItems, watchItems, pendingIds, onAcknowledge }) {
+function TriageQueue({ critItems, warnItems, watchItems, pendingIds, onAcknowledge, escalationStates }) {
  const allEmpty = critItems.length === 0 && warnItems.length === 0 && watchItems.length === 0
  return (
   <div className="flex-1 overflow-y-auto">
@@ -177,9 +230,9 @@ function TriageQueue({ critItems, warnItems, watchItems, pendingIds, onAcknowled
     <div className="px-4 py-10 text-center font-body text-ghost text-[11px]">Queue clear</div>
    ) : (
     <>
-     <TriageSection label="Critical" urgency="danger" items={critItems} pendingIds={pendingIds} onAcknowledge={onAcknowledge} />
-     <TriageSection label="Warning" urgency="warn" items={warnItems} pendingIds={pendingIds} onAcknowledge={onAcknowledge} />
-     <TriageSection label="Watching" urgency="watch" items={watchItems} pendingIds={pendingIds} onAcknowledge={onAcknowledge} />
+     <TriageSection label="Critical" urgency="danger" items={critItems} pendingIds={pendingIds} onAcknowledge={onAcknowledge} escalationStates={escalationStates} />
+     <TriageSection label="Warning" urgency="warn" items={warnItems} pendingIds={pendingIds} onAcknowledge={onAcknowledge} escalationStates={escalationStates} />
+     <TriageSection label="Watching" urgency="watch" items={watchItems} pendingIds={pendingIds} onAcknowledge={onAcknowledge} escalationStates={escalationStates} />
     </>
    )}
   </div>
@@ -191,9 +244,27 @@ function TriageQueue({ critItems, warnItems, watchItems, pendingIds, onAcknowled
 
 function PlantStrip() {
  const navigate = useNavigate()
+ const { agentActions, directorOnFloor, floorBackup, goToFloor, returnFromFloor, systemConfidence } = useAppState()
+ const pendingAgentActions = agentActions?.filter(a => a.status === 'pending-review') || []
  return (
-  <div className="w-[152px] flex-shrink-0 border-l border-rule2 bg-stone flex flex-col">
-   <div className="px-3 py-2.5 border-b border-rule2 bg-stone2 flex-shrink-0">
+  <div className="w-[172px] flex-shrink-0 border-l border-rule2 bg-stone flex flex-col">
+   {/* On-floor status toggle */}
+   <div className={`px-3 py-2 border-b border-rule2 flex-shrink-0 ${directorOnFloor ? 'bg-warn/[0.08]' : 'bg-stone2'}`}>
+    <button
+     type="button"
+     onClick={() => directorOnFloor ? returnFromFloor() : goToFloor('D. Kowalski')}
+     className="w-full text-left"
+    >
+     <div className="font-body text-ghost text-[9px] uppercase tracking-widest mb-0.5">Director status</div>
+     <div className={`font-body text-[10px] font-medium ${directorOnFloor ? 'text-warn' : 'text-muted'}`}>
+      {directorOnFloor ? `On floor · ${floorBackup} backup` : 'At desk'}
+     </div>
+     {directorOnFloor && (
+      <div className="font-body text-ghost text-[9px] mt-0.5">Escalation paused · tap to return</div>
+     )}
+    </button>
+   </div>
+   <div className="px-3 py-2 border-b border-rule2 bg-stone2 flex-shrink-0">
     <span className="font-body text-ghost text-[10px] uppercase tracking-widest">Lines</span>
    </div>
    <div className="flex-1">
@@ -214,6 +285,50 @@ function PlantStrip() {
       </button>
      )
     })}
+   </div>
+
+   {/* System confidence */}
+   <div className="border-t border-rule2 flex-shrink-0 px-3 py-2">
+    <div className="flex items-center justify-between mb-1">
+     <span className="font-body text-ghost text-[9px] uppercase tracking-widest">System confidence</span>
+     <span className={`display-num text-[14px] font-bold ${(systemConfidence||79) >= 85 ? 'text-ok' : (systemConfidence||79) >= 65 ? 'text-warn' : 'text-danger'}`}>
+      {systemConfidence ?? 79}%
+     </span>
+    </div>
+    <div className="h-1 bg-rule2">
+     <div
+      className={`h-full transition-all ${(systemConfidence||79) >= 85 ? 'bg-ok' : (systemConfidence||79) >= 65 ? 'bg-warn' : 'bg-danger'}`}
+      style={{ width:`${systemConfidence ?? 79}%` }}
+     />
+    </div>
+    {(systemConfidence||79) < 85 && (
+     <button type="button" onClick={() => navigate('/agents')} className="font-body text-ghost text-[9px] mt-1 hover:text-muted transition-colors text-left w-full">
+      HR data stale — agents degraded
+     </button>
+    )}
+   </div>
+
+   {/* Agent Activity */}
+   <div className="border-t border-rule2 flex-shrink-0">
+    <button
+     type="button"
+     onClick={() => navigate('/agents')}
+     className="w-full flex items-center gap-1.5 px-3 py-2 bg-stone2 hover:bg-stone2/80 transition-colors"
+    >
+     <Cpu size={10} className="text-ochre" strokeWidth={1.75} />
+     <span className="font-body text-ghost text-[10px] uppercase tracking-widest flex-1">Agents</span>
+     {pendingAgentActions.length > 0 && (
+      <span className="font-body text-[9px] bg-warn/20 text-warn px-1 py-0.5">{pendingAgentActions.length}</span>
+     )}
+    </button>
+    <div className="px-3 py-2 space-y-2">
+     {(agentActions || []).slice(0, 3).map(a => (
+      <div key={a.id} className="text-[10px] font-body">
+       <div className={`truncate ${a.status === 'pending-review' ? 'text-warn' : 'text-stone/70'}`}>{a.action}</div>
+       <div className="text-ghost text-[9px] truncate">{a.timestamp} · {a.agentName.replace(' Agent','')}</div>
+      </div>
+     ))}
+    </div>
    </div>
   </div>
  )
@@ -246,7 +361,7 @@ function UndoToast({ entries, onUndo }) {
 // ── Main ──────────────────────────────────────────────────────────────────────
 
 export default function CommandSurface() {
- const { commandAcknowledged, acknowledgeCommand, logActivity, currentPlant, readinessScore, plantActions } = useAppState()
+ const { commandAcknowledged, acknowledgeCommand, logActivity, currentPlant, readinessScore, plantActions, escalationStates } = useAppState()
  const readiness = readinessScore ?? 64
  const [pendingRemoval, setPendingRemoval] = useState(new Map())
 
@@ -292,6 +407,7 @@ export default function CommandSurface() {
      watchItems={watchItems}
      pendingIds={pendingIds}
      onAcknowledge={handleAcknowledge}
+     escalationStates={escalationStates}
     />
     <PlantStrip />
    </div>

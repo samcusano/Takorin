@@ -6,7 +6,7 @@ import {
  Gauge,
  Building2, ChevronDown, Globe2,
  MapPin, ShieldCheck, AlertTriangle,
- LayoutGrid, BarChart2, Bell, User,
+ LayoutGrid, BarChart2, Bell, User, Bot, GitMerge, Cpu,
 } from 'lucide-react'
 import { useAppState, PLANTS } from '../context/AppState'
 import { commandData } from '../data'
@@ -184,6 +184,8 @@ function PlantDropdown({ triggerRef, onClose, complianceState, currentPlant, set
       <p className="font-body text-stone/70/40 text-[10px] uppercase tracking-widest mb-2">Network plants</p>
       {AVAILABLE_PLANTS.map(p => {
        const isActive = currentPlant.id === p.id
+       const modeColor = p.workerMode === 'robot' ? 'text-ochre' : p.workerMode === 'hybrid' ? 'text-warn' : 'text-ok'
+       const modeLabel = p.workerMode === 'robot' ? 'Robotic' : p.workerMode === 'hybrid' ? 'Hybrid' : 'Human'
        return (
         <button
          key={p.id}
@@ -195,7 +197,10 @@ function PlantDropdown({ triggerRef, onClose, complianceState, currentPlant, set
           <div className="w-5 h-5 rounded bg-sidebar-3 flex items-center justify-center flex-shrink-0">
            <Building2 size={10} strokeWidth={1.75} className={isActive ? 'text-ochre' : 'text-stone/70'} />
           </div>
-          <span className={`font-body text-[11px] ${isActive ? 'text-stone font-medium' : 'text-stone/70'}`}>{p.name}</span>
+          <div className="text-left">
+           <span className={`font-body text-[11px] block leading-tight ${isActive ? 'text-stone font-medium' : 'text-stone/70'}`}>{p.name}</span>
+           <span className={`font-body text-[9px] ${modeColor}`}>{modeLabel}</span>
+          </div>
          </div>
          {isActive
           ? <span className="font-body text-ochre text-[10px]">Active</span>
@@ -309,6 +314,9 @@ function UserDropdown({ triggerRef, onClose, viewingRole, setViewingRole }) {
  )
 }
 
+const WORKER_MODE_LABELS = { human: 'Human workforce', robot: 'Robotic workforce', hybrid: 'Human · Robot hybrid' }
+const WORKER_MODE_COLORS = { human: 'text-ok', robot: 'text-ochre', hybrid: 'text-warn' }
+
 export default function Sidebar() {
  const [plantOpen, setPlantOpen] = useState(false)
  const plantTriggerRef = useRef(null)
@@ -316,7 +324,7 @@ export default function Sidebar() {
  const userTriggerRef = useRef(null)
  const [notifOpen, setNotifOpen] = useState(false)
  const [toast, setToast] = useState(null)
- const { blockingEvidenceUploaded, allergenOverride, checklistSigned, nearMisses, maintenanceTickets, viewingRole, setViewingRole, currentPlant, setCurrentPlant } = useAppState() || {}
+ const { blockingEvidenceUploaded, allergenOverride, checklistSigned, nearMisses, maintenanceTickets, viewingRole, setViewingRole, currentPlant, setCurrentPlant, workerMode } = useAppState() || {}
 
  const allergenSigned = checklistSigned?.['allergen'] || !!allergenOverride
  const complianceState = currentPlant?.id === 'ks' ? 'clear' : (!blockingEvidenceUploaded ? 'blocked' : !allergenSigned ? 'attention' : 'clear')
@@ -386,7 +394,7 @@ export default function Sidebar() {
  )}
 
  {/* Nav */}
- <nav aria-label="Main navigation" className="flex-1 overflow-hidden py-2">
+ <nav aria-label="Main navigation" className="flex-1 overflow-y-auto py-2">
 
  {/* Operator view — simplified nav */}
  {(viewingRole === 'operator-reyes' || viewingRole === 'operator-okonkwo') ? (
@@ -402,12 +410,21 @@ export default function Sidebar() {
    </div>
    {modules.map(m => <SideItem key={m.id} to={m.path} id={m.id} {...m} />)}
 
+   {(workerMode === 'robot' || workerMode === 'hybrid') && (
+    <SideItem to="/robots" id="robots" icon={Bot} label="Robot Fleet" badge={workerMode === 'robot' ? '12' : '6'} badgeType={null} />
+   )}
+   {workerMode === 'hybrid' && (
+    <SideItem to="/allocation" id="allocation" icon={GitMerge} label="Task Allocation" badge={null} />
+   )}
+
    <div className="px-4 pt-4 pb-1 text-[10px] tracking-widest uppercase text-ghost font-body font-medium">
    Foundation
    </div>
    {foundation.map(m => (
    <SideItem key={m.id} to={m.path} id={m.id} {...m} badge={m.badge} badgeType={m.badgeType} />
    ))}
+
+   <SideItem to="/agents" id="agents" icon={Cpu} label="Agent Control" badge={null} />
 
    {/* Notifications */}
    <div className="px-4 pt-4 pb-1 text-[10px] tracking-widest uppercase text-ghost font-body font-medium">
@@ -425,8 +442,14 @@ export default function Sidebar() {
 
  </nav>
 
- {/* Compliance status */}
+ {/* Worker mode + Compliance */}
  <div className="px-4 py-2.5 border-t border-sidebar-border">
+ <div className="flex items-center justify-between mb-1.5">
+  <span className="font-body text-stone/70/60 text-[10px]">Workforce</span>
+  <span className={`font-body font-medium text-[10px] ${WORKER_MODE_COLORS[workerMode || 'human']}`}>
+   {workerMode === 'robot' ? 'Robotic' : workerMode === 'hybrid' ? 'Hybrid' : 'Human'}
+  </span>
+ </div>
  <div className="flex items-center justify-between">
  <span className="font-body text-stone/70 text-[10px]">Compliance</span>
  <span className={`font-body font-medium text-[10px] px-2 py-0.5 ${complianceColor}`}>

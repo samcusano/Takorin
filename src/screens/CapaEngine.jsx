@@ -55,7 +55,7 @@ function CaseDetailPanel({ caseData, onClose }) {
  </div>
  <div className="flex-1 overflow-y-auto">
  <div className="grid grid-cols-2 gap-px bg-rule border-b border-rule2">
- {[{l:'Status',v:caseData.badge,vc:caseData.badgeColor},{l:'Assigned',v:caseData.assigned},{l:'Due date',v:caseData.due,vc:caseData.dueColor},{l:'Source',v:caseData.source}].map(m=>(
+ {[{l:'Status',v:caseData.badge,vc:caseData.badgeColor},{l:'Administrative owner',v:caseData.administrativeOwner||caseData.assigned},{l:'Due date',v:caseData.due,vc:caseData.dueColor},{l:'Source',v:caseData.source}].map(m=>(
  <div key={m.l} className="bg-stone2 px-4 py-3">
  <div className="font-body text-[10px] text-muted mb-1">{m.l}</div>
  <div className={`font-body text-xs font-medium ${m.vc||'text-ink'}`}>{m.v}</div>
@@ -179,6 +179,13 @@ function PriorityQueueRow({ c, isSelected, onSelect, isEscalated, isResolved }) 
   <Chip tone={isEscalated ? 'muted' : isResolved ? 'ok' : c.badgeColor === 'text-danger' ? 'danger' : c.badgeColor === 'text-ok' ? 'ok' : 'warn'}>
    {isEscalated ? 'Delegated' : isResolved ? 'Resolved' : c.badge}
   </Chip>
+  {/* Directed ownership indicator */}
+  {c.directorTurn && !isResolved && !isEscalated && (
+   <span className="font-body text-[9px] bg-ochre/10 text-ochre px-1.5 py-0.5 font-medium">Your turn</span>
+  )}
+  {c.currentOwner && !c.directorTurn && !isResolved && !isEscalated && (
+   <span className="font-body text-ghost text-[9px]">{c.currentOwner}</span>
+  )}
   <span className="font-body text-ghost text-[10px]">{c.capaId}</span>
   </div>
   <div className={`font-body font-medium text-[11px] leading-snug truncate ${isResolved || isEscalated ? 'text-muted' : 'text-ink'}`}>
@@ -254,6 +261,13 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
  const [localFiles, setLocalFiles] = useState([])
  const [detailTab, setDetailTab] = useState('details')
  const fileInputRef = useRef(null)
+ // Evidence declaration checklist — required before close
+ const [declaration, setDeclaration] = useState({ rootCause: false, corrective: false, specific: false })
+ const declarationComplete = Object.values(declaration).every(Boolean)
+ const toggleDeclaration = (key) => setDeclaration(p => ({ ...p, [key]: !p[key] }))
+ // Assignment acknowledgment
+ const { capaAcknowledgments, acknowledgeCapaAssignment } = useAppState()
+ const assignmentAcknowledged = c.assignmentAcknowledged || capaAcknowledgments?.[c.id]
 
  const isBlocking = c.id === 'c-blocking'
  const isClosed = closedCases.includes(c.id)
@@ -312,6 +326,38 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
  </div>
 
  <div className="flex-1 overflow-y-auto">
+ {/* ── Directed handoff banner — shown when it's the director's turn ── */}
+ {c.directorTurn && !isClosed && !actionTaken && (
+  <ActionBanner
+   tone={c.ownershipState === 'awaiting-director' ? 'ok' : 'warn'}
+   headline={c.handoffNote}
+   body={`Current owner: ${c.currentOwner} · State: ${c.ownershipState?.replace(/-/g, ' ')}`}
+  />
+ )}
+ {/* ── Not director's turn — ownership context ── */}
+ {!c.directorTurn && c.currentOwner && !isClosed && !actionTaken && c.handoffNote && (
+  <div className="px-4 py-2.5 border-b border-rule2 bg-stone2 flex items-center gap-2">
+   <span className="font-body text-ghost text-[10px] uppercase tracking-widest">Ball is with</span>
+   <span className="font-body text-muted text-[11px] font-medium">{c.currentOwner}</span>
+   <span className="font-body text-ghost text-[10px]">·</span>
+   <span className="font-body text-ghost text-[10px]">{c.handoffNote}</span>
+  </div>
+ )}
+ {/* ── Assignment acknowledgment gate ── */}
+ {!assignmentAcknowledged && !isClosed && !actionTaken && (
+  <div className="px-4 py-3 border-b border-rule2 bg-warn/[0.04] flex items-center justify-between gap-4">
+   <div>
+    <div className="font-body font-medium text-ink text-[12px]">Assignment not yet acknowledged</div>
+    <div className="font-body text-ghost text-[10px] mt-0.5">
+     Administrative owner: <span className="text-muted font-medium">{c.administrativeOwner || c.assigned}</span> · Ownership clock starts on acknowledgment
+    </div>
+   </div>
+   <button type="button" onClick={() => acknowledgeCapaAssignment?.(c.id)}
+    className="font-body text-[11px] px-3 py-1.5 border border-rule2 bg-stone text-muted hover:text-ink hover:border-rule transition-colors flex-shrink-0">
+    Acknowledge assignment
+   </button>
+  </div>
+ )}
  {/* ── Recommended action (the operative section) ── */}
  {!isClosed && !actionTaken && (
  <div className={`px-4 py-5 border-b border-rule2 border-l-2 ${isBlocking ? 'border-l-danger bg-danger/[0.02]' : c.type === 'ca' ? 'border-l-ok bg-ok/[0.015]' : 'border-l-warn bg-stone2'}`}>
@@ -370,13 +416,34 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
     className="w-full font-body text-ink text-[11px] bg-stone border border-rule2 px-3 py-2 resize-none focus:border-ink outline-none"
    />
   </div>
+  {/* Evidence declaration checklist — required before close */}
+  <div className="space-y-2 py-3 border-t border-rule2">
+   <div className="font-body text-ghost text-[10px] uppercase tracking-widest mb-2">Evidence declaration — required before closing</div>
+   {[
+    { key: 'rootCause', label: 'Evidence addresses the root cause documented in this case' },
+    { key: 'corrective', label: 'Corrective measure is documented and specific to this incident' },
+    { key: 'specific', label: 'Evidence is not a placeholder — it is specific to this case' },
+   ].map(({ key, label }) => (
+    <label key={key} className="flex items-start gap-2.5 cursor-pointer group">
+     <div className={`w-4 h-4 border flex items-center justify-center mt-0.5 flex-shrink-0 transition-colors ${
+      declaration[key] ? 'bg-ok border-ok' : 'bg-stone border-rule2 group-hover:border-rule'
+     }`} onClick={() => toggleDeclaration(key)}>
+      {declaration[key] && <Check size={10} strokeWidth={3} className="text-stone" />}
+     </div>
+     <span className="font-body text-[11px] text-muted leading-snug">{label}</span>
+    </label>
+   ))}
+   {!declarationComplete && (
+    <p className="font-body text-ghost text-[10px] italic mt-1">All three must be checked before the case can close.</p>
+   )}
+  </div>
   <HoldButton
    label="Hold to close case — logged as regulatory action"
    holdLabel="Keep holding to confirm closure…"
    doneLabel="Closed"
    duration={2000}
    tone="ok"
-   disabled={!correctiveMeasure.trim()}
+   disabled={!correctiveMeasure.trim() || !declarationComplete}
    onConfirm={handleApprove}
   />
   <button type="button" onClick={() => setClosureStep(null)} className="font-body text-ghost text-[10px] hover:text-muted transition-colors">← Back</button>
