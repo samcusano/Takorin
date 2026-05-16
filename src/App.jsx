@@ -17,8 +17,18 @@ const Analytics        = lazy(() => import('./screens/Analytics'))
 const NotificationCenter = lazy(() => import('./screens/NotificationCenter'))
 const RobotFleet       = lazy(() => import('./screens/RobotFleet'))
 const ResourceAllocation = lazy(() => import('./screens/ResourceAllocation'))
-const AgentControl     = lazy(() => import('./screens/AgentControl'))
-const DesignLab        = lazy(() => import('./screens/DesignLab'))
+const AgentControl          = lazy(() => import('./screens/AgentControl'))
+const DesignLab             = lazy(() => import('./screens/DesignLab'))
+const BatchIntelligence     = lazy(() => import('./screens/BatchIntelligence'))
+const CompliancePolicy      = lazy(() => import('./screens/CompliancePolicy'))
+const QualityIntelligence   = lazy(() => import('./screens/QualityIntelligence'))
+const ProcessHierarchy      = lazy(() => import('./screens/ProcessHierarchy'))
+const IntegrationHub        = lazy(() => import('./screens/IntegrationHub'))
+const KnowledgeVault        = lazy(() => import('./screens/KnowledgeVault'))
+const ExecutionAuthority    = lazy(() => import('./screens/ExecutionAuthority'))
+const RecordVault           = lazy(() => import('./screens/RecordVault'))
+const ValueChain            = lazy(() => import('./screens/ValueChain'))
+const EquipmentIntelligence = lazy(() => import('./screens/EquipmentIntelligence'))
 function ScreenLoader() {
  return <div className="flex-1 flex items-center justify-center font-body text-ghost text-[11px]">Loading…</div>
 }
@@ -71,7 +81,17 @@ export default function App() {
  <Route path="/robots" element={<ErrorBoundary><RobotFleet /></ErrorBoundary>} />
  <Route path="/allocation" element={<ErrorBoundary><ResourceAllocation /></ErrorBoundary>} />
  <Route path="/agents" element={<ErrorBoundary><AgentControl /></ErrorBoundary>} />
- <Route path="/design-lab" element={<ErrorBoundary><DesignLab /></ErrorBoundary>} />
+ <Route path="/design-lab"  element={<ErrorBoundary><DesignLab /></ErrorBoundary>} />
+ <Route path="/batch"       element={<ErrorBoundary><BatchIntelligence /></ErrorBoundary>} />
+ <Route path="/compliance"  element={<ErrorBoundary><CompliancePolicy /></ErrorBoundary>} />
+ <Route path="/quality"     element={<ErrorBoundary><QualityIntelligence /></ErrorBoundary>} />
+ <Route path="/hierarchy"   element={<ErrorBoundary><ProcessHierarchy /></ErrorBoundary>} />
+ <Route path="/integration" element={<ErrorBoundary><IntegrationHub /></ErrorBoundary>} />
+ <Route path="/knowledge"   element={<ErrorBoundary><KnowledgeVault /></ErrorBoundary>} />
+ <Route path="/execution"   element={<ErrorBoundary><ExecutionAuthority /></ErrorBoundary>} />
+ <Route path="/records"     element={<ErrorBoundary><RecordVault /></ErrorBoundary>} />
+ <Route path="/delivery"    element={<ErrorBoundary><ValueChain /></ErrorBoundary>} />
+ <Route path="/equipment"   element={<ErrorBoundary><EquipmentIntelligence /></ErrorBoundary>} />
  </Routes>
  </Suspense>
  </main>
