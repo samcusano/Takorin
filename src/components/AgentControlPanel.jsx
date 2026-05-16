@@ -2,10 +2,13 @@ import { useEffect, useRef } from 'react'
 import { X, ExternalLink } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import AgentControl from '../screens/AgentControl'
+import { useFocusTrap } from '../lib/utils'
 
 export default function AgentControlPanel({ open, onClose }) {
   const panelRef = useRef(null)
   const navigate = useNavigate()
+
+  useFocusTrap(panelRef, open)
 
   useEffect(() => {
     if (!open) return
