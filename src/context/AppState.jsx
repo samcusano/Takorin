@@ -4,9 +4,11 @@ import { readinessData, systemConfidenceScore } from '../data'
 const Ctx = createContext(null)
 
 export const PLANTS = {
- sl: { id:'sl', name:'Salina Campus', code:'SL-04', region:'Salina, KS',  director:'J. Crocker',  readinessScore:64, complianceState:'blocked', workerMode:'human'  },
- ks: { id:'ks', name:'Wichita Plant', code:'KS-09', region:'Wichita, KS', director:'T. Okonkwo',  readinessScore:88, complianceState:'clear',   workerMode:'robot'  },
- co: { id:'co', name:'Denver Plant',  code:'CO-07', region:'Denver, CO',   director:'M. Rodriguez', readinessScore:92, complianceState:'clear',  workerMode:'hybrid' },
+ sl: { id:'sl', name:'Salina Campus',      code:'SL-04', region:'Salina, KS',    director:'J. Crocker',   readinessScore:64, complianceState:'blocked', workerMode:'human',  sector:'food'        },
+ ks: { id:'ks', name:'Wichita Plant',      code:'KS-09', region:'Wichita, KS',   director:'T. Okonkwo',   readinessScore:88, complianceState:'clear',   workerMode:'robot',  sector:'food'        },
+ co: { id:'co', name:'Denver Plant',       code:'CO-07', region:'Denver, CO',    director:'M. Rodriguez', readinessScore:92, complianceState:'clear',   workerMode:'hybrid', sector:'food'        },
+ se: { id:'se', name:'Södertälje Demo',    code:'SE-01', region:'Sweden',        director:'A. Bergström', readinessScore:94, complianceState:'clear',   workerMode:'human',  sector:'pharma'      },
+ de: { id:'de', name:'Amberg Demo',        code:'DE-01', region:'Germany',       director:'K. Müller',    readinessScore:97, complianceState:'clear',   workerMode:'robot',  sector:'electronics' },
 }
 
 export function AppStateProvider({ children }) {

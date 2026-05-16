@@ -4,6 +4,10 @@
 import { useState } from 'react'
 import { batches, batchSummary } from '../data/batches'
 import { CheckCircle, Clock, AlertTriangle, TrendingUp, Activity } from 'lucide-react'
+import QualityIntelligence from './QualityIntelligence'
+import { compliancePolicies } from '../data/compliance'
+
+const activePolicies = compliancePolicies.filter(p => p.status === 'active' || p.status === 'monitoring')
 
 function fmtDate(str) {
   if (!str) return '—'
@@ -139,6 +143,7 @@ function InfluenceChain({ chain }) {
 
 export default function BatchIntelligence() {
   const [selectedId, setSelectedId] = useState(batches[0].id)
+  const [wsTab, setWsTab] = useState('batch')
   const batch = batches.find(b => b.id === selectedId) ?? batches[0]
   const pct = Math.round((batch.daysElapsed / batch.totalDays) * 100)
   const scoreColor = batch.confidence.current >= 85 ? 'text-ok' : batch.confidence.current >= 70 ? 'text-warn' : 'text-danger'
@@ -184,6 +189,13 @@ export default function BatchIntelligence() {
                   <span className="font-body text-ghost text-[9px] uppercase tracking-widest">{isComplete ? 'Complete' : b.stage.replace('-', ' ')}</span>
                   <span className={`font-body text-[9px] ${b.grade === 'Premium' ? 'text-ochre' : 'text-ghost'}`}>{b.grade}</span>
                 </div>
+                <div className="flex items-center gap-1 mt-1.5">
+                  {activePolicies.map(p => (
+                    <span key={p.id} className={`font-body text-[8px] px-1 py-0.5 border ${p.status === 'active' ? 'border-ok/30 text-ok bg-ok/[0.04]' : 'border-rule2 text-ghost'}`}>
+                      {p.name.split('/')[0].trim()}
+                    </span>
+                  ))}
+                </div>
               </button>
             )
           })}
@@ -207,6 +219,12 @@ export default function BatchIntelligence() {
               }
               <span className="font-body text-ghost">·</span>
               <span className="font-body text-muted text-[10px]">{batch.volume}</span>
+              <span className="font-body text-ghost">·</span>
+              {activePolicies.map(p => (
+                <span key={p.id} className={`font-body text-[9px] px-1.5 py-0.5 border ${p.status === 'active' ? 'border-ok/30 text-ok bg-ok/[0.04]' : 'border-rule2 text-ghost'}`}>
+                  {p.name}
+                </span>
+              ))}
             </div>
           </div>
           <div className="flex items-center gap-6 flex-shrink-0">
@@ -230,7 +248,28 @@ export default function BatchIntelligence() {
           <StageTracker stages={batch.stages} />
         </div>
 
-        <div className="flex-1 overflow-y-auto">
+        {/* Workspace tab bar */}
+        <div className="flex-shrink-0 flex border-b border-rule2 bg-stone2">
+          {[
+            { id: 'batch',   label: 'Batch' },
+            { id: 'quality', label: 'Quality' },
+          ].map(t => (
+            <button key={t.id} type="button" onClick={() => setWsTab(t.id)}
+              className={`px-5 py-2.5 font-body text-[11px] border-b-2 transition-colors ${
+                wsTab === t.id ? 'border-b-ochre text-ink' : 'border-b-transparent text-ghost hover:text-muted'
+              }`}>
+              {t.label}
+            </button>
+          ))}
+        </div>
+
+        {wsTab === 'quality' && (
+          <div className="flex-1 flex flex-col overflow-hidden">
+            <QualityIntelligence />
+          </div>
+        )}
+
+        {wsTab === 'batch' && <div className="flex-1 overflow-y-auto">
           {/* Confidence trajectory */}
           <div className="px-6 py-4 border-b border-rule2">
             <div className="flex items-center justify-between mb-3">
@@ -342,7 +381,7 @@ export default function BatchIntelligence() {
               </div>
             </div>
           )}
-        </div>
+        </div>}
       </div>
     </div>
   )

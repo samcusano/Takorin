@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Check, X, AlertTriangle, Clock, ArrowRight, History, AlertCircle, Eye, Wheat, Soup, Milk, Beef, Droplets, Truck, ShieldCheck, ClipboardCheck } from 'lucide-react'
+import NetworkView from './NetworkView'
 
 
 import { useNavigate, Link } from 'react-router-dom'
@@ -184,6 +185,7 @@ function SectionLabel({ tone, label, sub }) {
 export default function SupplierIQ() {
   const d = supplierData
   const { coaRequested, setCoaRequested, rfqSent, setRfqSent, readinessResolved, resolvedConflicts, closedCases } = useAppState()
+  const [activeTab, setActiveTab] = useState('suppliers')
   const [exportState, setExportState] = useState('idle')
   const [coaViewLot, setCoaViewLot] = useState(null)
   const navigate = useNavigate()
@@ -258,6 +260,24 @@ export default function SupplierIQ() {
     <>
     <CoaPanel lot={coaViewLot} onClose={() => setCoaViewLot(null)} />
     <div className="flex flex-col h-full overflow-hidden content-reveal">
+
+      {/* Tab bar — Suppliers | Network */}
+      <div className="flex-shrink-0 flex border-b border-rule2 bg-stone2">
+        {[
+          { id: 'suppliers', label: 'Suppliers' },
+          { id: 'network',   label: 'Network' },
+        ].map(t => (
+          <button key={t.id} type="button" onClick={() => setActiveTab(t.id)}
+            className={`px-5 py-2.5 font-body text-[11px] border-b-2 transition-colors ${
+              activeTab === t.id ? 'border-b-ochre text-ink' : 'border-b-transparent text-ghost hover:text-muted'
+            }`}>
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {activeTab === 'network' && <NetworkView />}
+      {activeTab === 'suppliers' && <>
 
       <ActionBanner
         tone="warn"
@@ -523,6 +543,7 @@ export default function SupplierIQ() {
         })}
 
       </Layout>
+      </>}
     </div>
     </>
   )

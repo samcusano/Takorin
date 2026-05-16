@@ -2,7 +2,8 @@ import { useNavigate } from 'react-router-dom'
 import { shiftData, line6Data, wichitaData, facility } from '../data'
 import { useAppState } from '../context/AppState'
 import { riskColorClass, riskLabel, riskBgColor } from '../lib/utils'
-import { AlertTriangle, CheckCircle, Brain, Clock, Users, ArrowRight, Activity } from 'lucide-react'
+import { AlertTriangle, CheckCircle, Brain, Clock, Users, ArrowRight, Activity, CircleDot } from 'lucide-react'
+import { interventionSummary } from '../data/interventions'
 
 // ─── Salina line meta ─────────────────────────────────────────────────────────
 
@@ -187,6 +188,41 @@ export default function PlantOverview() {
           </span>
         </div>
       </div>
+
+      {/* ── Impact Loop summary strip ───────────────────────────── */}
+      <button type="button" onClick={() => navigate('/impact')}
+        className="flex-shrink-0 flex items-center gap-4 px-6 py-2 border-b border-rule2 bg-stone2 hover:bg-stone3 transition-colors group text-left w-full">
+        <CircleDot size={10} strokeWidth={2} className="text-ok flex-shrink-0" />
+        <span className="font-body text-ghost text-[9px] uppercase tracking-widest">Impact · Last 30 days</span>
+        <div className="flex items-center gap-4 ml-2">
+          <span className="font-body text-ink text-[10px]">
+            <span className="font-medium">{interventionSummary.total}</span>
+            <span className="text-ghost ml-1">interventions</span>
+          </span>
+          <span className="w-px h-3 bg-rule2" />
+          <span className="font-body text-ok text-[10px]">
+            <span className="font-medium">{interventionSummary.positive}</span>
+            <span className="text-ghost ml-1">positive outcomes</span>
+          </span>
+          <span className="w-px h-3 bg-rule2" />
+          <span className="font-body text-[10px]">
+            <span className={`font-medium ${interventionSummary.avgAttributionConfidence >= 0.7 ? 'text-ok' : 'text-warn'}`}>
+              {Math.round(interventionSummary.avgAttributionConfidence * 100)}%
+            </span>
+            <span className="text-ghost ml-1">avg attribution</span>
+          </span>
+          {interventionSummary.lowDwellDecisions > 0 && (
+            <>
+              <span className="w-px h-3 bg-rule2" />
+              <span className="flex items-center gap-1 font-body text-danger text-[10px]">
+                <AlertTriangle size={8} strokeWidth={2} />
+                {interventionSummary.lowDwellDecisions} low-dwell decision{interventionSummary.lowDwellDecisions > 1 ? 's' : ''}
+              </span>
+            </>
+          )}
+        </div>
+        <ArrowRight size={10} className="text-ghost ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
+      </button>
 
       {/* ── Score tiles ─────────────────────────────────────────── */}
       <div className="flex-shrink-0 flex border-b border-rule2 divide-x divide-rule2 bg-stone">

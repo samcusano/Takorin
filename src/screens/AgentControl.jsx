@@ -165,9 +165,10 @@ function DisableModal({ agent, onConfirm, onCancel }) {
 
 // ─── Approve button (compliance-gated 5s delay) ───────────────────────────────
 
-function ApproveBtn({ isCompliance, onApprove }) {
+function ApproveBtn({ isCompliance, disabled: externalDisabled, onApprove }) {
   const [count, setCount] = useState(isCompliance ? 5 : 0)
-  const ready = count === 0
+  const timerReady = count === 0
+  const ready = timerReady && !externalDisabled
   useEffect(() => {
     if (!isCompliance || count <= 0) return
     const t = setTimeout(() => setCount(c => c - 1), 1000)
@@ -175,12 +176,17 @@ function ApproveBtn({ isCompliance, onApprove }) {
   }, [count, isCompliance])
   return (
     <button type="button" onClick={ready ? onApprove : undefined} disabled={!ready}
-      aria-label={ready ? 'Approve' : `Approve (${count}s)`}
-      title={ready ? 'Approve' : `Approve (${count}s)`}
+      aria-label={!timerReady ? `Approve (${count}s)` : externalDisabled ? 'Read rationale to approve' : 'Approve'}
+      title={!timerReady ? `Approve (${count}s)` : externalDisabled ? 'Check "I have read the AI rationale" to approve' : 'Approve'}
       className={`inline-flex items-center justify-center w-7 h-7 rounded-full transition-all ${
         ready ? 'bg-ink text-stone hover:bg-ink/90 cursor-pointer' : 'bg-stone3 text-muted cursor-not-allowed'
       }`}>
-      {ready ? <Check size={13} strokeWidth={2} /> : <span className="font-body text-[9px] tabular-nums">{count}</span>}
+      {!timerReady
+        ? <span className="font-body text-[9px] tabular-nums">{count}</span>
+        : externalDisabled
+          ? <span className="font-body text-[9px]">—</span>
+          : <Check size={13} strokeWidth={2} />
+      }
     </button>
   )
 }
@@ -207,7 +213,20 @@ function EmergencyChip({ overrideWindowMin }) {
 
 function LedgerRow({ pa, agent, onInvestigate, onApprove, onOverrideRequest, selected, onToggleSelect, inGroup = false }) {
   const [open, setOpen] = useState(false)
+  const [rationaleAcked, setRationaleAcked] = useState(false)
+  const [dwellSec, setDwellSec] = useState(0)
+  const dwellRef = useRef(null)
   const meta = pa._meta
+  const requiresAck = meta.consequence === 'critical' || meta.consequence === 'high'
+
+  useEffect(() => {
+    if (open) {
+      dwellRef.current = setInterval(() => setDwellSec(s => s + 1), 1000)
+    } else {
+      clearInterval(dwellRef.current)
+    }
+    return () => clearInterval(dwellRef.current)
+  }, [open])
   const cfg = CONSEQUENCE_CFG[meta.consequence]
   const isCompliance = agent.isComplianceCategory
   const Icon = ICON_MAP[agent.icon] || Shield
@@ -274,7 +293,9 @@ function LedgerRow({ pa, agent, onInvestigate, onApprove, onOverrideRequest, sel
             </button>
           ) : (
             <>
-              <ApproveBtn isCompliance={isCompliance} onApprove={() => onApprove(pa._key)} />
+              <ApproveBtn isCompliance={isCompliance}
+                disabled={requiresAck && !rationaleAcked && open}
+                onApprove={() => onApprove(pa._key)} />
               <button type="button" onClick={() => onOverrideRequest(pa, agent)}
                 aria-label="Override" title="Override"
                 className="inline-flex items-center justify-center w-7 h-7 rounded-full border border-rule2 text-muted hover:text-ink hover:border-ghost transition-colors">
@@ -298,7 +319,15 @@ function LedgerRow({ pa, agent, onInvestigate, onApprove, onOverrideRequest, sel
 
       {/* Expanded detail (inline — lightweight) */}
       {open && (
-        <div className="px-4 py-3 border-t border-rule2 bg-stone2">
+        <div className="px-4 py-3 border-t border-rule2 bg-stone2 space-y-3">
+          {/* Rationale — always shown prominently when expanded */}
+          {pa.rationale && (
+            <div>
+              <div className="font-body text-ghost text-[9px] uppercase tracking-widest mb-1">AI rationale</div>
+              <p className="font-body text-ink text-[11px] leading-relaxed">{pa.rationale}</p>
+            </div>
+          )}
+
           <div className="grid grid-cols-2 gap-4">
             {pa.impactPreview?.length > 0 && (
               <div>
@@ -329,6 +358,23 @@ function LedgerRow({ pa, agent, onInvestigate, onApprove, onOverrideRequest, sel
               </div>
             </div>
           </div>
+
+          {/* Dwell timer + rationale acknowledgment for high-consequence decisions */}
+          {requiresAck && (
+            <div className="flex items-center gap-3 pt-1 border-t border-rule2">
+              <div className="flex items-center gap-1.5">
+                <Timer size={9} strokeWidth={2} className={dwellSec < 5 ? 'text-warn' : 'text-ok'} />
+                <span className={`font-body text-[9px] tabular-nums ${dwellSec < 5 ? 'text-warn' : 'text-ok'}`}>
+                  {dwellSec}s reviewing
+                </span>
+              </div>
+              <label className="flex items-center gap-1.5 cursor-pointer ml-auto">
+                <input type="checkbox" checked={rationaleAcked} onChange={e => setRationaleAcked(e.target.checked)}
+                  className="w-3 h-3 cursor-pointer accent-ochre" />
+                <span className="font-body text-ghost text-[9px]">I have read the AI rationale</span>
+              </label>
+            </div>
+          )}
         </div>
       )}
     </div>
