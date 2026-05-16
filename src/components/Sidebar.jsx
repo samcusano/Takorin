@@ -348,17 +348,17 @@ function UserDropdown({ triggerRef, onClose, viewingRole, setViewingRole }) {
 const WORKER_MODE_LABELS = { human: 'Human workforce', robot: 'Robotic workforce', hybrid: 'Human · Robot hybrid' }
 const WORKER_MODE_COLORS = { human: 'text-ok', robot: 'text-ochre', hybrid: 'text-warn' }
 
-const agentPendingCount = agentConfigData.agents.reduce((n, a) => n + (a.pendingActions?.length ?? 0), 0)
+const STATIC_AGENT_TOTAL = agentConfigData.agents.reduce((n, a) => n + (a.pendingActions?.length ?? 0), 0)
 
-function AgentItem({ onClick }) {
+function AgentItem({ onClick, count }) {
  return (
   <button type="button" onClick={onClick}
    className="flex items-center gap-3 px-4 py-2.5 w-full text-left transition-colors hover:bg-sidebar2 text-stone/70 hover:text-stone border-l-2 border-l-transparent">
    <Cpu size={15} strokeWidth={1.75} className="flex-shrink-0" />
    <span className="font-body text-[13px]">Agent Control</span>
-   {agentPendingCount > 0 && (
+   {count > 0 && (
     <span className="ml-auto text-[10px] font-semibold px-1.5 py-0.5 bg-ochre text-stone rounded-btn">
-     {agentPendingCount}
+     {count}
     </span>
    )}
   </button>
@@ -372,7 +372,8 @@ export default function Sidebar() {
  const userTriggerRef = useRef(null)
  const [notifOpen, setNotifOpen] = useState(false)
  const [toast, setToast] = useState(null)
- const { blockingEvidenceUploaded, allergenOverride, checklistSigned, nearMisses, maintenanceTickets, viewingRole, setViewingRole, currentPlant, setCurrentPlant, workerMode, agentPanelOpen, setAgentPanelOpen } = useAppState() || {}
+ const { blockingEvidenceUploaded, allergenOverride, checklistSigned, nearMisses, maintenanceTickets, viewingRole, setViewingRole, currentPlant, setCurrentPlant, workerMode, agentPanelOpen, setAgentPanelOpen, agentDecidedKeys } = useAppState() || {}
+ const agentPendingCount = Math.max(0, STATIC_AGENT_TOTAL - (agentDecidedKeys?.size ?? 0))
 
  const allergenSigned = checklistSigned?.['allergen'] || !!allergenOverride
  const complianceState = currentPlant?.id === 'ks' ? 'clear' : (!blockingEvidenceUploaded ? 'blocked' : !allergenSigned ? 'attention' : 'clear')
@@ -454,7 +455,7 @@ export default function Sidebar() {
   <>
    <div className="px-4 pt-3 pb-1 text-[10px] tracking-widest uppercase text-stone/40 font-body font-medium">Operational</div>
    <SideItem to="/shift"  id="shift"  icon={Activity} label="ShiftIQ"      badge="3" badgeType="alert" />
-   <AgentItem onClick={() => setAgentPanelOpen?.(true)} />
+   <AgentItem onClick={() => setAgentPanelOpen?.(true)} count={agentPendingCount} />
    <div className="px-4 pt-4 pb-1 text-[10px] tracking-widest uppercase text-stone/40 font-body font-medium">Causality</div>
    <SideItem to="/impact" id="impact" icon={CircleDot} label="Impact Loop" badge={null} />
    <div className="px-4 pt-4 pb-1 text-[10px] tracking-widest uppercase text-stone/40 font-body font-medium">Activity</div>
@@ -475,7 +476,7 @@ export default function Sidebar() {
 
    <div className="px-4 pt-3 pb-1 text-[10px] tracking-widest uppercase text-stone/40 font-body font-medium">Intelligence</div>
    {modules.map(m => <SideItem key={m.id} to={m.path} id={m.id} {...m} />)}
-   <SideItem to="/agents" id="agents" icon={Cpu}       label="Agent Control" badge={null} />
+   <AgentItem onClick={() => setAgentPanelOpen?.(true)} count={agentPendingCount} />
    <SideItem to="/impact" id="impact" icon={CircleDot} label="Impact Loop"   badge={null} />
 
    <div className="px-4 pt-4 pb-1 text-[10px] tracking-widest uppercase text-stone/40 font-body font-medium">Architecture</div>
@@ -492,7 +493,9 @@ export default function Sidebar() {
    {(currentPlant?.sector === 'electronics' || currentPlant?.sector === 'semiconductor') && (
     <SideItem to="/delivery" id="delivery" icon={TrendingUp} label="Value Chain"    badge={null} />
    )}
-   <SideItem to="/equipment" id="equipment" icon={ScanLine} label="Equipment Intel." badge={null} />
+   {currentPlant?.sector !== 'pharma' && (
+    <SideItem to="/equipment" id="equipment" icon={ScanLine} label="Equipment Intel." badge={null} />
+   )}
 
    <div className="px-4 pt-4 pb-1 text-[10px] tracking-widest uppercase text-stone/40 font-body font-medium">Admin</div>
    <SideItem to="/integration" id="integration" icon={Network} label="Integration Hub" badge={null} />

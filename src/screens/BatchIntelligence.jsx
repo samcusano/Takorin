@@ -3,8 +3,8 @@
 
 import { useState } from 'react'
 import { batches, batchSummary } from '../data/batches'
-import { CheckCircle, Clock, AlertTriangle, TrendingUp, Activity } from 'lucide-react'
-import QualityIntelligence from './QualityIntelligence'
+import { CheckCircle, Clock, AlertTriangle, TrendingUp, Activity, TrendingDown, Minus } from 'lucide-react'
+import { sensoryReadings, expertAnnotations, craftPriors, seasonalBaselines } from '../data/quality'
 import { compliancePolicies } from '../data/compliance'
 
 const activePolicies = compliancePolicies.filter(p => p.status === 'active' || p.status === 'monitoring')
@@ -141,6 +141,154 @@ function InfluenceChain({ chain }) {
   )
 }
 
+function QualityTab() {
+  const [qTab, setQTab] = useState('sensory')
+  const QTABS = [
+    { id: 'sensory', label: 'Sensory' },
+    { id: 'annotations', label: 'Annotations' },
+    { id: 'priors', label: 'Craft Priors' },
+    { id: 'baselines', label: 'Seasonal Baselines' },
+  ]
+  return (
+    <div className="flex flex-col flex-1 overflow-hidden">
+      <div className="flex-shrink-0 flex border-b border-rule2 bg-stone">
+        {QTABS.map(t => (
+          <button key={t.id} type="button" onClick={() => setQTab(t.id)}
+            className={`font-body text-[11px] px-4 py-2 border-b-2 transition-colors ${
+              qTab === t.id ? 'border-b-ochre text-ink' : 'border-b-transparent text-ghost hover:text-muted'
+            }`}>
+            {t.label}
+          </button>
+        ))}
+      </div>
+      <div className="flex-1 overflow-y-auto">
+        {qTab === 'sensory' && (
+          <div className="divide-y divide-rule2">
+            {sensoryReadings.map(r => {
+              const scoreColor = r.overallScore >= 90 ? 'text-ok' : r.overallScore >= 80 ? 'text-ochre' : 'text-warn'
+              return (
+                <div key={r.id} className="px-6 py-4">
+                  <div className="flex items-start justify-between gap-4 mb-2">
+                    <div>
+                      <div className="font-body font-medium text-ink text-[12px]">{r.batch}</div>
+                      <div className="font-body text-ghost text-[10px] mt-0.5">{r.source} · {new Date(r.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</div>
+                    </div>
+                    <div className="text-right flex-shrink-0">
+                      <div className={`font-display font-bold display-num text-[28px] leading-none ${scoreColor}`}>{r.overallScore}</div>
+                      <div className="font-body text-ghost text-[9px]">{r.gradeProjection} · {r.confidence}% conf</div>
+                    </div>
+                  </div>
+                  <div className="divide-y divide-rule2 border border-rule2">
+                    {r.compounds.map((c, i) => {
+                      const toneColor = c.tone === 'ok' ? 'text-ok' : c.tone === 'warn' ? 'text-warn' : 'text-danger'
+                      const Arrow = c.direction === 'up' ? TrendingUp : c.direction === 'down' ? TrendingDown : Minus
+                      return (
+                        <div key={i} className="flex items-center gap-3 px-4 py-2">
+                          <span className="font-body text-ghost text-[10px] flex-1 truncate">{c.name}</span>
+                          <span className="font-body text-ghost text-[9px]">{c.baseline}</span>
+                          <Arrow size={9} className={c.direction === 'up' ? 'text-ok' : c.direction === 'down' ? 'text-warn' : 'text-ghost'} strokeWidth={2} />
+                          <span className={`font-body font-medium text-[11px] tabular-nums ${toneColor} w-20 text-right`}>{c.val} {c.unit}</span>
+                        </div>
+                      )
+                    })}
+                  </div>
+                  {r.expertAnnotation && (
+                    <div className="mt-2 px-3 py-2 bg-ochre/[0.03] border-l-2 border-l-ochre">
+                      <span className="font-body text-ghost text-[9px]">{r.expertAnnotation.author} · </span>
+                      <span className="font-body text-ink text-[11px] leading-snug">{r.expertAnnotation.note}</span>
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        )}
+        {qTab === 'annotations' && (
+          <div className="divide-y divide-rule2">
+            {expertAnnotations.map(a => {
+              const typeTone = { 'quality-watch': 'text-warn bg-warn/10 border-warn/30', 'grade-confirmation': 'text-ok bg-ok/10 border-ok/30', 'process-note': 'text-muted bg-stone3 border-rule2', 'outcome-validation': 'text-int bg-int/10 border-int/30' }[a.type] ?? 'text-ghost bg-stone3 border-rule2'
+              const typeLabel = { 'quality-watch': 'Quality watch', 'grade-confirmation': 'Grade confirmation', 'process-note': 'Process note', 'outcome-validation': 'Outcome validation' }[a.type] ?? a.type
+              return (
+                <div key={a.id} className="px-6 py-4">
+                  <div className="flex items-start justify-between gap-3 mb-2">
+                    <div>
+                      <div className="font-body font-medium text-ink text-[12px]">{a.author} <span className="text-ghost font-normal">· {a.authorTitle}</span></div>
+                      <div className="font-body text-ghost text-[10px] mt-0.5">Batch: {a.batch}</div>
+                    </div>
+                    <span className={`font-body text-[9px] uppercase tracking-widest px-1.5 py-0.5 border flex-shrink-0 ${typeTone}`}>{typeLabel}</span>
+                  </div>
+                  <p className="font-body text-ink text-[11px] leading-relaxed mb-2">{a.observation}</p>
+                  {a.modelResponse && (
+                    <div className="flex items-start gap-2 px-3 py-2 bg-stone2 border border-rule2">
+                      <span className="font-body text-ghost text-[9px] uppercase tracking-widest flex-shrink-0 mt-0.5">Model</span>
+                      <span className="font-body text-muted text-[10px] leading-snug flex-1">{a.modelResponse}</span>
+                      {a.confidenceImpact && <span className="font-body text-ok text-[10px] flex-shrink-0 font-medium">{a.confidenceImpact}</span>}
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        )}
+        {qTab === 'priors' && (
+          <div className="divide-y divide-rule2">
+            {craftPriors.map(p => (
+              <div key={p.id} className={`px-6 py-4 border-l-4 ${p.tone === 'warn' ? 'border-l-warn' : 'border-l-ok'}`}>
+                <div className="flex items-start justify-between gap-4 mb-1">
+                  <div className="flex-1">
+                    <div className="font-body text-ghost text-[9px] uppercase tracking-widest mb-0.5">{p.domain}</div>
+                    <div className="font-body font-medium text-ink text-[12px] leading-snug">{p.rule}</div>
+                  </div>
+                  <div className="text-right flex-shrink-0">
+                    <div className={`font-display font-bold display-num text-[22px] leading-none ${p.confidence >= 90 ? 'text-ok' : p.confidence >= 80 ? 'text-ochre' : 'text-warn'}`}>{p.confidence}%</div>
+                    <div className="font-body text-ghost text-[9px]">{p.evidenceBatches} batches</div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 mt-1">
+                  <span className="font-body text-ghost text-[10px]">{p.author}</span>
+                  <span className="font-body text-ghost">·</span>
+                  <span className="font-body text-ghost text-[10px]">{p.evidenceYears}</span>
+                  <div className={`ml-2 font-body text-[9px] px-1.5 py-0.5 border ${p.tone === 'warn' ? 'text-warn border-warn/30 bg-warn/10' : 'text-ok border-ok/30 bg-ok/10'}`}>{p.modelStatus.split('—')[0].trim()}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+        {qTab === 'baselines' && (
+          <div className="grid grid-cols-2 divide-x divide-y divide-rule2 border-b border-rule2">
+            {seasonalBaselines.map((s, i) => (
+              <div key={i} className={`px-6 py-5 ${s.tone === 'warn' ? 'bg-warn/[0.02]' : ''}`}>
+                <div className="flex items-start justify-between gap-2 mb-3">
+                  <div>
+                    <div className="font-body font-bold text-ink text-[14px]">{s.season}</div>
+                    <div className="font-body text-ghost text-[10px] mt-0.5">{s.ambientTempRange} ambient</div>
+                  </div>
+                  {s.tone === 'warn' ? <AlertTriangle size={13} className="text-warn flex-shrink-0" strokeWidth={2} /> : <CheckCircle size={13} className="text-ok flex-shrink-0" strokeWidth={2} />}
+                </div>
+                <div className="space-y-2">
+                  {[
+                    { label: 'Fermentation target', val: s.fermentationTempTarget },
+                    { label: 'Expected amino N',    val: s.expectedAmino },
+                    { label: 'Expected aroma',      val: s.expectedAroma },
+                  ].map(({ label, val }) => (
+                    <div key={label}>
+                      <div className="font-body text-ghost text-[9px] uppercase tracking-widest">{label}</div>
+                      <div className="font-body text-ink text-[11px] mt-0.5">{val}</div>
+                    </div>
+                  ))}
+                  <div className="pt-2 border-t border-rule2">
+                    <p className="font-body text-muted text-[10px] leading-relaxed">{s.notes}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
 export default function BatchIntelligence() {
   const [selectedId, setSelectedId] = useState(batches[0].id)
   const [wsTab, setWsTab] = useState('batch')
@@ -190,13 +338,11 @@ export default function BatchIntelligence() {
                   <span className="font-body text-ghost text-[9px] uppercase tracking-widest">{isComplete ? 'Complete' : b.stage.replace('-', ' ')}</span>
                   <span className={`font-body text-[9px] ${b.grade === 'Premium' ? 'text-ochre' : 'text-ghost'}`}>{b.grade}</span>
                 </div>
-                <div className="flex items-center gap-1 mt-1.5">
-                  {activePolicies.map(p => (
-                    <span key={p.id} className={`font-body text-[8px] px-1 py-0.5 border ${p.status === 'active' ? 'border-ok/30 text-ok bg-ok/[0.04]' : 'border-rule2 text-ghost'}`}>
-                      {p.name.split('/')[0].trim()}
-                    </span>
-                  ))}
-                </div>
+                {b.hasFinding && (
+                  <div className="mt-1.5">
+                    <span className="font-body text-[8px] px-1 py-0.5 border border-warn/30 text-warn bg-warn/[0.04]">Finding</span>
+                  </div>
+                )}
               </button>
             )
           })}
@@ -264,11 +410,7 @@ export default function BatchIntelligence() {
           ))}
         </div>
 
-        {wsTab === 'quality' && (
-          <div className="flex-1 flex flex-col overflow-hidden">
-            <QualityIntelligence />
-          </div>
-        )}
+        {wsTab === 'quality' && <QualityTab />}
 
         {wsTab === 'batch' && <div className="flex-1 overflow-y-auto">
           {/* Confidence trajectory */}

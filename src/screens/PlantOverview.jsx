@@ -1,9 +1,10 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { shiftData, line6Data, wichitaData, facility } from '../data'
 import { useAppState } from '../context/AppState'
 import { riskColorClass, riskLabel, riskBgColor } from '../lib/utils'
-import { AlertTriangle, CheckCircle, Brain, Clock, Users, ArrowRight, Activity, CircleDot } from 'lucide-react'
-import { interventionSummary } from '../data/interventions'
+import { AlertTriangle, CheckCircle, Brain, Clock, Users, ArrowRight, Activity, CircleDot, ChevronDown, ChevronUp, ExternalLink } from 'lucide-react'
+import { interventionSummary, interventions } from '../data/interventions'
 
 // ─── Salina line meta ─────────────────────────────────────────────────────────
 
@@ -125,6 +126,7 @@ function MiniSparkline({ data, color }) {
 export default function PlantOverview() {
   const navigate = useNavigate()
   const { shiftActed, currentPlant } = useAppState()
+  const [impactExpanded, setImpactExpanded] = useState(false)
 
   const isWichita = currentPlant?.id === 'ks'
   const rawLines  = isWichita ? wichitaData.lines : shiftData.lines
@@ -190,39 +192,70 @@ export default function PlantOverview() {
       </div>
 
       {/* ── Impact Loop summary strip ───────────────────────────── */}
-      <button type="button" onClick={() => navigate('/impact')}
-        className="flex-shrink-0 flex items-center gap-4 px-6 py-2 border-b border-rule2 bg-stone2 hover:bg-stone3 transition-colors group text-left w-full">
-        <CircleDot size={10} strokeWidth={2} className="text-ok flex-shrink-0" />
-        <span className="font-body text-ghost text-[9px] uppercase tracking-widest">Impact · Last 30 days</span>
-        <div className="flex items-center gap-4 ml-2">
-          <span className="font-body text-ink text-[10px]">
-            <span className="font-medium">{interventionSummary.total}</span>
-            <span className="text-ghost ml-1">interventions</span>
-          </span>
-          <span className="w-px h-3 bg-rule2" />
-          <span className="font-body text-ok text-[10px]">
-            <span className="font-medium">{interventionSummary.positive}</span>
-            <span className="text-ghost ml-1">positive outcomes</span>
-          </span>
-          <span className="w-px h-3 bg-rule2" />
-          <span className="font-body text-[10px]">
-            <span className={`font-medium ${interventionSummary.avgAttributionConfidence >= 0.7 ? 'text-ok' : 'text-warn'}`}>
-              {Math.round(interventionSummary.avgAttributionConfidence * 100)}%
+      <div className="flex-shrink-0 border-b border-rule2">
+        <button type="button" onClick={() => setImpactExpanded(e => !e)}
+          className="flex items-center gap-4 px-6 py-2 bg-stone2 hover:bg-stone3 transition-colors group text-left w-full">
+          <CircleDot size={10} strokeWidth={2} className="text-ok flex-shrink-0" />
+          <span className="font-body text-ghost text-[9px] uppercase tracking-widest">Impact · Last 30 days</span>
+          <div className="flex items-center gap-4 ml-2">
+            <span className="font-body text-ink text-[10px]">
+              <span className="font-medium">{interventionSummary.total}</span>
+              <span className="text-ghost ml-1">interventions</span>
             </span>
-            <span className="text-ghost ml-1">avg attribution</span>
-          </span>
-          {interventionSummary.lowDwellDecisions > 0 && (
-            <>
-              <span className="w-px h-3 bg-rule2" />
-              <span className="flex items-center gap-1 font-body text-danger text-[10px]">
-                <AlertTriangle size={8} strokeWidth={2} />
-                {interventionSummary.lowDwellDecisions} low-dwell decision{interventionSummary.lowDwellDecisions > 1 ? 's' : ''}
+            <span className="w-px h-3 bg-rule2" />
+            <span className="font-body text-ok text-[10px]">
+              <span className="font-medium">{interventionSummary.positive}</span>
+              <span className="text-ghost ml-1">positive outcomes</span>
+            </span>
+            <span className="w-px h-3 bg-rule2" />
+            <span className="font-body text-[10px]">
+              <span className={`font-medium ${interventionSummary.avgAttributionConfidence >= 0.7 ? 'text-ok' : 'text-warn'}`}>
+                {Math.round(interventionSummary.avgAttributionConfidence * 100)}%
               </span>
-            </>
-          )}
-        </div>
-        <ArrowRight size={10} className="text-ghost ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
-      </button>
+              <span className="text-ghost ml-1">avg attribution</span>
+            </span>
+            {interventionSummary.lowDwellDecisions > 0 && (
+              <>
+                <span className="w-px h-3 bg-rule2" />
+                <span className="flex items-center gap-1 font-body text-danger text-[10px]">
+                  <AlertTriangle size={8} strokeWidth={2} />
+                  {interventionSummary.lowDwellDecisions} low-dwell decision{interventionSummary.lowDwellDecisions > 1 ? 's' : ''}
+                </span>
+              </>
+            )}
+          </div>
+          {impactExpanded
+            ? <ChevronUp size={10} className="text-ghost ml-auto" />
+            : <ChevronDown size={10} className="text-ghost ml-auto" />}
+        </button>
+        {impactExpanded && (
+          <div className="bg-stone px-6 py-3 border-t border-rule2">
+            <div className="space-y-0 divide-y divide-rule2 border border-rule2 mb-3">
+              {(interventions ?? []).slice(0, 4).map(iv => {
+                const outcome = iv.consequences?.[0]
+                const hasPositive = outcome?.observed?.delta?.startsWith('+') || outcome?.observed?.label?.toLowerCase().includes('resolved') || outcome?.observed?.label?.toLowerCase().includes('cleared')
+                return (
+                  <div key={iv.id} className="flex items-center gap-3 px-4 py-2.5">
+                    <div className={`h-1.5 w-1.5 rounded-full flex-shrink-0 ${hasPositive ? 'bg-ok' : 'bg-warn'}`} />
+                    <div className="flex-1 min-w-0">
+                      <div className="font-body font-medium text-ink text-[11px] truncate">{iv.agentObservation?.label ?? iv.id}</div>
+                      <div className="font-body text-ghost text-[9px] truncate">{outcome?.metric ?? ''}{outcome?.observed?.delta ? ` · ${outcome.observed.delta}` : ''}</div>
+                    </div>
+                    <div className="font-body text-ghost text-[9px] flex-shrink-0">
+                      {iv.attributionConfidence != null ? `${Math.round(iv.attributionConfidence * 100)}% conf` : '—'}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+            <button type="button" onClick={() => navigate('/impact')}
+              className="flex items-center gap-1 font-body text-ghost text-[10px] hover:text-ink transition-colors">
+              <ExternalLink size={9} strokeWidth={2} />
+              Full ImpactLoop view
+            </button>
+          </div>
+        )}
+      </div>
 
       {/* ── Score tiles ─────────────────────────────────────────── */}
       <div className="flex-shrink-0 flex border-b border-rule2 divide-x divide-rule2 bg-stone">

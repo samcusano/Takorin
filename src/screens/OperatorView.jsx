@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Flag, ShieldCheck, Check, Lock, AlertTriangle, Activity, CheckCircle2, WifiOff, Brain } from 'lucide-react'
 import { operatorContextData, fatigueData } from '../data'
-import { integrationSummary } from '../data/integrations'
+import { integrationSummary, connectors } from '../data/integrations'
 import { useAppState } from '../context/AppState'
 import { SecHd, Urg, PersonAvatar, Btn, Modal } from '../components/UI'
 
@@ -12,37 +12,6 @@ const OPERATORS = [
  { name: 'P. Okonkwo', role: 'L2 · Topping · 22 months',    initials: 'PO', station: 'Oven Station B',          certPct: 91, certLabel: '91% to L3 Sauce Dosing', certColor: 'bg-ok',   certText: 'text-ok'   },
  { name: 'F. Adeyemi', role: 'L1 · QA · 8 months',          initials: 'FA', station: 'QA Check Station',        certPct: 40, certLabel: '40% to L2 QA Inspector',  certColor: 'bg-ghost',certText: 'text-muted' },
 ]
-
-const TRAINING_PATHWAY = {
- 'C. Reyes': {
-  currentLevel: 'L1 Pack Line', nextLevel: 'L2 Sauce Dosing', assessmentWindow: 'May 12–16, 2026',
-  modules: [
-   { label: 'CCP-1 Hold Temperature — Sauce Dosing', status: 'complete',     hours: 2   },
-   { label: 'Allergen changeover procedure',          status: 'complete',     hours: 1.5 },
-   { label: 'HACCP documentation',                    status: 'in-progress',  hours: 3   },
-   { label: 'Supervised dosing shifts × 5',           status: 'in-progress',  hours: 10  },
-   { label: 'L2 Practical assessment',                status: 'locked',       hours: 1,  lockedReason: 'Complete supervised dosing shifts first' },
-  ],
- },
- 'P. Okonkwo': {
-  currentLevel: 'L2 Topping', nextLevel: 'L3 Sauce Dosing', assessmentWindow: 'Jun 2–6, 2026',
-  modules: [
-   { label: 'Advanced CCP management',          status: 'complete',    hours: 4 },
-   { label: 'Yield optimization — Sauce Dosing', status: 'complete',    hours: 3 },
-   { label: 'Line lead responsibilities',        status: 'in-progress', hours: 6 },
-   { label: 'L3 Practical assessment',           status: 'locked',      hours: 2, lockedReason: 'Complete line lead responsibilities first' },
-  ],
- },
- 'F. Adeyemi': {
-  currentLevel: 'L1 QA', nextLevel: 'L2 QA Inspector', assessmentWindow: 'Jul 7–11, 2026',
-  modules: [
-   { label: 'Microbiological testing basics',    status: 'complete',    hours: 2 },
-   { label: 'FSMA 204 documentation',            status: 'in-progress', hours: 3 },
-   { label: 'Environmental monitoring program',  status: 'locked',      hours: 4, lockedReason: 'Complete FSMA 204 documentation first' },
-   { label: 'L2 QA assessment',                  status: 'locked',      hours: 1, lockedReason: 'Complete environmental monitoring first' },
-  ],
- },
-}
 
 const ROLE_TO_OPERATOR = {
  'operator-reyes':   'C. Reyes',
@@ -352,12 +321,12 @@ function MonitoringSurface({ ctx, entries, onLog }) {
 
 // ── Task Section — always below dominant surface ───────────────────────────────
 
-function TaskSection({ selected, tasks, linkedTasks, flags, nearMisses, onLinkedTaskConfirm }) {
+function TaskSection({ selected, station, tasks, linkedTasks, flags, nearMisses, onLinkedTaskConfirm }) {
  const allTasks = [...tasks, ...linkedTasks]
  const pendingCount = allTasks.filter(t => !t.done).length
  return (
   <>
-   <SecHd tag="Today's tasks" title={`${selected.split(' ')[1] || selected} · April 16`}
+   <SecHd tag="Today's tasks" title={`${station || selected.split(' ')[1] || selected} · April 16`}
     badge={allTasks.length > 0 ? <Urg level={pendingCount > 0 ? 'warn' : 'ok'}>{pendingCount} pending</Urg> : null} />
    {allTasks.length === 0 ? (
     <div className="px-5 py-4 font-body text-ghost text-[12px]">No tasks yet — tasks assigned by your supervisor appear here.</div>
@@ -458,7 +427,13 @@ export default function OperatorView({ role }) {
  const myCompletions = procedureCompletions[selected] || []
  const myTempEntries = tempLogEntries[selected] || []
 
- const staleConnectors = Math.max(0, integrationSummary.total - integrationSummary.active - 13) // approx stale
+ const staleConnectors = connectors.filter(c => {
+  if (c.status !== 'active' || !c.lastSync) return false
+  const parts = c.lastSync.match(/(\d+)s|(\d+)m|(\d+)h/)
+  if (!parts) return false
+  const mins = parts[3] ? parseInt(parts[3]) * 60 : parts[2] ? parseInt(parts[2]) : (parts[1] ? parseInt(parts[1]) / 60 : 0)
+  return mins > 60
+ }).length
  const trustDegraded = integrationSummary.active < integrationSummary.total * 0.7
 
  const handleStepComplete = (stepId) => {
@@ -575,6 +550,7 @@ export default function OperatorView({ role }) {
     <div className="border-t border-rule2">
      <TaskSection
       selected={selected}
+      station={ctx?.station || op?.station}
       tasks={tasks}
       linkedTasks={linkedTasks}
       flags={flags}
