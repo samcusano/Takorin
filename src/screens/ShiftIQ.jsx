@@ -1,5 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
 import { useSearchParams, Link } from 'react-router-dom'
+import HandoffIQ from './HandoffIQ'
+import RobotFleet from './RobotFleet'
+import ResourceAllocation from './ResourceAllocation'
 import { useFocusTrap, useExitAnimation, riskColorClass, riskLabel, riskBgColor } from '../lib/utils'
 import { shiftData, line6Data, wichitaData, denverData, haccpData, productionRate, crewHoursData } from '../data'
 import {
@@ -618,6 +621,7 @@ export default function ShiftIQ() {
  flaggedItems, setFlaggedItems,
  logActivity,
  currentPlant,
+ workerMode,
  pilotExpanded, setPilotExpanded,
  viewingRole,
  addQuietPeriod, clearQuietPeriod, activeQuietPeriod,
@@ -682,6 +686,7 @@ export default function ShiftIQ() {
  const pendingTaskCount = Object.values(taskAssignments).flat().filter(t => !t.done).length
  const signedCount = 7 + Object.keys(checklistSigned).length
  const startupPct = Math.round((signedCount / CHECKLIST_TOTAL) * 100)
+ const [activeTab, setActiveTab] = useState('shift')
  const [countdown, setCountdown] = useState(d.countdown)
  const [escalatedShift, setEscalatedShift] = useState(false)
 
@@ -701,6 +706,28 @@ export default function ShiftIQ() {
 
  return (
  <div className="flex flex-col h-full overflow-hidden">
+
+ {/* Tab bar — Shift | Handoff | Fleet (robot/hybrid) | Allocation (hybrid) */}
+ <div className="flex-shrink-0 flex border-b border-rule2 bg-stone2">
+  {[
+   { id: 'shift',      label: 'Shift',      show: true },
+   { id: 'handoff',    label: 'Handoff',    show: true },
+   { id: 'fleet',      label: 'Robot Fleet', show: workerMode === 'robot' || workerMode === 'hybrid' },
+   { id: 'allocation', label: 'Allocation',  show: workerMode === 'hybrid' },
+  ].filter(t => t.show).map(t => (
+   <button key={t.id} type="button" onClick={() => setActiveTab(t.id)}
+    className={`px-5 py-2.5 font-body text-[11px] border-b-2 transition-colors ${
+     activeTab === t.id ? 'border-b-ochre text-ink' : 'border-b-transparent text-ghost hover:text-muted'
+    }`}>
+    {t.label}
+   </button>
+  ))}
+ </div>
+
+ {activeTab === 'handoff'    ? <HandoffIQ />
+  : activeTab === 'fleet'      ? <RobotFleet />
+  : activeTab === 'allocation' ? <ResourceAllocation />
+  : <>
 
  {/* Quiet period banner + controls */}
  {currentQuiet ? (
@@ -1643,6 +1670,7 @@ export default function ShiftIQ() {
   </div>
  ))}
 
+ </>}
  </div>
  )
 }
