@@ -7,6 +7,8 @@ import {
  Building2, ChevronDown, Globe2,
  MapPin, ShieldCheck, AlertTriangle,
  LayoutGrid, BarChart2, Bell, User, Bot, GitMerge, Cpu,
+ FlaskConical, Scale, Microscope, Network, BookOpen, LayoutDashboard,
+ Workflow, FileLock2, TrendingUp, ScanLine,
 } from 'lucide-react'
 import { useAppState, PLANTS } from '../context/AppState'
 import { commandData } from '../data'
@@ -425,6 +427,24 @@ export default function Sidebar() {
    ))}
 
    <SideItem to="/agents" id="agents" icon={Cpu} label="Agent Control" badge={null} />
+
+   <div className="px-4 pt-4 pb-1 text-[10px] tracking-widest uppercase text-stone/40 font-body font-medium">
+   Architecture
+   </div>
+   <SideItem to="/batch"       id="batch"       icon={FlaskConical}    label="Process Intelligence" badge={null} />
+   <SideItem to="/compliance"  id="compliance"  icon={Scale}           label="Compliance Policy"    badge={null} />
+   <SideItem to="/quality"     id="quality"     icon={Microscope}      label="Quality Intelligence" badge={null} />
+   <SideItem to="/hierarchy"   id="hierarchy"   icon={LayoutDashboard} label="Process Hierarchy"    badge={null} />
+   <SideItem to="/integration" id="integration" icon={Network}         label="Integration Hub"      badge={null} />
+   <SideItem to="/knowledge"   id="knowledge"   icon={BookOpen}        label="Knowledge Vault"      badge={null} />
+
+   <div className="px-4 pt-4 pb-1 text-[10px] tracking-widest uppercase text-stone/40 font-body font-medium">
+   Frontier
+   </div>
+   <SideItem to="/execution" id="execution" icon={Workflow}   label="Execution Authority" badge={null} />
+   <SideItem to="/records"   id="records"   icon={FileLock2}  label="Record Vault"        badge={null} />
+   <SideItem to="/delivery"  id="delivery"  icon={TrendingUp} label="Value Chain"         badge={null} />
+   <SideItem to="/equipment" id="equipment" icon={ScanLine}   label="Equipment Intel."    badge={null} />
 
    {/* Notifications */}
    <div className="px-4 pt-4 pb-1 text-[10px] tracking-widest uppercase text-ghost font-body font-medium">
