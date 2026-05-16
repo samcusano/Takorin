@@ -1,12 +1,12 @@
 import { useNavigate } from 'react-router-dom'
-import { shiftData, line6Data, facility } from '../data'
+import { shiftData, line6Data, wichitaData, facility } from '../data'
 import { useAppState } from '../context/AppState'
 import { riskColorClass, riskLabel, riskBgColor } from '../lib/utils'
-import { AlertTriangle, CheckCircle, Clock, Users, ArrowRight, Activity, Brain } from 'lucide-react'
-import { PersonAvatar } from '../components/UI'
+import { AlertTriangle, CheckCircle, Brain, Clock, Users, ArrowRight, Activity } from 'lucide-react'
 
-// Live line data keyed by line ID
-const LINE_META = {
+// ─── Salina line meta ─────────────────────────────────────────────────────────
+
+const SALINA_LINE_META = {
   l4: {
     supervisor: 'D. Kowalski',
     shiftLabel: 'AM · 06:00–14:00',
@@ -27,7 +27,7 @@ const LINE_META = {
     sparkline: line6Data.sparkline,
     acted: [],
     modelConfidence: 92,
-    modelSignal: 'Staffing cert coverage optimal · no active gaps',
+    modelSignal: 'Staffing cert coverage optimal',
   },
   l3: {
     supervisor: 'M. Chen',
@@ -53,6 +53,46 @@ const LINE_META = {
   },
 }
 
+// ─── Wichita line meta ────────────────────────────────────────────────────────
+
+const WICHITA_LINE_META = {
+  w1: {
+    supervisor: 'R. Vasquez',
+    shiftLabel: 'AM · 06:00–14:00',
+    minutesRemaining: 27 * 60 + 48,
+    workerCount: 18,
+    findings: wichitaData.findings,
+    sparkline: [62, 65, 68, 70, 69, 71],
+    acted: [],
+    modelConfidence: 74,
+    modelSignal: 'Allergen changeover incomplete — confidence penalty active',
+  },
+  w2: {
+    supervisor: 'A. Tran',
+    shiftLabel: 'AM · 06:00–14:00',
+    minutesRemaining: 27 * 60 + 48,
+    workerCount: 16,
+    findings: [],
+    sparkline: [84, 86, 87, 88, 88, 88],
+    acted: [],
+    modelConfidence: 93,
+    modelSignal: 'All signals within normal bounds',
+  },
+  w3: {
+    supervisor: 'P. Nwosu',
+    shiftLabel: 'PM · 14:00–22:00',
+    minutesRemaining: 27 * 60 + 48,
+    workerCount: 15,
+    findings: [],
+    sparkline: [58, 60, 61, 62, 62, 62],
+    acted: [],
+    modelConfidence: 85,
+    modelSignal: 'Belt D-3 variance within spec — monitoring',
+  },
+}
+
+// ─── Shared helpers ───────────────────────────────────────────────────────────
+
 function fmtMinutes(m) {
   const h = Math.floor(m / 60)
   const min = m % 60
@@ -64,8 +104,8 @@ function MiniSparkline({ data, color }) {
   const min = Math.min(...data)
   const max = Math.max(...data)
   const range = max - min || 1
-  const w = 48
-  const h = 20
+  const w = 44
+  const h = 18
   const pts = data.map((v, i) => {
     const x = (i / (data.length - 1)) * w
     const y = h - ((v - min) / range) * h
@@ -73,193 +113,208 @@ function MiniSparkline({ data, color }) {
   }).join(' ')
   return (
     <svg width={w} height={h} aria-hidden="true" className="flex-shrink-0">
-      <polyline points={pts} fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" opacity="0.7" />
+      <polyline points={pts} fill="none" stroke={color} strokeWidth="1.5"
+        strokeLinecap="round" strokeLinejoin="round" opacity="0.7" />
     </svg>
   )
 }
 
-function InterventionPip({ count, acted }) {
-  if (count === 0) return (
-    <span className="flex items-center gap-1 font-body text-ok text-[10px]">
-      <CheckCircle size={10} strokeWidth={2} />
-      Clear
-    </span>
-  )
-  const remaining = count - acted
-  if (remaining === 0) return (
-    <span className="flex items-center gap-1 font-body text-ok text-[10px]">
-      <CheckCircle size={10} strokeWidth={2} />
-      {count} actioned
-    </span>
-  )
-  return (
-    <span className="flex items-center gap-1 font-body text-warn text-[10px]">
-      <AlertTriangle size={10} strokeWidth={2} />
-      {remaining} pending
-    </span>
-  )
-}
-
-function LineCard({ line, meta, shiftActed, onClick }) {
-  const scoreColor = riskColorClass(line.score)
-  const zone = riskLabel(line.score)
-  const sparkColor = riskBgColor(line.score)
-  const pending = meta.findings.filter(f => !shiftActed[f.id]).length
-  const totalFindings = meta.findings.length
-  const actedin = meta.acted.filter(id => shiftActed[id]).length
-
-  const topFinding = meta.findings.find(f => !shiftActed[f.id])
-  const isAtRisk = line.score >= 75
-  const isWatch = line.score >= 60 && line.score < 75
-
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`group flex flex-col w-full text-left bg-stone border rounded-sm transition-all duration-150 hover:border-ink/30 hover:shadow-raise focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ochre ${
-        isAtRisk ? 'border-danger/30' : isWatch ? 'border-warn/20' : 'border-rule2'
-      }`}
-      aria-label={`${line.name} — risk score ${line.score} — ${zone}`}
-    >
-      {/* Top accent bar */}
-      <div className={`h-1 w-full ${isAtRisk ? 'bg-danger' : isWatch ? 'bg-warn' : 'bg-ok'}`} />
-
-      <div className="p-6 flex flex-col gap-5 flex-1">
-        {/* Header row */}
-        <div className="flex items-start justify-between">
-          <div>
-            <div className="font-display font-bold text-ink text-[20px] leading-none">{line.name}</div>
-            <div className="font-body text-ghost text-[11px] mt-1">{meta.shiftLabel}</div>
-          </div>
-          <div className="flex items-center gap-2">
-            <MiniSparkline data={meta.sparkline} color={sparkColor} />
-            <div className="text-right">
-              <div className={`display-num text-[52px] leading-none ${scoreColor}`}>{line.score}</div>
-              <div className={`font-body text-[9px] uppercase tracking-widest mt-0.5 ${scoreColor}`}>{zone}</div>
-            </div>
-          </div>
-        </div>
-
-        {/* Top finding */}
-        <div className="min-h-[32px]">
-          {topFinding ? (
-            <p className={`font-body text-[12px] leading-snug ${isAtRisk ? 'text-ink' : 'text-ink2'}`}>
-              {topFinding.title}
-            </p>
-          ) : (
-            <p className="font-body text-[12px] text-ghost leading-snug">Running clean — no findings</p>
-          )}
-        </div>
-
-        {/* Footer row */}
-        <div className="flex items-center justify-between pt-3 border-t border-rule2">
-          <div className="flex items-center gap-2.5">
-            <PersonAvatar name={meta.supervisor} size={20} />
-            <div>
-              <div className="font-body text-ink2 text-[11px]">{meta.supervisor}</div>
-              <div className="flex items-center gap-1 mt-0.5">
-                <Brain size={8} strokeWidth={1.75} className="text-ghost flex-shrink-0" />
-                <span className={`font-body tabular-nums text-[10px] font-medium ${meta.modelConfidence >= 90 ? 'text-ok' : meta.modelConfidence >= 80 ? 'text-muted' : 'text-warn'}`}>{meta.modelConfidence}%</span>
-                <span className="font-body text-ghost text-[10px] truncate max-w-[120px]">· {meta.modelSignal}</span>
-              </div>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <span className="flex items-center gap-1 font-body text-ghost text-[10px]">
-              <Clock size={10} strokeWidth={2} />
-              {fmtMinutes(meta.minutesRemaining)}
-            </span>
-            <InterventionPip count={totalFindings} acted={meta.acted.filter(id => shiftActed[id]).length} />
-            <ArrowRight size={12} className="text-ghost group-hover:text-ink transition-colors" />
-          </div>
-        </div>
-      </div>
-    </button>
-  )
-}
+// ─── Root ─────────────────────────────────────────────────────────────────────
 
 export default function PlantOverview() {
   const navigate = useNavigate()
   const { shiftActed, currentPlant } = useAppState()
-  const lines = shiftData.lines
 
-  const critCount = lines.filter(l => l.score >= 75).length
-  const watchCount = lines.filter(l => l.score >= 60 && l.score < 75).length
-  const clearCount = lines.filter(l => l.score < 60).length
+  const isWichita = currentPlant?.id === 'ks'
+  const rawLines  = isWichita ? wichitaData.lines : shiftData.lines
+  const lineMeta  = isWichita ? WICHITA_LINE_META : SALINA_LINE_META
+  const plantName = currentPlant?.name ?? facility.name
 
-  const handleLineClick = (lineId) => {
-    navigate(`/shift?line=${lineId}`)
-  }
+  const sorted      = [...rawLines].sort((a, b) => b.score - a.score)
+  const critCount   = rawLines.filter(l => l.score >= 75).length
+  const watchCount  = rawLines.filter(l => l.score >= 60 && l.score < 75).length
+  const clearCount  = rawLines.filter(l => l.score < 60).length
+  const totalWorkers = rawLines.reduce((s, l) => s + (lineMeta[l.id]?.workerCount ?? 0), 0)
+
+  // All pending findings merged across lines, sorted by urgency
+  const allFindings = sorted.flatMap(line => {
+    const meta = lineMeta[line.id]
+    if (!meta) return []
+    return meta.findings
+      .filter(f => !shiftActed[f.id])
+      .map(f => ({ ...f, line, meta }))
+  }).sort((a, b) => {
+    const ord = { danger: 0, warn: 1 }
+    return (ord[a.urgency] ?? 2) - (ord[b.urgency] ?? 2)
+  })
 
   return (
     <div className="flex flex-col h-full overflow-hidden content-reveal">
-      {/* Header bar */}
-      <div className={`flex items-center justify-between px-6 py-4 border-b-2 flex-shrink-0 ${
-        critCount > 0 ? 'bg-danger/[0.08] border-b-danger' : watchCount > 0 ? 'bg-warn/[0.08] border-b-warn' : 'bg-stone2 border-b-rule2'
+
+      {/* ── Header ──────────────────────────────────────────────── */}
+      <div className={`flex-shrink-0 flex items-center justify-between px-6 py-3 border-b-2 ${
+        critCount > 0
+          ? 'bg-danger/[0.05] border-b-danger/30'
+          : watchCount > 0
+          ? 'bg-warn/[0.05] border-b-warn/20'
+          : 'bg-stone2 border-b-rule2'
       }`}>
-        <div>
-          <div className="flex items-center gap-2.5">
-            <Activity size={14} strokeWidth={1.75} className={critCount > 0 ? 'text-danger' : watchCount > 0 ? 'text-warn' : 'text-ok'} />
-            <span className="font-display font-bold text-ink text-[18px]">{currentPlant?.name || facility.name}</span>
-            <span className="font-body text-ghost text-[11px]">· April 16, 2026 · AM shift</span>
-          </div>
-          <div className="flex items-center gap-3 mt-1.5">
-            {critCount > 0 && (
-              <span className="font-body text-danger text-[11px] flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-danger inline-block" />
-                {critCount} line{critCount > 1 ? 's' : ''} at risk
-              </span>
-            )}
-            {watchCount > 0 && (
-              <span className="font-body text-warn text-[11px] flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-warn inline-block" />
-                {watchCount} watching
-              </span>
-            )}
-            {clearCount > 0 && (
-              <span className="font-body text-ok text-[11px] flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-ok inline-block" />
-                {clearCount} clear
-              </span>
-            )}
-          </div>
+        <div className="flex items-center gap-2">
+          <Activity size={13} strokeWidth={1.75}
+            className={critCount > 0 ? 'text-danger' : watchCount > 0 ? 'text-warn' : 'text-ok'} />
+          <span className="font-display font-bold text-ink text-[16px]">{plantName}</span>
+          <span className="font-body text-ghost text-[10px]">· April 16 · AM shift</span>
         </div>
-        <div className="flex items-center gap-1.5 font-body text-ghost text-[10px]">
-          <Users size={11} strokeWidth={2} />
-          <span>4 active lines · {lines.reduce((a) => a + 18, 0)} workers</span>
-        </div>
-      </div>
-
-      {/* Card grid */}
-      <div className="flex-1 overflow-y-auto p-6">
-        <div className="grid gap-5" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))' }}>
-          {lines.map(line => (
-            <LineCard
-              key={line.id}
-              line={line}
-              meta={LINE_META[line.id] || { supervisor: '—', shiftLabel: '—', minutesRemaining: 0, workerCount: 0, findings: [], sparkline: [], acted: [] }}
-              shiftActed={shiftActed}
-              onClick={() => handleLineClick(line.id)}
-            />
-          ))}
-        </div>
-
-        {/* Legend */}
-        <div className="flex items-center gap-5 mt-6 pt-4 border-t border-rule2">
-          <span className="font-body text-ghost text-[10px] uppercase tracking-widest">Risk scale</span>
-          {[
-            { label: 'At risk', color: 'bg-danger', range: '75–100' },
-            { label: 'Watch', color: 'bg-warn', range: '60–74' },
-            { label: 'Clear', color: 'bg-ok', range: '0–59' },
-          ].map(({ label, color, range }) => (
-            <span key={label} className="flex items-center gap-1.5 font-body text-ghost text-[10px]">
-              <span className={`w-2 h-2 rounded-sm ${color}`} />
-              {label} · {range}
+        <div className="flex items-center gap-3">
+          {critCount > 0 && (
+            <span className="font-body text-danger text-[10px] flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-danger" />{critCount} at risk
             </span>
-          ))}
-          <span className="ml-auto font-body text-ghost text-[10px]">Select a line to open ShiftIQ</span>
+          )}
+          {watchCount > 0 && (
+            <span className="font-body text-warn text-[10px] flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-warn" />{watchCount} watch
+            </span>
+          )}
+          {clearCount > 0 && (
+            <span className="font-body text-ok text-[10px] flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-ok" />{clearCount} clear
+            </span>
+          )}
+          <span className="font-body text-ghost text-[10px] flex items-center gap-1.5 border-l border-rule2 pl-3">
+            <Users size={11} strokeWidth={2} />
+            {rawLines.length} lines · {totalWorkers} workers
+          </span>
         </div>
       </div>
+
+      {/* ── Score tiles ─────────────────────────────────────────── */}
+      <div className="flex-shrink-0 flex border-b border-rule2 divide-x divide-rule2 bg-stone">
+        {sorted.map(line => {
+          const meta = lineMeta[line.id]
+          if (!meta) return null
+          const scoreColor = riskColorClass(line.score)
+          const sparkColor = riskBgColor(line.score)
+          const isAtRisk   = line.score >= 75
+          const isWatch    = line.score >= 60 && line.score < 75
+          const pend       = meta.findings.filter(f => !shiftActed[f.id]).length
+          return (
+            <button
+              key={line.id}
+              type="button"
+              onClick={() => navigate(`/shift?line=${line.id}`)}
+              className={`flex-1 px-5 py-4 text-left hover:bg-stone2 transition-colors border-l-4 group ${
+                isAtRisk ? 'border-l-danger' : isWatch ? 'border-l-warn' : 'border-l-ok'
+              }`}
+              aria-label={`${line.name} — score ${line.score} — open ShiftIQ`}
+            >
+              {/* Name + sparkline */}
+              <div className="flex items-start justify-between mb-2">
+                <div>
+                  <div className="font-display font-bold text-ink text-[15px] leading-none">{line.name}</div>
+                  <div className="font-body text-ghost text-[9px] mt-0.5">{meta.supervisor}</div>
+                </div>
+                <MiniSparkline data={meta.sparkline} color={sparkColor} />
+              </div>
+
+              {/* Score */}
+              <div className={`font-display font-bold display-num text-[48px] leading-none tabular-nums mb-2 ${scoreColor}`}>
+                {line.score}
+              </div>
+
+              {/* Model confidence bar */}
+              <div className="mb-2.5">
+                <div className="flex items-center justify-between mb-1">
+                  <div className="flex items-center gap-1">
+                    <Brain size={8} strokeWidth={1.75} className="text-ghost" />
+                    <span className="font-body text-ghost text-[9px]">Model</span>
+                  </div>
+                  <span className={`font-body font-medium text-[9px] tabular-nums ${
+                    meta.modelConfidence >= 90 ? 'text-ok' : meta.modelConfidence >= 80 ? 'text-muted' : 'text-warn'
+                  }`}>{meta.modelConfidence}%</span>
+                </div>
+                <div className="h-0.5 bg-rule2">
+                  <div
+                    className={`h-full ${meta.modelConfidence >= 90 ? 'bg-ok' : meta.modelConfidence >= 80 ? 'bg-rule' : 'bg-warn'}`}
+                    style={{ width: `${meta.modelConfidence}%` }}
+                  />
+                </div>
+              </div>
+
+              {/* Zone + findings pip */}
+              <div className="flex items-center justify-between">
+                <span className={`font-body text-[9px] uppercase tracking-widest ${scoreColor}`}>
+                  {riskLabel(line.score)}
+                </span>
+                {pend > 0
+                  ? <span className="font-body text-[9px] text-warn flex items-center gap-0.5">
+                      <AlertTriangle size={9} strokeWidth={2} className="text-warn" />{pend} pending
+                    </span>
+                  : <span className="font-body text-[9px] text-ok flex items-center gap-0.5">
+                      <CheckCircle size={9} strokeWidth={2} className="text-ok" />Clear
+                    </span>
+                }
+              </div>
+            </button>
+          )
+        })}
+      </div>
+
+      {/* ── Cross-line findings feed ─────────────────────────────── */}
+      <div className="flex-shrink-0 flex items-center justify-between px-5 py-2 border-b border-rule2 bg-stone2">
+        <span className="font-body font-bold text-ink text-[11px]">
+          Pending across all lines
+          {allFindings.length > 0 && (
+            <span className="ml-2 font-body text-warn text-[10px] font-normal">
+              {allFindings.length} finding{allFindings.length > 1 ? 's' : ''}
+            </span>
+          )}
+        </span>
+        {allFindings.length === 0 && (
+          <span className="font-body text-ok text-[10px] flex items-center gap-1">
+            <CheckCircle size={10} strokeWidth={2} />All lines clear
+          </span>
+        )}
+      </div>
+
+      <div className="flex-1 overflow-y-auto">
+        {allFindings.length > 0
+          ? allFindings.map((f, i) => (
+            <div key={i}
+              className={`flex items-start gap-4 px-5 py-3.5 border-b border-rule2 border-l-4 ${
+                f.urgency === 'danger' ? 'border-l-danger bg-danger/[0.02]' : 'border-l-warn bg-warn/[0.01]'
+              }`}>
+              <AlertTriangle size={12}
+                className={`mt-0.5 flex-shrink-0 ${f.urgency === 'danger' ? 'text-danger' : 'text-warn'}`}
+                strokeWidth={1.75} />
+              <div className="flex-1 min-w-0">
+                <div className="font-body font-medium text-ink text-[12px] leading-snug">{f.title}</div>
+                <div className="font-body text-ghost text-[10px] mt-0.5">
+                  {f.line.name} · {f.meta.supervisor}
+                  {f.meta.minutesRemaining > 0 && (
+                    <span className="ml-2 inline-flex items-center gap-1">
+                      <Clock size={9} strokeWidth={2} />{fmtMinutes(f.meta.minutesRemaining)} remaining
+                    </span>
+                  )}
+                </div>
+              </div>
+              <button type="button" onClick={() => navigate(`/shift?line=${f.line.id}`)}
+                className="font-body text-[10px] text-ghost hover:text-ink transition-colors flex items-center gap-1 flex-shrink-0">
+                Open ShiftIQ <ArrowRight size={10} />
+              </button>
+            </div>
+          ))
+          : (
+            <div className="flex items-center gap-3 px-5 py-10">
+              <CheckCircle size={16} className="text-ok flex-shrink-0" strokeWidth={2} />
+              <span className="font-body text-ghost text-[12px]">
+                All lines running clean — no pending findings
+              </span>
+            </div>
+          )
+        }
+      </div>
+
     </div>
   )
 }
