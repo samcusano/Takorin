@@ -145,9 +145,10 @@ export default function BatchIntelligence() {
   const [selectedId, setSelectedId] = useState(batches[0].id)
   const [wsTab, setWsTab] = useState('batch')
   const batch = batches.find(b => b.id === selectedId) ?? batches[0]
-  const pct = Math.round((batch.daysElapsed / batch.totalDays) * 100)
-  const scoreColor = batch.confidence.current >= 85 ? 'text-ok' : batch.confidence.current >= 70 ? 'text-warn' : 'text-danger'
-  const gradeColor = batch.grade === 'Premium' ? 'text-ochre' : 'text-muted'
+  const confidence = batch?.confidence?.current ?? null
+  const pct = batch?.totalDays ? Math.round((batch.daysElapsed / batch.totalDays) * 100) : 0
+  const scoreColor = confidence == null ? 'text-ghost' : confidence >= 85 ? 'text-ok' : confidence >= 70 ? 'text-warn' : 'text-danger'
+  const gradeColor = batch?.grade === 'Premium' ? 'text-ochre' : 'text-muted'
 
   return (
     <div className="flex h-full overflow-hidden content-reveal">
@@ -166,7 +167,7 @@ export default function BatchIntelligence() {
         <div className="flex-1 overflow-y-auto divide-y divide-rule2">
           {batches.map(b => {
             const isSelected = b.id === selectedId
-            const conf = b.confidence.current
+            const conf = b.confidence?.current ?? null
             const confColor = conf >= 85 ? 'text-ok' : conf >= 70 ? 'text-warn' : 'text-danger'
             const isComplete = b.stage === 'complete'
             const pctDone = Math.round((b.daysElapsed / b.totalDays) * 100)
@@ -229,7 +230,7 @@ export default function BatchIntelligence() {
           </div>
           <div className="flex items-center gap-6 flex-shrink-0">
             <div className="text-right">
-              <div className={`font-display font-bold display-num text-[40px] leading-none tabular-nums ${scoreColor}`}>{batch.confidence.current}%</div>
+              <div className={`font-display font-bold display-num text-[40px] leading-none tabular-nums ${scoreColor}`}>{confidence != null ? `${confidence}%` : '—'}</div>
               <div className="font-body text-ghost text-[9px] uppercase tracking-widest mt-0.5">outcome confidence</div>
             </div>
             <div className="text-right border-l border-rule2 pl-6">
@@ -286,10 +287,10 @@ export default function BatchIntelligence() {
               </div>
               <div className="flex items-center gap-1 font-body text-ok text-[10px]">
                 <TrendingUp size={11} strokeWidth={2} />
-                {batch.confidence.trend !== 'complete' ? `Trending ${batch.confidence.trend}` : 'Complete'}
+                {batch.confidence?.trend != null ? (batch.confidence.trend !== 'complete' ? `Trending ${batch.confidence.trend}` : 'Complete') : '—'}
               </div>
             </div>
-            <ConfidenceChart trajectory={batch.confidence.trajectory} forecast={batch.confidence.forecast} />
+            <ConfidenceChart trajectory={batch.confidence?.trajectory ?? []} forecast={batch.confidence?.forecast ?? []} />
           </div>
 
           {/* Two columns: signals + quality prediction */}

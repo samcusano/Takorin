@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { Flag, ShieldCheck, Clock, Check, Lock, AlertTriangle, Activity, CheckCircle2, Calendar, TrendingDown } from 'lucide-react'
-import { operatorContextData, absenceData, certProjections, fatigueData } from '../data'
+import { Flag, ShieldCheck, Check, Lock, AlertTriangle, Activity, CheckCircle2, WifiOff, Brain } from 'lucide-react'
+import { operatorContextData, fatigueData } from '../data'
+import { integrationSummary } from '../data/integrations'
 import { useAppState } from '../context/AppState'
 import { SecHd, Urg, PersonAvatar, Btn, Modal } from '../components/UI'
 
@@ -46,6 +47,31 @@ const TRAINING_PATHWAY = {
 const ROLE_TO_OPERATOR = {
  'operator-reyes':   'C. Reyes',
  'operator-okonkwo': 'P. Okonkwo',
+}
+
+// Tasks linked to AI interventions — operator confirmation closes the causal chain
+const LINKED_TASKS = {
+ 'C. Reyes': [
+  {
+   id: 'lt-cr-01',
+   label: 'Post-hold confirmation: log benzaldehyde reading at Vessel F-047',
+   interventionId: 'INT-2026-047-01',
+   interventionLabel: 'QualityGuard · Micro-hold',
+   done: true,
+   confirmedAt: '09:22',
+  },
+ ],
+ 'P. Okonkwo': [
+  {
+   id: 'lt-po-01',
+   label: 'CAPA-2604-006: assemble and submit evidence package',
+   interventionId: 'INT-2026-capa-01',
+   interventionLabel: 'CAPAEngine · Escalation',
+   done: true,
+   confirmedAt: '14:30',
+  },
+ ],
+ 'F. Adeyemi': [],
 }
 
 // ── Data commitment modal ─────────────────────────────────────────────────────
@@ -326,22 +352,38 @@ function MonitoringSurface({ ctx, entries, onLog }) {
 
 // ── Task Section — always below dominant surface ───────────────────────────────
 
-function TaskSection({ selected, tasks, flags, nearMisses }) {
- const pendingCount = tasks.filter(t => !t.done).length
+function TaskSection({ selected, tasks, linkedTasks, flags, nearMisses, onLinkedTaskConfirm }) {
+ const allTasks = [...tasks, ...linkedTasks]
+ const pendingCount = allTasks.filter(t => !t.done).length
  return (
   <>
-   <SecHd tag="Today's tasks" title={`Assigned to ${selected} — April 16`}
-    badge={tasks.length > 0 ? <Urg level={pendingCount > 0 ? 'warn' : 'ok'}>{pendingCount} pending</Urg> : null} />
-   {tasks.length === 0 ? (
-    <div className="px-5 py-4 font-body text-ghost text-[12px]">No tasks yet — tasks assigned by your supervisor in ShiftIQ will appear here.</div>
-   ) : tasks.map((t, i) => (
-    <div key={i} className={`flex items-center gap-3 px-5 py-4 border-b border-rule2 last:border-b-0 ${t.done ? 'opacity-50' : ''}`}>
-     <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 ${t.done ? 'bg-ok' : 'border-2 border-rule2'}`}>
+   <SecHd tag="Today's tasks" title={`${selected.split(' ')[1] || selected} · April 16`}
+    badge={allTasks.length > 0 ? <Urg level={pendingCount > 0 ? 'warn' : 'ok'}>{pendingCount} pending</Urg> : null} />
+   {allTasks.length === 0 ? (
+    <div className="px-5 py-4 font-body text-ghost text-[12px]">No tasks yet — tasks assigned by your supervisor appear here.</div>
+   ) : allTasks.map((t, i) => (
+    <div key={t.id ?? i} className={`flex items-start gap-3 px-5 py-3.5 border-b border-rule2 last:border-b-0 ${t.done ? 'opacity-60' : ''}`}>
+     <button type="button"
+      disabled={t.done || !t.interventionId}
+      onClick={() => t.interventionId && !t.done && onLinkedTaskConfirm(t)}
+      className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 transition-colors ${
+       t.done ? 'bg-ok cursor-default' : t.interventionId ? 'border-2 border-ochre hover:bg-ochre/10 cursor-pointer' : 'border-2 border-rule2 cursor-default'
+      }`}>
       {t.done && <Check size={11} strokeWidth={2.5} className="text-white" />}
-     </div>
-     <div className="flex-1">
-      <div className={`font-body font-medium text-[13px] ${t.done ? 'line-through text-ghost' : 'text-ink'}`}>{t.label}</div>
-      {t.dueTime && <div className="font-body text-ghost text-[10px]">Due {t.dueTime}</div>}
+     </button>
+     <div className="flex-1 min-w-0">
+      <div className={`font-body font-medium text-[12px] leading-snug ${t.done ? 'line-through text-ghost' : 'text-ink'}`}>{t.label}</div>
+      <div className="flex items-center gap-2 mt-0.5">
+       {t.dueTime && <span className="font-body text-ghost text-[9px]">Due {t.dueTime}</span>}
+       {t.interventionId && (
+        <span className="flex items-center gap-0.5 font-body text-[9px] text-ochre">
+         <Brain size={8} strokeWidth={2} />{t.interventionLabel}
+        </span>
+       )}
+       {t.done && t.confirmedAt && (
+        <span className="font-body text-ok text-[9px]">Confirmed {t.confirmedAt}</span>
+       )}
+      </div>
      </div>
     </div>
    ))}
@@ -380,199 +422,20 @@ function TaskSection({ selected, tasks, flags, nearMisses }) {
  )
 }
 
-// ── Training panel (right rail) — stable shell ────────────────────────────────
-
-function TrainingPanel({ selected, op }) {
- const pathway = TRAINING_PATHWAY[selected]
- if (!pathway) return null
- const done  = pathway.modules.filter(m => m.status === 'complete').length
- const total = pathway.modules.length
- return (
-  <div className="hidden lg:flex flex-col w-[280px] flex-shrink-0 border-l border-rule2 overflow-y-auto bg-stone2">
-   <div className="px-4 py-4 border-b border-rule2 bg-stone">
-    <div className="font-body text-ghost text-[10px] mb-0.5">Your path to</div>
-    <div className="font-display font-bold text-ink text-[15px]">{pathway.nextLevel}</div>
-    <div className="mt-3">
-     <div className="h-2 bg-rule2 mb-1.5 rounded-full overflow-hidden">
-      <div className={`h-full rounded-full transition-all ${op?.certColor || 'bg-warn'}`} style={{ width: `${op?.certPct || 0}%` }} />
-     </div>
-     <div className="flex items-baseline justify-between">
-      <span className={`display-num text-2xl font-bold ${op?.certText || 'text-warn'}`}>{op?.certPct}%</span>
-      <span className="font-body text-ghost text-[10px]">{done} of {total} modules</span>
-     </div>
-    </div>
-   </div>
-   <div className="px-4 py-3 border-b border-rule2 bg-stone flex items-center gap-2">
-    <Clock size={12} strokeWidth={2} className="text-muted flex-shrink-0" />
-    <div>
-     <div className="font-body text-ghost text-[10px]">Next assessment window</div>
-     <div className="font-body font-medium text-ink text-[12px]">{pathway.assessmentWindow}</div>
-    </div>
-   </div>
-   <div className="px-4 pt-3 pb-1 font-body text-ghost text-[10px] uppercase tracking-widest border-b border-rule2">What you need to do</div>
-   {pathway.modules.map((mod, i) => (
-    <div key={i} className={`flex items-start gap-3 px-4 py-3 border-b border-rule2 last:border-b-0 bg-stone ${mod.status === 'locked' ? 'opacity-40' : ''}`}>
-     <div className={`w-5 h-5 rounded-full flex-shrink-0 flex items-center justify-center mt-0.5 ${
-      mod.status === 'complete'    ? 'bg-ok'                    :
-      mod.status === 'in-progress' ? 'border-2 border-warn'     :
-                                     'border-2 border-rule2'
-     }`}>
-      {mod.status === 'complete'    && <Check size={11} strokeWidth={2.5} className="text-white" />}
-      {mod.status === 'in-progress' && <div className="w-1.5 h-1.5 rounded-full bg-warn" />}
-      {mod.status === 'locked'      && <Lock size={9} strokeWidth={2} className="text-ghost" />}
-     </div>
-     <div className="flex-1 min-w-0">
-      <div className={`font-body text-[12px] leading-snug ${
-       mod.status === 'complete' ? 'text-ghost line-through' : mod.status === 'locked' ? 'text-ghost' : 'text-ink font-medium'
-      }`}>{mod.label}</div>
-      <div className="font-body text-ghost text-[10px] mt-0.5">{mod.hours}h</div>
-      {mod.status === 'locked' && mod.lockedReason && (
-       <div className="font-body text-ghost text-[10px] mt-0.5 italic">{mod.lockedReason}</div>
-      )}
-     </div>
-    </div>
-   ))}
-   <div className="px-4 py-3 border-t border-rule2 mt-auto bg-stone">
-    <div className="font-body text-ghost text-[10px] mb-0.5">Current certification</div>
-    <div className="font-body font-medium text-ink text-[12px]">{pathway.currentLevel}</div>
-    {selected === 'F. Adeyemi' && (
-     <div className="font-body text-warn text-[10px] mt-1 flex items-center gap-1">
-      <Clock size={9} strokeWidth={2} />
-      Expires in 35 days — renewal scheduled
-     </div>
-    )}
-   </div>
-  </div>
- )
-}
-
-// ── Roster Overview (director only) ──────────────────────────────────────────
-
-function RosterOverview() {
- return (
-  <div className="flex-1 overflow-y-auto bg-stone p-5 space-y-5">
-
-   {/* Absence alerts */}
-   {absenceData.today.length > 0 && (
-    <div className="space-y-2">
-     <h2 className="font-body text-ghost text-[10px] uppercase tracking-widest">Today's absences</h2>
-     {absenceData.today.map((a, i) => (
-      <div key={i} className="flex items-start gap-3 px-4 py-3 bg-danger/5 border border-danger/30 rounded-sm">
-       <AlertTriangle size={13} className="text-danger mt-0.5 flex-shrink-0" />
-       <div className="flex-1">
-        <div className="font-body text-stone font-medium text-[12px]">{a.operator} — {a.role}</div>
-        <div className="font-body text-ghost text-[10px] mt-0.5">{a.line} · {a.shift} shift · Called out {a.calloutTime}</div>
-        {a.backfill
-         ? <div className="font-body text-ok text-[10px] mt-0.5">Covered by {a.backfill}</div>
-         : <div className="font-body text-danger text-[10px] mt-0.5 font-medium">{a.note}</div>}
-       </div>
-      </div>
-     ))}
-    </div>
-   )}
-
-   {/* Coverage gaps */}
-   {absenceData.coverageGaps.length > 0 && (
-    <div className="space-y-2">
-     <h2 className="font-body text-ghost text-[10px] uppercase tracking-widest">Coverage gaps</h2>
-     <div className="bg-sidebar border border-sidebar-border rounded-sm overflow-hidden">
-      {absenceData.coverageGaps.map((gap, i) => (
-       <div key={i} className={`flex items-center gap-3 px-4 py-2.5 ${i < absenceData.coverageGaps.length - 1 ? 'border-b border-sidebar-border' : ''}`}>
-        <span className={`font-body text-[10px] px-1.5 py-0.5 font-medium ${gap.status === 'danger' ? 'text-danger bg-danger/10' : 'text-warn bg-warn/10'}`}>
-         {gap.status === 'danger' ? 'Critical' : 'Gap'}
-        </span>
-        <span className="font-body text-stone text-[12px] flex-1">{gap.cert} — {gap.line} {gap.shift}</span>
-        <span className="font-body text-ghost text-[10px]">{gap.available}/{gap.required} available</span>
-        <span className="font-body text-ghost text-[10px]">{gap.date}</span>
-       </div>
-      ))}
-     </div>
-    </div>
-   )}
-
-   {/* Fatigue status */}
-   <div className="space-y-2">
-    <h2 className="font-body text-ghost text-[10px] uppercase tracking-widest">Fatigue & hours</h2>
-    <div className="bg-sidebar border border-sidebar-border rounded-sm overflow-hidden">
-     {fatigueData.operators.map((op, i) => (
-      <div key={i} className={`flex items-center gap-3 px-4 py-2.5 ${i < fatigueData.operators.length - 1 ? 'border-b border-sidebar-border' : ''}`}>
-       <PersonAvatar name={op.name} size={24} />
-       <span className="font-body text-stone text-[12px] flex-1">{op.name}</span>
-       <span className="font-body text-ghost text-[10px]">{op.hoursThisWeek}h this week</span>
-       <span className="font-body text-ghost text-[10px]">{op.consecutiveShifts} consecutive</span>
-       <span className={`font-body text-[10px] px-1.5 py-0.5 ${op.fatigueTone === 'warn' ? 'text-warn bg-warn/10' : op.fatigueTone === 'danger' ? 'text-danger bg-danger/10' : op.fatigueTone === 'muted' ? 'text-ghost bg-sidebar-3' : 'text-ok bg-ok/10'}`}>
-        {op.fatigueTone === 'warn' ? 'Watch' : op.fatigueTone === 'danger' ? 'At limit' : op.fatigueTone === 'muted' ? 'Absent' : 'OK'}
-       </span>
-      </div>
-     ))}
-    </div>
-   </div>
-
-   {/* 90-day cert projections */}
-   <div className="space-y-2">
-    <div className="flex items-center justify-between">
-     <h2 className="font-body text-ghost text-[10px] uppercase tracking-widest">Cert expiries — next 90 days</h2>
-     <div className="flex items-center gap-3 text-[10px] font-body text-ghost">
-      <span className="text-danger">{certProjections.riskSummary.dangerCount} expiring now</span>
-      <span className="text-warn">{certProjections.riskSummary.warnCount} within 60d</span>
-      <span className="text-danger font-medium">{certProjections.riskSummary.noReplacementCount} no backup</span>
-     </div>
-    </div>
-    <div className="bg-sidebar border border-sidebar-border rounded-sm overflow-hidden">
-     {certProjections.expirations.map((exp, i) => (
-      <div key={i} className={`flex items-center gap-3 px-4 py-2.5 ${i < certProjections.expirations.length - 1 ? 'border-b border-sidebar-border' : ''}`}>
-       <span className={`w-2 h-2 rounded-full flex-shrink-0 ${exp.tone === 'danger' ? 'bg-danger' : exp.tone === 'warn' ? 'bg-warn' : 'bg-ok'}`} />
-       <PersonAvatar name={exp.operator} size={20} />
-       <div className="flex-1 min-w-0">
-        <span className="font-body text-stone text-[12px] font-medium">{exp.operator}</span>
-        <span className="font-body text-ghost text-[10px] ml-2">{exp.cert}</span>
-       </div>
-       <span className={`font-body text-[10px] ${exp.tone === 'danger' ? 'text-danger' : exp.tone === 'warn' ? 'text-warn' : 'text-ghost'}`}>
-        {exp.daysRemaining === 0 ? 'Expired today' : `${exp.daysRemaining}d`}
-       </span>
-       {!exp.replacementReady
-        ? <span className="font-body text-[9px] text-danger bg-danger/10 px-1.5 py-0.5">No backup</span>
-        : <span className="font-body text-[9px] text-ok bg-ok/10 px-1.5 py-0.5">Backup ready</span>}
-      </div>
-     ))}
-    </div>
-   </div>
-
-   {/* Upcoming absences */}
-   <div className="space-y-2">
-    <h2 className="font-body text-ghost text-[10px] uppercase tracking-widest">Upcoming absences</h2>
-    <div className="bg-sidebar border border-sidebar-border rounded-sm overflow-hidden">
-     {absenceData.upcoming.map((a, i) => (
-      <div key={i} className={`flex items-center gap-3 px-4 py-2.5 ${i < absenceData.upcoming.length - 1 ? 'border-b border-sidebar-border' : ''}`}>
-       <span className={`font-body text-[10px] px-1.5 py-0.5 font-medium ${a.impact === 'ok' ? 'text-ok bg-ok/10' : a.impact === 'warn' ? 'text-warn bg-warn/10' : 'text-ghost bg-sidebar-3'}`}>
-        {a.type === 'planned' ? 'Planned' : 'Unplanned'}
-       </span>
-       <span className="font-body text-stone text-[12px] flex-1">{a.operator} — {a.line} {a.shift}</span>
-       {a.backfill
-        ? <span className="font-body text-ok text-[10px]">→ {a.backfill}</span>
-        : <span className="font-body text-warn text-[10px]">No backfill</span>}
-       <span className="font-body text-ghost text-[10px]">{a.date}</span>
-      </div>
-     ))}
-    </div>
-   </div>
-
-  </div>
- )
-}
+// Training pathway and Roster Overview have been removed from the operational view.
+// Training belongs in a between-shift development surface.
+// Roster/absence/fatigue belongs in ShiftIQ supervisor context.
 
 // ── Main ──────────────────────────────────────────────────────────────────────
 
 export default function OperatorView({ role }) {
  const isOperatorRole = role === 'operator-reyes' || role === 'operator-okonkwo'
  const [directorSelected, setDirectorSelected] = useState('C. Reyes')
- const [directorTab, setDirectorTab] = useState('operator')
  const [supervisorCalled, setSupervisorCalled] = useState(false)
- // When in operator mode, always derive from role prop (not state) so switching
- // roles via the user dropdown immediately shows the correct operator.
+ const [linkedTaskState, setLinkedTaskState] = useState({}) // local overrides for linked task completion
  const selected = isOperatorRole ? (ROLE_TO_OPERATOR[role] ?? 'C. Reyes') : directorSelected
  const [procedureCompletions, setProcedureCompletions] = useState({})
- const [tempLogEntries, setTempLogEntries]     = useState({})
+ const [tempLogEntries, setTempLogEntries] = useState({})
 
  const {
   taskAssignments, flaggedItems, nearMisses,
@@ -586,8 +449,17 @@ export default function OperatorView({ role }) {
  const flags = Object.entries(flaggedItems).filter(([, f]) => f).map(([key, f]) => ({ key, ...f }))
  const nms   = nearMisses.filter(n => n.station)
 
- const myCompletions  = procedureCompletions[selected] || []
- const myTempEntries  = tempLogEntries[selected] || []
+ // Apply any local state overrides to linked tasks
+ const linkedTasks = (LINKED_TASKS[selected] || []).map(t => ({
+  ...t,
+  ...(linkedTaskState[t.id] || {}),
+ }))
+
+ const myCompletions = procedureCompletions[selected] || []
+ const myTempEntries = tempLogEntries[selected] || []
+
+ const staleConnectors = Math.max(0, integrationSummary.total - integrationSummary.active - 13) // approx stale
+ const trustDegraded = integrationSummary.active < integrationSummary.total * 0.7
 
  const handleStepComplete = (stepId) => {
   setProcedureCompletions(prev => ({
@@ -611,140 +483,144 @@ export default function OperatorView({ role }) {
   setSupervisorCalled(true)
  }
 
+ const handleLinkedTaskConfirm = (task) => {
+  const now  = new Date()
+  const time = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`
+  setLinkedTaskState(prev => ({ ...prev, [task.id]: { done: true, confirmedAt: time } }))
+  logActivity({
+   actor: selected,
+   action: `Intervention outcome confirmed: ${task.label}`,
+   item: task.interventionId,
+   type: 'intervention-confirmation',
+  })
+ }
+
  return (
   <>
-  {!dataCommitted && (
+  {/* DataCommitmentOverlay — only for real operator sessions, not director simulation */}
+  {isOperatorRole && !dataCommitted && (
    <DataCommitmentOverlay onAcknowledge={() => setOperatorAcknowledgments(p => ({ ...p, dataCommitment: true }))} />
   )}
   <div className="flex flex-col h-full overflow-hidden content-reveal">
 
-   {/* Operator selector — director only / hero bar for operators */}
-   {!isOperatorRole ? (
+   {/* ── Director: simulation notice + operator selector ──────── */}
+   {!isOperatorRole && (
     <>
-    {/* Director tab switcher */}
-    <div className="flex items-center gap-1 px-4 py-2 border-b border-rule2 bg-stone2 flex-shrink-0">
-     {[{id:'operator',label:'Operator Detail'},{id:'roster',label:'Roster Overview'}].map(t => (
-      <button key={t.id} type="button"
-       onClick={() => setDirectorTab(t.id)}
-       className={`font-body text-[11px] px-3 py-1 border transition-colors ${
-        directorTab === t.id ? 'bg-ochre/10 border-ochre/40 text-ochre' : 'bg-transparent border-transparent text-stone/50 hover:text-stone/80'
-       }`}
-      >
-       {t.label}
-       {t.id === 'roster' && absenceData.today.length > 0 && (
-        <span className="ml-1 font-body text-[9px] bg-danger/20 text-danger px-1 py-0.5">{absenceData.today.length}</span>
-       )}
-      </button>
-     ))}
+    <div className="flex-shrink-0 flex items-center gap-3 px-4 py-2 border-b border-rule2 bg-stone2">
+     <span className="font-body text-ghost text-[9px] uppercase tracking-widest">Station simulation</span>
+     <span className="font-body text-muted text-[9px]">—</span>
+     <span className="font-body text-ghost text-[9px]">Viewing {selected}'s station as director. Not a live session.</span>
     </div>
-    {directorTab === 'roster' ? <RosterOverview /> : (
-    <div className="flex border-b border-rule2 bg-stone2 flex-shrink-0">
+    <div className="flex border-b border-rule2 bg-stone flex-shrink-0">
      {OPERATORS.map(o => (
       <button type="button" key={o.name} aria-pressed={selected === o.name}
        onClick={() => { setDirectorSelected(o.name); setSupervisorCalled(false) }}
-       className={`flex items-center gap-2.5 px-4 py-2.5 border-r border-rule2 border-b-2 transition-colors ${
-        selected === o.name ? 'border-b-ochre bg-stone' : 'border-b-transparent hover:bg-stone3'
+       className={`flex items-center gap-2 px-4 py-2.5 border-r border-rule2 border-b-2 transition-colors ${
+        selected === o.name ? 'border-b-ochre bg-stone2' : 'border-b-transparent hover:bg-stone2/50'
        }`}>
-       <PersonAvatar name={o.name} size={28} />
+       <PersonAvatar name={o.name} size={22} />
        <div className="text-left">
-        <div className="font-body font-medium text-ink text-[13px]">{o.name}</div>
-        <div className="font-body text-ghost text-[11px]">{o.role.split('·')[0].trim()}</div>
+        <div className="font-body font-medium text-ink text-[11px]">{o.name}</div>
+        <div className="font-body text-ghost text-[9px]">{o.station}</div>
        </div>
       </button>
      ))}
     </div>
-    )}
     </>
-   ) : (
-    <div className="flex items-center gap-3 px-4 py-2.5 border-b border-rule2 bg-stone2 flex-shrink-0">
-     <PersonAvatar name={selected} size={28} />
+   )}
+
+   {/* ── Operator: station-first hero bar ────────────────────── */}
+   {isOperatorRole && (
+    <div className="flex-shrink-0 flex items-center justify-between px-5 py-3 border-b border-rule2 bg-stone2">
      <div>
-      <div className="font-body font-medium text-ink text-[13px]">{selected}</div>
-      <div className="font-body text-ghost text-[11px]">{op?.station}</div>
+      <div className="font-display font-bold text-ink text-[16px] leading-none">{ctx?.station || op?.station}</div>
+      <div className="font-body text-ghost text-[10px] mt-0.5">Line 4 · AM shift · {selected}</div>
      </div>
+     {trustDegraded && (
+      <div className="flex items-center gap-1.5 px-2 py-1 border border-warn/30 bg-warn/[0.04]">
+       <WifiOff size={9} strokeWidth={2} className="text-warn" />
+       <span className="font-body text-warn text-[9px]">Some signals stale</span>
+      </div>
+     )}
     </div>
    )}
 
-   {/* Operator detail — hidden when director is viewing roster */}
-   {(!isOperatorRole && directorTab === 'roster') ? null : (<>
-
-   {/* Layer 1: Operational State Header */}
+   {/* ── Operational State Header ─────────────────────────────── */}
    <OperationalStateHeader ctx={ctx} />
 
-   {/* Primary Directive */}
+   {/* ── Primary Directive ────────────────────────────────────── */}
    <PrimaryDirective ctx={ctx} />
 
-   {/* Main content */}
-   <div className="flex flex-1 min-h-0 overflow-hidden">
-    <div className="flex-1 overflow-y-auto border-r border-rule2">
+   {/* ── Main content ─────────────────────────────────────────── */}
+   <div className="flex-1 overflow-y-auto">
 
-     {/* Layer 2: Dominant surface */}
-     {ctx?.dominantSurface === 'procedural' && (
-      <ProceduralSurface
-       ctx={ctx}
-       completions={myCompletions}
-       onComplete={handleStepComplete}
-       onRequestSignOff={handleRequestSignOff}
-      />
-     )}
-     {ctx?.dominantSurface === 'monitoring' && (
-      <MonitoringSurface
-       ctx={ctx}
-       entries={myTempEntries}
-       onLog={handleTempLog}
-      />
-     )}
+    {/* Dominant surface */}
+    {ctx?.dominantSurface === 'procedural' && (
+     <ProceduralSurface
+      ctx={ctx}
+      completions={myCompletions}
+      onComplete={handleStepComplete}
+      onRequestSignOff={handleRequestSignOff}
+     />
+    )}
+    {ctx?.dominantSurface === 'monitoring' && (
+     <MonitoringSurface
+      ctx={ctx}
+      entries={myTempEntries}
+      onLog={handleTempLog}
+     />
+    )}
 
-     {/* Tasks — always below dominant surface */}
-     <div className="border-t border-rule2">
-      <TaskSection selected={selected} tasks={tasks} flags={flags} nearMisses={nms} />
-     </div>
-
-     {/* My data — visible to operator, scheduling use only */}
-     {isOperatorRole && (() => {
-      const myFatigue = fatigueData.operators.find(o => o.name.includes(selected.split('.')[1]?.trim()) || selected.includes(o.name.split('.')[0]))
-      if (!myFatigue) return null
-      return (
-       <div className="border-t border-rule2 px-4 py-3">
-        <div className="font-body text-ghost text-[10px] uppercase tracking-widest mb-2">My scheduling data</div>
-        <p className="font-body text-ghost text-[10px] mb-2">Used for shift scheduling only — not part of your performance review.</p>
-        <div className="grid grid-cols-3 gap-2">
-         {[
-          { label: 'Hours this week', value: `${myFatigue.hoursThisWeek}h` },
-          { label: 'Consecutive shifts', value: String(myFatigue.consecutiveShifts) },
-          { label: 'Last rest', value: myFatigue.lastRestPeriod ? `${myFatigue.lastRestPeriod}h ago` : '—' },
-         ].map(({ label, value }) => (
-          <div key={label} className="bg-stone2 px-3 py-2 border border-rule2">
-           <div className="display-num text-[18px] text-ink">{value}</div>
-           <div className="font-body text-ghost text-[9px] mt-0.5">{label}</div>
-          </div>
-         ))}
-        </div>
-        {myFatigue.note && (
-         <p className="font-body text-warn text-[10px] mt-2">{myFatigue.note}</p>
-        )}
-       </div>
-      )
-     })()}
+    {/* Tasks — always below dominant surface */}
+    <div className="border-t border-rule2">
+     <TaskSection
+      selected={selected}
+      tasks={tasks}
+      linkedTasks={linkedTasks}
+      flags={flags}
+      nearMisses={nms}
+      onLinkedTaskConfirm={handleLinkedTaskConfirm}
+     />
     </div>
 
-    {/* Right rail: training pathway — stable shell */}
-    <TrainingPanel selected={selected} op={op} />
+    {/* My scheduling data — operator only, transparent and bounded */}
+    {isOperatorRole && (() => {
+     const myFatigue = fatigueData.operators.find(o =>
+      o.name.includes(selected.split('.')[1]?.trim()) || selected.includes(o.name.split('.')[0])
+     )
+     if (!myFatigue) return null
+     return (
+      <div className="border-t border-rule2 px-5 py-3">
+       <div className="font-body text-ghost text-[9px] uppercase tracking-widest mb-2">My scheduling data</div>
+       <p className="font-body text-ghost text-[9px] mb-2">Shift scheduling only — not your performance review.</p>
+       <div className="grid grid-cols-3 gap-2">
+        {[
+         { label: 'Hours this week', value: `${myFatigue.hoursThisWeek}h` },
+         { label: 'Consecutive shifts', value: String(myFatigue.consecutiveShifts) },
+         { label: 'Last rest', value: myFatigue.lastRestPeriod ? `${myFatigue.lastRestPeriod}h ago` : '—' },
+        ].map(({ label, value }) => (
+         <div key={label} className="bg-stone2 px-3 py-2 border border-rule2">
+          <div className="display-num text-[18px] text-ink">{value}</div>
+          <div className="font-body text-ghost text-[9px] mt-0.5">{label}</div>
+         </div>
+        ))}
+       </div>
+       {myFatigue.note && <p className="font-body text-warn text-[9px] mt-2">{myFatigue.note}</p>}
+      </div>
+     )
+    })()}
    </div>
 
-   {/* FAB — stable, always same position and behavior */}
-   <button
-    type="button"
+   {/* FAB */}
+   <button type="button"
     onClick={() => {
      if (!supervisorCalled) {
       setSupervisorCalled(true)
-      logActivity({ actor: selected, action: 'Requested supervisor assistance', item: op?.station || 'Station', type: 'escalation' })
+      logActivity({ actor: selected, action: 'Requested supervisor assistance', item: ctx?.station || 'Station', type: 'escalation' })
      }
     }}
-    className={`fixed bottom-6 right-6 z-20 flex items-center gap-2 px-4 py-2.5 min-h-[40px] font-body text-[12px] font-medium rounded-btn transition-colors duration-100 ${
-     supervisorCalled
-      ? 'bg-ok text-white shadow-raise'
-      : 'bg-danger text-white shadow-raise hover:bg-danger/90'
+    className={`fixed bottom-6 right-6 z-20 flex items-center gap-2 px-4 py-2.5 min-h-[40px] font-body text-[12px] font-medium rounded-btn transition-colors duration-100 shadow-raise ${
+     supervisorCalled ? 'bg-ok text-white' : 'bg-danger text-white hover:bg-danger/90'
     }`}
     aria-label="Request supervisor assistance"
    >
@@ -754,7 +630,6 @@ export default function OperatorView({ role }) {
     }
    </button>
 
-  </>)}
   </div>
   </>
  )
