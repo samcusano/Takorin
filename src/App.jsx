@@ -4,6 +4,7 @@ import Sidebar from './components/Sidebar'
 import ErrorBoundary from './components/ErrorBoundary'
 import { useAppState } from './context/AppState'
 
+const PlantOverview    = lazy(() => import('./screens/PlantOverview'))
 const CommandSurface   = lazy(() => import('./screens/CommandSurface'))
 const ShiftIQ          = lazy(() => import('./screens/ShiftIQ'))
 const HandoffIQ        = lazy(() => import('./screens/HandoffIQ'))
@@ -17,6 +18,7 @@ const NotificationCenter = lazy(() => import('./screens/NotificationCenter'))
 const RobotFleet       = lazy(() => import('./screens/RobotFleet'))
 const ResourceAllocation = lazy(() => import('./screens/ResourceAllocation'))
 const AgentControl     = lazy(() => import('./screens/AgentControl'))
+const DesignLab        = lazy(() => import('./screens/DesignLab'))
 function ScreenLoader() {
  return <div className="flex-1 flex items-center justify-center font-body text-ghost text-[11px]">Loading…</div>
 }
@@ -54,8 +56,8 @@ export default function App() {
  <Suspense fallback={<ScreenLoader />}>
  <Routes>
  <Route path="/" element={<Navigate to="/plant" replace />} />
- <Route path="/plant" element={<ErrorBoundary><CommandSurface /></ErrorBoundary>} />
- <Route path="/command" element={<Navigate to="/plant" replace />} />
+ <Route path="/plant" element={<ErrorBoundary><PlantOverview /></ErrorBoundary>} />
+ <Route path="/command" element={<ErrorBoundary><CommandSurface /></ErrorBoundary>} />
  <Route path="/shift" element={<ErrorBoundary><ShiftIQ /></ErrorBoundary>} />
  <Route path="/handoff" element={<ErrorBoundary><HandoffIQ /></ErrorBoundary>} />
  <Route path="/supplier" element={<ErrorBoundary><SupplierIQ /></ErrorBoundary>} />
@@ -69,6 +71,7 @@ export default function App() {
  <Route path="/robots" element={<ErrorBoundary><RobotFleet /></ErrorBoundary>} />
  <Route path="/allocation" element={<ErrorBoundary><ResourceAllocation /></ErrorBoundary>} />
  <Route path="/agents" element={<ErrorBoundary><AgentControl /></ErrorBoundary>} />
+ <Route path="/design-lab" element={<ErrorBoundary><DesignLab /></ErrorBoundary>} />
  </Routes>
  </Suspense>
  </main>

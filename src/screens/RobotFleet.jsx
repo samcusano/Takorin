@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { AlertTriangle, Cpu } from 'lucide-react'
+import { AlertTriangle, Cpu, Gamepad2, Pause, Route, LifeBuoy } from 'lucide-react'
 import { SlidePanel } from '../components/UI'
 import { robotFleetData } from '../data'
 
@@ -435,33 +435,6 @@ function DiagPaneContents({ unit, ext, hs }) {
             )}
           </>
         )}
-        <div className="flex flex-wrap gap-2 mt-3">
-          {interventionStatus === 'active' && (
-            <button type="button" className="font-body text-[11px] px-3 py-1.5 bg-danger text-stone hover:bg-danger/90 transition-colors">
-              Take control
-            </button>
-          )}
-          {(interventionStatus === 'monitoring' || interventionStatus === 'recommended') && (
-            <>
-              <button type="button" className="font-body text-[11px] px-3 py-1.5 border border-warn text-warn hover:bg-warn/[0.06] transition-colors">
-                Take control
-              </button>
-              <button type="button" className="font-body text-[11px] px-3 py-1.5 border border-rule2 text-muted hover:text-ink hover:border-ghost transition-colors">
-                Pause task
-              </button>
-            </>
-          )}
-          {unit.status === 'online' && (
-            <button type="button" className="font-body text-[11px] px-3 py-1.5 border border-rule2 text-muted hover:text-ink hover:border-ghost transition-colors">
-              Reroute robot
-            </button>
-          )}
-          {rs && (
-            <button type="button" className="font-body text-[11px] px-3 py-1.5 border border-rule2 text-muted hover:text-ink hover:border-ghost transition-colors">
-              Deploy recovery
-            </button>
-          )}
-        </div>
       </div>
 
       {/* §5 — Dependency Awareness */}
@@ -593,21 +566,62 @@ export default function RobotFleet() {
       </div>
 
       {/* Diagnostic drawer — SlidePanel overlay, same pattern as View Specs / View COA */}
-      {selectedUnit && selectedExt && (
-        <SlidePanel
-          title={`${selectedUnit.id} — ${selectedUnit.name}`}
-          subtitle={`${selectedUnit.line} · ${selectedUnit.model}`}
-          icon={Cpu}
-          onClose={() => setSelectedId(null)}
-          maxWidth="440px"
-        >
-          <DiagPaneContents
-            unit={selectedUnit}
-            ext={selectedExt}
-            hs={selectedHs}
-          />
-        </SlidePanel>
-      )}
+      {selectedUnit && selectedExt && (() => {
+        const interventionStatus = selectedExt?.interventionStatus ?? 'none'
+        const rs = selectedExt?.resolutionStack
+        const isActive = interventionStatus === 'active'
+        const isMonitoring = interventionStatus === 'monitoring' || interventionStatus === 'recommended'
+        const footer = (
+          <div className="flex items-center gap-2 flex-wrap">
+            {isActive && (
+              <button type="button" className="flex items-center gap-1.5 font-body text-[11px] px-3 py-2 bg-danger text-stone hover:bg-danger/90 transition-colors">
+                <Gamepad2 size={13} strokeWidth={2} />
+                Take control
+              </button>
+            )}
+            {isMonitoring && (
+              <>
+                <button type="button" className="flex items-center gap-1.5 font-body text-[11px] px-3 py-2 border border-warn text-warn hover:bg-warn/[0.06] transition-colors">
+                  <Gamepad2 size={13} strokeWidth={2} />
+                  Take control
+                </button>
+                <button type="button" className="flex items-center gap-1.5 font-body text-[11px] px-3 py-2 border border-rule2 text-muted hover:text-ink hover:border-ghost transition-colors">
+                  <Pause size={13} strokeWidth={2} />
+                  Pause task
+                </button>
+              </>
+            )}
+            {selectedUnit.status === 'online' && (
+              <button type="button" className="flex items-center gap-1.5 font-body text-[11px] px-3 py-2 border border-rule2 text-muted hover:text-ink hover:border-ghost transition-colors">
+                <Route size={13} strokeWidth={2} />
+                Reroute robot
+              </button>
+            )}
+            {rs && (
+              <button type="button" className="flex items-center gap-1.5 font-body text-[11px] px-3 py-2 border border-rule2 text-muted hover:text-ink hover:border-ghost transition-colors">
+                <LifeBuoy size={13} strokeWidth={2} />
+                Deploy recovery
+              </button>
+            )}
+          </div>
+        )
+        return (
+          <SlidePanel
+            title={`${selectedUnit.id} — ${selectedUnit.name}`}
+            subtitle={`${selectedUnit.line} · ${selectedUnit.model}`}
+            icon={Cpu}
+            onClose={() => setSelectedId(null)}
+            maxWidth="440px"
+            footer={footer}
+          >
+            <DiagPaneContents
+              unit={selectedUnit}
+              ext={selectedExt}
+              hs={selectedHs}
+            />
+          </SlidePanel>
+        )
+      })()}
 
     </div>
   )

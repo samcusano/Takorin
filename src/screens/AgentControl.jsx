@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import {
   AlertTriangle, Truck, Users, Wrench, Handshake, Bell,
   ClipboardCheck, Shield, Database, ChevronDown, ChevronRight,
-  Timer, Zap, CheckCircle, XCircle, Square, CheckSquare, Check, Flag, Library,
+  Timer, CheckCircle, XCircle, Check, Flag, InspectionPanel,
 } from 'lucide-react'
 import { Btn, SlidePanel } from '../components/UI'
 import { agentConfigData, dataSourceHealth } from '../data'
@@ -175,15 +175,12 @@ function ApproveBtn({ isCompliance, onApprove }) {
   }, [count, isCompliance])
   return (
     <button type="button" onClick={ready ? onApprove : undefined} disabled={!ready}
-      title={ready ? 'Approve' : `Approve in ${count}s`}
-      className={`p-1.5 inline-flex items-center gap-0.5 transition-all ${
-        ready
-          ? 'border border-rule2 text-ok hover:border-ok hover:bg-ok/[0.06] cursor-pointer'
-          : 'text-muted cursor-not-allowed opacity-50'
+      aria-label={ready ? 'Approve' : `Approve (${count}s)`}
+      title={ready ? 'Approve' : `Approve (${count}s)`}
+      className={`inline-flex items-center justify-center w-7 h-7 rounded-full transition-all ${
+        ready ? 'bg-ink text-stone hover:bg-ink/90 cursor-pointer' : 'bg-stone3 text-muted cursor-not-allowed'
       }`}>
-      {ready
-        ? <Check size={14} strokeWidth={2.5} />
-        : <><Timer size={9} className="flex-shrink-0" /><span className="font-body text-[9px] tabular-nums">{count}</span></>}
+      {ready ? <Check size={13} strokeWidth={2} /> : <span className="font-body text-[9px] tabular-nums">{count}</span>}
     </button>
   )
 }
@@ -208,7 +205,7 @@ function EmergencyChip({ overrideWindowMin }) {
 
 // ─── Compact ledger row ───────────────────────────────────────────────────────
 
-function LedgerRow({ pa, agent, onInvestigate, onApprove, onOverrideRequest, selected, onToggleSelect, batchMode, inGroup = false }) {
+function LedgerRow({ pa, agent, onInvestigate, onApprove, onOverrideRequest, selected, onToggleSelect, inGroup = false }) {
   const [open, setOpen] = useState(false)
   const meta = pa._meta
   const cfg = CONSEQUENCE_CFG[meta.consequence]
@@ -218,7 +215,7 @@ function LedgerRow({ pa, agent, onInvestigate, onApprove, onOverrideRequest, sel
   if (pa._decided) {
     return (
       <div className={`flex items-center gap-3 px-4 py-2 border-b border-rule2 last:border-0 opacity-40 ${inGroup ? '' : `${cfg.borderW} ${cfg.border}`}`}>
-        {batchMode && <div className="w-3.5 flex-shrink-0" />}
+        <div className="w-3.5 flex-shrink-0" />
         <div className={`h-1.5 w-1.5 rounded-full flex-shrink-0 ${pa._decided === 'approved' ? 'bg-ok' : 'bg-ghost'}`} />
         <span className="font-body text-muted text-[11px] flex-1 truncate">{meta.verbFirst}</span>
         <span className={`font-body text-[10px] ${pa._decided === 'approved' ? 'text-ok' : 'text-ghost'}`}>
@@ -232,12 +229,14 @@ function LedgerRow({ pa, agent, onInvestigate, onApprove, onOverrideRequest, sel
     <div className={`border-b border-rule2 last:border-0 ${open ? cfg.bg : ''} ${inGroup ? '' : `border-l ${cfg.borderW} ${cfg.border}`}`}>
       {/* Main row */}
       <div className="flex items-center gap-2.5 px-4 py-2.5 hover:bg-stone2 transition-colors min-h-[44px]">
-        {/* Batch checkbox */}
-        {batchMode && (
-          <button type="button" onClick={() => onToggleSelect(pa._key)} className="flex-shrink-0 text-ghost hover:text-muted">
-            {selected ? <CheckSquare size={13} className="text-ochre" /> : <Square size={13} />}
-          </button>
-        )}
+        {/* Row checkbox */}
+        <input
+          type="checkbox"
+          checked={selected}
+          onChange={() => onToggleSelect(pa._key)}
+          className="w-3.5 h-3.5 cursor-pointer flex-shrink-0 accent-ochre"
+          aria-label={`Select action`}
+        />
 
         {/* Agent icon */}
         <Icon size={10} className="text-ghost flex-shrink-0" />
@@ -266,24 +265,27 @@ function LedgerRow({ pa, agent, onInvestigate, onApprove, onOverrideRequest, sel
         {pa.isEmergencyAutoAct && <EmergencyChip overrideWindowMin={pa.overrideWindowMin} />}
 
         {/* CTAs */}
-        <div className="flex items-center gap-1 flex-shrink-0" onClick={e => e.stopPropagation()}>
+        <div className="flex items-center gap-1.5 flex-shrink-0" onClick={e => e.stopPropagation()}>
           {pa.isEmergencyAutoAct ? (
-            <button type="button" onClick={() => onOverrideRequest(pa, agent)} title="Override"
-              className="p-1.5 border border-danger/40 text-danger hover:bg-danger/[0.06] transition-colors">
+            <button type="button" onClick={() => onOverrideRequest(pa, agent)}
+              aria-label="Override" title="Override"
+              className="inline-flex items-center justify-center w-7 h-7 rounded-full border border-danger/40 text-danger hover:bg-danger/[0.06] transition-colors">
               <Flag size={13} strokeWidth={2} />
             </button>
           ) : (
             <>
               <ApproveBtn isCompliance={isCompliance} onApprove={() => onApprove(pa._key)} />
-              <button type="button" onClick={() => onOverrideRequest(pa, agent)} title="Override"
-                className="p-1.5 border border-rule2 text-muted hover:text-ink hover:border-ghost transition-colors">
+              <button type="button" onClick={() => onOverrideRequest(pa, agent)}
+                aria-label="Override" title="Override"
+                className="inline-flex items-center justify-center w-7 h-7 rounded-full border border-rule2 text-muted hover:text-ink hover:border-ghost transition-colors">
                 <Flag size={13} strokeWidth={2} />
               </button>
             </>
           )}
-          <button type="button" onClick={() => onInvestigate(pa, agent)} title="Investigate"
-            className="p-1.5 border border-rule2 text-muted hover:text-ink hover:border-ghost transition-colors">
-            <Library size={13} />
+          <button type="button" onClick={() => onInvestigate(pa, agent)}
+            aria-label="Investigate" title="Investigate"
+            className="inline-flex items-center justify-center w-7 h-7 rounded-full border border-rule2 text-muted hover:text-ink hover:border-ghost transition-colors">
+            <InspectionPanel size={13} strokeWidth={2} />
           </button>
         </div>
 
@@ -362,7 +364,7 @@ function DependencyGroup({ groupId, rows, commonProps }) {
 
 // ─── Batch action bar ─────────────────────────────────────────────────────────
 
-function BatchBar({ count, onApproveAll, onDeferAll, onClear }) {
+function BatchBar({ count, onApproveAll, onDeferAll }) {
   return (
     <div className="flex-shrink-0 flex items-center gap-3 px-5 py-2.5 bg-ink border-t border-sidebar-border">
       <span className="font-body text-stone text-[11px]">{count} selected</span>
@@ -373,10 +375,6 @@ function BatchBar({ count, onApproveAll, onDeferAll, onClear }) {
       <button type="button" onClick={onDeferAll}
         className="font-body text-[11px] px-3 py-1.5 border border-stone/30 text-stone hover:bg-stone/10 transition-colors">
         Defer all low confidence
-      </button>
-      <button type="button" onClick={onClear}
-        className="ml-auto font-body text-ghost text-[10px] hover:text-stone transition-colors">
-        Clear selection
       </button>
     </div>
   )
@@ -660,6 +658,7 @@ export default function AgentControl() {
   const [pending, setPending]             = useState(allPending)
   const [selected, setSelected]           = useState(new Set())
   const [investigationDrawer, setInvestigationDrawer] = useState(null)
+  const selectAllRef = useRef(null)
   const [activityDrawer, setActivityDrawer]           = useState(false)
   const [overrideModal, setOverrideModal] = useState(null)
   const [disableModal, setDisableModal]   = useState(null)
@@ -704,19 +703,14 @@ export default function AgentControl() {
 
   const undecidedPending = pending.filter(p => !p._decided)
   const undecidedCount = undecidedPending.length
-  const someSelected = selected.size > 0
-  const allSelected = undecidedCount > 0 && undecidedPending.every(p => selected.has(p._key))
-  const batchMode = someSelected
-
-  const handleSelectAll = () => {
-    if (allSelected) {
-      setSelected(new Set())
-    } else {
-      setSelected(new Set(undecidedPending.map(p => p._key)))
-    }
-  }
-
   const confColor = (systemConfidence ?? 79) >= 85 ? 'text-ok' : (systemConfidence ?? 79) >= 65 ? 'text-warn' : 'text-danger'
+
+  useEffect(() => {
+    if (!selectAllRef.current) return
+    const allSelected = undecidedPending.length > 0 && undecidedPending.every(p => selected.has(p._key))
+    const someSelected = selected.size > 0 && !allSelected
+    selectAllRef.current.indeterminate = someSelected
+  }, [selected, undecidedPending])
   const staleSource = dataSourceHealth?.find(s => s.status === 'stale')
 
   // Build grouped render list — groups appear at position of first member
@@ -755,7 +749,6 @@ export default function AgentControl() {
     onOverrideRequest: (pa, agent) => setOverrideModal({ pa, agent }),
     selected: false,
     onToggleSelect: toggleSelect,
-    batchMode,
   }
 
   return (
@@ -797,35 +790,21 @@ export default function AgentControl() {
       <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
 
         {/* Queue header */}
-        <div className="flex-shrink-0 flex items-center justify-between px-4 py-2 border-b border-rule2 bg-stone">
+        <div className="flex-shrink-0 flex items-center justify-between px-5 py-2 border-b border-rule2 bg-stone">
           <div className="flex items-center gap-2.5">
             {undecidedCount > 0 && (
-              <button type="button" onClick={handleSelectAll} className="flex-shrink-0 p-0.5 text-ghost hover:text-muted transition-colors">
-                {allSelected
-                  ? <CheckSquare size={13} className="text-ochre" />
-                  : someSelected
-                  ? <CheckSquare size={13} className="text-ochre/50" />
-                  : <Square size={13} />}
-              </button>
+              <input
+                ref={selectAllRef}
+                type="checkbox"
+                checked={undecidedPending.length > 0 && undecidedPending.every(p => selected.has(p._key))}
+                onChange={(e) => setSelected(e.target.checked ? new Set(undecidedPending.map(p => p._key)) : new Set())}
+                className="w-3.5 h-3.5 cursor-pointer flex-shrink-0 accent-ochre"
+                aria-label="Select all pending decisions"
+              />
             )}
-            {someSelected ? (
-              <>
-                <button type="button" onClick={handleApproveAll}
-                  className="font-body text-[10px] px-2.5 py-1.5 bg-ink text-stone hover:bg-ink/90 transition-colors">
-                  Approve all low-risk
-                </button>
-                <button type="button" onClick={handleDeferAll}
-                  className="font-body text-[10px] px-2.5 py-1.5 border border-rule2 text-muted hover:text-ink transition-colors">
-                  Defer all low confidence
-                </button>
-              </>
-            ) : (
-              <>
-                <span className="font-body font-medium text-[10px] uppercase tracking-widest text-ink">Pending decisions</span>
-                {undecidedCount > 0 && (
-                  <span className="font-body text-[9px] text-warn bg-warn/[0.1] px-1.5 py-0.5">{undecidedCount} awaiting</span>
-                )}
-              </>
+            <span className="font-body font-medium text-[10px] uppercase tracking-widest text-ink">Pending decisions</span>
+            {undecidedCount > 0 && (
+              <span className="font-body text-[9px] text-warn bg-warn/[0.1] px-1.5 py-0.5">{undecidedCount} awaiting</span>
             )}
           </div>
           <div className="flex items-center gap-2">
@@ -879,6 +858,14 @@ export default function AgentControl() {
           )}
         </div>
 
+        {/* Batch action bar */}
+        {selected.size > 0 && (
+          <BatchBar
+            count={selected.size}
+            onApproveAll={handleApproveAll}
+            onDeferAll={handleDeferAll}
+          />
+        )}
       </div>
 
       {/* ── Modals ──────────────────────────────────────────────────── */}

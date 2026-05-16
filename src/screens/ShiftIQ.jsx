@@ -8,7 +8,7 @@ import {
  PersonAvatar, Modal, WaveformSparkline, Chip, AnimatedCheck, Spinner,
  VaulDrawer, HoldButton
 } from '../components/UI'
-import { Flag, ChevronRight, ChevronDown, AlertTriangle, Check, X, TrendingDown, RotateCcw, Wrench, Package, HelpCircle, ListChecks, Brain, Shield, RefreshCw, ChevronUp, BarChart2, ArrowRight } from 'lucide-react'
+import { Flag, ChevronRight, ChevronDown, AlertTriangle, Check, X, TrendingDown, RotateCcw, Wrench, Package, HelpCircle, ListChecks, Brain, Shield, RefreshCw, ChevronUp, BarChart2, ArrowRight, Moon } from 'lucide-react'
 import { useAppState } from '../context/AppState'
 
 const CHECKLIST_ITEMS = [
@@ -742,14 +742,7 @@ export default function ShiftIQ() {
      Cancel
     </button>
    </div>
-  ) : (
-   <div className="flex items-center justify-end px-5 py-1.5 border-b border-rule2 bg-stone2 flex-shrink-0">
-    <button type="button" onClick={() => setQuietForm(p => ({...p, open:true}))}
-     className="font-body text-ghost text-[10px] hover:text-muted transition-colors">
-     + Set quiet period
-    </button>
-   </div>
-  )
+  ) : null
  )}
 
  <ActionBanner
@@ -804,6 +797,11 @@ export default function ShiftIQ() {
     <div className="ml-auto flex items-center gap-3">
      <CrewAvatarStack crew={lineD.crew} onSelect={setViewingOperator} size={22} />
      <span className="font-body text-ghost text-[10px]">18 workers</span>
+     <button type="button" onClick={() => setQuietForm(p => ({...p, open:true}))}
+      aria-label="Set quiet period" title="Set quiet period"
+      className="text-ghost hover:text-muted transition-colors">
+      <Moon size={13} strokeWidth={2} />
+     </button>
     </div>
    </div>
    {lineDropOpen && (
