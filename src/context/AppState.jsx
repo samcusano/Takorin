@@ -1,15 +1,47 @@
 import { createContext, useContext, useState } from 'react'
-import { readinessData } from '../data'
+import { readinessData, systemConfidenceScore } from '../data'
 
 const Ctx = createContext(null)
 
 export const PLANTS = {
- sl: { id:'sl', name:'Salina Campus', code:'SL-04', region:'Salina, KS',  director:'J. Crocker',  readinessScore:64, complianceState:'blocked' },
- ks: { id:'ks', name:'Wichita Plant', code:'KS-09', region:'Wichita, KS', director:'T. Okonkwo',  readinessScore:88, complianceState:'clear'   },
- co: { id:'co', name:'Denver Plant',  code:'CO-07', region:'Denver, CO',   director:'M. Rodriguez', readinessScore:92, complianceState:'clear'  },
+ sl: { id:'sl', name:'Salina Campus', code:'SL-04', region:'Salina, KS',  director:'J. Crocker',  readinessScore:64, complianceState:'blocked', workerMode:'human'  },
+ ks: { id:'ks', name:'Wichita Plant', code:'KS-09', region:'Wichita, KS', director:'T. Okonkwo',  readinessScore:88, complianceState:'clear',   workerMode:'robot'  },
+ co: { id:'co', name:'Denver Plant',  code:'CO-07', region:'Denver, CO',   director:'M. Rodriguez', readinessScore:92, complianceState:'clear',  workerMode:'hybrid' },
 }
 
 export function AppStateProvider({ children }) {
+ const [workerMode, setWorkerModeState] = useState('human')
+
+ // Escalation state machine — tracks who has each finding
+ // States: open → assigned → acknowledged → escalated → resolved
+ const [escalationStates, setEscalationStates] = useState({
+  sf1: { state: 'assigned', owner: 'D. Kowalski', chain: [{ owner: 'D. Kowalski', at: '06:42', via: 'ShiftIQ auto-assign' }] },
+  sf2: { state: 'acknowledged', owner: 'D. Kowalski', chain: [{ owner: 'D. Kowalski', at: '06:48', via: 'Director action' }] },
+  sf3: { state: 'escalated', owner: 'J. Crocker', chain: [
+   { owner: 'D. Kowalski', at: '06:42', via: 'ShiftIQ auto-assign' },
+   { owner: 'J. Crocker', at: '09:15', via: 'No response — 2nd escalation' },
+  ]},
+  sf4: { state: 'open', owner: null, chain: [] },
+ })
+ const updateEscalationState = (findingId, state, owner) => {
+  setEscalationStates(prev => ({
+   ...prev,
+   [findingId]: {
+    state,
+    owner,
+    chain: [...(prev[findingId]?.chain || []), { owner, at: new Date().toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' }), via: 'Director action' }],
+   },
+  }))
+ }
+ const [agentActions, setAgentActions] = useState([
+  { id:'a1', agentId:'pre-shift', agentName:'Pre-Shift Agent', timestamp:'06:12', action:'Verified startup conditions', target:'Line 4 AM', rationale:'All cert, checklist, and sensor checks passed at T-30', status:'completed', overriddenBy:null },
+  { id:'a2', agentId:'compliance', agentName:'Compliance Agent', timestamp:'06:36', action:'Opened CAPA-2604-001', target:'Sensor A-7', rationale:'Breach threshold crossed — auto-filed with HACCP mapping and sensor log attached', status:'completed', overriddenBy:null },
+  { id:'a3', agentId:'supplier', agentName:'Supplier Agent', timestamp:'05:45', action:'Flagged Lot L-0891 pending release', target:'ConAgra · Pepperoni', rationale:'COA not received 4h before scheduled production start', status:'pending-review', overriddenBy:null },
+  { id:'a4', agentId:'handoff', agentName:'Handoff Agent', timestamp:'13:15', action:'Pre-populated handoff document', target:'Line 4 PM handoff', rationale:'Synthesized open findings, CAPA status, and sensor anomalies from shift data', status:'pending-review', overriddenBy:null },
+ ])
+ const logAgentAction = (entry) => setAgentActions(p => [{ ...entry, id:`a${Date.now()}`, timestamp: new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'}) }, ...p])
+ const overrideAgentAction = (id, by) => setAgentActions(p => p.map(a => a.id === id ? {...a, status:'overridden', overriddenBy:by} : a))
+
  const [shiftActed, setShiftActed] = useState({})
  const [handoffSigned, setHandoffSigned] = useState(false)
  const [handoffNominated, setHandoffNominated] = useState({})
@@ -38,7 +70,42 @@ export function AppStateProvider({ children }) {
  const [commandAcknowledged, setCommandAcknowledged] = useState(new Set())
  const [pilotExpanded, setPilotExpanded] = useState(false)
  const [handoffAccepted, setHandoffAccepted] = useState(false)
- const [currentPlant, setCurrentPlant] = useState(PLANTS.sl)
+ // Quiet period protocol — Compliance Monitor enters logging-only mode for specified line/window
+ const [quietPeriods, setQuietPeriods] = useState([])
+ const addQuietPeriod = ({ line, startTime, endTime, reason, setBy }) =>
+  setQuietPeriods(p => [...p, { id: Date.now(), line, startTime, endTime, reason, setBy, active: true }])
+ const clearQuietPeriod = (id) =>
+  setQuietPeriods(p => p.map(qp => qp.id === id ? { ...qp, active: false } : qp))
+ const activeQuietPeriod = (line) => quietPeriods.find(qp => qp.active && qp.line === line) || null
+
+ // System confidence — aggregate of data source freshness scores
+ const [systemConfidence] = useState(systemConfidenceScore) // 79 from data
+
+ // On-floor status — pauses escalation re-fires, routes to named backup
+ const [directorOnFloor, setDirectorOnFloor] = useState(false)
+ const [floorBackup, setFloorBackup] = useState('D. Kowalski')
+ const goToFloor = (backup) => { setDirectorOnFloor(true); if (backup) setFloorBackup(backup) }
+ const returnFromFloor = () => setDirectorOnFloor(false)
+
+ // CAPA assignment acknowledgment — clock starts when assignee accepts
+ const [capaAcknowledgments, setCapaAcknowledgments] = useState({
+  'c2': { at: '11:30', by: 'T. Osei' }, // CAPA-2604-003 already acknowledged
+ })
+ const acknowledgeCapaAssignment = (capaId) => setCapaAcknowledgments(p => ({
+  ...p,
+  [capaId]: { at: new Date().toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' }), by: 'assignee' },
+ }))
+
+ // Override rationale log — required for all compliance-category action overrides
+ const [overrideRationales, setOverrideRationales] = useState({})
+ const logOverrideRationale = (actionId, rationale, actor) => {
+  setOverrideRationales(p => ({ ...p, [actionId]: { rationale, actor, at: new Date().toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' }) } }))
+  logActivity({ actor, action: `Override rationale: "${rationale}"`, item: actionId, type: 'compliance' })
+ }
+
+ const [currentPlant, _setCurrentPlant] = useState(PLANTS.sl)
+ const setCurrentPlant = (p) => { _setCurrentPlant(p); setWorkerModeState(p.workerMode) }
+ const setWorkerMode = (m) => setWorkerModeState(m)
  const [viewingRole, setViewingRole] = useState('director')
  const acknowledgeCommand = (id) => setCommandAcknowledged(prev => new Set([...prev, id]))
  const [activityLog, setActivityLog] = useState([
@@ -54,6 +121,14 @@ export function AppStateProvider({ children }) {
 
  return (
  <Ctx.Provider value={{
+ workerMode, setWorkerMode,
+ agentActions, logAgentAction, overrideAgentAction,
+ escalationStates, updateEscalationState,
+ directorOnFloor, floorBackup, goToFloor, returnFromFloor,
+ capaAcknowledgments, acknowledgeCapaAssignment,
+ overrideRationales, logOverrideRationale,
+ quietPeriods, addQuietPeriod, clearQuietPeriod, activeQuietPeriod,
+ systemConfidence,
  shiftActed, setShiftActed,
  handoffSigned, setHandoffSigned,
  handoffNominated, setHandoffNominated,

@@ -730,3 +730,681 @@ export const commandData = {
     },
   ],
 }
+
+// ── Robot Fleet Data ──────────────────────────────────────────────────────────
+
+export const robotFleetData = {
+  summary: {
+    total: 12,
+    online: 9,
+    maintenance: 2,
+    fault: 1,
+    avgUptime: 94.2,
+    energyToday: 187, // kWh
+  },
+  units: [
+    {
+      id:'R-01', name:'Topping Unit A', model:'Fanuc M-710iC', line:'Line 4',
+      status:'online', assignedTask:'Pepperoni topping — 18 g ±0.3 g',
+      capabilities:['topping','weighing','allergen-handling'],
+      telemetry:{ vibration:[1.1,1.2,1.0,1.1,1.3,1.2], temperature:[42,43,42,44,43,43], currentDraw:[12.1,12.3,12.0,12.2,12.4,12.2], cycleCount:1847 },
+      maintenanceSchedule:{ nextService:'2026-05-22', lastService:'2026-04-10', remainingHours:78 },
+      programVersion:'v4.2.1', calibrationStatus:'valid', calibrationExpiry:'2026-06-01',
+      uptime:98.1, mtbf:342, mttr:1.8,
+    },
+    {
+      id:'R-02', name:'Topping Unit B', model:'Fanuc M-710iC', line:'Line 4',
+      status:'online', assignedTask:'Cheese topping — 22 g ±0.5 g',
+      capabilities:['topping','weighing'],
+      telemetry:{ vibration:[0.9,1.0,0.9,1.1,1.0,0.9], temperature:[41,41,42,41,42,41], currentDraw:[11.8,11.9,11.7,12.0,11.8,11.9], cycleCount:2104 },
+      maintenanceSchedule:{ nextService:'2026-05-28', lastService:'2026-04-22', remainingHours:134 },
+      programVersion:'v4.2.1', calibrationStatus:'valid', calibrationExpiry:'2026-06-01',
+      uptime:99.2, mtbf:410, mttr:1.2,
+    },
+    {
+      id:'R-03', name:'Seal Press A', model:'ABB IRB 6700', line:'Line 4',
+      status:'online', assignedTask:'Tray sealing — Pepperoni Classic',
+      capabilities:['sealing','packaging','vision-QA'],
+      telemetry:{ vibration:[2.1,2.3,2.4,2.8,3.1,3.4], temperature:[55,56,57,58,60,62], currentDraw:[18.2,18.5,18.7,19.1,19.6,20.1], cycleCount:3291 },
+      maintenanceSchedule:{ nextService:'2026-05-16', lastService:'2026-04-01', remainingHours:14 },
+      programVersion:'v3.9.0', calibrationStatus:'valid', calibrationExpiry:'2026-05-20',
+      uptime:91.4, mtbf:210, mttr:3.2,
+      alert: { type:'warn', msg:'Vibration trending up — bearing inspection recommended within 14 hours' },
+    },
+    {
+      id:'R-04', name:'Seal Press B', model:'ABB IRB 6700', line:'Line 6',
+      status:'maintenance', assignedTask:null,
+      capabilities:['sealing','packaging'],
+      telemetry:{ vibration:[4.2,4.5,5.1,5.8,6.2,null], temperature:[65,68,72,null,null,null], currentDraw:[21.0,22.1,null,null,null,null], cycleCount:4102 },
+      maintenanceSchedule:{ nextService:'2026-05-15', lastService:'2026-03-20', remainingHours:0 },
+      programVersion:'v3.8.2', calibrationStatus:'expired', calibrationExpiry:'2026-05-10',
+      uptime:78.3, mtbf:180, mttr:4.1,
+      alert: { type:'danger', msg:'Scheduled maintenance in progress — estimated return 14:30' },
+    },
+    {
+      id:'R-05', name:'QA Vision A', model:'Cognex IS-9005', line:'Line 4',
+      status:'online', assignedTask:'Seal integrity + label inspection',
+      capabilities:['vision-QA','seal-check','label-verify'],
+      telemetry:{ vibration:[0.2,0.2,0.2,0.2,0.2,0.2], temperature:[38,38,39,38,38,39], currentDraw:[4.1,4.1,4.2,4.1,4.1,4.2], cycleCount:18204 },
+      maintenanceSchedule:{ nextService:'2026-07-01', lastService:'2026-02-01', remainingHours:480 },
+      programVersion:'v7.1.3', calibrationStatus:'valid', calibrationExpiry:'2026-08-01',
+      uptime:99.9, mtbf:720, mttr:0.5,
+    },
+    {
+      id:'R-06', name:'Dosing Unit A', model:'Nordson ProBlue', line:'Line 3',
+      status:'online', assignedTask:'Sauce dosing — 28 g ±1 g',
+      capabilities:['dosing','allergen-handling','CCP-monitoring'],
+      telemetry:{ vibration:[0.8,0.8,0.9,0.8,0.9,0.8], temperature:[45,45,46,45,45,46], currentDraw:[8.4,8.5,8.4,8.6,8.5,8.4], cycleCount:5610 },
+      maintenanceSchedule:{ nextService:'2026-06-10', lastService:'2026-04-20', remainingHours:220 },
+      programVersion:'v2.4.0', calibrationStatus:'valid', calibrationExpiry:'2026-07-01',
+      uptime:97.8, mtbf:380, mttr:1.4,
+    },
+    {
+      id:'R-07', name:'Packaging Unit A', model:'Bosch SVE 2520', line:'Line 4',
+      status:'online', assignedTask:'Flow wrapping — Pepperoni Classic',
+      capabilities:['packaging','flow-wrap','date-coding'],
+      telemetry:{ vibration:[1.5,1.6,1.5,1.6,1.5,1.5], temperature:[48,48,49,48,49,48], currentDraw:[14.2,14.3,14.1,14.4,14.2,14.3], cycleCount:9087 },
+      maintenanceSchedule:{ nextService:'2026-06-01', lastService:'2026-04-15', remainingHours:192 },
+      programVersion:'v5.0.2', calibrationStatus:'valid', calibrationExpiry:'2026-07-15',
+      uptime:96.5, mtbf:290, mttr:2.1,
+    },
+    {
+      id:'R-08', name:'Packaging Unit B', model:'Bosch SVE 2520', line:'Line 6',
+      status:'fault', assignedTask:null,
+      capabilities:['packaging','flow-wrap','date-coding'],
+      telemetry:{ vibration:[3.2,4.1,5.8,null,null,null], temperature:[61,68,null,null,null,null], currentDraw:[null,null,null,null,null,null], cycleCount:7203 },
+      maintenanceSchedule:{ nextService:'2026-05-15', lastService:'2026-04-01', remainingHours:0 },
+      programVersion:'v5.0.1', calibrationStatus:'valid', calibrationExpiry:'2026-06-01',
+      uptime:82.1, mtbf:145, mttr:5.4,
+      alert: { type:'danger', msg:'Drive fault F-22 — motor overload. Awaiting technician T. Osei (ETA 45 min)' },
+    },
+    {
+      id:'R-09', name:'Allergen Changeover Bot', model:'Universal Robots UR10e', line:'Line 4',
+      status:'online', assignedTask:'Post-allergen surface wipe — Zone 1 & 2',
+      capabilities:['cleaning','allergen-handling','zone-clearance'],
+      telemetry:{ vibration:[0.4,0.4,0.5,0.4,0.4,0.5], temperature:[34,34,35,34,34,35], currentDraw:[3.2,3.3,3.2,3.3,3.2,3.3], cycleCount:882 },
+      maintenanceSchedule:{ nextService:'2026-07-15', lastService:'2026-03-15', remainingHours:610 },
+      programVersion:'v1.3.2', calibrationStatus:'valid', calibrationExpiry:'2026-09-01',
+      uptime:99.1, mtbf:500, mttr:0.8,
+    },
+    {
+      id:'R-10', name:'Case Erector A', model:'Wexxar WF30', line:'Line 2',
+      status:'online', assignedTask:'Case forming — 12-pack master carton',
+      capabilities:['case-erect','packaging'],
+      telemetry:{ vibration:[1.0,1.0,1.1,1.0,1.0,1.1], temperature:[40,40,41,40,40,41], currentDraw:[9.8,9.9,9.8,10.0,9.9,9.8], cycleCount:6441 },
+      maintenanceSchedule:{ nextService:'2026-06-20', lastService:'2026-04-25', remainingHours:308 },
+      programVersion:'v2.1.0', calibrationStatus:'valid', calibrationExpiry:'2026-08-01',
+      uptime:98.4, mtbf:420, mttr:1.1,
+    },
+    {
+      id:'R-11', name:'Palletizer A', model:'Fanuc M-410iB', line:'Line 4',
+      status:'online', assignedTask:'End-of-line palletizing — Pepperoni Classic',
+      capabilities:['palletizing','heavy-payload'],
+      telemetry:{ vibration:[1.8,1.9,1.8,1.9,1.8,1.9], temperature:[52,52,53,52,52,53], currentDraw:[22.1,22.3,22.1,22.4,22.2,22.1], cycleCount:3814 },
+      maintenanceSchedule:{ nextService:'2026-06-05', lastService:'2026-04-10', remainingHours:204 },
+      programVersion:'v6.0.0', calibrationStatus:'valid', calibrationExpiry:'2026-07-01',
+      uptime:97.2, mtbf:310, mttr:2.3,
+    },
+    {
+      id:'R-12', name:'AGV Unit 1', model:'Omron LD-60', line:'All lines',
+      status:'online', assignedTask:'Ingredient transport — Salina Cold Storage → Line 4',
+      capabilities:['transport','navigation','load-handling'],
+      telemetry:{ vibration:[0.3,0.3,0.3,0.4,0.3,0.3], temperature:[30,30,31,30,30,31], currentDraw:[2.8,2.9,2.8,3.0,2.9,2.8], cycleCount:12048 },
+      maintenanceSchedule:{ nextService:'2026-06-15', lastService:'2026-04-30', remainingHours:412 },
+      programVersion:'v3.5.1', calibrationStatus:'valid', calibrationExpiry:'2026-09-01',
+      uptime:99.5, mtbf:600, mttr:0.6,
+    },
+  ],
+  faultLog: [
+    { timestamp:'13:42', unit:'R-08', fault:'F-22 Motor overload', severity:'danger', resolved:false, techAssigned:'T. Osei', eta:'14:30' },
+    { timestamp:'09:15', unit:'R-04', fault:'Scheduled PM window began', severity:'info', resolved:false, techAssigned:'J. Barker', eta:'14:30' },
+    { timestamp:'05:30', unit:'R-03', fault:'Vibration anomaly detected — logged, monitoring', severity:'warn', resolved:false, techAssigned:null, eta:null },
+    { timestamp:'11:20', unit:'R-07', fault:'Program update applied — v5.0.1 → v5.0.2', severity:'info', resolved:true, techAssigned:'Remote ops', eta:null },
+  ],
+  taskQueue: [
+    { robotId:'R-01', priority:1, task:'Pepperoni topping run — Lot L-0891', startTime:'06:00', endTime:'14:00', status:'active' },
+    { robotId:'R-02', priority:1, task:'Cheese topping run — Lot L-0892', startTime:'06:00', endTime:'14:00', status:'active' },
+    { robotId:'R-03', priority:1, task:'Seal press — Pepperoni Classic trays', startTime:'06:30', endTime:'14:00', status:'active' },
+    { robotId:'R-08', priority:2, task:'Flow wrapping Line 6 — queued', startTime:'14:30', endTime:'22:00', status:'queued' },
+    { robotId:'R-04', priority:3, task:'Return to service post-PM', startTime:'14:30', endTime:null, status:'pending' },
+  ],
+}
+
+// ── Human-Only Extensions ─────────────────────────────────────────────────────
+
+export const absenceData = {
+  today: [
+    { operator:'B. Lindqvist', role:'L3 Oven Operator', line:'Line 4', shift:'AM', type:'unplanned', calloutTime:'05:22', backfill:null, impact:'danger', note:'No L3 backup available — oven cert gap' },
+  ],
+  upcoming: [
+    { operator:'D. Kowalski', role:'Supervisor L4', line:'Line 4', shift:'PM', date:'2026-05-17', type:'planned', backfill:'M. Santos', impact:'ok' },
+    { operator:'P. Okonkwo', role:'L2 Topping', line:'Line 4', shift:'AM', date:'2026-05-19', type:'planned', backfill:null, impact:'warn', note:'No backfill assigned yet' },
+    { operator:'C. Reyes', role:'L1 Pack Line', line:'Line 4', shift:'AM', date:'2026-05-21', type:'planned', backfill:'F. Adeyemi', impact:'ok' },
+  ],
+  coverageGaps: [
+    { date:'2026-05-15', line:'Line 4', shift:'AM', cert:'L3 Oven', required:1, available:0, status:'danger' },
+    { date:'2026-05-19', line:'Line 4', shift:'AM', cert:'L2 Topping', required:2, available:1, status:'warn' },
+  ],
+}
+
+export const certProjections = {
+  horizon: '90 days',
+  projectedAt: '2026-08-13',
+  expirations: [
+    { operator:'B. Lindqvist', cert:'L3 Oven Operator', expiresOn:'2026-05-15', daysRemaining:0, tone:'danger', line:'Line 4', replacementReady:false },
+    { operator:'D. Kowalski', cert:'L4 Supervisor', expiresOn:'2026-06-01', daysRemaining:17, tone:'warn', line:'Line 4', replacementReady:false },
+    { operator:'P. Okonkwo', cert:'L2 Topping Advanced', expiresOn:'2026-06-15', daysRemaining:31, tone:'warn', line:'Line 4', replacementReady:true },
+    { operator:'A. Martinez', cert:'L3 Sauce Dosing', expiresOn:'2026-07-10', daysRemaining:56, tone:'ok', line:'Line 4', replacementReady:true },
+    { operator:'F. Adeyemi', cert:'L1 QA Basic', expiresOn:'2026-07-22', daysRemaining:68, tone:'ok', line:'Line 4', replacementReady:true },
+  ],
+  riskSummary: { dangerCount:1, warnCount:2, okCount:2, noReplacementCount:2 },
+}
+
+export const fatigueData = {
+  operators: [
+    { name:'D. Kowalski', hoursThisWeek:44, consecutiveShifts:5, lastRestPeriod:10, fatigueTone:'warn', note:'5 consecutive shifts — approaching 48h limit' },
+    { name:'A. Martinez', hoursThisWeek:36, consecutiveShifts:3, lastRestPeriod:14, fatigueTone:'ok', note:null },
+    { name:'C. Reyes', hoursThisWeek:32, consecutiveShifts:2, lastRestPeriod:16, fatigueTone:'ok', note:null },
+    { name:'P. Okonkwo', hoursThisWeek:40, consecutiveShifts:4, lastRestPeriod:12, fatigueTone:'ok', note:null },
+    { name:'B. Lindqvist', hoursThisWeek:0, consecutiveShifts:0, lastRestPeriod:null, fatigueTone:'muted', note:'Absent today' },
+    { name:'F. Adeyemi', hoursThisWeek:28, consecutiveShifts:2, lastRestPeriod:18, fatigueTone:'ok', note:null },
+  ],
+}
+
+export const laborData = {
+  week: [
+    { day:'Mon', straight:312, overtime:18, line:'Line 4' },
+    { day:'Tue', straight:312, overtime:24, line:'Line 4' },
+    { day:'Wed', straight:312, overtime:0, line:'Line 4' },
+    { day:'Thu', straight:312, overtime:36, line:'Line 4' },
+    { day:'Fri', straight:312, overtime:12, line:'Line 4' },
+    { day:'Sat', straight:156, overtime:48, line:'Line 4' },
+  ],
+  summary: {
+    totalStraight: 1716,
+    totalOvertime: 138,
+    overtimePct: 7.4,
+    topOvertimeDriver: 'Lindqvist absence coverage',
+    projectedWeekCost: 62400,
+    overtimeCostPremium: 4140,
+  },
+}
+
+// ── Hybrid: Task Allocation ───────────────────────────────────────────────────
+
+export const taskAllocationData = {
+  tasks: [
+    {
+      id:'t1', label:'Topping — Pepperoni', line:'Line 4',
+      assignedTo:{ type:'robot', id:'R-01', name:'Topping Unit A' },
+      fallback:{ type:'human', id:'okonkwo', name:'P. Okonkwo', cert:'L2' },
+      status:'active', capability:'topping',
+    },
+    {
+      id:'t2', label:'Topping — Cheese', line:'Line 4',
+      assignedTo:{ type:'robot', id:'R-02', name:'Topping Unit B' },
+      fallback:{ type:'human', id:'reyes', name:'C. Reyes', cert:'L1', certGap:true },
+      status:'active', capability:'topping',
+    },
+    {
+      id:'t3', label:'Sauce Dosing', line:'Line 4',
+      assignedTo:{ type:'human', id:'martinez', name:'A. Martinez', cert:'L3' },
+      fallback:{ type:'robot', id:'R-06', name:'Dosing Unit A' },
+      status:'active', capability:'dosing',
+    },
+    {
+      id:'t4', label:'Allergen Changeover', line:'Line 4',
+      assignedTo:{ type:'human', id:'okonkwo', name:'P. Okonkwo', cert:'L2' },
+      fallback:{ type:'robot', id:'R-09', name:'Allergen Bot' },
+      status:'active', capability:'allergen-handling',
+    },
+    {
+      id:'t5', label:'Seal Inspection', line:'Line 4',
+      assignedTo:{ type:'robot', id:'R-05', name:'QA Vision A' },
+      fallback:{ type:'human', id:'patel', name:'J. Patel', cert:'L2' },
+      status:'active', capability:'vision-QA',
+    },
+    {
+      id:'t6', label:'Packaging — Flow Wrap', line:'Line 4',
+      assignedTo:{ type:'robot', id:'R-07', name:'Packaging Unit A' },
+      fallback:{ type:'human', id:'adeyemi', name:'F. Adeyemi', cert:'L1', certGap:true },
+      status:'active', capability:'packaging',
+    },
+    {
+      id:'t7', label:'End-of-Line Palletizing', line:'Line 4',
+      assignedTo:{ type:'robot', id:'R-11', name:'Palletizer A' },
+      fallback:{ type:'human', id:null, name:'No qualified backup', certGap:true },
+      status:'gap', capability:'palletizing',
+    },
+    {
+      id:'t8', label:'Zone 1 EMP Swab', line:'Line 4',
+      assignedTo:{ type:'human', id:'okonkwo', name:'P. Okonkwo', cert:'L2' },
+      fallback:{ type:'human', id:'reyes', name:'C. Reyes', cert:'L1' },
+      status:'active', capability:'emp',
+    },
+  ],
+  safetyZones: [
+    { id:'sz1', label:'Topping Station', line:'Line 4', type:'collaborative', humanCertRequired:'L2+', speedReduction:'50% when human present', emergencyStop:'E-stop A14', status:'clear' },
+    { id:'sz2', label:'Seal Press Zone', line:'Line 4', type:'restricted', humanCertRequired:'L3+ with escort', speedReduction:'Full stop when human enters', emergencyStop:'E-stop A15', status:'warn', note:'R-03 vibration anomaly — heightened caution' },
+    { id:'sz3', label:'Allergen Changeover Zone', line:'Line 4', type:'collaborative', humanCertRequired:'L2+', speedReduction:'30% when human present', emergencyStop:'E-stop A16', status:'clear' },
+    { id:'sz4', label:'Palletizer Zone', line:'Line 4', type:'restricted', humanCertRequired:'L4 only', speedReduction:'Full stop when human enters', emergencyStop:'E-stop B01', status:'clear' },
+  ],
+  overrideLog: [
+    { timestamp:'06:48', operator:'D. Kowalski', robotId:'R-01', robotName:'Topping Unit A', action:'Weight tolerance override', reason:'SKU changeover mid-run — manual calibration needed', outcome:'Resolved in 4 min, robot resumed' },
+    { timestamp:'Yesterday 14:20', operator:'M. Santos', robotId:'R-09', robotName:'Allergen Bot', action:'Zone clearance override — extended dwell time', reason:'Incomplete surface contact on Zone 2 — required manual wipe', outcome:'CAPA filed, robot protocol updated' },
+  ],
+  redundancyMap: [
+    { task:'Sauce Dosing', humanCover:true, robotCover:true, status:'ok' },
+    { task:'Allergen Changeover', humanCover:true, robotCover:true, status:'ok' },
+    { task:'Topping', humanCover:true, robotCover:true, status:'ok' },
+    { task:'Seal Inspection', humanCover:true, robotCover:true, status:'ok' },
+    { task:'Palletizing', humanCover:false, robotCover:true, status:'danger', note:'No human certified for palletizing backup' },
+    { task:'Flow Wrapping', humanCover:true, robotCover:true, status:'ok' },
+  ],
+}
+
+// ── Agent Configuration Data ──────────────────────────────────────────────────
+
+export const agentConfigData = {
+  agents: [
+    {
+      id:'pre-shift', name:'Pre-Shift Verification', icon:'Shield', promptVersion:'1.0.0',
+      description:'Verifies all startup conditions T-30 min before shift: certs, checklists, sensors, robot calibration.',
+      isComplianceCategory: false,
+      confidenceMethodology: 'Percentage of startup conditions passing (cert status, checklist completion, sensor health, calibration validity). 100% = all conditions verified. A missing cert drops it proportionally.',
+      enabled:true, confidenceThreshold:80,
+      actCount:{ week:14, month:58 },
+      lastFired:'06:12 today',
+      pendingActions:[],
+    },
+    {
+      id:'compliance', name:'Compliance Monitor', icon:'AlertTriangle',
+      description:'Real-time signal monitoring. Opens CAPAs automatically on threshold breach with regulatory mapping and evidence.',
+      isComplianceCategory: true,
+      writeScope: 'create-only',
+      corroborationRequired: true,
+      confidenceMethodology: 'Signal strength × duration × corroboration. Requires sustained reading above threshold (not a single spike) plus at least one corroborating signal (a second sensor OR a failed checklist item on the same CCP). Single-spike readings cap confidence at 70% regardless of magnitude.',
+      regulatoryObligations: ['FSMA 204 traceability', 'HACCP CCP deviation logging', 'GMP 21 CFR 110 corrective action'],
+      enabled:true, confidenceThreshold:90,
+      actCount:{ week:3, month:11 },
+      lastFired:'06:36 today',
+      pendingActions:[
+        {
+          id:'pa1',
+          action:'Open CAPA for R-03 vibration anomaly',
+          target:'Sensor A-7 equivalent — R-03 bearing',
+          rationale:'Vibration trending 3.4 (threshold 4.0) — pattern match to prior bearing failure',
+          confidence:71,
+          cotSteps:[
+            { step:1, label:'Quiet period check', result:'pass', detail:'No quiet period active for Line 4' },
+            { step:2, label:'Spike vs. sustained', result:'pass', detail:'38 min sustained — 2 consecutive readings above threshold' },
+            { step:3, label:'Corroboration scan', result:'pass', detail:'Temperature also rising +7°C (corroborating signal #1)' },
+            { step:4, label:'Regulatory mapping', result:'pass', detail:'HACCP CCP-3 applicable. FSMA 204 traceability chain.' },
+            { step:5, label:'Confidence calculation', result:'warn', detail:'sustainedScore(0.7) × corroborationScore(0.7) = 71%. Below 90% threshold — requires director approval rather than autonomous action.' },
+          ],
+          triggerData:{
+            reading: 3.4,
+            threshold: 4.0,
+            unit: 'mm/s',
+            sensor: 'R-03 vibration sensor',
+            duration: '38 min sustained',
+            trend: 'Rising — was 2.1 at shift start',
+            corroboration: 'Temperature also rising (+7°C in 38 min) — two signals',
+            precedentMatch: 'R-08 bearing failure on 2026-04-01 showed same signature 72h before fault',
+            precedentPool: 3,
+            precedentLine: 'Line 6',
+          },
+          impactPreview:[
+            'Creates CAPA-2026-R03 in regulatory record — becomes part of FDA audit package',
+            'Assigned administrative owner: plant maintenance supervisor',
+            'R-03 continues running — CAPA does not trigger shutdown',
+            'Evidence clock starts — case will auto-escalate if unresolved within 14 days',
+          ],
+          evidence:{
+            summary: "R-03's vibration sensor has sustained 3.4 mm/s for 38 minutes — above the 2.5 threshold. Temperature is co-trending (+7°C in 38 min), corroborating mechanical stress. Pattern matches R-08's pre-failure signature from 72 hours ago.",
+            causalSignals:[
+              { signal:'Vibration',    reading:'3.4 mm/s', threshold:'2.5 mm/s', status:'breach', note:'Rising since shift start (was 2.1 mm/s at 06:00)' },
+              { signal:'Temperature',  reading:'+7°C rise', threshold:'Sustained ≥ +5°C', status:'breach', note:'Corroborating signal — not a standalone threshold' },
+              { signal:'Duration',     reading:'38 min',   threshold:'30 min sustained', status:'breach', note:'Both signals held above threshold simultaneously' },
+            ],
+            dependencies:[
+              { label:'HACCP CCP-3', status:'required', note:'CAPA must reference this control point in the regulatory record' },
+              { label:'FSMA 204 traceability', status:'required', note:'Case becomes part of the FDA audit package once opened' },
+              { label:'R-03 shutdown', status:'not-required', note:'Opening this CAPA does not trigger an automatic shutdown' },
+            ],
+            riskForecast: 'If unresolved within 14 hours: R-03 bearing failure probable (per R-08 precedent). Line 4 sealing offline — downstream packaging and palletizing affected.',
+          },
+        },
+      ],
+    },
+    {
+      id:'supplier', name:'Supplier Intelligence', icon:'Truck',
+      description:'Monitors COA status, requests missing docs, recommends hold/release decisions.',
+      isComplianceCategory: true,
+      confidenceMethodology: 'Binary COA presence check (100% if received and valid, 0% if absent) weighted by time-to-production urgency. At ≥4h before production start with no COA: 95%+. Between 1-4h: 85-94%. Under 1h: always escalates regardless of confidence.',
+      regulatoryObligations: ['FSMA 204 supplier verification', 'HACCP CCP-1 ingredient control'],
+      enabled:true, confidenceThreshold:85,
+      actCount:{ week:2, month:9 },
+      lastFired:'05:45 today',
+      pendingActions:[
+        {
+          id:'pa2',
+          action:'Recommend hold on Lot L-0891',
+          target:'ConAgra · Pepperoni · Lot L-0891',
+          rationale:'COA not received — 4h before scheduled production use',
+          confidence:95,
+          triggerData:{
+            lotId: 'L-0891',
+            supplier: 'ConAgra',
+            ingredient: 'Pepperoni topping',
+            coaStatus: 'Not received',
+            productionScheduled: '10:00 AM today',
+            timeToProduction: '4h 12min at time of flag',
+            supplierHistory: '2 COA delays in last 18 months (Jan 2025, Aug 2024)',
+            historyRecencyNote: 'Most recent delay: 9 months ago — applying 50% recency weight',
+          },
+          impactPreview:[
+            'Lot L-0891 flagged as pending release — production hold until COA received',
+            'Line 4 AM may start 1-2h late if COA arrives after 08:30',
+            'If COA not received by 09:30: recommend substituting Lot L-0889 (COA valid)',
+            'Hold is reversible — COA receipt triggers automatic release recommendation',
+          ],
+          evidence:{
+            summary: 'Lot L-0891 from ConAgra has no COA on file with 4 hours 12 minutes to scheduled production. FSMA 204 requires a verified COA before use. Supplier has two prior COA delays in 18 months.',
+            causalSignals:[
+              { signal:'COA status',        reading:'Not received', threshold:'Required before production', status:'breach', note:'Production scheduled for 10:00 AM — window is closing' },
+              { signal:'Time to production', reading:'4h 12min',     threshold:'COA required ≥ 4h prior',   status:'breach', note:'At or below minimum buffer for review' },
+              { signal:'Supplier history',  reading:'2 prior delays', threshold:'0 delays preferred',       status:'warn',  note:'Most recent delay: 9 months ago (50% recency weight)' },
+            ],
+            dependencies:[
+              { label:'Line 4 AM production', status:'pending',  note:'Will hold if COA not received — start delayed or substitution required' },
+              { label:'Lot L-0889 (fallback)', status:'eligible', note:'COA valid — available as substitution if confirmed by 09:30' },
+              { label:'FSMA 204 record',       status:'required', note:'Hold decision must be logged regardless of outcome' },
+            ],
+            riskForecast: "If COA not received by 09:30: Line 4 AM production hold or lot substitution required. Using Lot L-0891 without COA is a FSMA 204 violation.",
+          },
+        },
+      ],
+    },
+    {
+      id:'resource', name:'Resource Allocation', icon:'Users',
+      description:'Proposes schedule adjustments on absence or cert gap. In hybrid mode, rebalances human/robot task coverage. In emergency conditions (human absent + robot qualified + T-60 min), can act autonomously unless overridden.',
+      isComplianceCategory: false,
+      confidenceMethodology: 'Probability that the proposed allocation meets all certification requirements AND maintains ≥72% qualified staffing threshold. Based on cert database at time of proposal. Does not account for same-day changes.',
+      enabled:true, confidenceThreshold:75,
+      actCount:{ week:5, month:22 },
+      lastFired:'06:10 today',
+      pendingActions:[
+        {
+          id:'pa3-emergency',
+          action:'Emergency auto-assign: R-09 covers Oven Station B — Lindqvist absent, T-28 min',
+          target:'Line 4 AM · Oven Station B · Today',
+          rationale:'Lindqvist (L3 Oven) called out at 05:22 with no backup. R-09 (Allergen Bot) is certified for oven-adjacent operations. Critical safety coverage gap. Shift starts in 28 min.',
+          confidence:91,
+          isEmergencyAutoAct: true,
+          overrideWindowMin: 15,
+          emergencyConditions: {
+            humanAbsent: 'B. Lindqvist · L3 Oven Operator',
+            robotAvailable: 'R-09 · Allergen Changeover Bot · Certified for oven zone',
+            timeToShift: '28 min',
+            coverageGap: 'Oven Station B — zero qualified operators',
+          },
+          impactPreview:[
+            'R-09 auto-assigned to Oven Station B — will execute without director approval unless overridden within 15 min',
+            'R-09 moves from allergen changeover queue — allergen changeover must be covered by P. Okonkwo',
+            'Oven Station B coverage gap resolved — shift can start with qualified coverage',
+            'Director notified immediately; action logged with timestamp',
+            'Override window: 15 min — after that, assignment is confirmed and cannot be auto-reversed',
+          ],
+          evidence:{
+            summary: 'B. Lindqvist called out at 05:22 with no L3 Oven backup on-shift. Oven Station B has zero qualified human coverage. R-09 meets zone certification requirements. All 4 emergency auto-act conditions are met. Shift starts in 28 minutes.',
+            causalSignals:[
+              { signal:'Human coverage',   reading:'0 qualified operators', threshold:'≥ 1 required', status:'breach',   note:'B. Lindqvist — only L3 Oven operator on roster today' },
+              { signal:'Time to shift',    reading:'28 min',                threshold:'T-30 critical', status:'breach',   note:'No time for manual reallocation' },
+              { signal:'Robot capability', reading:'R-09 — zone certified', threshold:'Required',      status:'eligible', note:'Allergen-handling + oven-zone clearance confirmed' },
+            ],
+            dependencies:[
+              { label:'P. Okonkwo',        status:'required',  note:'Must cover allergen changeover — R-09 vacates that task' },
+              { label:'Director override',  status:'eligible',  note:'15-min window — override cancels auto-assignment' },
+              { label:'Shift start 06:00',  status:'required',  note:'Oven Station B must be covered at shift start' },
+            ],
+            riskForecast: 'If override initiated without a human backup: Oven Station B remains uncovered — shift cannot safely start. If override window passes: R-09 assignment confirmed and logged.',
+          },
+        },
+        {
+          id:'pa3',
+          action:'Pre-allocate R-06 (Dosing Unit A) as Sauce Dosing fallback for tomorrow AM',
+          target:'Line 4 AM — 2026-05-16',
+          rationale:'Martinez flagged for overtime risk — pre-allocating robot fallback if absent',
+          confidence:68,
+          impactPreview:[
+            'R-06 remains on Line 3 tonight — only takes effect if Martinez absent tomorrow',
+            'If Martinez is present: no change, R-06 stays on Line 3',
+            'If Martinez absent: R-06 moves to Line 4 — Line 3 Sauce Dosing unassigned (no human backup)',
+            'Creating this pre-allocation does not guarantee Line 3 coverage — assign a human backup separately',
+          ],
+          evidence:{
+            summary: 'A. Martinez is at overtime risk for tomorrow AM. Pre-allocating R-06 ensures Line 4 Sauce Dosing coverage if Martinez is absent — without disrupting tonight\'s Line 3 operation. The allocation is conditional and creates no immediate change.',
+            causalSignals:[
+              { signal:'Martinez overtime',    reading:'At threshold',   threshold:'40h/week limit', status:'warn', note:'Pre-emptive only — no confirmed absence yet' },
+              { signal:'Line 4 coverage risk', reading:'Contingent gap', threshold:'Must be covered', status:'warn', note:'Risk is tomorrow — not today' },
+            ],
+            dependencies:[
+              { label:'Line 3 Sauce Dosing', status:'pending',  note:'Will be unassigned if R-06 moves — assign human backup separately' },
+              { label:'Martinez attendance',  status:'pending',  note:'Pre-allocation only activates if Martinez is absent' },
+            ],
+            riskForecast: 'If Martinez absent tomorrow with no Line 3 backup assigned: Line 3 Sauce Dosing uncovered. This action mitigates Line 4 risk but does not solve the Line 3 gap.',
+          },
+        },
+      ],
+    },
+    {
+      id:'maintenance', name:'Predictive Maintenance', icon:'Wrench',
+      description:'Analyzes telemetry trends and schedules maintenance windows before failures occur.',
+      isComplianceCategory: false,
+      confidenceMethodology: 'Pattern similarity score against historical failure signatures in the precedent library, weighted by recency and line match. 100% = identical signature on same equipment. Penalised if precedent pool < 5 cases or if precedents are from a different line.',
+      enabled:true, confidenceThreshold:82,
+      actCount:{ week:4, month:17 },
+      lastFired:'06:05 today',
+      pendingActions:[
+        {
+          id:'pa4',
+          action:'Schedule bearing inspection for R-03 before next shift',
+          target:'R-03 Seal Press A — next maintenance window: tonight 22:00-23:30',
+          rationale:'Vibration at 3.4 — pattern matches R-08 failure sequence 72h before fault',
+          confidence:84,
+          triggerData:{
+            reading: 3.4,
+            unit: 'mm/s',
+            trend: '+1.3 mm/s since shift start (62% increase)',
+            precedentMatch: 'R-08 bearing failure 2026-04-01',
+            precedentPool: 3,
+            precedentLine: 'Line 6',
+            crossLineWarning: true,
+            proposedWindow: 'Tonight 22:00–23:30 (low-production gap)',
+            estimatedDuration: '90 min',
+          },
+          impactPreview:[
+            'Maintenance window booked: tonight 22:00–23:30 — R-03 offline during this window',
+            'Line 4 PM packaging throughput may drop ~15% for 90 min',
+            'If inspection finds bearing wear: full replacement adds ~4h — Line 4 down until 02:30',
+            'If inspection finds no fault: R-03 resumes, no further action',
+            'Not acting: R-08 precedent suggests 40-60h to fault — possible Line 4 unplanned downtime tomorrow AM',
+          ],
+          evidence:{
+            summary: "R-03 vibration has increased 62% since shift start (2.1 → 3.4 mm/s). The signature matches R-08's bearing failure precursor from 72 hours ago — a 3-case precedent pool with cross-line caveat. MTBF model forecasts failure within 14 hours.",
+            causalSignals:[
+              { signal:'Vibration trend',   reading:'+1.3 mm/s shift',   threshold:'Sustained rise',        status:'breach', note:'62% increase from shift start — not a spike' },
+              { signal:'Precedent match',   reading:'R-08 failure (72h)', threshold:'Same signature class',  status:'warn',  note:'3-case pool, cross-line (Line 6 → Line 4) — treat with caution' },
+              { signal:'MTBF forecast',     reading:'14h to failure',     threshold:'< 24h triggers action', status:'breach', note:'±3h uncertainty band' },
+            ],
+            dependencies:[
+              { label:'Maintenance tech',    status:'eligible',  note:'Tonight 22:00–23:30 window is available' },
+              { label:'Line 4 throughput',   status:'pending',   note:'~15% reduction for 90 min during inspection window' },
+              { label:'Bearing replacement', status:'contingent',note:'If wear found: +4h additional downtime — Line 4 until 02:30' },
+            ],
+            riskForecast: 'If no inspection tonight: R-08 precedent suggests 40–60h to fault. Probable unplanned Line 4 downtime tomorrow AM — higher cost than a planned 90-min inspection window.',
+          },
+        },
+      ],
+    },
+    {
+      id:'handoff', name:'Handoff Synthesis', icon:'Handshake',
+      description:'Pre-populates handoff documents from live shift data T-45 min before shift end. Supervisor reviews and signs — they do not author.',
+      isComplianceCategory: true,
+      confidenceMethodology: 'Data freshness score per item: 100% = source updated within 15 min. Each hour of staleness reduces per-item confidence by 10%. Items from sources with gaps (SCADA offline, MES sync failure) are flagged as unverified regardless of score.',
+      regulatoryObligations: ['Shift handoff documentation (FSMA 204)', 'CCP status continuity record'],
+      enabled:true, confidenceThreshold:70,
+      actCount:{ week:10, month:44 },
+      lastFired:'13:15 today',
+      pendingActions:[
+        {
+          id:'pa5',
+          action:'Draft PM handoff — 4 carry-forward items synthesized',
+          target:'Line 4 PM handoff · Supervisor M. Santos',
+          rationale:'Synthesized open CAPA-2604-001, Sensor A-7, Lindqvist cert gap, and R-03 bearing alert from live shift data',
+          confidence:92,
+          impactPreview:[
+            'Document is a draft — M. Santos must review each item before signing',
+            'Sensor A-7 data freshness: 8 min — high confidence',
+            'CAPA-2604-001 status freshness: 22 min — high confidence',
+            'Lindqvist cert status freshness: 4h 12min — flagged as potentially stale',
+            'R-03 telemetry freshness: 4 min — high confidence',
+            'Supervisor signature creates a legal record — signing without review creates liability',
+          ],
+          evidence:{
+            summary: 'Four carry-forward items synthesized from live shift data: CAPA-2604-001 (22 min old, fresh), Sensor A-7 anomaly (8 min old, fresh), R-03 bearing alert (4 min old, fresh), and Lindqvist cert gap (252 min old, stale — flagged). Document confidence is 92%.',
+            causalSignals:[
+              { signal:'CAPA-2604-001',      reading:'Open — 22 min data',   threshold:'< 30 min = fresh',  status:'ok',    note:'Carry-forward confirmed' },
+              { signal:'Sensor A-7',          reading:'Anomaly — 8 min data', threshold:'< 30 min = fresh',  status:'ok',    note:'Carry-forward confirmed' },
+              { signal:'R-03 bearing alert',  reading:'Active — 4 min data',  threshold:'< 30 min = fresh',  status:'ok',    note:'Carry-forward confirmed' },
+              { signal:'Lindqvist cert',      reading:'252 min stale',        threshold:'< 30 min = fresh',  status:'stale', note:'Unverified — flagged in document' },
+            ],
+            dependencies:[
+              { label:'M. Santos review',   status:'required',  note:'Must review each item — cannot auto-sign' },
+              { label:'HR data refresh',    status:'pending',   note:'Lindqvist cert field unverified until HR syncs' },
+              { label:'Signing liability',  status:'required',  note:'Supervisor signature creates a legal record — review before signing' },
+            ],
+            riskForecast: 'Signing the Lindqvist cert entry without verification creates audit liability. HR data is 4h stale — verify cert status manually or flag as unverified in the signed document.',
+          },
+        },
+      ],
+    },
+    {
+      id:'escalation', name:'Risk Escalation', icon:'Bell',
+      description:'Routes critical findings to owners before time windows close. Escalates if unacknowledged. "I\'m on the floor" status pauses re-fires and routes to named backup.',
+      isComplianceCategory: false,
+      confidenceMethodology: 'Not applicable — escalation fires based on time elapsed and finding urgency level, not a confidence model. A critical finding unacknowledged for 10 min always escalates regardless of any confidence score.',
+      hasHotStandby: true,
+      hotStandbyConfig: {
+        channel: 'Out-of-band SMS/pager',
+        trigger: 'Any finding aged > 20 min without acknowledged owner AND Risk Escalation cannot route',
+        backup: 'J. Crocker mobile · +1 (785) 555-0142',
+        note: 'Fires independently of the Risk Escalation Agent — does not require it to be running',
+      },
+      enabled:true, confidenceThreshold:95,
+      actCount:{ week:2, month:8 },
+      lastFired:'09:15 today',
+      pendingActions:[],
+    },
+    {
+      id:'capa-closure', name:'CAPA Closure', icon:'ClipboardCheck',
+      description:'Tracks evidence vs. requirements, sends targeted reminders, validates closure readiness. Enabled in advisory mode — cannot close cases autonomously. In robot mode: manages task queue rebalancing.',
+      isComplianceCategory: true,
+      writeScope: 'track-only',
+      confidenceMethodology: 'Evidence completeness score: checks file count, regulatory mapping coverage, and whether the corrective measure field is populated. Does not validate file content — human declaration required at closure.',
+      regulatoryObligations: ['CAPA closure documentation (FSMA 204)', 'GMP corrective action records'],
+      enabled:true, confidenceThreshold:88,
+      actCount:{ week:0, month:3 },
+      lastFired:'Never — newly enabled',
+      pendingActions:[
+        {
+          id:'pa-capa-1',
+          action:'Send evidence reminder to D. Kowalski — CAPA-2604-001 overdue 7 days',
+          target:'CAPA-2604-001 · Sensor A-7 breach',
+          rationale:'Case is 7 days overdue. Two prior escalation notices sent. Evidence not submitted. This reminder will be the third notice — next step is director-level forced resolution.',
+          confidence:100,
+          impactPreview:[
+            'Reminder sent to D. Kowalski with 24-hour final deadline',
+            'If no response in 24h: case auto-escalated to "director resolution required"',
+            'No case modifications — advisory only',
+          ],
+          evidence:{
+            summary: 'CAPA-2604-001 is 7 days overdue. Two escalation notices were sent with no evidence submitted or acknowledgement received. A third notice triggers the final deadline — non-response in 24 hours forces director-level resolution.',
+            causalSignals:[
+              { signal:'Days overdue',    reading:'7 days',   threshold:'0 days overdue', status:'breach', note:'Evidence deadline passed on May 8' },
+              { signal:'Evidence files',  reading:'0 of required', threshold:'≥ 1 required', status:'breach', note:'No files attached to the case record' },
+              { signal:'Prior notices',   reading:'2 sent',   threshold:'N/A',           status:'warn',  note:'No acknowledgement on either — escalation pattern confirmed' },
+            ],
+            dependencies:[
+              { label:'D. Kowalski response', status:'required',  note:'24h final deadline — next step is forced resolution' },
+              { label:'Director escalation',  status:'eligible',  note:'Triggers automatically if no response in 24h' },
+              { label:'FDA audit record',     status:'required',  note:'7-day gap is visible in the audit package — documented delay' },
+            ],
+            riskForecast: 'If no response in 24 hours: case auto-escalated to director resolution. Continued delay risks an FDA audit finding — the 7-day evidence gap is already logged.',
+          },
+        },
+      ],
+    },
+    {
+      id:'data-guardian', name:'Data Quality Guardian', icon:'Shield',
+      description:'Monitors all data source freshness every 5 minutes. When any source critical to a compliance or safety agent is stale > 30 min, surfaces a finding to the director and flags dependent agents.',
+      isComplianceCategory: false,
+      confidenceMethodology: 'Binary: each source is either fresh (< 30 min) or stale (≥ 30 min). No probability model — purely recency-based.',
+      dataSourceHealth: [
+        { source:'SCADA / Sensor streams', ageMin:8,   status:'fresh', dependents:['Compliance Monitor','Pre-Shift Verification','Predictive Maintenance','Handoff Synthesis'] },
+        { source:'HR / Cert database',     ageMin:252, status:'stale', dependents:['Pre-Shift Verification','Resource Allocation','Handoff Synthesis'], staleSince:'10:10 AM' },
+        { source:'CAPA database',          ageMin:22,  status:'fresh', dependents:['CAPA Closure','Handoff Synthesis','Risk Escalation'] },
+        { source:'COA / Lot database',     ageMin:15,  status:'fresh', dependents:['Supplier Intelligence'] },
+        { source:'MES / Production',       ageMin:45,  status:'warn',  dependents:['Handoff Synthesis','Pre-Shift Verification'], note:'Approaching 30-min threshold' },
+        { source:'Robot telemetry',        ageMin:4,   status:'fresh', dependents:['Predictive Maintenance','Resource Allocation','Handoff Synthesis'] },
+      ],
+      enabled:true, confidenceThreshold:100,
+      actCount:{ week:0, month:0 },
+      lastFired:'Continuous — 5-min cycle',
+      pendingActions:[
+        {
+          id:'pa-dg-1',
+          action:'Flag HR/cert data stale — Pre-Shift Verification and Handoff Synthesis operating on unverified cert status',
+          target:'HR / Cert database · Last updated 10:10 AM (4h 12min ago)',
+          rationale:'HR data is 252 min stale. Pre-Shift Verification cannot confirm staffing cert status. Handoff Synthesis\'s Lindqvist cert entry is unverified. Three agents degraded.',
+          confidence:100,
+          impactPreview:[
+            'Pre-Shift Verification will refuse to give clean cert pass until HR data is refreshed',
+            'Handoff Synthesis Lindqvist cert field remains flagged "Unverified"',
+            'Resource Allocation proposals may be based on stale cert status',
+            'Resolution: trigger HR integration sync or verify cert status manually',
+          ],
+          evidence:{
+            summary: 'HR / Cert database has not synced in 4 hours 12 minutes — 252 minutes above the 30-minute freshness threshold. Three agents are operating on unverified cert data: Pre-Shift Verification, Resource Allocation, and Handoff Synthesis.',
+            causalSignals:[
+              { signal:'HR data age',     reading:'252 min', threshold:'< 30 min required', status:'stale', note:'Last sync: 10:10 AM — no integration event since' },
+              { signal:'Affected agents', reading:'3 degraded', threshold:'0 degraded',     status:'breach', note:'Pre-Shift, Resource Allocation, Handoff Synthesis' },
+            ],
+            dependencies:[
+              { label:'HR integration sync',    status:'eligible', note:'Manual trigger available — resolves staleness immediately' },
+              { label:'Pre-Shift Verification',  status:'blocked',  note:'Refusing clean cert pass until HR refreshed' },
+              { label:'Manual cert check',       status:'eligible', note:'Can verify cert status directly as a fallback' },
+            ],
+            riskForecast: 'Continued staleness: Handoff Synthesis flags cert fields as unverified — supervisor must manually confirm before signing. Resource allocation proposals may reference outdated cert status.',
+          },
+        },
+      ],
+    },
+  ],
+}
+
+export const dataSourceHealth = [
+  { source:'SCADA / Sensor streams', ageMin:8,   status:'fresh', score:100, dependents:['Compliance Monitor','Pre-Shift Verification','Predictive Maintenance','Handoff Synthesis'] },
+  { source:'HR / Cert database',     ageMin:252, status:'stale', score:0,   dependents:['Pre-Shift Verification','Resource Allocation','Handoff Synthesis'], staleSince:'10:10 AM' },
+  { source:'CAPA database',          ageMin:22,  status:'fresh', score:100, dependents:['CAPA Closure','Handoff Synthesis','Risk Escalation'] },
+  { source:'COA / Lot database',     ageMin:15,  status:'fresh', score:100, dependents:['Supplier Intelligence'] },
+  { source:'MES / Production',       ageMin:45,  status:'warn',  score:50,  dependents:['Handoff Synthesis','Pre-Shift Verification'], note:'Approaching 30-min threshold' },
+  { source:'Robot telemetry',        ageMin:4,   status:'fresh', score:100, dependents:['Predictive Maintenance','Resource Allocation','Handoff Synthesis'] },
+]
+
+// System confidence: weighted average of critical source scores
+// HR weighted 1x (affects 3 agents), SCADA 2x (safety-critical), others 1x
+export const systemConfidenceScore = Math.round(
+  (100*2 + 0*1 + 100*1 + 100*1 + 50*1 + 100*1) / 7
+) // → 79

@@ -14,10 +14,9 @@ const NetworkView      = lazy(() => import('./screens/NetworkView'))
 const OperatorView     = lazy(() => import('./screens/OperatorView'))
 const Analytics        = lazy(() => import('./screens/Analytics'))
 const NotificationCenter = lazy(() => import('./screens/NotificationCenter'))
-const DesignLabPage    = lazy(() => import('./__design_lab/DesignLabPage'))
-const AnalyticsLabPage = lazy(() => import('./__design_lab/AnalyticsLabPage'))
-const VizLabPage       = lazy(() => import('./__design_lab/VizLabPage'))
-
+const RobotFleet       = lazy(() => import('./screens/RobotFleet'))
+const ResourceAllocation = lazy(() => import('./screens/ResourceAllocation'))
+const AgentControl     = lazy(() => import('./screens/AgentControl'))
 function ScreenLoader() {
  return <div className="flex-1 flex items-center justify-center font-body text-ghost text-[11px]">Loading…</div>
 }
@@ -67,9 +66,9 @@ export default function App() {
  <Route path="/analytics" element={<ErrorBoundary><Analytics /></ErrorBoundary>} />
  <Route path="/digest" element={<Navigate to="/analytics" replace />} />
  <Route path="/notifications" element={<ErrorBoundary><NotificationCenter /></ErrorBoundary>} />
- <Route path="/__design_lab" element={<DesignLabPage />} />
- <Route path="/__analytics_lab" element={<AnalyticsLabPage />} />
- <Route path="/__viz_lab" element={<VizLabPage />} />
+ <Route path="/robots" element={<ErrorBoundary><RobotFleet /></ErrorBoundary>} />
+ <Route path="/allocation" element={<ErrorBoundary><ResourceAllocation /></ErrorBoundary>} />
+ <Route path="/agents" element={<ErrorBoundary><AgentControl /></ErrorBoundary>} />
  </Routes>
  </Suspense>
  </main>
