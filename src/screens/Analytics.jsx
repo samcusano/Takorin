@@ -495,7 +495,7 @@ export default function Analytics() {
           <div className="font-body text-ghost text-[10px] uppercase tracking-widest mb-3">Supporting intelligence</div>
           <div className="space-y-px">
 
-            <Module title="Intervention ROI" badge="$312K protected · 47 interventions · Q2 2026" defaultOpen>
+            <Module title="Impact" badge="$312K protected · 47 interventions · Q2 2026" defaultOpen>
               <div className="bg-ok/[0.02] border-b border-rule2 px-5 py-4 flex items-baseline gap-6">
                 <div>
                   <div className="font-body text-ghost text-[9px] uppercase tracking-[0.1em] mb-1">Value protected · Q2 2026</div>
@@ -527,7 +527,7 @@ export default function Analytics() {
             </Module>
 
             {/* ── AI Decision Intelligence ─────────────────────────────── */}
-            <Module title="AI Decision Intelligence" badge="Agent Control · this shift" defaultOpen>
+            <Module title="Decision quality" badge="Agent Control · this shift" defaultOpen>
               {(() => {
                 const totalDecisions = agentConfigData.agents.reduce((n, a) => n + (a.pendingActions?.length ?? 0), 0)
                 const complianceDecisions = agentConfigData.agents.filter(a => a.isComplianceCategory).reduce((n, a) => n + (a.pendingActions?.length ?? 0), 0)
@@ -544,9 +544,9 @@ export default function Analytics() {
                     <div className="grid grid-cols-4 gap-px bg-rule2 border-b border-rule2">
                       {[
                         { label: 'Decisions this shift', val: String(totalDecisions), tone: 'text-ink' },
-                        { label: 'Compliance-category', val: String(complianceDecisions), tone: 'text-warn' },
-                        { label: 'Avg dwell — high', val: `${avgDwellSec}s`, tone: avgDwellSec >= 15 ? 'text-ok' : avgDwellSec >= 5 ? 'text-warn' : 'text-danger' },
-                        { label: 'Low-dwell exposure', val: String(lowDwellCount), tone: lowDwellCount > 0 ? 'text-danger' : 'text-ok' },
+                        { label: 'Compliance decisions', val: String(complianceDecisions), tone: 'text-warn' },
+                        { label: 'Review time — high', val: `${avgDwellSec}s`, tone: avgDwellSec >= 15 ? 'text-ok' : avgDwellSec >= 5 ? 'text-warn' : 'text-danger' },
+                        { label: 'Quick approvals', val: String(lowDwellCount), tone: lowDwellCount > 0 ? 'text-danger' : 'text-ok' },
                       ].map(({ label, val, tone }) => (
                         <div key={label} className="bg-stone px-5 py-3.5">
                           <div className="font-body text-ghost text-[9px] uppercase tracking-widest mb-1">{label}</div>
@@ -593,7 +593,7 @@ export default function Analytics() {
             </Module>
 
             {/* ── Impact Attribution ───────────────────────────────────────── */}
-            <Module title="Impact Attribution" badge={`${interventionSummary.total} interventions · ${Math.round(interventionSummary.avgAttributionConfidence * 100)}% avg confidence`} defaultOpen>
+            <Module title="Outcomes" badge={`${interventionSummary.total} interventions · ${Math.round(interventionSummary.avgAttributionConfidence * 100)}% avg confidence`} defaultOpen>
               {(() => {
                 const positiveCount = interventions.filter(e => e.outcomeClassification === 'positive').length
                 const unclearCount  = interventions.filter(e => e.outcomeClassification === 'unclear').length
@@ -606,11 +606,11 @@ export default function Analytics() {
                     <div className="grid grid-cols-3 gap-px bg-rule2 border-b border-rule2">
                       {[
                         { label: 'Positive outcomes', val: `${positiveCount}/${interventionSummary.total}`, tone: 'text-ok' },
-                        { label: 'Avg attribution', val: `${avgConf}%`, tone: avgConf >= 70 ? 'text-ok' : avgConf >= 50 ? 'text-warn' : 'text-danger' },
-                        { label: 'Operator confirmation', val: `${confirmRate}%`, tone: confirmRate >= 60 ? 'text-ok' : 'text-warn' },
-                        { label: 'Auto-executed', val: String(interventionSummary.autoExecuted), tone: 'text-ochre' },
+                        { label: 'Avg confidence', val: `${avgConf}%`, tone: avgConf >= 70 ? 'text-ok' : avgConf >= 50 ? 'text-warn' : 'text-danger' },
+                        { label: 'Operator confirmed', val: `${confirmRate}%`, tone: confirmRate >= 60 ? 'text-ok' : 'text-warn' },
+                        { label: 'Auto-run', val: String(interventionSummary.autoExecuted), tone: 'text-ochre' },
                         { label: 'Reversed', val: String(interventionSummary.reversed), tone: interventionSummary.reversed > 0 ? 'text-warn' : 'text-ghost' },
-                        { label: 'Low-dwell risk', val: String(interventionSummary.lowDwellDecisions), tone: interventionSummary.lowDwellDecisions > 0 ? 'text-danger' : 'text-ok' },
+                        { label: 'Quick approvals', val: String(interventionSummary.lowDwellDecisions), tone: interventionSummary.lowDwellDecisions > 0 ? 'text-danger' : 'text-ok' },
                       ].map(({ label, val, tone }) => (
                         <div key={label} className="bg-stone px-5 py-3.5">
                           <div className="font-body text-ghost text-[9px] uppercase tracking-widest mb-1">{label}</div>
@@ -639,7 +639,7 @@ export default function Analytics() {
                       </div>
                     </div>
                     <div className="px-5 py-3 flex items-center justify-between">
-                      <span className="font-body text-ghost text-[10px]">Attribution confidence reflects causal certainty. Values below 60% indicate confounding factors.</span>
+                      <span className="font-body text-ghost text-[10px]">Confidence reflects how certain we are the action caused the outcome. Below 60% means the cause isn't clear.</span>
                       <Link to="/impact" className="flex items-center gap-1 font-body text-ghost text-[10px] hover:text-ink transition-colors">
                         <ArrowRight size={10} />View ImpactLoop
                       </Link>
@@ -756,7 +756,7 @@ export default function Analytics() {
               </div>
             </Module>
 
-            <Module title="Network Intelligence" badge="2 of 4 plants connected · 3 needed for signals">
+            <Module title="Cross-plant signals" badge="2 of 4 plants connected · 3 needed for signals">
               {/* Column headers */}
               <div className="grid px-5 py-2 bg-stone2 border-b border-rule2"
                 style={{ gridTemplateColumns: '1fr 120px 80px 80px' }}>
@@ -802,7 +802,7 @@ export default function Analytics() {
               </div>
             </Module>
 
-            <Module title="Model History" badge="82% accuracy · 28 shifts · Line 4">
+            <Module title="AI accuracy" badge="82% · 28 shifts · Line 4">
               <div className="px-5 py-4">
                 <div className="grid grid-cols-3 gap-6 mb-4">
                   {[

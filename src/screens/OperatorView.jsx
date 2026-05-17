@@ -47,20 +47,20 @@ const LINKED_TASKS = {
 
 function DataCommitmentOverlay({ onAcknowledge }) {
  return (
-  <Modal title="Before you start — your data rights">
+  <Modal title="What we track">
    <div className="overflow-y-auto flex-1 px-5 py-5">
     <div className="flex items-start gap-3 mb-4">
      <ShieldCheck size={20} strokeWidth={1.75} className="text-ok flex-shrink-0 mt-0.5" />
      <div>
-      <div className="font-display font-bold text-ink text-[16px] leading-snug mb-1">Before you start — your data rights</div>
-      <p className="font-body text-ink2 text-[12px] leading-relaxed">Takorin monitors production signals to help you do your job safely and to support your career. Here's exactly what that means for your data.</p>
+      <div className="font-display font-bold text-ink text-[16px] leading-snug mb-1">What we track</div>
+      <p className="font-body text-ink2 text-[12px] leading-relaxed">Takorin tracks production signals to help you work safely. Here's what your supervisor can see, and what they can't.</p>
      </div>
     </div>
     <div className="space-y-2 mb-5">
      {[
-      { icon: Check,       label: 'Your supervisor can see',      items: ['Your task completion status', 'Shift checklist items you signed or flagged', 'Near-miss reports you submitted', 'Your hours worked this week and consecutive shifts', 'Your fatigue status (a scheduling signal, not a performance rating)'] },
+      { icon: Check,       label: 'Your supervisor can see',      items: ['Your task completion status', 'Shift checklist items you signed or flagged', 'Near-miss reports you submitted', 'Your hours worked this week and consecutive shifts', 'Your fatigue status — used for scheduling, not evaluation'] },
       { icon: Lock,        label: 'Not visible to your supervisor', items: ['The reason you dismissed a specific finding', 'Your certification progress score'] },
-      { icon: ShieldCheck, label: 'How your data is used',    items: ['Fatigue and hours data is used for scheduling only — it does not affect your performance review', 'You can see your own fatigue and hours data in your dashboard at any time', 'Anonymized production patterns only used for model training — no names attached'] },
+      { icon: ShieldCheck, label: 'How your data is used',    items: ['Fatigue and hours data is for scheduling only — it has no effect on your performance review', 'You can see your own data in your dashboard at any time', 'Production patterns used to improve the model. Your name is not attached.'] },
      ].map(({ icon: Icon, label, items }) => (
       <div key={label} className="px-3 py-2.5 bg-stone2 border border-rule2">
        <div className="flex items-center gap-1.5 mb-1.5">

@@ -12,7 +12,7 @@ const OUTCOME_CFG = {
 const DECISION_CFG = {
   approved:        { label: 'Approved',      cls: 'text-ok'    },
   rejected:        { label: 'Rejected',      cls: 'text-warn'  },
-  'auto-executed': { label: 'Auto-executed', cls: 'text-ochre' },
+  'auto-executed': { label: 'Auto-run', cls: 'text-ochre' },
   overridden:      { label: 'Overridden',    cls: 'text-muted' },
 }
 
@@ -191,7 +191,7 @@ function InterventionDetail({ entry }) {
         {entry.sourceSignals.some(s => s.stale) && (
           <div className="flex items-center gap-1.5 mt-1.5">
             <AlertTriangle size={9} className="text-warn" strokeWidth={2} />
-            <span className="font-body text-warn text-[9px]">Stale signals at decision time — attribution confidence reduced</span>
+            <span className="font-body text-warn text-[9px]">Stale signals at decision time — confidence reduced</span>
           </div>
         )}
       </div>
@@ -245,7 +245,7 @@ function InterventionDetail({ entry }) {
               </span>
             )}
           </div>
-          <div className="font-body text-ghost text-[9px] mt-1.5">Attribution confidence: {entry.attributionConfidence != null ? `${Math.round(entry.attributionConfidence * 100)}%` : '—'}</div>
+          <div className="font-body text-ghost text-[9px] mt-1.5">Confidence: {entry.attributionConfidence != null ? `${Math.round(entry.attributionConfidence * 100)}%` : '—'}</div>
         </div>
       )}
 
@@ -253,7 +253,7 @@ function InterventionDetail({ entry }) {
         <div className="flex items-start gap-3 px-4 py-3 border border-ok/30 bg-ok/[0.04] border-l-4 border-l-ok">
           <CheckCircle2 size={12} strokeWidth={2} className="text-ok flex-shrink-0 mt-0.5" />
           <div className="flex-1 min-w-0">
-            <div className="font-body text-ghost text-[9px] uppercase tracking-widest mb-0.5">Operator confirmation</div>
+            <div className="font-body text-ghost text-[9px] uppercase tracking-widest mb-0.5">Confirmed by operator</div>
             <div className="font-body font-medium text-ink text-[11px]">{entry.operatorConfirmation.confirmedBy} · {entry.operatorConfirmation.station}</div>
             <div className="font-body text-ok text-[10px]">{entry.operatorConfirmation.note}</div>
             <div className="font-body text-ghost text-[9px] mt-0.5">{entry.operatorConfirmation.confirmedAt}</div>
@@ -262,7 +262,7 @@ function InterventionDetail({ entry }) {
       ) : (
         <div className="flex items-center gap-2 px-4 py-3 border border-rule2 bg-stone2">
           <div className="w-1.5 h-1.5 rounded-full bg-ghost flex-shrink-0" />
-          <span className="font-body text-ghost text-[10px]">No operator confirmation — outcome attributed from telemetry only</span>
+          <span className="font-body text-ghost text-[10px]">No operator confirmation — outcome estimated from telemetry</span>
         </div>
       )}
 
@@ -326,7 +326,7 @@ export default function ImpactLoop() {
           {[
             { label: 'Interventions',     val: String(interventionSummary.total),                                                     tone: 'text-ink'    },
             { label: 'Positive outcomes', val: `${positiveCount}/${interventionSummary.total}`,                                       tone: 'text-ok'     },
-            { label: 'Avg attribution',   val: `${avgAttrib}%`,   tone: avgAttrib >= 70 ? 'text-ok' : avgAttrib >= 50 ? 'text-warn' : 'text-danger'       },
+            { label: 'Avg confidence',    val: `${avgAttrib}%`,   tone: avgAttrib >= 70 ? 'text-ok' : avgAttrib >= 50 ? 'text-warn' : 'text-danger'       },
             { label: 'Low-dwell',         val: String(lowDwellCount), tone: lowDwellCount > 0 ? 'text-danger' : 'text-ok'                                  },
           ].map(({ label, val, tone }) => (
             <div key={label} className="bg-stone px-4 py-3">
@@ -418,7 +418,7 @@ export default function ImpactLoop() {
 
         {/* Attribution footnote */}
         <div className="flex-shrink-0 px-4 py-2.5 border-t border-rule2 bg-stone2">
-          <p className="font-body text-ghost text-[9px] leading-snug">Attribution confidence reflects causal certainty between this intervention and the measured outcome. Values below 60% indicate possible confounding factors.</p>
+          <p className="font-body text-ghost text-[9px] leading-snug">Confidence reflects how certain we are the action caused the outcome. Below 60% means other factors may have been involved.</p>
         </div>
       </div>
 

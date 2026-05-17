@@ -57,16 +57,19 @@ const SHOW_EXPIRY = {
 function enrich(pa, agent) {
   const base = pa.isEmergencyAutoAct ? {
     consequence: 'critical',
+    tier: 3,
     expiresLabel: `${pa.overrideWindowMin ?? 15} min window`,
     blastRadius: 'Production line coverage',
     sortKey: 0,
   } : agent.isComplianceCategory ? {
     consequence: 'high',
+    tier: 3,
     expiresLabel: 'Regulatory window — act today',
     blastRadius: '1 compliance case + FSMA record',
     sortKey: 1,
   } : {
     consequence: 'medium',
+    tier: pa.id === 'pa-dg-1' ? 1 : 2,
     expiresLabel: pa.id === 'pa5' ? 'Shift handoff due' : pa.id === 'pa-capa-1' ? '24h final deadline' : '14h window',
     blastRadius: 'Line 4 — 1 unit affected',
     sortKey: 2,
@@ -97,13 +100,13 @@ function OverrideModal({ agentName, actionLabel, onConfirm, onCancel }) {
     <div className="fixed inset-0 bg-ink/40 z-50 flex items-center justify-center p-6">
       <div className="bg-stone border border-rule2 w-full max-w-md shadow-raise slide-in">
         <div className="px-5 py-4 border-b border-rule2 bg-stone2">
-          <div className="font-body text-ghost text-[10px] uppercase tracking-widest mb-1">Override — rationale required</div>
+          <div className="font-body text-ghost text-[10px] uppercase tracking-widest mb-1">Why are you overriding?</div>
           <div className="font-display font-bold text-ink text-[15px]">{agentName}</div>
           <div className="font-body text-muted text-[11px] mt-0.5">{actionLabel}</div>
         </div>
         <div className="px-5 py-4 space-y-3">
           <p className="font-body text-muted text-[12px] leading-relaxed">
-            This override suppresses a compliance-category agent action. The rationale is logged to the activity feed and becomes part of the audit record.
+            Overriding a compliance action. Your reason is logged and becomes part of the audit record.
           </p>
           <div>
             <label className="font-body text-ghost text-[10px] uppercase tracking-widest block mb-1.5">Rationale</label>
@@ -362,7 +365,7 @@ function LedgerRow({ pa, agent, onInvestigate, onApprove, onOverrideRequest, sel
                 </div>
               </div>
               <div>
-                <div className="font-body text-ghost text-[9px] uppercase tracking-widest mb-0.5">Blast radius</div>
+                <div className="font-body text-ghost text-[9px] uppercase tracking-widest mb-0.5">What it affects</div>
                 <div className="font-body text-muted text-[10px]">{meta.blastRadius}</div>
               </div>
             </div>
@@ -692,10 +695,70 @@ function FleetStrip({ agents }) {
   )
 }
 
+// ─── Autonomous tier budget strip ────────────────────────────────────────────
+
+const TIER2_BUDGET = 8
+
+function AgentTierStrip({ tier0Count, tier1Items, tier2Items, tier3Items, expandTier1, onToggleTier1 }) {
+  const tier2Undecided = tier2Items.filter(p => !p._decided).length
+  const tier3Undecided = tier3Items.filter(p => !p._decided).length
+  const tier2Pct = Math.min(100, (tier2Undecided / TIER2_BUDGET) * 100)
+  const tier2BarColor = tier2Undecided > TIER2_BUDGET ? 'bg-danger' : tier2Undecided >= Math.ceil(TIER2_BUDGET * 0.75) ? 'bg-warn' : 'bg-ok'
+
+  return (
+    <div className="flex-shrink-0 flex items-stretch border-b border-rule2 bg-stone2 overflow-x-auto">
+      {/* Tier 0 — fully autonomous */}
+      <div className="flex items-center gap-2.5 px-4 py-2 border-r border-rule2 flex-shrink-0">
+        <div className="w-1.5 h-1.5 rounded-full bg-ok flex-shrink-0" />
+        <div>
+          <div className="font-body text-ghost text-[8px] uppercase tracking-widest mb-0.5">Tier 0</div>
+          <div className="font-body text-ink text-[11px] font-medium">{tier0Count} auto</div>
+        </div>
+      </div>
+      {/* Tier 1 — notify only (expandable) */}
+      <button type="button" onClick={onToggleTier1}
+        className={`flex items-center gap-2.5 px-4 py-2 border-r border-rule2 flex-shrink-0 hover:bg-stone3 transition-colors text-left ${expandTier1 ? 'bg-stone3' : ''}`}>
+        <div className="w-1.5 h-1.5 rounded-full bg-ochre flex-shrink-0" />
+        <div>
+          <div className="font-body text-ghost text-[8px] uppercase tracking-widest mb-0.5">Tier 1 · Notified</div>
+          <div className="font-body text-ink text-[11px] font-medium">{tier1Items.length} informed</div>
+        </div>
+        <ChevronDown size={9} className={`text-ghost flex-shrink-0 transition-transform ${expandTier1 ? 'rotate-180' : ''}`} />
+      </button>
+      {/* Tier 2 — budgeted approval with shift budget bar */}
+      <div className="flex items-center gap-3 px-4 py-2 border-r border-rule2 flex-1 min-w-[180px]">
+        <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${tier2Undecided > TIER2_BUDGET ? 'bg-danger' : 'bg-warn'}`} />
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center justify-between gap-2 mb-1">
+            <div className="font-body text-ghost text-[8px] uppercase tracking-widest">Tier 2 · Your review</div>
+            <div className={`font-body text-[9px] tabular-nums font-medium ${tier2Undecided > TIER2_BUDGET ? 'text-danger' : 'text-ghost'}`}>
+              {tier2Undecided}/{TIER2_BUDGET}
+              {tier2Undecided > TIER2_BUDGET && ' — over budget'}
+            </div>
+          </div>
+          <div className="h-1 bg-rule2 overflow-hidden">
+            <div className={`h-full transition-all ${tier2BarColor}`} style={{ width: `${tier2Pct}%` }} />
+          </div>
+        </div>
+      </div>
+      {/* Tier 3 — compliance lock */}
+      <div className={`flex items-center gap-2.5 px-4 py-2 flex-shrink-0 ${tier3Undecided > 0 ? 'bg-danger/[0.04]' : ''}`}>
+        <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${tier3Undecided > 0 ? 'bg-danger animate-pulse' : 'bg-ghost'}`} />
+        <div>
+          <div className="font-body text-ghost text-[8px] uppercase tracking-widest mb-0.5">Tier 3 · Locked</div>
+          <div className={`font-body text-[11px] font-medium ${tier3Undecided > 0 ? 'text-danger' : 'text-ghost'}`}>
+            {tier3Undecided > 0 ? `${tier3Undecided} pending` : tier3Items.length > 0 ? `${tier3Items.length} reviewed` : 'None'}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ─── Root ─────────────────────────────────────────────────────────────────────
 
 export default function AgentControl() {
-  const { agentActions, systemConfidence, logAgentAction, overrideAgentAction, markAgentDecided } = useAppState()
+  const { agentActions, systemConfidence, logAgentAction, overrideAgentAction, markAgentDecided, currentPlant } = useAppState()
   const navigate = useNavigate()
   const agents = agentConfigData?.agents ?? []
 
@@ -719,6 +782,12 @@ export default function AgentControl() {
   const [disableModal, setDisableModal]   = useState(null)
   const [splitFocused, setSplitFocused]   = useState(null)
   const [splitChecked, setSplitChecked]   = useState(new Set())
+  const [expandTier1, setExpandTier1]     = useState(false)
+
+  const tier1Items = pending.filter(p => p._meta.tier === 1)
+  const tier2Items = pending.filter(p => p._meta.tier === 2)
+  const tier3Items = pending.filter(p => p._meta.tier === 3)
+  const tier0Count = 12 // static: autonomous actions taken this shift, no review needed
 
   const handleApprove = (key) => {
     const pa = pending.find(p => p._key === key)
@@ -761,7 +830,7 @@ export default function AgentControl() {
   }
 
   const undecidedPending = pending.filter(p => !p._decided)
-  const undecidedCount = undecidedPending.length
+  const undecidedCount = undecidedPending.filter(p => p._meta.tier >= 2).length
   const confColor = (systemConfidence ?? 79) >= 85 ? 'text-ok' : (systemConfidence ?? 79) >= 65 ? 'text-warn' : 'text-danger'
 
   const staleSource = dataSourceHealth?.find(s => s.status === 'stale')
@@ -840,19 +909,56 @@ export default function AgentControl() {
       {/* ── Fleet strip (trust layer, above decisions) ───────────────── */}
       <FleetStrip agents={agents} />
 
+      {/* ── Autonomous tier budget ───────────────────────────────────── */}
+      <AgentTierStrip
+        tier0Count={tier0Count}
+        tier1Items={tier1Items}
+        tier2Items={tier2Items}
+        tier3Items={tier3Items}
+        expandTier1={expandTier1}
+        onToggleTier1={() => setExpandTier1(e => !e)}
+      />
+
+      {/* ── Tier 1 expandable notification strip ─────────────────────── */}
+      {expandTier1 && tier1Items.length > 0 && (
+        <div className="flex-shrink-0 border-b border-rule2 bg-stone2">
+          <div className="px-5 py-1.5 border-b border-rule2 flex items-center gap-2">
+            <div className="h-1 w-1 rounded-full bg-ochre flex-shrink-0" />
+            <span className="font-body text-ghost text-[9px] uppercase tracking-widest">System acted · you're informed</span>
+          </div>
+          <div className="divide-y divide-rule2">
+            {tier1Items.map(pa => {
+              const agent = agents.find(a => a.id === pa._agentId)
+              if (!agent) return null
+              const Icon = ICON_MAP[agent.icon] || Shield
+              return (
+                <div key={pa._key} className="flex items-center gap-3 px-5 py-2.5">
+                  <Icon size={10} className="text-ghost flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <div className="font-body text-ghost text-[9px]">{agent.name}</div>
+                    <div className="font-body text-ink text-[11px] leading-snug">{pa._meta.verbFirst}</div>
+                  </div>
+                  <span className="font-body text-ghost text-[9px] px-1.5 py-0.5 bg-stone3 flex-shrink-0">Notified</span>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
       {/* ── Priority-weighted ledger ──────────────────────────────────── */}
       <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
 
         {/* Queue header */}
         <div className="flex-shrink-0 flex items-center justify-between px-5 py-2 border-b border-rule2 bg-stone">
           <div className="flex items-center gap-2.5">
-            <span className="font-body font-medium text-[10px] uppercase tracking-widest text-ink">Pending decisions</span>
+            <span className="font-body font-medium text-[10px] uppercase tracking-widest text-ink">For your review</span>
             {undecidedCount > 0 && (
               <span className="font-body text-[9px] text-warn bg-warn/[0.1] px-1.5 py-0.5">{undecidedCount} awaiting</span>
             )}
           </div>
           <div className="flex items-center gap-2">
-            <span className="font-body text-ghost text-[9px]">Ranked by consequence × expiry × confidence</span>
+            <span className="font-body text-ghost text-[9px]">Ranked by urgency and consequence</span>
             <button type="button" onClick={() => setActivityDrawer(true)}
               className="font-body text-[11px] px-3 py-1.5 border border-rule2 text-muted hover:text-ink hover:border-ghost transition-colors">
               Activity
@@ -873,7 +979,7 @@ export default function AgentControl() {
                   </div>
                 ) : (
                   <div className="divide-y divide-rule2">
-                    {[...undecidedPending, ...pending.filter(p => p._decided)].map(pa => {
+                    {[...undecidedPending.filter(p => p._meta.tier >= 2), ...pending.filter(p => p._decided && p._meta.tier >= 2)].map(pa => {
                       const agent = agents.find(a => a.id === pa._agentId)
                       if (!agent) return null
                       const cfg = CONSEQUENCE_CFG[pa._meta.consequence]
@@ -944,7 +1050,7 @@ export default function AgentControl() {
                 const agent = pa ? agents.find(a => a.id === pa._agentId) : null
                 if (!pa || !agent) return (
                   <div className="flex items-center justify-center h-full font-body text-ghost text-[11px]">
-                    Select a pending decision to review
+                    Select a decision to review
                   </div>
                 )
                 const cfg = CONSEQUENCE_CFG[pa._meta.consequence]
@@ -967,10 +1073,29 @@ export default function AgentControl() {
                           </div>
                         )}
                       </div>
-                      <div className="flex items-center gap-1.5 flex-shrink-0">
-                        <div className={`font-display font-bold display-num text-[22px] tabular-nums leading-none ${pa.confidence >= (agent.confidenceThreshold ?? 80) ? 'text-ok' : 'text-warn'}`}>{pa.confidence}%</div>
-                        <div className="font-body text-ghost text-[9px]">conf</div>
-                      </div>
+                      {(() => {
+                        const green = currentPlant?.confidenceGreen ?? 85
+                        const red = currentPlant?.confidenceRed ?? 65
+                        const confOk = pa.confidence >= green
+                        const confColor = pa.confidence >= green ? 'text-ok' : pa.confidence >= red ? 'text-warn' : 'text-danger'
+                        const modelLabel = currentPlant?.confidenceModel === 'biological' ? 'Biological fermentation'
+                          : currentPlant?.confidenceModel === 'regulated' ? 'Regulated process (GxP)'
+                          : currentPlant?.confidenceModel === 'precision' ? 'Precision manufacturing'
+                          : null
+                        return (
+                          <div className="text-right flex-shrink-0">
+                            <div className="flex items-center gap-1.5 justify-end">
+                              <div className={`font-display font-bold display-num text-[22px] tabular-nums leading-none ${confColor}`}>{pa.confidence}%</div>
+                              <div className="font-body text-ghost text-[9px]">conf</div>
+                            </div>
+                            {modelLabel && (
+                              <div className={`font-body text-[8px] mt-0.5 text-right ${confOk ? 'text-ok/70' : 'text-danger/80'}`}>
+                                {modelLabel} · {confOk ? 'within threshold' : `below ${green}% required`}
+                              </div>
+                            )}
+                          </div>
+                        )
+                      })()}
                     </div>
 
                     {/* Scrollable body */}
@@ -982,24 +1107,58 @@ export default function AgentControl() {
                         </div>
                       )}
                       {pa.evidence?.causalSignals?.length > 0 && (
-                        <div>
-                          <div className="font-body text-ghost text-[9px] uppercase tracking-widest mb-2">Evidence signals</div>
-                          <div className="border border-rule2 divide-y divide-rule2">
-                            {pa.evidence.causalSignals.map((s, i) => {
-                              const c = s.status === 'breach' || s.status === 'stale' ? 'text-danger' : s.status === 'warn' ? 'text-warn' : 'text-ok'
-                              const l = s.status === 'breach' ? 'Breach' : s.status === 'stale' ? 'Stale' : s.status === 'warn' ? 'Watch' : 'OK'
-                              return (
-                                <div key={i} className="flex items-start gap-3 px-4 py-2.5">
-                                  <div className="flex-1 min-w-0">
-                                    <div className="font-body text-ghost text-[9px]">{s.signal}</div>
-                                    <div className="font-body text-ink text-[11px] font-medium">{s.reading}</div>
-                                    {s.note && <div className="font-body text-muted text-[9px] leading-snug">{s.note}</div>}
+                        <div className="space-y-3">
+                          {(() => {
+                            const active = pa.evidence.causalSignals.filter(s => s.stage !== 'suppressed')
+                            const suppressed = pa.evidence.causalSignals.filter(s => s.stage === 'suppressed')
+                            return (
+                              <>
+                                {active.length > 0 && (
+                                  <div>
+                                    <div className="font-body text-ghost text-[9px] uppercase tracking-widest mb-2">Signal pipeline</div>
+                                    <div className="border border-rule2 divide-y divide-rule2">
+                                      {active.map((s, i) => {
+                                        const c = s.status === 'breach' || s.status === 'stale' ? 'text-danger' : s.status === 'warn' ? 'text-warn' : 'text-ok'
+                                        const l = s.status === 'breach' ? 'Breach' : s.status === 'stale' ? 'Stale' : s.status === 'warn' ? 'Watch' : 'OK'
+                                        const stageCfg = s.stage === 'correlated' ? { label: 'Correlated', cls: 'bg-ochre/10 text-ochre' } : { label: 'Qualified', cls: 'bg-ok/10 text-ok' }
+                                        return (
+                                          <div key={i} className="flex items-start gap-3 px-4 py-2.5">
+                                            <div className="flex-1 min-w-0">
+                                              <div className="flex items-center gap-1.5 mb-0.5">
+                                                <div className="font-body text-ghost text-[9px]">{s.signal}</div>
+                                                {s.stage && (
+                                                  <span className={`font-body text-[7px] px-1 py-0.5 rounded-btn font-medium uppercase tracking-widest ${stageCfg.cls}`}>{stageCfg.label}</span>
+                                                )}
+                                              </div>
+                                              <div className="font-body text-ink text-[11px] font-medium">{s.reading}</div>
+                                              {s.note && <div className="font-body text-muted text-[9px] leading-snug">{s.note}</div>}
+                                            </div>
+                                            <span className={`font-body text-[9px] font-medium flex-shrink-0 ${c}`}>{l}</span>
+                                          </div>
+                                        )
+                                      })}
+                                    </div>
                                   </div>
-                                  <span className={`font-body text-[9px] font-medium flex-shrink-0 ${c}`}>{l}</span>
-                                </div>
-                              )
-                            })}
-                          </div>
+                                )}
+                                {suppressed.length > 0 && (
+                                  <div>
+                                    <div className="font-body text-ghost text-[9px] uppercase tracking-widest mb-2">Excluded from reasoning</div>
+                                    <div className="border border-rule2 divide-y divide-rule2 opacity-60">
+                                      {suppressed.map((s, i) => (
+                                        <div key={i} className="flex items-start gap-3 px-4 py-2">
+                                          <div className="w-1.5 h-1.5 rounded-full border border-ghost/30 flex-shrink-0 mt-1.5" />
+                                          <div className="flex-1 min-w-0">
+                                            <div className="font-body text-ghost text-[10px]">{s.signal} — {s.reading}</div>
+                                            {s.suppressReason && <div className="font-body text-ghost/60 text-[9px] leading-snug">{s.suppressReason}</div>}
+                                          </div>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+                              </>
+                            )
+                          })()}
                         </div>
                       )}
                       {pa.impactPreview?.length > 0 && (
@@ -1256,7 +1415,7 @@ export default function AgentControl() {
       {activityDrawer && (
         <SlidePanel
           title="Agent activity"
-          subtitle="Autonomous actions logged this session"
+          subtitle="Actions taken this session"
           onClose={() => setActivityDrawer(false)}
           maxWidth="480px"
         >

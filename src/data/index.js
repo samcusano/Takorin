@@ -1063,9 +1063,11 @@ export const agentConfigData = {
           evidence:{
             summary: "R-03's vibration sensor has sustained 3.4 mm/s for 38 minutes — above the 2.5 threshold. Temperature is co-trending (+7°C in 38 min), corroborating mechanical stress. Pattern matches R-08's pre-failure signature from 72 hours ago.",
             causalSignals:[
-              { signal:'Vibration',    reading:'3.4 mm/s', threshold:'2.5 mm/s', status:'breach', note:'Rising since shift start (was 2.1 mm/s at 06:00)' },
-              { signal:'Temperature',  reading:'+7°C rise', threshold:'Sustained ≥ +5°C', status:'breach', note:'Corroborating signal — not a standalone threshold' },
-              { signal:'Duration',     reading:'38 min',   threshold:'30 min sustained', status:'breach', note:'Both signals held above threshold simultaneously' },
+              { signal:'Vibration',    reading:'3.4 mm/s',  threshold:'2.5 mm/s',          status:'breach', stage:'correlated', note:'Rising since shift start (was 2.1 mm/s at 06:00)' },
+              { signal:'Temperature',  reading:'+7°C rise', threshold:'Sustained ≥ +5°C',  status:'breach', stage:'correlated', note:'Corroborating signal — clustered with vibration event' },
+              { signal:'Duration',     reading:'38 min',    threshold:'30 min sustained',   status:'breach', stage:'qualified',  note:'Both signals held above threshold simultaneously' },
+              { signal:'Humidity',     reading:'62%',       threshold:'55–65% normal',      status:'ok',     stage:'suppressed', suppressReason:'Within normal range — sensor confidence 71%, excluded from event cluster' },
+              { signal:'Load current', reading:'12.3 A',    threshold:'14.5 A max',         status:'ok',     stage:'suppressed', suppressReason:'Below breach threshold — insufficient for standalone escalation' },
             ],
             dependencies:[
               { label:'HACCP CCP-3', status:'required', note:'CAPA must reference this control point in the regulatory record' },
@@ -1112,9 +1114,10 @@ export const agentConfigData = {
           evidence:{
             summary: 'Lot L-0891 from ConAgra has no COA on file with 4 hours 12 minutes to scheduled production. FSMA 204 requires a verified COA before use. Supplier has two prior COA delays in 18 months.',
             causalSignals:[
-              { signal:'COA status',        reading:'Not received', threshold:'Required before production', status:'breach', note:'Production scheduled for 10:00 AM — window is closing' },
-              { signal:'Time to production', reading:'4h 12min',     threshold:'COA required ≥ 4h prior',   status:'breach', note:'At or below minimum buffer for review' },
-              { signal:'Supplier history',  reading:'2 prior delays', threshold:'0 delays preferred',       status:'warn',  note:'Most recent delay: 9 months ago (50% recency weight)' },
+              { signal:'COA status',         reading:'Not received',   threshold:'Required before production', status:'breach', stage:'qualified',  note:'Production scheduled for 10:00 AM — window is closing' },
+              { signal:'Time to production', reading:'4h 12min',       threshold:'COA required ≥ 4h prior',   status:'breach', stage:'qualified',  note:'At or below minimum buffer for review' },
+              { signal:'Supplier history',   reading:'2 prior delays', threshold:'0 delays preferred',        status:'warn',   stage:'qualified',  note:'Most recent delay: 9 months ago (50% recency weight)' },
+              { signal:'Substitution lot',   reading:'L-0889 available', threshold:'COA valid',              status:'ok',     stage:'suppressed', suppressReason:'Alternative exists but not yet activated — requires separate director action' },
             ],
             dependencies:[
               { label:'Line 4 AM production', status:'pending',  note:'Will hold if COA not received — start delayed or substitution required' },

@@ -104,6 +104,69 @@ const DEFAULT_CAUSAL = {
   actions: [],
 }
 
+// Reasoning layer — why the system believes what it believes for each zone
+const REASONING_MAP = {
+  'zone-a1': {
+    recommendation: 'Reduce fermentation temperature to 26°C and delay bottling for BTH-2026-047 by 4 hours',
+    confidence: 71,
+    confidenceModel: 'Biological fermentation process',
+    primaryContributors: [
+      { label: 'Benzaldehyde drift trend — sensor A-7', pct: 34 },
+      { label: 'Supplier COA pending — Lot L-0891', pct: 22 },
+      { label: 'Temperature instability (Zone A1)', pct: 15 },
+    ],
+    suppressedContributors: [
+      { label: 'Humidity spike — sensor HX-03', reason: 'Sensor confidence 31% — below qualification threshold' },
+      { label: 'Aroma deviation (single reading)', reason: 'Single-point measurement — insufficient for signal clustering' },
+    ],
+    competingHypotheses: [
+      { label: 'Fermentation acceleration pattern', confidence: 58, note: '40% historical precedent in Q1 high-humidity batches' },
+      { label: 'Contamination precursor signature', confidence: 31, note: 'Insufficient evidence — escalation threshold not met' },
+    ],
+    forecastIfUnbounded: 'Premium grade failure risk reaches 62% within 14 hours without intervention',
+  },
+  'zone-b1': {
+    recommendation: 'No intervention required — Zone B1 operating within normal parameters',
+    confidence: 87,
+    confidenceModel: 'Biological fermentation process',
+    primaryContributors: [
+      { label: 'Fermentation schedule nominal', pct: 52 },
+      { label: 'All COAs cleared and received', pct: 28 },
+      { label: 'Sensor array fully qualified', pct: 20 },
+    ],
+    suppressedContributors: [],
+    competingHypotheses: [],
+    forecastIfUnbounded: null,
+  },
+  'zone-a2': {
+    recommendation: 'Monitor Zone A2 — early-watch status tied to upstream A1 resolution',
+    confidence: 84,
+    confidenceModel: 'Biological fermentation process',
+    primaryContributors: [
+      { label: 'Upstream batch quality uncertainty from A1', pct: 41 },
+      { label: 'Secondary fermentation schedule nominal', pct: 33 },
+      { label: 'Grade ceiling risk from BTH-2026-047', pct: 16 },
+    ],
+    suppressedContributors: [
+      { label: 'Cross-zone temperature correlation', reason: 'Below propagation confidence threshold (28% vs 40% required)' },
+    ],
+    competingHypotheses: [
+      { label: 'Isolated secondary fermentation drift', confidence: 44, note: 'Pattern consistent with seasonal Q1 variance — monitoring only' },
+    ],
+    forecastIfUnbounded: 'Grade ceiling breach probability reaches 28% within 21 days if A1 instability propagates',
+  },
+}
+
+const DEFAULT_REASONING = {
+  recommendation: null,
+  confidence: null,
+  confidenceModel: 'Biological fermentation process',
+  primaryContributors: [],
+  suppressedContributors: [],
+  competingHypotheses: [],
+  forecastIfUnbounded: null,
+}
+
 function ScoreDot({ score }) {
   const color = score >= 90 ? 'bg-ok' : score >= 80 ? 'bg-ochre' : score >= 70 ? 'bg-warn' : 'bg-danger'
   return <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${color}`} />
@@ -182,8 +245,7 @@ function CausalPanel({ zone, building }) {
     <div className="flex flex-col items-center justify-center h-full px-8 text-center gap-4">
       <Activity size={24} className="text-ghost/40" strokeWidth={1.5} />
       <div>
-        <div className="font-body text-ghost text-[11px] leading-relaxed">Click a pressure zone to resolve its causal context</div>
-        <div className="font-body text-ghost/50 text-[10px] mt-1">Hierarchy is inferred from the state you select</div>
+        <div className="font-body text-ghost text-[11px] leading-relaxed">Select a zone to see what's driving it</div>
       </div>
     </div>
   )
@@ -217,7 +279,7 @@ function CausalPanel({ zone, building }) {
         )}
         {causal.confidence != null && (
           <div className="mt-2.5 flex items-center gap-2">
-            <span className="font-body text-ghost text-[9px]">Attribution confidence</span>
+            <span className="font-body text-ghost text-[9px]">Confidence</span>
             <div className="flex-1 h-0.5 bg-rule2">
               <div className={`h-full ${causal.confidence >= 70 ? 'bg-ok' : causal.confidence >= 50 ? 'bg-warn' : 'bg-danger'}`} style={{ width: `${causal.confidence}%` }} />
             </div>
@@ -231,7 +293,7 @@ function CausalPanel({ zone, building }) {
         {/* Causal chain — upstream → current → downstream */}
         {(causal.upstream.length > 0 || causal.downstream.length > 0) && (
           <div className="px-5 py-4 border-b border-rule2">
-            <div className="font-body text-ghost text-[9px] uppercase tracking-widest mb-3">Causal chain</div>
+            <div className="font-body text-ghost text-[9px] uppercase tracking-widest mb-3">Cause chain</div>
 
             {causal.upstream.length > 0 && (
               <div className="mb-3">
@@ -327,9 +389,141 @@ function CausalPanel({ zone, building }) {
   )
 }
 
+// ── Reasoning Surface (Variant C) ───────────────────────────────────────────
+
+function ReasoningPanel({ zone, building }) {
+  if (!zone) return (
+    <div className="flex flex-col items-center justify-center h-full px-8 text-center gap-4">
+      <Activity size={24} className="text-ghost/40" strokeWidth={1.5} />
+      <div>
+        <div className="font-body text-ghost text-[11px] leading-relaxed">Select a zone to see why the system thinks this</div>
+      </div>
+    </div>
+  )
+
+  const r = REASONING_MAP[zone.id] ?? DEFAULT_REASONING
+  const statusLabel = zone.score >= 90 ? 'CLEAR' : zone.score >= 80 ? 'WATCH' : zone.score >= 70 ? 'AT RISK' : 'CRITICAL'
+  const statusColor = zone.score >= 90 ? 'text-ok' : zone.score >= 80 ? 'text-ochre' : zone.score >= 70 ? 'text-warn' : 'text-danger'
+  const confColor = r.confidence != null ? (r.confidence >= 80 ? 'text-ok' : r.confidence >= 65 ? 'text-warn' : 'text-danger') : 'text-ghost'
+  const confBg = r.confidence != null ? (r.confidence >= 80 ? 'bg-ok' : r.confidence >= 65 ? 'bg-warn' : 'bg-danger') : 'bg-ghost'
+
+  return (
+    <div className="flex flex-col h-full overflow-hidden">
+      <div className="flex-shrink-0 px-5 py-4 border-b border-rule2 bg-stone">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex-1 min-w-0">
+            <div className="font-body text-ghost text-[9px] uppercase tracking-widest mb-0.5">{building.name} · {building.label}</div>
+            <div className="font-display font-bold text-ink text-[18px] leading-none mb-1">{zone.label}</div>
+            <div className="font-body text-ghost text-[10px]">{zone.name}</div>
+          </div>
+          <div className="text-right flex-shrink-0">
+            <div className={`font-display font-bold display-num text-[32px] leading-none ${scoreColor(zone.score)}`}>{zone.score}</div>
+            <div className={`font-body font-bold text-[10px] uppercase tracking-widest ${statusColor}`}>{statusLabel}</div>
+          </div>
+        </div>
+        {r.confidence != null && (
+          <div className="mt-3">
+            <div className="flex items-center justify-between mb-1">
+              <span className="font-body text-ghost text-[9px]">Confidence</span>
+              <span className={`font-body text-[10px] font-medium tabular-nums ${confColor}`}>{r.confidence}%</span>
+            </div>
+            <div className="h-1 bg-rule2 rounded-full overflow-hidden">
+              <div className={`h-full transition-all ${confBg}`} style={{ width: `${r.confidence}%` }} />
+            </div>
+            <div className="font-body text-ghost/50 text-[9px] mt-0.5">{r.confidenceModel}</div>
+          </div>
+        )}
+      </div>
+
+      <div className="flex-1 overflow-y-auto">
+        {r.recommendation && (
+          <div className="px-5 py-4 border-b border-rule2">
+            <div className="font-body text-ghost text-[9px] uppercase tracking-widest mb-2">Recommendation</div>
+            <div className="font-body text-ink text-[12px] leading-relaxed">{r.recommendation}</div>
+          </div>
+        )}
+
+        {r.primaryContributors.length > 0 && (
+          <div className="px-5 py-4 border-b border-rule2">
+            <div className="font-body text-ghost text-[9px] uppercase tracking-widest mb-3">What's driving this</div>
+            <div className="space-y-2.5">
+              {r.primaryContributors.map((c, i) => (
+                <div key={i} className="flex items-center gap-3">
+                  <div className="w-1.5 h-1.5 rounded-full bg-ok flex-shrink-0" />
+                  <div className="flex-1 min-w-0 font-body text-ink text-[11px] leading-snug">{c.label}</div>
+                  <div className="flex items-center gap-1.5 flex-shrink-0">
+                    <div className="w-[52px] h-0.5 bg-rule2">
+                      <div className="h-full bg-ok" style={{ width: `${c.pct * (100 / 52)}%`, maxWidth: '100%' }} />
+                    </div>
+                    <span className="font-body text-muted text-[9px] tabular-nums w-7 text-right">+{c.pct}%</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {r.suppressedContributors.length > 0 && (
+          <div className="px-5 py-4 border-b border-rule2">
+            <div className="font-body text-ghost text-[9px] uppercase tracking-widest mb-3">Not used</div>
+            <div className="space-y-2">
+              {r.suppressedContributors.map((s, i) => (
+                <div key={i} className="flex items-start gap-3">
+                  <div className="w-1.5 h-1.5 rounded-full border border-ghost/30 flex-shrink-0 mt-1" />
+                  <div className="flex-1 min-w-0">
+                    <div className="font-body text-ghost text-[11px] leading-snug">{s.label}</div>
+                    <div className="font-body text-ghost/50 text-[9px] leading-snug mt-0.5">{s.reason}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {r.competingHypotheses.length > 0 && (
+          <div className="px-5 py-4 border-b border-rule2">
+            <div className="font-body text-ghost text-[9px] uppercase tracking-widest mb-3">Other explanations</div>
+            <div className="space-y-2">
+              {r.competingHypotheses.map((h, i) => (
+                <div key={i} className="flex items-start gap-3 px-3 py-2.5 border border-rule2 bg-stone2">
+                  <span className="font-body font-bold text-ghost text-[10px] flex-shrink-0 mt-0.5">{String.fromCharCode(65 + i)}</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-2 mb-0.5">
+                      <span className="font-body font-medium text-ink text-[11px] leading-snug">{h.label}</span>
+                      <span className={`font-body text-[10px] tabular-nums flex-shrink-0 ${h.confidence >= 50 ? 'text-warn' : 'text-ghost'}`}>{h.confidence}%</span>
+                    </div>
+                    <div className="font-body text-ghost text-[9px] leading-snug">{h.note}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {r.forecastIfUnbounded && (
+          <div className="px-5 py-4">
+            <div className="font-body text-ghost text-[9px] uppercase tracking-widest mb-2">If nothing changes</div>
+            <div className="flex items-start gap-2 px-3 py-2.5 border border-danger/20 bg-danger/[0.03]">
+              <Zap size={10} className="text-danger flex-shrink-0 mt-0.5" strokeWidth={2} />
+              <div className="font-body text-danger text-[10px] leading-snug">{r.forecastIfUnbounded}</div>
+            </div>
+          </div>
+        )}
+
+        {!r.recommendation && r.primaryContributors.length === 0 && (
+          <div className="px-5 py-6 font-body text-ghost text-[11px]">No active reasoning for this zone — system stable.</div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+// ── Variant A: Operational State Field ───────────────────────────────────────
+
 function StateFieldView({ site, ScreenHeader }) {
   const [selectedZone, setSelectedZone] = useState(null)
   const [selectedBuilding, setSelectedBuilding] = useState(null)
+  const [rightTab, setRightTab] = useState('context')
 
   // Flatten all zones with their building context for summary stats
   const allZones = site.buildings.flatMap(b => (b.zones ?? []).map(z => ({ ...z, _building: b })))
@@ -344,13 +538,13 @@ function StateFieldView({ site, ScreenHeader }) {
       <div className="flex-shrink-0 flex items-center gap-4 px-5 py-2.5 border-b border-rule2 bg-stone2 text-[10px] font-body">
         <div className="flex items-center gap-1.5">
           <div className="w-2 h-2 rounded-full bg-danger flex-shrink-0" />
-          <span className="text-danger font-medium">{pressureZones.length} pressure zone{pressureZones.length !== 1 ? 's' : ''}</span>
+          <span className="text-danger font-medium">{pressureZones.length} zone{pressureZones.length !== 1 ? 's' : ''} at risk</span>
         </div>
         <div className="flex items-center gap-1.5">
           <AlertTriangle size={9} strokeWidth={2} className="text-warn flex-shrink-0" />
           <span className="text-warn">{alertZones.length} active alert{alertZones.length !== 1 ? 's' : ''}</span>
         </div>
-        <span className="text-ghost ml-auto">Click a zone to resolve causal context</span>
+        <span className="text-ghost ml-auto">Click a zone to see what's driving it</span>
       </div>
 
       <div className="flex flex-1 min-h-0 overflow-hidden">
@@ -422,13 +616,29 @@ function StateFieldView({ site, ScreenHeader }) {
           ))}
         </div>
 
-        {/* Causal context panel */}
-        <div className="w-[380px] flex-shrink-0 border-l border-rule2 bg-stone overflow-hidden">
-          <div className="flex-shrink-0 px-5 py-2.5 border-b border-rule2 bg-stone2">
-            <span className="font-body text-ghost text-[9px] uppercase tracking-widest">Causal context</span>
-          </div>
+        {/* Right panel — Causal Context + Reasoning tabs */}
+        <div className="w-[400px] flex-shrink-0 border-l border-rule2 bg-stone overflow-hidden">
+          {selectedZone ? (
+            <div className="flex-shrink-0 flex items-stretch border-b border-rule2 bg-stone2">
+              {[{ id: 'context', label: 'Causal Context' }, { id: 'reasoning', label: 'Reasoning' }].map(t => (
+                <button key={t.id} type="button" onClick={() => setRightTab(t.id)}
+                  className={`font-body text-[10px] px-4 py-2.5 border-b-2 transition-colors ${
+                    rightTab === t.id ? 'border-b-ochre text-ink' : 'border-b-transparent text-ghost hover:text-muted'
+                  }`}>
+                  {t.label}
+                </button>
+              ))}
+            </div>
+          ) : (
+            <div className="flex-shrink-0 px-5 py-2.5 border-b border-rule2 bg-stone2">
+              <span className="font-body text-ghost text-[9px] uppercase tracking-widest">Select a zone</span>
+            </div>
+          )}
           <div className="h-[calc(100%-36px)]">
-            <CausalPanel zone={selectedZone} building={selectedBuilding} />
+            {rightTab === 'reasoning' && selectedZone
+              ? <ReasoningPanel zone={selectedZone} building={selectedBuilding} />
+              : <CausalPanel zone={selectedZone} building={selectedBuilding} />
+            }
           </div>
         </div>
       </div>
@@ -463,7 +673,7 @@ export default function ProcessHierarchy() {
         {variant === 'B' ? (
           <Breadcrumb crumbs={crumbs} onNavigate={navigateTo} />
         ) : (
-          <div className="font-display font-bold text-ink text-[15px] leading-none">Gaoming Factory · Operational State</div>
+          <div className="font-display font-bold text-ink text-[15px] leading-none">Gaoming Factory</div>
         )}
       </div>
       <div className="flex items-center gap-4 flex-shrink-0">
@@ -479,7 +689,6 @@ export default function ProcessHierarchy() {
           {[
             { v: 'A', label: 'State' },
             { v: 'B', label: 'Structure' },
-            { v: 'C', label: 'Forecast' },
           ].map(({ v, label }) => (
             <button key={v} type="button" onClick={() => { setVariant(v); setPath([]) }}
               className={`font-body text-[10px] px-3 py-1 transition-colors ${variant === v ? 'bg-ink text-stone' : 'text-ghost hover:text-muted'}`}>
@@ -494,224 +703,6 @@ export default function ProcessHierarchy() {
   // ── Variant A: Operational State Field ──────────────────────────────────
   if (variant === 'A') {
     return <StateFieldView site={site} ScreenHeader={ScreenHeader} />
-  }
-
-  // ── Variant C: Forecast ─────────────────────────────────────────────────
-  if (variant === 'C') {
-    // Forecast data: what is the system becoming?
-    const allZones = site.buildings.flatMap(b => (b.zones ?? []).map(z => ({ ...z, _building: b })))
-    const ZONE_FORECASTS = [
-      {
-        zoneId: 'zone-a1', zoneName: 'Zone A1 — Primary Fermentation', building: 'Building A',
-        trend: 'declining', currentScore: 79, delta7d: -5, delta14d: -9,
-        stabilityTrajectory: 'degrading',
-        driftVelocity: 'accelerating', driftLabel: '-0.7 pts/day',
-        confidenceDecay: { current: 71, rate: '-3%/week', cause: 'Benzaldehyde sensor A-7 drift' },
-        propagationRisk: { zones: ['zone-a2'], probability: 0.62, timeframe: '14–21 days', label: 'Zone A2 — Secondary Fermentation' },
-        bottleneck: { label: 'Premium grade ceiling breach', probability: 0.45, timeframe: '10 days' },
-        interventionImpact: [
-          { action: 'Temp reduction 26°C', impact: 'Stabilizes benzaldehyde — score floor at 77', confidence: 0.71 },
-          { action: 'Sensor A-7 recalibration', impact: 'Restores confidence to 86%', confidence: 0.88 },
-        ],
-        pressureMigration: { target: 'zone-a2', probability: 0.62 },
-      },
-      {
-        zoneId: 'zone-b1', zoneName: 'Zone B1 — Primary Fermentation', building: 'Building B',
-        trend: 'stable', currentScore: 87, delta7d: 0, delta14d: +1,
-        stabilityTrajectory: 'holding',
-        driftVelocity: 'minimal', driftLabel: '+0.1 pts/day',
-        confidenceDecay: { current: 87, rate: 'stable', cause: null },
-        propagationRisk: null,
-        bottleneck: null,
-        interventionImpact: [],
-        pressureMigration: null,
-      },
-      {
-        zoneId: 'zone-a2', zoneName: 'Zone A2 — Secondary Fermentation', building: 'Building A',
-        trend: 'stable', currentScore: 88, delta7d: -1, delta14d: -3,
-        stabilityTrajectory: 'early-watch',
-        driftVelocity: 'slow', driftLabel: '-0.2 pts/day',
-        confidenceDecay: { current: 84, rate: '-1%/week', cause: 'Upstream batch quality uncertainty from A1' },
-        propagationRisk: { zones: ['zone-c1'], probability: 0.28, timeframe: '21–30 days', label: 'Zone C1 — Pressing' },
-        bottleneck: { label: 'Batch BTH-2026-047 grade ceiling', probability: 0.28, timeframe: '21 days' },
-        interventionImpact: [
-          { action: 'Resolve A1 benzaldehyde issue', impact: 'Removes propagation risk entirely', confidence: 0.82 },
-        ],
-        pressureMigration: null,
-      },
-    ]
-
-    const trendIcon = (t) => t === 'declining' ? '↓' : t === 'stable' ? '→' : '↑'
-    const trendColor = (t) => t === 'declining' ? 'text-danger' : t === 'stable' ? 'text-ghost' : 'text-ok'
-    const stabilityColor = (s) => s === 'degrading' ? 'text-danger' : s === 'early-watch' ? 'text-warn' : s === 'holding' ? 'text-ghost' : 'text-ok'
-    const stabilityBg = (s) => s === 'degrading' ? 'bg-danger/[0.06] border-l-danger' : s === 'early-watch' ? 'bg-warn/[0.04] border-l-warn' : 'border-l-rule2'
-
-    return (
-      <div className="flex flex-col h-full overflow-hidden content-reveal">
-        <ScreenHeader />
-
-        {/* System trajectory summary */}
-        <div className="flex-shrink-0 flex items-center gap-5 px-5 py-3 border-b border-rule2 bg-stone2 text-[10px] font-body">
-          <div className="flex items-center gap-1.5">
-            <span className="text-ghost uppercase tracking-widest text-[9px]">System trajectory</span>
-            <span className="text-warn font-medium">↓ Mild degradation risk</span>
-          </div>
-          <div className="w-px h-4 bg-rule2" />
-          <div className="flex items-center gap-1.5">
-            <span className="text-ghost">Pressure origin</span>
-            <span className="text-danger font-medium">Zone A1</span>
-          </div>
-          <div className="w-px h-4 bg-rule2" />
-          <div className="flex items-center gap-1.5">
-            <span className="text-ghost">Migration risk</span>
-            <span className="text-warn font-medium">Zone A2 · 62% probability · 14–21d</span>
-          </div>
-          <div className="w-px h-4 bg-rule2" />
-          <div className="flex items-center gap-1.5">
-            <span className="text-ghost">Critical bottleneck</span>
-            <span className="text-warn font-medium">Premium grade ceiling · 10 days</span>
-          </div>
-        </div>
-
-        <div className="flex-1 overflow-y-auto">
-          {/* Predicted pressure migration diagram */}
-          <div className="px-6 py-4 border-b border-rule2">
-            <div className="font-body text-ghost text-[9px] uppercase tracking-widest mb-3">Predicted pressure migration</div>
-            <div className="flex items-center gap-0 overflow-x-auto">
-              {[
-                { id: 'zone-a3', label: 'A3 · Koji',          score: 91, future: 91, status: 'stable'  },
-                { id: 'zone-a1', label: 'A1 · Primary ferm',  score: 79, future: 70, status: 'origin'  },
-                { id: 'zone-a2', label: 'A2 · Secondary ferm',score: 88, future: 85, status: 'at-risk' },
-                { id: 'zone-c1', label: 'C1 · Pressing',      score: 94, future: 91, status: 'watch'   },
-              ].map((z, i, arr) => {
-                const statusCfg = {
-                  origin:   { border: 'border-danger',  bg: 'bg-danger/[0.06]',  label: 'Origin',    lc: 'text-danger' },
-                  'at-risk':{ border: 'border-warn',    bg: 'bg-warn/[0.05]',    label: 'At risk',   lc: 'text-warn'   },
-                  watch:    { border: 'border-ochre/40',bg: 'bg-ochre/[0.03]',   label: 'Watch',     lc: 'text-ochre'  },
-                  stable:   { border: 'border-rule2',   bg: '',                   label: 'Stable',    lc: 'text-ghost'  },
-                }[z.status]
-                const delta = z.future - z.score
-                return (
-                  <div key={z.id} className="flex items-center flex-shrink-0">
-                    <div className={`border ${statusCfg.border} ${statusCfg.bg} px-3 py-3 w-[130px]`}>
-                      <div className="font-body text-ghost text-[9px] truncate mb-1">{z.label}</div>
-                      <div className="flex items-baseline gap-2 mb-0.5">
-                        <span className={`font-display font-bold display-num text-[20px] leading-none ${scoreColor(z.score)}`}>{z.score}</span>
-                        <span className="font-body text-ghost text-[9px]">now</span>
-                      </div>
-                      <div className="flex items-baseline gap-2">
-                        <span className={`font-display font-bold display-num text-[16px] leading-none ${scoreColor(z.future)}`}>{z.future}</span>
-                        <span className={`font-body text-[9px] ${delta < -3 ? 'text-danger' : delta < 0 ? 'text-warn' : 'text-ghost'}`}>14d · {delta > 0 ? '+' : ''}{delta}</span>
-                      </div>
-                      <div className={`font-body text-[8px] uppercase tracking-widest mt-1 ${statusCfg.lc}`}>{statusCfg.label}</div>
-                    </div>
-                    {i < arr.length - 1 && (
-                      <div className="flex items-center px-1 flex-shrink-0">
-                        <ArrowRight size={12} className="text-ghost" />
-                      </div>
-                    )}
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-
-          {/* Zone forecasts */}
-          <div className="divide-y divide-rule2">
-            {ZONE_FORECASTS.map(f => (
-              <div key={f.zoneId} className={`px-6 py-5 border-l-4 ${stabilityBg(f.stabilityTrajectory)}`}>
-                <div className="flex items-start justify-between gap-4 mb-4">
-                  <div>
-                    <div className="font-body text-ghost text-[9px] uppercase tracking-widest mb-0.5">{f.building}</div>
-                    <div className="font-display font-bold text-ink text-[16px] leading-none">{f.zoneName}</div>
-                  </div>
-                  <div className="flex items-center gap-4 flex-shrink-0">
-                    <div className="text-right">
-                      <div className="flex items-baseline gap-1">
-                        <span className={`font-display font-bold display-num text-[24px] leading-none ${scoreColor(f.currentScore)}`}>{f.currentScore}</span>
-                        <span className={`font-body text-[13px] font-bold ${trendColor(f.trend)}`}>{trendIcon(f.trend)}</span>
-                      </div>
-                      <div className="font-body text-ghost text-[9px]">{f.driftLabel}</div>
-                    </div>
-                    <div className="text-right border-l border-rule2 pl-3">
-                      <div className="font-body text-ghost text-[9px] mb-0.5">7d</div>
-                      <div className={`font-body font-medium text-[12px] ${f.delta7d < 0 ? 'text-warn' : 'text-ghost'}`}>{f.delta7d > 0 ? '+' : ''}{f.delta7d}</div>
-                    </div>
-                    <div className="text-right border-l border-rule2 pl-3">
-                      <div className="font-body text-ghost text-[9px] mb-0.5">14d</div>
-                      <div className={`font-body font-medium text-[12px] ${f.delta14d < -3 ? 'text-danger' : f.delta14d < 0 ? 'text-warn' : 'text-ghost'}`}>{f.delta14d > 0 ? '+' : ''}{f.delta14d}</div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4 mb-4">
-                  {/* Stability trajectory */}
-                  <div>
-                    <div className="font-body text-ghost text-[9px] uppercase tracking-widest mb-1">Stability trajectory</div>
-                    <div className={`font-body font-medium text-[11px] capitalize ${stabilityColor(f.stabilityTrajectory)}`}>{f.stabilityTrajectory.replace('-', ' ')}</div>
-                  </div>
-
-                  {/* Confidence decay */}
-                  <div>
-                    <div className="font-body text-ghost text-[9px] uppercase tracking-widest mb-1">Signal confidence</div>
-                    <div className="flex items-center gap-2">
-                      <div className="flex-1 h-0.5 bg-rule2">
-                        <div className={`h-full ${f.confidenceDecay.current >= 80 ? 'bg-ok' : f.confidenceDecay.current >= 65 ? 'bg-warn' : 'bg-danger'}`}
-                          style={{ width: `${f.confidenceDecay.current}%` }} />
-                      </div>
-                      <span className={`font-body text-[10px] tabular-nums ${f.confidenceDecay.current >= 80 ? 'text-ok' : 'text-warn'}`}>{f.confidenceDecay.current}%</span>
-                    </div>
-                    {f.confidenceDecay.cause && (
-                      <div className="font-body text-ghost text-[9px] mt-0.5 leading-snug">{f.confidenceDecay.cause}</div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Propagation risk */}
-                {f.propagationRisk && (
-                  <div className="mb-3 px-3 py-2.5 border border-warn/30 bg-warn/[0.03]">
-                    <div className="font-body text-ghost text-[9px] uppercase tracking-widest mb-1">Propagation risk</div>
-                    <div className="flex items-center gap-3">
-                      <div className="flex-1">
-                        <span className="font-body font-medium text-ink text-[11px]">{f.propagationRisk.label}</span>
-                        <span className="font-body text-ghost text-[10px] ml-2">· {f.propagationRisk.timeframe}</span>
-                      </div>
-                      <span className="font-body font-medium text-warn text-[11px] flex-shrink-0">{Math.round(f.propagationRisk.probability * 100)}% probability</span>
-                    </div>
-                  </div>
-                )}
-
-                {/* Bottleneck + intervention impact */}
-                {f.bottleneck && (
-                  <div className="flex items-start gap-4">
-                    <div className="flex-1">
-                      <div className="font-body text-ghost text-[9px] uppercase tracking-widest mb-1">Future bottleneck</div>
-                      <div className="font-body text-ink text-[11px]">{f.bottleneck.label}</div>
-                      <div className="font-body text-ghost text-[9px]">{Math.round(f.bottleneck.probability * 100)}% probability · {f.bottleneck.timeframe}</div>
-                    </div>
-                    {f.interventionImpact.length > 0 && (
-                      <div className="flex-1">
-                        <div className="font-body text-ghost text-[9px] uppercase tracking-widest mb-1">Intervention impact</div>
-                        {f.interventionImpact.map((iv, i) => (
-                          <div key={i} className="mb-1">
-                            <div className="font-body font-medium text-ink text-[10px] leading-snug">{iv.action}</div>
-                            <div className="font-body text-ok text-[9px] leading-snug">{iv.impact}</div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {!f.propagationRisk && !f.bottleneck && (
-                  <div className="font-body text-ghost text-[10px]">No forecast risk detected — system stable.</div>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    )
   }
 
   // ── Variant B: Structural Explorer (audit / forensics) ────────────────────
