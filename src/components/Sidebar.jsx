@@ -16,10 +16,10 @@ import { PersonAvatar } from './UI'
 import NotificationCenter from '../screens/NotificationCenter'
 
 const modules = [
- { id:'shift',    label:'ShiftIQ',     path:'/shift',    icon:Activity,      badge:'3', badgeType:'alert' },
- { id:'supplier', label:'SupplierIQ',  path:'/supplier', icon:Truck,         badge:'1', badgeType:'alert' },
- { id:'capa',     label:'CAPA Engine', path:'/capa',     icon:ClipboardCheck,badge:'2', badgeType:'alert' },
- { id:'analytics',label:'Analytics',   path:'/analytics',icon:BarChart2,     badge:null },
+ { id:'shift',    label:'Shift',     path:'/shift',    icon:Activity,      badge:'3', badgeType:'alert' },
+ { id:'supplier', label:'Suppliers', path:'/supplier', icon:Truck,         badge:'1', badgeType:'alert' },
+ { id:'capa',     label:'CAPA',      path:'/capa',     icon:ClipboardCheck,badge:'2', badgeType:'alert' },
+ { id:'analytics',label:'Analytics', path:'/analytics',icon:BarChart2,     badge:null },
 ]
 
 function Badge({ badge, badgeType }) {
@@ -93,7 +93,7 @@ function PlantItem() {
   >
    {() => (<>
     <LayoutGrid size={15} strokeWidth={1.75} className="flex-shrink-0" />
-    <span className="font-body flex-1">Plant Overview</span>
+    <span className="font-body flex-1">Overview</span>
     {activeCount > 0 && (
      <span className={`ml-auto text-[10px] font-semibold px-1.5 py-0.5 ${
       criticalCount > 0 ? 'bg-danger text-white' : 'bg-warn/20 text-warn'
@@ -357,7 +357,7 @@ function AgentItem({ count }) {
     `flex items-center gap-3 px-4 py-2.5 w-full text-left transition-colors hover:bg-sidebar2 border-l-2 ${isActive ? 'bg-sidebar2 border-l-stone text-stone' : 'border-l-transparent text-stone/70 hover:text-stone'}`
    }>
    <Cpu size={15} strokeWidth={1.75} className="flex-shrink-0" />
-   <span className="font-body text-[13px]">Agent Control</span>
+   <span className="font-body text-[13px]">Agents</span>
    {count > 0 && (
     <span className="ml-auto text-[10px] font-semibold px-1.5 py-0.5 bg-ochre text-stone rounded-btn">
      {count}
@@ -459,7 +459,7 @@ export default function Sidebar() {
    <SideItem to="/shift"  id="shift"  icon={Activity} label="ShiftIQ"      badge="3" badgeType="alert" />
    <AgentItem count={agentPendingCount} />
    <div className="px-4 pt-4 pb-1 text-[10px] tracking-widest uppercase text-stone/40 font-body font-medium">Causality</div>
-   <SideItem to="/impact" id="impact" icon={CircleDot} label="Impact Loop" badge={null} />
+   <SideItem to="/impact" id="impact" icon={CircleDot} label="Outcomes" badge={null} />
    <div className="px-4 pt-4 pb-1 text-[10px] tracking-widest uppercase text-stone/40 font-body font-medium">Activity</div>
    <button type="button" onClick={() => setNotifOpen(true)}
     className="flex items-center gap-3 px-4 py-2.5 w-full text-left transition-colors hover:bg-sidebar2 text-stone/80">
@@ -476,32 +476,32 @@ export default function Sidebar() {
   <>
    <PlantItem />
 
-   <div className="px-4 pt-3 pb-1 text-[10px] tracking-widest uppercase text-stone/40 font-body font-medium">Intelligence</div>
+   <div className="px-4 pt-3 pb-1 text-[10px] tracking-widest uppercase text-stone/40 font-body font-medium">Operations</div>
    {modules.map(m => <SideItem key={m.id} to={m.path} id={m.id} {...m} />)}
    <AgentItem count={agentPendingCount} />
-   <SideItem to="/impact" id="impact" icon={CircleDot} label="Impact Loop"   badge={null} />
+   <SideItem to="/impact" id="impact" icon={CircleDot} label="Outcomes" badge={null} />
 
-   <div className="px-4 pt-4 pb-1 text-[10px] tracking-widest uppercase text-stone/40 font-body font-medium">Architecture</div>
-   <SideItem to="/batch"      id="batch"      icon={FlaskConical}    label="Process Intelligence" badge={null} />
-   <SideItem to="/compliance" id="compliance" icon={Scale}           label="Compliance Policy"    badge={null} />
-   <SideItem to="/hierarchy"  id="hierarchy"  icon={LayoutDashboard} label="Process Hierarchy"    badge={null} />
-   <SideItem to="/knowledge"  id="knowledge"  icon={BookOpen}        label="Knowledge Vault"      badge={null} />
+   <div className="px-4 pt-4 pb-1 text-[10px] tracking-widest uppercase text-stone/40 font-body font-medium">Platform</div>
+   <SideItem to="/batch"      id="batch"      icon={FlaskConical}    label="Batches"    badge={null} />
+   <SideItem to="/compliance" id="compliance" icon={Scale}           label="Compliance" badge={null} />
+   <SideItem to="/hierarchy"  id="hierarchy"  icon={LayoutDashboard} label="Site"       badge={null} />
+   <SideItem to="/knowledge"  id="knowledge"  icon={BookOpen}        label="Knowledge"  badge={null} />
 
-   <div className="px-4 pt-4 pb-1 text-[10px] tracking-widest uppercase text-stone/40 font-body font-medium">Frontier</div>
-   <SideItem to="/execution" id="execution" icon={Workflow} label="Execution Authority" badge={null} />
+   <div className="px-4 pt-4 pb-1 text-[10px] tracking-widest uppercase text-stone/40 font-body font-medium">Extended</div>
+   <SideItem to="/execution" id="execution" icon={Workflow} label="Execution" badge={null} />
    {currentPlant?.sector === 'pharma' && (
-    <SideItem to="/records"  id="records"  icon={FileLock2}  label="Record Vault"   badge={null} />
+    <SideItem to="/records"  id="records"  icon={FileLock2}  label="Records"     badge={null} />
    )}
    {(currentPlant?.sector === 'electronics' || currentPlant?.sector === 'semiconductor') && (
-    <SideItem to="/delivery" id="delivery" icon={TrendingUp} label="Value Chain"    badge={null} />
+    <SideItem to="/delivery" id="delivery" icon={TrendingUp} label="Value Chain" badge={null} />
    )}
    {currentPlant?.sector !== 'pharma' && (
-    <SideItem to="/equipment" id="equipment" icon={ScanLine} label="Equipment Intel." badge={null} />
+    <SideItem to="/equipment" id="equipment" icon={ScanLine} label="Equipment" badge={null} />
    )}
 
-   <div className="px-4 pt-4 pb-1 text-[10px] tracking-widest uppercase text-stone/40 font-body font-medium">Admin</div>
-   <SideItem to="/integration" id="integration" icon={Network} label="Integration Hub" badge={null} />
-   <SideItem to="/readiness"   id="readiness"   icon={Gauge}   label="Data Readiness"  badge={null} />
+   <div className="px-4 pt-4 pb-1 text-[10px] tracking-widest uppercase text-stone/40 font-body font-medium">System</div>
+   <SideItem to="/integration" id="integration" icon={Network} label="Integrations" badge={null} />
+   <SideItem to="/readiness"   id="readiness"   icon={Gauge}   label="Readiness"    badge={null} />
 
    <div className="px-4 pt-4 pb-1 text-[10px] tracking-widest uppercase text-stone/40 font-body font-medium">Activity</div>
    <button type="button" onClick={() => setNotifOpen(true)}
