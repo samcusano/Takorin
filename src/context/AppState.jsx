@@ -109,7 +109,6 @@ export function AppStateProvider({ children }) {
  const setCurrentPlant = (p) => { _setCurrentPlant(p); setWorkerModeState(p.workerMode) }
  const setWorkerMode = (m) => setWorkerModeState(m)
  const [viewingRole, setViewingRole] = useState('director')
- const [agentPanelOpen, setAgentPanelOpen] = useState(false)
  const [agentDecidedKeys, setAgentDecidedKeys] = useState(new Set())
  const markAgentDecided = (key) => setAgentDecidedKeys(prev => new Set([...prev, key]))
  const acknowledgeCommand = (id) => setCommandAcknowledged(prev => new Set([...prev, id]))
@@ -165,7 +164,6 @@ export function AppStateProvider({ children }) {
  viewingRole, setViewingRole,
  pilotExpanded, setPilotExpanded,
  handoffAccepted, setHandoffAccepted,
- agentPanelOpen, setAgentPanelOpen,
  agentDecidedKeys, markAgentDecided,
  }}>
  {children}

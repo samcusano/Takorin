@@ -4,7 +4,6 @@ import Sidebar from './components/Sidebar'
 import ErrorBoundary from './components/ErrorBoundary'
 import TrustStrip from './components/TrustStrip'
 import { useAppState } from './context/AppState'
-import AgentControlPanel from './components/AgentControlPanel'
 
 const PlantOverview         = lazy(() => import('./screens/PlantOverview'))
 const ShiftIQ               = lazy(() => import('./screens/ShiftIQ'))
@@ -38,13 +37,12 @@ const ROLE_LABELS = {
 }
 
 export default function App() {
- const { viewingRole, setViewingRole, agentPanelOpen, setAgentPanelOpen } = useAppState()
+ const { viewingRole, setViewingRole } = useAppState()
  const roleInfo = viewingRole ? ROLE_LABELS[viewingRole] : null
 
  return (
  <div className="flex h-screen bg-stone overflow-hidden">
  <Sidebar />
- <AgentControlPanel open={agentPanelOpen} onClose={() => setAgentPanelOpen(false)} />
  <main className="flex-1 flex flex-col overflow-hidden ml-[240px]">
  <TrustStrip />
  {roleInfo && (

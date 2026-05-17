@@ -2,7 +2,8 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAppState } from '../context/AppState'
 import { openCases, benchmarks } from '../data/capa.js'
-import { goalsData, facility } from '../data'
+import { goalsData, facility, agentConfigData } from '../data'
+import { interventionSummary, interventions } from '../data/interventions'
 import { ChevronDown, ChevronUp, Download, Lock, ArrowRight, Check } from 'lucide-react'
 
 // ── Bullet chart for Q2 Goals ─────────────────────────────────────────────────
@@ -523,6 +524,129 @@ export default function Analytics() {
                   })}
                 </div>
               </div>
+            </Module>
+
+            {/* ── AI Decision Intelligence ─────────────────────────────── */}
+            <Module title="AI Decision Intelligence" badge="Agent Control · this shift" defaultOpen>
+              {(() => {
+                const totalDecisions = agentConfigData.agents.reduce((n, a) => n + (a.pendingActions?.length ?? 0), 0)
+                const complianceDecisions = agentConfigData.agents.filter(a => a.isComplianceCategory).reduce((n, a) => n + (a.pendingActions?.length ?? 0), 0)
+                const avgDwellSec = Math.round(interventionSummary.avgDwellTimeMs / 1000)
+                const lowDwellCount = interventions.filter(e => e.dwellTimeMs > 0 && e.dwellTimeMs < 5000).length
+                const decisionBars = [
+                  { label: 'Critical',  approved: 1, overridden: 0, deferred: 0, color: 'var(--color-danger)' },
+                  { label: 'High',      approved: 2, overridden: 1, deferred: 0, color: 'var(--color-warn)' },
+                  { label: 'Medium',    approved: 3, overridden: 1, deferred: 1, color: 'var(--color-ghost)' },
+                ]
+                return (
+                  <div>
+                    {/* Stat grid */}
+                    <div className="grid grid-cols-4 gap-px bg-rule2 border-b border-rule2">
+                      {[
+                        { label: 'Decisions this shift', val: String(totalDecisions), tone: 'text-ink' },
+                        { label: 'Compliance-category', val: String(complianceDecisions), tone: 'text-warn' },
+                        { label: 'Avg dwell — high', val: `${avgDwellSec}s`, tone: avgDwellSec >= 15 ? 'text-ok' : avgDwellSec >= 5 ? 'text-warn' : 'text-danger' },
+                        { label: 'Low-dwell exposure', val: String(lowDwellCount), tone: lowDwellCount > 0 ? 'text-danger' : 'text-ok' },
+                      ].map(({ label, val, tone }) => (
+                        <div key={label} className="bg-stone px-5 py-3.5">
+                          <div className="font-body text-ghost text-[9px] uppercase tracking-widest mb-1">{label}</div>
+                          <div className={`display-num text-[24px] leading-none ${tone}`}>{val}</div>
+                        </div>
+                      ))}
+                    </div>
+                    {/* Decision distribution by consequence */}
+                    <div className="px-5 py-4 border-b border-rule2">
+                      <div className="font-body text-ghost text-[9px] uppercase tracking-widest mb-3">Decision distribution by consequence</div>
+                      <div className="space-y-2">
+                        {decisionBars.map(d => {
+                          const total = d.approved + d.overridden + d.deferred
+                          return (
+                            <div key={d.label} className="flex items-center gap-3">
+                              <span className="font-body text-ghost text-[10px] w-14 flex-shrink-0">{d.label}</span>
+                              <div className="flex-1 h-3 bg-rule2 flex overflow-hidden">
+                                {d.approved > 0 && <div className="h-full bg-ok/60" style={{ width: `${(d.approved/total)*100}%` }} />}
+                                {d.overridden > 0 && <div className="h-full bg-ghost/40" style={{ width: `${(d.overridden/total)*100}%` }} />}
+                                {d.deferred > 0 && <div className="h-full bg-stone3" style={{ width: `${(d.deferred/total)*100}%` }} />}
+                              </div>
+                              <span className="font-body text-ghost text-[9px] w-4 text-right">{total}</span>
+                            </div>
+                          )
+                        })}
+                        <div className="flex items-center gap-4 mt-2">
+                          {[{ label: 'Approved', color: 'bg-ok/60' }, { label: 'Overridden', color: 'bg-ghost/40' }, { label: 'Deferred', color: 'bg-stone3' }].map(l => (
+                            <span key={l.label} className="flex items-center gap-1.5 font-body text-ghost text-[9px]">
+                              <span className={`w-2 h-2 ${l.color} flex-shrink-0`} />{l.label}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="px-5 py-3 flex items-center justify-between">
+                      <span className="font-body text-ghost text-[10px]">Approval rate 62% · Override rate 25% · Deferred 13%</span>
+                      <Link to="/agents" className="flex items-center gap-1 font-body text-ghost text-[10px] hover:text-ink transition-colors">
+                        <ArrowRight size={10} />View Agent Control
+                      </Link>
+                    </div>
+                  </div>
+                )
+              })()}
+            </Module>
+
+            {/* ── Impact Attribution ───────────────────────────────────────── */}
+            <Module title="Impact Attribution" badge={`${interventionSummary.total} interventions · ${Math.round(interventionSummary.avgAttributionConfidence * 100)}% avg confidence`} defaultOpen>
+              {(() => {
+                const positiveCount = interventions.filter(e => e.outcomeClassification === 'positive').length
+                const unclearCount  = interventions.filter(e => e.outcomeClassification === 'unclear').length
+                const negativeCount = interventions.filter(e => e.outcomeClassification === 'negative' || e.outcomeClassification === 'harmful').length
+                const confirmRate   = Math.round((interventionSummary.operatorConfirmed / interventionSummary.total) * 100)
+                const avgConf       = Math.round(interventionSummary.avgAttributionConfidence * 100)
+                return (
+                  <div>
+                    {/* Stat grid */}
+                    <div className="grid grid-cols-3 gap-px bg-rule2 border-b border-rule2">
+                      {[
+                        { label: 'Positive outcomes', val: `${positiveCount}/${interventionSummary.total}`, tone: 'text-ok' },
+                        { label: 'Avg attribution', val: `${avgConf}%`, tone: avgConf >= 70 ? 'text-ok' : avgConf >= 50 ? 'text-warn' : 'text-danger' },
+                        { label: 'Operator confirmation', val: `${confirmRate}%`, tone: confirmRate >= 60 ? 'text-ok' : 'text-warn' },
+                        { label: 'Auto-executed', val: String(interventionSummary.autoExecuted), tone: 'text-ochre' },
+                        { label: 'Reversed', val: String(interventionSummary.reversed), tone: interventionSummary.reversed > 0 ? 'text-warn' : 'text-ghost' },
+                        { label: 'Low-dwell risk', val: String(interventionSummary.lowDwellDecisions), tone: interventionSummary.lowDwellDecisions > 0 ? 'text-danger' : 'text-ok' },
+                      ].map(({ label, val, tone }) => (
+                        <div key={label} className="bg-stone px-5 py-3.5">
+                          <div className="font-body text-ghost text-[9px] uppercase tracking-widest mb-1">{label}</div>
+                          <div className={`display-num text-[24px] leading-none ${tone}`}>{val}</div>
+                        </div>
+                      ))}
+                    </div>
+                    {/* Outcome distribution bar */}
+                    <div className="px-5 py-4 border-b border-rule2">
+                      <div className="font-body text-ghost text-[9px] uppercase tracking-widest mb-3">Outcome distribution</div>
+                      <div className="h-4 bg-rule2 flex overflow-hidden mb-2">
+                        {positiveCount > 0 && <div className="h-full bg-ok/70" style={{ width: `${(positiveCount/interventionSummary.total)*100}%` }} />}
+                        {unclearCount > 0  && <div className="h-full bg-ochre/60" style={{ width: `${(unclearCount/interventionSummary.total)*100}%` }} />}
+                        {negativeCount > 0 && <div className="h-full bg-danger/60" style={{ width: `${(negativeCount/interventionSummary.total)*100}%` }} />}
+                      </div>
+                      <div className="flex items-center gap-4">
+                        {[
+                          { label: `Positive (${positiveCount})`, color: 'bg-ok/70'     },
+                          { label: `Unclear (${unclearCount})`,   color: 'bg-ochre/60'  },
+                          { label: `Negative (${negativeCount})`, color: 'bg-danger/60' },
+                        ].map(l => (
+                          <span key={l.label} className="flex items-center gap-1.5 font-body text-ghost text-[9px]">
+                            <span className={`w-2 h-2 ${l.color} flex-shrink-0`} />{l.label}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="px-5 py-3 flex items-center justify-between">
+                      <span className="font-body text-ghost text-[10px]">Attribution confidence reflects causal certainty. Values below 60% indicate confounding factors.</span>
+                      <Link to="/impact" className="flex items-center gap-1 font-body text-ghost text-[10px] hover:text-ink transition-colors">
+                        <ArrowRight size={10} />View ImpactLoop
+                      </Link>
+                    </div>
+                  </div>
+                )
+              })()}
             </Module>
 
             <Module title="CAPA Register" badge={`${closedCount} closed · ${openCount} open · ${overdueCount} overdue`} defaultOpen>

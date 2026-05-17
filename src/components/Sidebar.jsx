@@ -350,10 +350,12 @@ const WORKER_MODE_COLORS = { human: 'text-ok', robot: 'text-ochre', hybrid: 'tex
 
 const STATIC_AGENT_TOTAL = agentConfigData.agents.reduce((n, a) => n + (a.pendingActions?.length ?? 0), 0)
 
-function AgentItem({ onClick, count }) {
+function AgentItem({ count }) {
  return (
-  <button type="button" onClick={onClick}
-   className="flex items-center gap-3 px-4 py-2.5 w-full text-left transition-colors hover:bg-sidebar2 text-stone/70 hover:text-stone border-l-2 border-l-transparent">
+  <NavLink to="/agents"
+   className={({ isActive }) =>
+    `flex items-center gap-3 px-4 py-2.5 w-full text-left transition-colors hover:bg-sidebar2 border-l-2 ${isActive ? 'bg-sidebar2 border-l-stone text-stone' : 'border-l-transparent text-stone/70 hover:text-stone'}`
+   }>
    <Cpu size={15} strokeWidth={1.75} className="flex-shrink-0" />
    <span className="font-body text-[13px]">Agent Control</span>
    {count > 0 && (
@@ -361,7 +363,7 @@ function AgentItem({ onClick, count }) {
      {count}
     </span>
    )}
-  </button>
+  </NavLink>
  )
 }
 
@@ -372,7 +374,7 @@ export default function Sidebar() {
  const userTriggerRef = useRef(null)
  const [notifOpen, setNotifOpen] = useState(false)
  const [toast, setToast] = useState(null)
- const { blockingEvidenceUploaded, allergenOverride, checklistSigned, nearMisses, maintenanceTickets, viewingRole, setViewingRole, currentPlant, setCurrentPlant, workerMode, agentPanelOpen, setAgentPanelOpen, agentDecidedKeys } = useAppState() || {}
+ const { blockingEvidenceUploaded, allergenOverride, checklistSigned, nearMisses, maintenanceTickets, viewingRole, setViewingRole, currentPlant, setCurrentPlant, workerMode, agentDecidedKeys } = useAppState() || {}
  const agentPendingCount = Math.max(0, STATIC_AGENT_TOTAL - (agentDecidedKeys?.size ?? 0))
 
  const allergenSigned = checklistSigned?.['allergen'] || !!allergenOverride
@@ -455,7 +457,7 @@ export default function Sidebar() {
   <>
    <div className="px-4 pt-3 pb-1 text-[10px] tracking-widest uppercase text-stone/40 font-body font-medium">Operational</div>
    <SideItem to="/shift"  id="shift"  icon={Activity} label="ShiftIQ"      badge="3" badgeType="alert" />
-   <AgentItem onClick={() => setAgentPanelOpen?.(true)} count={agentPendingCount} />
+   <AgentItem count={agentPendingCount} />
    <div className="px-4 pt-4 pb-1 text-[10px] tracking-widest uppercase text-stone/40 font-body font-medium">Causality</div>
    <SideItem to="/impact" id="impact" icon={CircleDot} label="Impact Loop" badge={null} />
    <div className="px-4 pt-4 pb-1 text-[10px] tracking-widest uppercase text-stone/40 font-body font-medium">Activity</div>
@@ -476,7 +478,7 @@ export default function Sidebar() {
 
    <div className="px-4 pt-3 pb-1 text-[10px] tracking-widest uppercase text-stone/40 font-body font-medium">Intelligence</div>
    {modules.map(m => <SideItem key={m.id} to={m.path} id={m.id} {...m} />)}
-   <AgentItem onClick={() => setAgentPanelOpen?.(true)} count={agentPendingCount} />
+   <AgentItem count={agentPendingCount} />
    <SideItem to="/impact" id="impact" icon={CircleDot} label="Impact Loop"   badge={null} />
 
    <div className="px-4 pt-4 pb-1 text-[10px] tracking-widest uppercase text-stone/40 font-body font-medium">Architecture</div>
