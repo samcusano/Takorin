@@ -4,31 +4,30 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Takorin design tokens — high contrast warm palette
-        stone:    { DEFAULT: '#FAF8F4', 2: '#F0EBE0', 3: '#E6DED0', 4: '#DAD4C6' },
-        ink:      { DEFAULT: '#0A0906', 2: '#1E1A15', 3: '#2E2820' },
-        ochre:    { DEFAULT: '#B86E1A', dim: '#F5E8CC', dark: '#7A4E10', light: '#D08A30' },
-        brass:    { DEFAULT: '#8A6A3A', dim: '#F0E8D8' },
-        // WCAG AA on #FAF8F4: muted 6.4:1, ghost 5.3:1
-        muted:    '#5A5448',
-        ghost:    '#686058',
-        rule:     '#B8B0A4',
-        rule2:    '#CAC2B6',
-        ok:       { DEFAULT: '#3A8A5A', dim: '#E6F2EC' },
-        warn:     { DEFAULT: '#C4920A', dim: '#FEF3E0' },
-        danger:   { DEFAULT: '#C43820', dim: '#FAE8E4' },
-        int:      { DEFAULT: '#3A7FD4', dim: '#EBF2FC' },
-        // Sidebar — dark surface, unchanged
-        sidebar:  { DEFAULT: '#1A1610', 2: '#221E18', 3: '#2A2420', border: '#3A342E', ghost: '#A8A098' },
+        // Takorin design tokens — Pulse palette
+        stone:    { DEFAULT: '#FFFFFF', 2: '#F7F8FA', 3: '#EDEEF1', 4: '#E2E5EA' },
+        ink:      { DEFAULT: '#101828', 2: '#344054', 3: '#667085' },
+        ochre:    { DEFAULT: '#0052CC', dim: '#EFF4FF', dark: '#003580', light: '#3572E3' },
+        brass:    { DEFAULT: '#0052CC', dim: '#EFF4FF' },
+        muted:    '#667085',
+        ghost:    '#6B7280',
+        rule:     '#E2E5EA',
+        rule2:    '#EDEEF1',
+        ok:       { DEFAULT: '#027A48', dim: '#ECFDF3' },
+        warn:     { DEFAULT: '#B54708', dim: '#FFFAEB' },
+        danger:   { DEFAULT: '#D92D20', dim: '#FFF4F3' },
+        int:      { DEFAULT: '#0052CC', dim: '#EFF4FF' },
+        // Sidebar — stays dark against the white content area
+        sidebar:  { DEFAULT: '#000000', 2: '#0D0D0D', 3: '#1A1A1A', border: '#1F1F1F', ghost: '#808080' },
       },
       fontFamily: {
-        display: ['Georgia', 'Times New Roman', 'serif'],
-        body:    [['IBM Plex Mono'], 'ui-monospace', 'monospace'],
+        display: ['Inter', 'Helvetica Neue', 'system-ui', 'sans-serif'],
+        body:    ['Inter', 'Helvetica Neue', 'system-ui', 'sans-serif'],
       },
       fontSize: {
-        '10': '10px',
-        '11': '11px',
-        '13': '13px',
+        '10': '12px',
+        '11': '13px',
+        '13': '15px',
       },
       transitionDuration: {
         '50':  '50ms',
@@ -42,10 +41,10 @@ export default {
         'inout':  'cubic-bezier(0.42, 0, 0.58, 1)',
       },
       borderRadius: {
-        'btn': '3px',
+        'btn': '4px',
       },
       boxShadow: {
-        'raise': '0 8px 32px rgba(10, 9, 6, 0.18)',
+        'raise': '0 4px 16px rgba(16,24,40,0.12)',
       },
     },
   },

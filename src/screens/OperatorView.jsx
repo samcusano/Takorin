@@ -53,7 +53,7 @@ function DataCommitmentOverlay({ onAcknowledge }) {
      <ShieldCheck size={20} strokeWidth={1.75} className="text-ok flex-shrink-0 mt-0.5" />
      <div>
       <div className="font-display font-bold text-ink text-[16px] leading-snug mb-1">What we track</div>
-      <p className="font-body text-ink2 text-[12px] leading-relaxed">Takorin tracks production signals to help you work safely. Here's what your supervisor can see, and what they can't.</p>
+      <p className="font-body text-ink2 text-[14px] leading-relaxed">Takorin tracks production signals to help you work safely. Here's what your supervisor can see, and what they can't.</p>
      </div>
     </div>
     <div className="space-y-2 mb-5">
@@ -65,11 +65,11 @@ function DataCommitmentOverlay({ onAcknowledge }) {
       <div key={label} className="px-3 py-2.5 bg-stone2 border border-rule2">
        <div className="flex items-center gap-1.5 mb-1.5">
         <Icon size={11} strokeWidth={2} className="text-muted flex-shrink-0" />
-        <span className="font-body font-medium text-ink text-[11px]">{label}</span>
+        <span className="font-body font-medium text-ink text-[13px]">{label}</span>
        </div>
        <ul className="space-y-0.5">
         {items.map(item => (
-         <li key={item} className="font-body text-ink2 text-[11px] flex items-start gap-1.5">
+         <li key={item} className="font-body text-ink2 text-[13px] flex items-start gap-1.5">
           <span className="text-ghost mt-px">·</span>{item}
          </li>
         ))}
@@ -94,10 +94,10 @@ function OperationalStateHeader({ ctx }) {
    <div className="flex-shrink-0 px-5 py-4 border-b-2 border-b-rule2 bg-stone">
     <div className="flex items-center gap-2 mb-0.5">
      <CheckCircle2 size={12} strokeWidth={2} className="text-ok flex-shrink-0" />
-     <div className="font-body text-ok text-[10px] uppercase tracking-widest font-medium">Standard Operation</div>
+     <div className="font-body text-ok text-[12px] tracking-normal font-medium">Standard Operation</div>
     </div>
     <div className="font-display font-bold text-ink text-[18px] leading-none mb-1">{ctx?.station} · {ctx?.condition}</div>
-    <div className="font-body text-ghost text-[11px]">{ctx?.conditionDetail}</div>
+    <div className="font-body text-ghost text-[13px]">{ctx?.conditionDetail}</div>
    </div>
   )
  }
@@ -109,12 +109,12 @@ function OperationalStateHeader({ ctx }) {
   <div className={`flex-shrink-0 px-5 py-4 border-b-2 ${borderClass}`}>
    <div className="flex items-center gap-2 mb-0.5">
     <Icon size={12} strokeWidth={2} className={`flex-shrink-0 ${textClass}`} />
-    <div className={`font-body text-[10px] uppercase tracking-widest font-medium ${textClass}`}>{ctx.modeLabel}</div>
+    <div className={`font-body text-[12px] tracking-normal font-medium ${textClass}`}>{ctx.modeLabel}</div>
    </div>
    <div className="font-display font-bold text-ink text-[18px] leading-none mb-1">
     {ctx.station} · {ctx.condition}
    </div>
-   <div className="font-body text-ghost text-[11px]">{ctx.conditionDetail}</div>
+   <div className="font-body text-ghost text-[13px]">{ctx.conditionDetail}</div>
   </div>
  )
 }
@@ -127,20 +127,20 @@ function PrimaryDirective({ ctx }) {
  const isDanger = ctx.mode === 'ELEVATED_RISK_COVERAGE'
  const borderClass = isDanger ? 'border-l-danger' : 'border-l-warn'
  const dotClass    = isDanger ? 'bg-danger beat' : 'bg-warn'
- const badgeClass  = isDanger ? 'bg-danger/10 text-danger' : 'bg-warn/10 text-warn'
+ const badgeClass  = isDanger ? 'bg-danger/[0.04] text-danger' : 'bg-warn/10 text-warn'
  return (
   <div className={`flex-shrink-0 px-5 py-3.5 border-b border-rule2 border-l-2 ${borderClass}`}>
    <div className="flex items-start justify-between gap-3">
     <div className="flex items-start gap-2.5 flex-1 min-w-0">
      <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 mt-1.5 ${dotClass}`} />
      <div>
-      <div className="font-body font-medium text-ink text-[13px] leading-snug">{ctx.directive}</div>
+      <div className="font-body font-medium text-ink text-[15px] leading-snug">{ctx.directive}</div>
       {ctx.guidanceLevel === 'high' && (
-       <div className="font-body text-ghost text-[10px] mt-0.5">Ask your supervisor if unsure about any step</div>
+       <div className="font-body text-ghost text-[12px] mt-0.5">Ask your supervisor if unsure about any step</div>
       )}
      </div>
     </div>
-    <div className={`font-body text-[10px] px-2 py-0.5 flex-shrink-0 rounded-btn whitespace-nowrap ${badgeClass}`}>
+    <div className={`font-body text-[12px] px-2 py-0.5 flex-shrink-0 rounded-btn whitespace-nowrap ${badgeClass}`}>
      Before {ctx.directiveDeadline}
     </div>
    </div>
@@ -161,8 +161,8 @@ function ProceduralSurface({ ctx, completions, onComplete, onRequestSignOff }) {
    {/* CCP card — always pinned */}
    <div className="px-5 py-3 bg-warn/[0.04] border-b border-warn/20 flex items-center gap-2.5">
     <div className="w-2 h-2 rounded-full bg-warn flex-shrink-0" />
-    <span className="font-body font-medium text-warn text-[12px]">{ctx.ccp.label}</span>
-    <span className="font-body text-warn/80 text-[11px]"> · {ctx.ccp.requirement}</span>
+    <span className="font-body font-medium text-warn text-[14px]">{ctx.ccp.label}</span>
+    <span className="font-body text-warn/80 text-[13px]"> · {ctx.ccp.requirement}</span>
    </div>
 
    {/* Mismatch notice */}
@@ -170,16 +170,16 @@ function ProceduralSurface({ ctx, completions, onComplete, onRequestSignOff }) {
     <div className="px-5 py-3 bg-danger/[0.03] border-b border-danger/15 flex items-start gap-2.5">
      <AlertTriangle size={12} strokeWidth={2} className="text-danger flex-shrink-0 mt-px" />
      <div>
-      <div className="font-body font-medium text-danger text-[11px]">Coverage mismatch detected</div>
-      <div className="font-body text-danger/70 text-[10px]">{ctx.mismatchNote}</div>
+      <div className="font-body font-medium text-danger text-[13px]">Coverage mismatch detected</div>
+      <div className="font-body text-danger/70 text-[12px]">{ctx.mismatchNote}</div>
      </div>
     </div>
    )}
 
    {/* Steps header */}
    <div className="px-5 py-2 bg-stone2 border-b border-rule2 flex items-center justify-between">
-    <span className="font-body text-ghost text-[10px] uppercase tracking-widest">Verification sequence</span>
-    <span className="font-body text-ghost text-[10px]">{completedCount} of {steps.length}</span>
+    <span className="font-body text-ghost text-[12px] tracking-normal">Verification sequence</span>
+    <span className="font-body text-ghost text-[12px]">{completedCount} of {steps.length}</span>
    </div>
 
    {/* Steps */}
@@ -204,11 +204,11 @@ function ProceduralSurface({ ctx, completions, onComplete, onRequestSignOff }) {
        {done && <Check size={11} strokeWidth={2.5} className="text-white" />}
       </button>
       <div className="flex-1">
-       <div className={`font-body text-[12px] leading-snug ${done ? 'text-ghost line-through' : 'text-ink font-medium'}`}>
+       <div className={`font-body text-[14px] leading-snug ${done ? 'text-ghost line-through' : 'text-ink font-medium'}`}>
         {i + 1}. {step.label}
        </div>
        {ctx.guidanceLevel === 'high' && enabled && i === 0 && (
-        <div className="font-body text-ghost text-[10px] mt-1 italic">Confirm each step carefully — you are covering above cert level</div>
+        <div className="font-body text-ghost text-[12px] mt-1 italic">Confirm each step carefully — you are covering above cert level</div>
        )}
       </div>
      </div>
@@ -220,9 +220,9 @@ function ProceduralSurface({ ctx, completions, onComplete, onRequestSignOff }) {
     <div className="px-5 py-4 bg-ok/[0.04] border-b border-ok/20">
      <div className="flex items-center gap-2 mb-1.5">
       <CheckCircle2 size={13} strokeWidth={2} className="text-ok flex-shrink-0" />
-      <span className="font-body font-medium text-ok text-[13px]">Verification complete</span>
+      <span className="font-body font-medium text-ok text-[15px]">Verification complete</span>
      </div>
-     <div className="font-body text-ok/80 text-[11px] mb-3">All steps verified · Await supervisor sign-off before restarting the line</div>
+     <div className="font-body text-ok/80 text-[13px] mb-3">All steps verified · Await supervisor sign-off before restarting the line</div>
      <Btn variant="secondary" onClick={onRequestSignOff}>Request supervisor sign-off</Btn>
     </div>
    )}
@@ -246,7 +246,7 @@ function MonitoringSurface({ ctx, entries, onLog }) {
   <div>
    {/* CCP status card */}
    <div className="px-5 py-5 border-b border-rule2">
-    <div className="font-body text-ghost text-[10px] mb-2">{ctx.ccp.label} · {ctx.ccp.requirement}</div>
+    <div className="font-body text-ghost text-[12px] mb-2">{ctx.ccp.label} · {ctx.ccp.requirement}</div>
     <div className="flex items-baseline gap-3 mb-1">
      <span className={`display-num text-[52px] font-bold leading-none ${
       lastValue == null ? 'text-ghost' : ccpMet ? 'text-ok' : 'text-danger'
@@ -254,13 +254,13 @@ function MonitoringSurface({ ctx, entries, onLog }) {
       {lastValue != null ? `${lastValue}°F` : '—'}
      </span>
      {lastValue != null && (
-      <span className={`font-body text-[11px] px-2 py-0.5 rounded-btn ${ccpMet ? 'bg-ok/10 text-ok' : 'bg-danger/10 text-danger'}`}>
+      <span className={`font-body text-[13px] px-2 py-0.5 rounded-btn ${ccpMet ? 'bg-ok/10 text-ok' : 'bg-danger/[0.04] text-danger'}`}>
        {ccpMet ? 'Compliant' : 'BELOW LIMIT'}
       </span>
      )}
     </div>
     {lastEntry && (
-     <div className="font-body text-ghost text-[10px]">Last logged: {lastEntry.time}</div>
+     <div className="font-body text-ghost text-[12px]">Last logged: {lastEntry.time}</div>
     )}
    </div>
 
@@ -271,13 +271,13 @@ function MonitoringSurface({ ctx, entries, onLog }) {
       <Btn variant="primary" onClick={() => setLogging(true)} className="w-full">
        Log temperature reading
       </Btn>
-      <div className="font-body text-ghost text-[10px] mt-2 text-center">
+      <div className="font-body text-ghost text-[12px] mt-2 text-center">
        Next reading due: {ctx.directiveDeadline}
       </div>
      </>
     ) : (
      <>
-      <div className="font-body text-ghost text-[10px] mb-2">{ctx.ccp.label} — enter °F reading</div>
+      <div className="font-body text-ghost text-[12px] mb-2">{ctx.ccp.label} — enter °F reading</div>
       <div className="flex gap-2 mb-2">
        <input
         type="number"
@@ -293,7 +293,7 @@ function MonitoringSurface({ ctx, entries, onLog }) {
        <Btn variant="secondary" onClick={() => { setLogging(false); setInputVal('') }}>Cancel</Btn>
       </div>
       {belowLimit && (
-       <div className="font-body text-danger text-[11px] flex items-center gap-1.5">
+       <div className="font-body text-danger text-[13px] flex items-center gap-1.5">
         <AlertTriangle size={11} strokeWidth={2} className="flex-shrink-0" />
         Below {minTemp}°F minimum — log and notify supervisor immediately
        </div>
@@ -304,11 +304,11 @@ function MonitoringSurface({ ctx, entries, onLog }) {
 
    {/* Reading history */}
    <div className="px-5 py-4">
-    <div className="font-body text-ghost text-[10px] uppercase tracking-widest mb-3">Reading history</div>
+    <div className="font-body text-ghost text-[12px] tracking-normal mb-3">Reading history</div>
     <div className="space-y-px">
      {[...allEntries].reverse().map((r, i) => (
       <div key={i} className="flex items-center gap-3 py-2 border-b border-rule2 last:border-b-0">
-       <span className="font-body text-ghost text-[10px] w-10 flex-shrink-0">{r.time}</span>
+       <span className="font-body text-ghost text-[12px] w-10 flex-shrink-0">{r.time}</span>
        <span className={`display-num text-[16px] font-bold ${r.value >= minTemp ? 'text-ok' : 'text-danger'}`}>{r.value}°F</span>
        <div className={`ml-auto w-1.5 h-1.5 rounded-full flex-shrink-0 ${r.value >= minTemp ? 'bg-ok' : 'bg-danger'}`} />
       </div>
@@ -329,7 +329,7 @@ function TaskSection({ selected, station, tasks, linkedTasks, flags, nearMisses,
    <SecHd tag="Today's tasks" title={`${station || selected.split(' ')[1] || selected} · April 16`}
     badge={allTasks.length > 0 ? <Urg level={pendingCount > 0 ? 'warn' : 'ok'}>{pendingCount} pending</Urg> : null} />
    {allTasks.length === 0 ? (
-    <div className="px-5 py-4 font-body text-ghost text-[12px]">No tasks yet — tasks assigned by your supervisor appear here.</div>
+    <div className="px-5 py-4 font-body text-ghost text-[14px]">No tasks yet — tasks assigned by your supervisor appear here.</div>
    ) : allTasks.map((t, i) => (
     <div key={t.id ?? i} className={`flex items-start gap-3 px-5 py-3.5 border-b border-rule2 last:border-b-0 ${t.done ? 'opacity-60' : ''}`}>
      <button type="button"
@@ -341,22 +341,22 @@ function TaskSection({ selected, station, tasks, linkedTasks, flags, nearMisses,
       {t.done && <Check size={11} strokeWidth={2.5} className="text-white" />}
      </button>
      <div className="flex-1 min-w-0">
-      <div className={`font-body font-medium text-[12px] leading-snug ${t.done ? 'line-through text-ghost' : 'text-ink'}`}>{t.label}</div>
+      <div className={`font-body font-medium text-[14px] leading-snug ${t.done ? 'line-through text-ghost' : 'text-ink'}`}>{t.label}</div>
       <div className="flex items-center gap-2 mt-0.5">
-       {t.dueTime && <span className="font-body text-ghost text-[9px]">Due {t.dueTime}</span>}
+       {t.dueTime && <span className="font-body text-ghost text-[12px]">Due {t.dueTime}</span>}
        {t.interventionId && (
-        <span className="flex items-center gap-0.5 font-body text-[9px] text-ochre">
+        <span className="flex items-center gap-0.5 font-body text-[12px] text-ochre">
          <Brain size={8} strokeWidth={2} />{t.interventionLabel}
         </span>
        )}
        {t.done && t.confirmedAt && (
-        <span className="font-body text-ok text-[9px]">Confirmed {t.confirmedAt}</span>
+        <span className="font-body text-ok text-[12px]">Confirmed {t.confirmedAt}</span>
        )}
       </div>
      </div>
     </div>
    ))}
-   <div className="px-5 py-3 border-t border-rule2 font-body text-ghost text-[10px]">
+   <div className="px-5 py-3 border-t border-rule2 font-body text-ghost text-[12px]">
     If you cannot complete a safety check, use the Flag button in ShiftIQ checklist — do not leave it unsigned without a reason.
    </div>
 
@@ -367,8 +367,8 @@ function TaskSection({ selected, station, tasks, linkedTasks, flags, nearMisses,
       <div key={i} className="flex items-start gap-2.5 px-5 py-3.5 border-b border-rule2 last:border-b-0 bg-warn/[0.02]">
        <Flag size={12} strokeWidth={2} className="text-warn flex-shrink-0 mt-0.5" />
        <div>
-        <div className="font-body font-medium text-ink text-[12px]">{f.key}</div>
-        <div className="font-body text-warn text-[11px]">{f.reason}</div>
+        <div className="font-body font-medium text-ink text-[14px]">{f.key}</div>
+        <div className="font-body text-warn text-[13px]">{f.reason}</div>
        </div>
       </div>
      ))}
@@ -380,9 +380,9 @@ function TaskSection({ selected, station, tasks, linkedTasks, flags, nearMisses,
      <SecHd tag="Near-miss reports" title="Submitted this shift" badge={<Urg level="ok">{nearMisses.length} logged</Urg>} />
      {nearMisses.map((n, i) => (
       <div key={i} className="px-5 py-3.5 border-b border-rule2 last:border-b-0">
-       <div className="font-body font-medium text-ink text-[12px]">{n.station}</div>
-       <div className="font-body text-ink2 text-[11px] mt-0.5">{n.what}</div>
-       {n.action && <div className="font-body text-ok text-[10px] mt-0.5">Corrective step: {n.action}</div>}
+       <div className="font-body font-medium text-ink text-[14px]">{n.station}</div>
+       <div className="font-body text-ink2 text-[13px] mt-0.5">{n.what}</div>
+       {n.action && <div className="font-body text-ok text-[12px] mt-0.5">Corrective step: {n.action}</div>}
       </div>
      ))}
     </div>
@@ -482,9 +482,9 @@ export default function OperatorView({ role }) {
    {!isOperatorRole && (
     <>
     <div className="flex-shrink-0 flex items-center gap-3 px-4 py-2 border-b border-rule2 bg-stone2">
-     <span className="font-body text-ghost text-[9px] uppercase tracking-widest">Station simulation</span>
-     <span className="font-body text-muted text-[9px]">—</span>
-     <span className="font-body text-ghost text-[9px]">Viewing {selected}'s station as director. Not a live session.</span>
+     <span className="font-body text-ghost text-[12px] tracking-normal">Station simulation</span>
+     <span className="font-body text-muted text-[12px]">—</span>
+     <span className="font-body text-ghost text-[12px]">Viewing {selected}'s station as director. Not a live session.</span>
     </div>
     <div className="flex border-b border-rule2 bg-stone flex-shrink-0">
      {OPERATORS.map(o => (
@@ -495,8 +495,8 @@ export default function OperatorView({ role }) {
        }`}>
        <PersonAvatar name={o.name} size={22} />
        <div className="text-left">
-        <div className="font-body font-medium text-ink text-[11px]">{o.name}</div>
-        <div className="font-body text-ghost text-[9px]">{o.station}</div>
+        <div className="font-body font-medium text-ink text-[13px]">{o.name}</div>
+        <div className="font-body text-ghost text-[12px]">{o.station}</div>
        </div>
       </button>
      ))}
@@ -509,12 +509,12 @@ export default function OperatorView({ role }) {
     <div className="flex-shrink-0 flex items-center justify-between px-5 py-3 border-b border-rule2 bg-stone2">
      <div>
       <div className="font-display font-bold text-ink text-[16px] leading-none">{ctx?.station || op?.station}</div>
-      <div className="font-body text-ghost text-[10px] mt-0.5">Line 4 · AM shift · {selected}</div>
+      <div className="font-body text-ghost text-[12px] mt-0.5">Line 4 · AM shift · {selected}</div>
      </div>
      {trustDegraded && (
       <div className="flex items-center gap-1.5 px-2 py-1 border border-warn/30 bg-warn/[0.04]">
        <WifiOff size={9} strokeWidth={2} className="text-warn" />
-       <span className="font-body text-warn text-[9px]">Some signals stale</span>
+       <span className="font-body text-warn text-[12px]">Some signals stale</span>
       </div>
      )}
     </div>
@@ -567,8 +567,8 @@ export default function OperatorView({ role }) {
      if (!myFatigue) return null
      return (
       <div className="border-t border-rule2 px-5 py-3">
-       <div className="font-body text-ghost text-[9px] uppercase tracking-widest mb-2">My scheduling data</div>
-       <p className="font-body text-ghost text-[9px] mb-2">Shift scheduling only — not your performance review.</p>
+       <div className="font-body text-ghost text-[12px] tracking-normal mb-2">My scheduling data</div>
+       <p className="font-body text-ghost text-[12px] mb-2">Shift scheduling only — not your performance review.</p>
        <div className="grid grid-cols-3 gap-2">
         {[
          { label: 'Hours this week', value: `${myFatigue.hoursThisWeek}h` },
@@ -577,11 +577,11 @@ export default function OperatorView({ role }) {
         ].map(({ label, value }) => (
          <div key={label} className="bg-stone2 px-3 py-2 border border-rule2">
           <div className="display-num text-[18px] text-ink">{value}</div>
-          <div className="font-body text-ghost text-[9px] mt-0.5">{label}</div>
+          <div className="font-body text-ghost text-[12px] mt-0.5">{label}</div>
          </div>
         ))}
        </div>
-       {myFatigue.note && <p className="font-body text-warn text-[9px] mt-2">{myFatigue.note}</p>}
+       {myFatigue.note && <p className="font-body text-warn text-[12px] mt-2">{myFatigue.note}</p>}
       </div>
      )
     })()}
@@ -595,7 +595,7 @@ export default function OperatorView({ role }) {
       logActivity({ actor: selected, action: 'Requested supervisor assistance', item: ctx?.station || 'Station', type: 'escalation' })
      }
     }}
-    className={`fixed bottom-6 right-6 z-20 flex items-center gap-2 px-4 py-2.5 min-h-[40px] font-body text-[12px] font-medium rounded-btn transition-colors duration-100 shadow-raise ${
+    className={`fixed bottom-6 right-6 z-20 flex items-center gap-2 px-4 py-2.5 min-h-[40px] font-body text-[14px] font-medium rounded-btn transition-colors duration-100 shadow-raise ${
      supervisorCalled ? 'bg-ok text-white' : 'bg-danger text-white hover:bg-danger/90'
     }`}
     aria-label="Request supervisor assistance"

@@ -262,7 +262,7 @@ function ConfBar({ value }) {
       <div className="h-[3px] flex-1 bg-stone3 overflow-hidden">
         <div className={`h-full ${clr} transition-all duration-500`} style={{ width: `${value}%` }} />
       </div>
-      <span className={`font-display font-bold display-num text-[10px] w-7 text-right flex-shrink-0 tabular-nums ${txt}`}>
+      <span className={`font-display font-bold display-num text-[12px] w-7 text-right flex-shrink-0 tabular-nums ${txt}`}>
         {value}%
       </span>
     </div>
@@ -289,8 +289,8 @@ function UnitCard({ unit, selected, onSelect }) {
       {/* Top row */}
       <div className="flex items-start justify-between gap-2 mb-2.5">
         <div className="min-w-0">
-          <div className="font-display font-bold text-ink text-[13px] leading-none mb-0.5">{unit.id}</div>
-          <div className="font-body text-muted text-[11px] leading-snug truncate">{unit.name}</div>
+          <div className="font-display font-bold text-ink text-[15px] leading-none mb-0.5">{unit.id}</div>
+          <div className="font-body text-muted text-[13px] leading-snug truncate">{unit.name}</div>
         </div>
         <span className="relative flex h-2 w-2 flex-shrink-0 mt-0.5">
           {hs.pulse && <span className={`animate-ping absolute inline-flex h-full w-full rounded-full ${hs.dot} opacity-40`} />}
@@ -299,13 +299,13 @@ function UnitCard({ unit, selected, onSelect }) {
       </div>
 
       {/* Task */}
-      <div className="font-body text-[10px] text-ghost mb-3 leading-snug line-clamp-2 min-h-[28px]">
+      <div className="font-body text-[12px] text-ghost mb-3 leading-snug line-clamp-2 min-h-[28px]">
         {unit.assignedTask ?? (unit.status === 'maintenance' ? 'PM in progress' : 'Offline — fault')}
       </div>
 
       {/* State core */}
       <div className="mb-2">
-        <div className={`font-body font-medium text-[10px] uppercase tracking-widest ${hs.color}`}>
+        <div className={`font-body font-medium text-[12px] tracking-normal ${hs.color}`}>
           {hs.label}
         </div>
         {unit.status !== 'maintenance' && unit.status !== 'fault' && (
@@ -314,13 +314,13 @@ function UnitCard({ unit, selected, onSelect }) {
       </div>
 
       {/* Autonomy mode */}
-      <div className={`font-body text-[10px] ${AUTONOMY_COLOR[mode]} mb-2`}>
+      <div className={`font-body text-[12px] ${AUTONOMY_COLOR[mode]} mb-2`}>
         {AUTONOMY_LABEL[mode]}
       </div>
 
       {/* Exception signals — only if relevant */}
       {exception && (
-        <div className={`flex items-start gap-1.5 font-body text-[10px] leading-snug ${unit.alert.type === 'danger' ? 'text-danger' : 'text-warn'}`}>
+        <div className={`flex items-start gap-1.5 font-body text-[12px] leading-snug ${unit.alert.type === 'danger' ? 'text-danger' : 'text-warn'}`}>
           <AlertTriangle size={9} className="flex-shrink-0 mt-0.5" strokeWidth={2.5} />
           <span className="line-clamp-2">{exception}</span>
         </div>
@@ -336,11 +336,11 @@ function SignalRow({ label, val, unit, delta, tone }) {
   const dColor = delta ? (delta.startsWith('+') ? (tone === 'ok' ? 'text-muted' : 'text-warn') : 'text-ok') : 'text-ghost'
   return (
     <div className="flex items-baseline justify-between py-1.5 border-b border-rule2 last:border-0">
-      <span className="font-body text-ghost text-[10px] w-28 flex-shrink-0">{label}</span>
+      <span className="font-body text-ghost text-[12px] w-28 flex-shrink-0">{label}</span>
       <div className="flex items-baseline gap-1.5 flex-1 justify-end">
-        <span className={`font-display font-bold display-num text-[13px] tabular-nums ${valColor}`}>{val}</span>
-        {unit && <span className="font-body text-ghost text-[9px]">{unit}</span>}
-        <span className={`font-body text-[9px] w-10 text-right flex-shrink-0 tabular-nums ${dColor}`}>
+        <span className={`font-display font-bold display-num text-[15px] tabular-nums ${valColor}`}>{val}</span>
+        {unit && <span className="font-body text-ghost text-[12px]">{unit}</span>}
+        <span className={`font-body text-[12px] w-10 text-right flex-shrink-0 tabular-nums ${dColor}`}>
           {delta ?? '—'}
         </span>
       </div>
@@ -351,8 +351,8 @@ function SignalRow({ label, val, unit, delta, tone }) {
 function TraceRow({ time, text }) {
   return (
     <div className="flex items-start gap-3 py-2.5 border-b border-rule2 last:border-0">
-      <span className="font-body text-ghost text-[9px] flex-shrink-0 w-9 pt-px">{time}</span>
-      <span className="font-body text-ink text-[11px] leading-snug">{text}</span>
+      <span className="font-body text-ghost text-[12px] flex-shrink-0 w-9 pt-px">{time}</span>
+      <span className="font-body text-ink text-[13px] leading-snug">{text}</span>
     </div>
   )
 }
@@ -366,22 +366,22 @@ function DiagPaneContents({ unit, ext, hs }) {
     <>
       {/* §1 — Unit Summary */}
       <div className={`-mx-5 -mt-5 px-5 py-4 border-b border-rule2 mb-4 ${hs.bg}`}>
-        <div className="font-body text-ghost text-[9px] uppercase tracking-widest mb-2">Current task</div>
-        <div className="font-body text-ink text-[12px] leading-snug mb-3">
+        <div className="font-body text-ghost text-[12px] tracking-normal mb-2">Current task</div>
+        <div className="font-body text-ink text-[14px] leading-snug mb-3">
           {unit.assignedTask ?? (unit.status === 'maintenance' ? 'PM in progress — unit offline' : 'Offline — fault active')}
         </div>
         <div className="flex items-center gap-5">
           <div>
-            <div className="font-body text-ghost text-[9px] uppercase tracking-widest mb-0.5">State</div>
-            <div className={`font-body font-medium text-[11px] ${hs.color}`}>{hs.label}</div>
+            <div className="font-body text-ghost text-[12px] tracking-normal mb-0.5">State</div>
+            <div className={`font-body font-medium text-[13px] ${hs.color}`}>{hs.label}</div>
           </div>
           <div>
-            <div className="font-body text-ghost text-[9px] uppercase tracking-widest mb-0.5">Autonomy</div>
-            <div className={`font-body text-[11px] ${AUTONOMY_COLOR[mode]}`}>{AUTONOMY_LABEL[mode]}</div>
+            <div className="font-body text-ghost text-[12px] tracking-normal mb-0.5">Autonomy</div>
+            <div className={`font-body text-[13px] ${AUTONOMY_COLOR[mode]}`}>{AUTONOMY_LABEL[mode]}</div>
           </div>
           <div>
-            <div className="font-body text-ghost text-[9px] uppercase tracking-widest mb-0.5">Intervention</div>
-            <div className={`font-body font-medium text-[11px] ${INTERVENTION_COLOR[interventionStatus]}`}>
+            <div className="font-body text-ghost text-[12px] tracking-normal mb-0.5">Intervention</div>
+            <div className={`font-body font-medium text-[13px] ${INTERVENTION_COLOR[interventionStatus]}`}>
               {INTERVENTION_LABEL[interventionStatus]}
             </div>
           </div>
@@ -391,7 +391,7 @@ function DiagPaneContents({ unit, ext, hs }) {
       {/* §2 — Live Telemetry */}
       {ext?.signals?.length > 0 && (
         <div className="-mx-5 px-5 py-4 border-b border-rule2 mb-4">
-          <div className="font-body text-ghost text-[9px] uppercase tracking-widest mb-3">Live signals</div>
+          <div className="font-body text-ghost text-[12px] tracking-normal mb-3">Live signals</div>
           {ext.signals.map((s, i) => (
             <SignalRow key={i} {...s} />
           ))}
@@ -401,7 +401,7 @@ function DiagPaneContents({ unit, ext, hs }) {
       {/* §3 — AI Decision Trace */}
       {ext?.decisionTrace?.length > 0 && (
         <div className="-mx-5 px-5 py-4 border-b border-rule2 mb-4">
-          <div className="font-body text-ghost text-[9px] uppercase tracking-widest mb-2">Decision trace</div>
+          <div className="font-body text-ghost text-[12px] tracking-normal mb-2">Decision trace</div>
           {ext.decisionTrace.map((d, i) => (
             <TraceRow key={i} {...d} />
           ))}
@@ -410,25 +410,25 @@ function DiagPaneContents({ unit, ext, hs }) {
 
       {/* §4 — Fix / Intervention */}
       <div className="-mx-5 px-5 py-4 border-b border-rule2 mb-4">
-        <div className="font-body text-ghost text-[9px] uppercase tracking-widest mb-3">Action</div>
+        <div className="font-body text-ghost text-[12px] tracking-normal mb-3">Action</div>
         {!rs ? (
-          <div className="font-body text-muted text-[11px]">No action required — monitor only</div>
+          <div className="font-body text-muted text-[13px]">No action required — monitor only</div>
         ) : (
           <>
             <div className="border border-rule2 bg-stone2 px-3 py-2.5 mb-2">
-              <div className="font-body text-ghost text-[9px] uppercase tracking-widest mb-0.5">Suggested fix</div>
-              <div className="font-body text-ink text-[11px] font-medium">{rs.primary.label}</div>
-              <div className="font-body text-muted text-[10px] mt-0.5">{rs.primary.detail}</div>
+              <div className="font-body text-ghost text-[12px] tracking-normal mb-0.5">Suggested fix</div>
+              <div className="font-body text-ink text-[13px] font-medium">{rs.primary.label}</div>
+              <div className="font-body text-muted text-[12px] mt-0.5">{rs.primary.detail}</div>
             </div>
             {rs.alternative && (
               <div className="border border-rule2 bg-stone2 px-3 py-2.5 mb-2">
-                <div className="font-body text-ghost text-[9px] uppercase tracking-widest mb-0.5">Alternative</div>
-                <div className="font-body text-ink text-[11px]">{rs.alternative.label}</div>
-                <div className="font-body text-muted text-[10px] mt-0.5">{rs.alternative.detail}</div>
+                <div className="font-body text-ghost text-[12px] tracking-normal mb-0.5">Alternative</div>
+                <div className="font-body text-ink text-[13px]">{rs.alternative.label}</div>
+                <div className="font-body text-muted text-[12px] mt-0.5">{rs.alternative.detail}</div>
               </div>
             )}
             {rs.risk && (
-              <div className="flex items-start gap-1.5 font-body text-danger text-[10px] mb-3">
+              <div className="flex items-start gap-1.5 font-body text-danger text-[12px] mb-3">
                 <AlertTriangle size={9} className="flex-shrink-0 mt-0.5" strokeWidth={2.5} />
                 <span>{rs.risk}</span>
               </div>
@@ -440,7 +440,7 @@ function DiagPaneContents({ unit, ext, hs }) {
       {/* §5 — Dependency Awareness */}
       {ext?.dependencies?.length > 0 && (
         <div>
-          <div className="font-body text-ghost text-[9px] uppercase tracking-widest mb-2">Dependencies</div>
+          <div className="font-body text-ghost text-[12px] tracking-normal mb-2">Dependencies</div>
           {ext.dependencies.map((d, i) => {
             const dot = d.status === 'ok' ? 'bg-ok' : d.status === 'warn' ? 'bg-warn' : 'bg-danger'
             const txt = d.status === 'ok' ? 'text-muted' : d.status === 'warn' ? 'text-warn' : 'text-danger'
@@ -448,8 +448,8 @@ function DiagPaneContents({ unit, ext, hs }) {
               <div key={i} className="flex items-start gap-2.5 py-1.5 border-b border-rule2 last:border-0">
                 <div className={`h-1.5 w-1.5 rounded-full flex-shrink-0 mt-1 ${dot}`} />
                 <div className="min-w-0">
-                  <div className={`font-body text-[11px] font-medium ${txt}`}>{d.label}</div>
-                  <div className="font-body text-ghost text-[10px] leading-snug">{d.note}</div>
+                  <div className={`font-body text-[13px] font-medium ${txt}`}>{d.label}</div>
+                  <div className="font-body text-ghost text-[12px] leading-snug">{d.note}</div>
                 </div>
               </div>
             )
@@ -480,13 +480,13 @@ function StatStrip({ summary, filter, setFilter }) {
             filter === s.k ? 'bg-stone2' : 'bg-stone hover:bg-stone2'
           }`}
         >
-          <div className="font-body text-ghost text-[9px] uppercase tracking-widest mb-0.5">{s.l}</div>
+          <div className="font-body text-ghost text-[12px] tracking-normal mb-0.5">{s.l}</div>
           <div className={`font-display font-extrabold display-num text-xl leading-none tabular-nums ${s.tone}`}>{s.v}</div>
         </button>
       ))}
       <div className="flex items-center px-4 border-l border-rule2 bg-stone flex-shrink-0">
         <div>
-          <div className="font-body text-ghost text-[9px] uppercase tracking-widest mb-0.5">Avg uptime</div>
+          <div className="font-body text-ghost text-[12px] tracking-normal mb-0.5">Avg uptime</div>
           <div className="font-display font-extrabold display-num text-xl text-ink leading-none">{summary.avgUptime}%</div>
         </div>
       </div>
@@ -516,13 +516,13 @@ export default function RobotFleet() {
       {/* Fleet header */}
       <div className="flex-shrink-0 border-b border-rule2 px-6 py-4 bg-stone flex items-center justify-between">
         <div>
-          <div className="font-body text-ghost text-[10px] uppercase tracking-widest mb-0.5">Robot Fleet · Salina Campus</div>
+          <div className="font-body text-ghost text-[12px] tracking-normal mb-0.5">Robot Fleet · Salina Campus</div>
           <div className="font-display font-extrabold display-num text-3xl text-ink leading-none">
             {summary.online}
             <span className="font-body font-normal text-muted text-base ml-2">of {summary.total} online</span>
           </div>
         </div>
-        <div className="font-body text-ghost text-[10px]">{summary.energyToday} kWh today</div>
+        <div className="font-body text-ghost text-[12px]">{summary.energyToday} kWh today</div>
       </div>
 
       {/* Stat strip / filter */}
@@ -548,15 +548,15 @@ export default function RobotFleet() {
         {faultLog.length > 0 && (
           <div className="mt-6 border border-rule2 bg-stone">
             <div className="px-4 py-2 border-b border-rule2 bg-stone2">
-              <span className="font-body text-ghost text-[9px] uppercase tracking-widest">Shift event log</span>
+              <span className="font-body text-ghost text-[12px] tracking-normal">Shift event log</span>
             </div>
             {faultLog.map((f, i) => (
               <div key={i} className="flex items-center gap-3 px-4 py-2.5 border-b border-rule2 last:border-0">
                 <div className={`h-1.5 w-1.5 rounded-full flex-shrink-0 ${f.severity === 'danger' ? 'bg-danger' : f.severity === 'warn' ? 'bg-warn' : 'bg-rule2'}`} />
-                <span className="font-body text-ghost text-[10px] w-10 flex-shrink-0">{f.timestamp}</span>
-                <span className="font-body text-muted text-[10px] w-9 flex-shrink-0">{f.unit}</span>
-                <span className="font-body text-ink text-[11px] flex-1">{f.fault}</span>
-                <span className={`font-body text-[10px] flex-shrink-0 ${f.resolved ? 'text-ok' : f.techAssigned ? 'text-warn' : 'text-ghost'}`}>
+                <span className="font-body text-ghost text-[12px] w-10 flex-shrink-0">{f.timestamp}</span>
+                <span className="font-body text-muted text-[12px] w-9 flex-shrink-0">{f.unit}</span>
+                <span className="font-body text-ink text-[13px] flex-1">{f.fault}</span>
+                <span className={`font-body text-[12px] flex-shrink-0 ${f.resolved ? 'text-ok' : f.techAssigned ? 'text-warn' : 'text-ghost'}`}>
                   {f.resolved ? 'Resolved' : f.techAssigned ? f.techAssigned : 'Monitoring'}
                 </span>
               </div>
@@ -574,31 +574,31 @@ export default function RobotFleet() {
         const footer = (
           <div className="flex items-center gap-2 flex-wrap">
             {isActive && (
-              <button type="button" className="flex items-center gap-1.5 font-body text-[11px] px-3 py-2 bg-danger text-stone hover:bg-danger/90 transition-colors">
+              <button type="button" className="flex items-center gap-1.5 font-body text-[13px] px-3 py-2 bg-danger text-stone hover:bg-danger/90 transition-colors">
                 <Gamepad2 size={13} strokeWidth={2} />
                 Take control
               </button>
             )}
             {isMonitoring && (
               <>
-                <button type="button" className="flex items-center gap-1.5 font-body text-[11px] px-3 py-2 border border-warn text-warn hover:bg-warn/[0.06] transition-colors">
+                <button type="button" className="flex items-center gap-1.5 font-body text-[13px] px-3 py-2 border border-warn text-warn hover:bg-warn/[0.06] transition-colors">
                   <Gamepad2 size={13} strokeWidth={2} />
                   Take control
                 </button>
-                <button type="button" className="flex items-center gap-1.5 font-body text-[11px] px-3 py-2 border border-rule2 text-muted hover:text-ink hover:border-ghost transition-colors">
+                <button type="button" className="flex items-center gap-1.5 font-body text-[13px] px-3 py-2 border border-rule2 text-muted hover:text-ink hover:border-ghost transition-colors">
                   <Pause size={13} strokeWidth={2} />
                   Pause task
                 </button>
               </>
             )}
             {selectedUnit.status === 'online' && (
-              <button type="button" className="flex items-center gap-1.5 font-body text-[11px] px-3 py-2 border border-rule2 text-muted hover:text-ink hover:border-ghost transition-colors">
+              <button type="button" className="flex items-center gap-1.5 font-body text-[13px] px-3 py-2 border border-rule2 text-muted hover:text-ink hover:border-ghost transition-colors">
                 <Route size={13} strokeWidth={2} />
                 Reroute robot
               </button>
             )}
             {rs && (
-              <button type="button" className="flex items-center gap-1.5 font-body text-[11px] px-3 py-2 border border-rule2 text-muted hover:text-ink hover:border-ghost transition-colors">
+              <button type="button" className="flex items-center gap-1.5 font-body text-[13px] px-3 py-2 border border-rule2 text-muted hover:text-ink hover:border-ghost transition-colors">
                 <LifeBuoy size={13} strokeWidth={2} />
                 Deploy recovery
               </button>

@@ -5,6 +5,19 @@ import ErrorBoundary from './components/ErrorBoundary'
 import TrustStrip from './components/TrustStrip'
 import { useAppState } from './context/AppState'
 
+function AmbientHealthBar() {
+  const { systemConfidence } = useAppState()
+  const conf  = systemConfidence ?? 79
+  const color = conf >= 85 ? 'var(--color-ok)' : conf >= 65 ? 'var(--color-warn)' : 'var(--color-danger)'
+  return (
+    <div
+      className="flex-shrink-0 w-full"
+      style={{ height: 3, background: color, transition: 'background-color 600ms var(--ease-inout)' }}
+      aria-hidden="true"
+    />
+  )
+}
+
 const PlantOverview         = lazy(() => import('./screens/PlantOverview'))
 const ShiftIQ               = lazy(() => import('./screens/ShiftIQ'))
 const SupplierIQ            = lazy(() => import('./screens/SupplierIQ'))
@@ -14,7 +27,7 @@ const OperatorView          = lazy(() => import('./screens/OperatorView'))
 const Analytics             = lazy(() => import('./screens/Analytics'))
 const NotificationCenter    = lazy(() => import('./screens/NotificationCenter'))
 const AgentControl          = lazy(() => import('./screens/AgentControl'))
-const DesignLab             = lazy(() => import('./screens/DesignLab'))
+
 const BatchIntelligence     = lazy(() => import('./screens/BatchIntelligence'))
 const CompliancePolicy      = lazy(() => import('./screens/CompliancePolicy'))
 const ProcessHierarchy      = lazy(() => import('./screens/ProcessHierarchy'))
@@ -26,7 +39,7 @@ const ValueChain            = lazy(() => import('./screens/ValueChain'))
 const EquipmentIntelligence = lazy(() => import('./screens/EquipmentIntelligence'))
 const ImpactLoop            = lazy(() => import('./screens/ImpactLoop'))
 function ScreenLoader() {
- return <div className="flex-1 flex items-center justify-center font-body text-ghost text-[11px]">Loading…</div>
+ return <div className="flex-1 flex items-center justify-center font-body text-ghost text-[13px]">Loading…</div>
 }
 
 const ROLE_LABELS = {
@@ -44,17 +57,18 @@ export default function App() {
  <div className="flex h-screen bg-stone overflow-hidden">
  <Sidebar />
  <main className="flex-1 flex flex-col overflow-hidden ml-[240px]">
+ <AmbientHealthBar />
  <TrustStrip />
  {roleInfo && (
  <div className="flex items-center justify-between px-4 py-2 bg-sidebar border-b border-sidebar-border flex-shrink-0">
-  <span className="font-body text-ghost text-[11px]">
+  <span className="font-body text-ghost text-[13px]">
    Viewing as <span className="text-ochre font-medium">{roleInfo.name}</span>
    <span className="text-ghost/60"> · {roleInfo.role}</span>
   </span>
   <button
    type="button"
    onClick={() => { setViewingRole('director') }}
-   className="font-body text-[10px] text-ghost hover:text-stone transition-colors px-2 py-1 border border-[#3A342E] hover:border-[#5A4A3E]"
+   className="font-body text-[12px] text-ghost hover:text-stone transition-colors px-2 py-1 border border-[#3A342E] hover:border-[#5A4A3E]"
   >
    Return to director view
   </button>
@@ -78,7 +92,7 @@ export default function App() {
  <Route path="/robots" element={<Navigate to="/shift" replace />} />
  <Route path="/allocation" element={<Navigate to="/shift" replace />} />
  <Route path="/agents" element={<ErrorBoundary><AgentControl /></ErrorBoundary>} />
- <Route path="/design-lab"  element={<ErrorBoundary><DesignLab /></ErrorBoundary>} />
+
  <Route path="/batch"       element={<ErrorBoundary><BatchIntelligence /></ErrorBoundary>} />
  <Route path="/compliance"  element={<ErrorBoundary><CompliancePolicy /></ErrorBoundary>} />
  <Route path="/quality"     element={<Navigate to="/batch" replace />} />

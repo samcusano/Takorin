@@ -5,6 +5,7 @@ import { openCases, benchmarks } from '../data/capa.js'
 import { goalsData, facility, agentConfigData } from '../data'
 import { interventionSummary, interventions } from '../data/interventions'
 import { ChevronDown, ChevronUp, Download, Lock, ArrowRight, Check } from 'lucide-react'
+import { FilterDropdown, MultiFilterDropdown } from '../components/UI'
 
 // ── Bullet chart for Q2 Goals ─────────────────────────────────────────────────
 function BulletChart({ current, target, direction, unit }) {
@@ -234,10 +235,10 @@ function BenchmarkBlock({ b }) {
     <div className="border border-rule2 bg-stone flex items-center gap-6 px-5 py-4">
       {/* Metric + score */}
       <div className="w-44 flex-shrink-0">
-        <div className="font-body text-ghost text-[10px] uppercase tracking-widest mb-1">{b.metric}</div>
+        <div className="font-body text-ghost text-[12px] tracking-normal mb-1">{b.metric}</div>
         <div className="flex items-baseline gap-2">
           <span className="display-num text-[28px] font-bold text-ink leading-none">{b.score}</span>
-          <span className={`font-body text-[11px] font-medium ${b.deltaDir === 'up' ? 'text-ok' : 'text-danger'}`}>
+          <span className={`font-body text-[13px] font-medium ${b.deltaDir === 'up' ? 'text-ok' : 'text-danger'}`}>
             {b.deltaDir === 'up' ? '↑' : '↓'} {b.delta}
           </span>
         </div>
@@ -248,22 +249,22 @@ function BenchmarkBlock({ b }) {
           <div className="absolute inset-y-0 left-0 rounded-full bg-ink/15" style={{ width: `${b.percentile}%` }} />
           <div className="absolute inset-y-0 w-0.5 bg-ochre" style={{ left: `${b.percentile}%` }} />
         </div>
-        <div className="font-body text-ghost text-[10px]">{b.percentile}th percentile · {b.total} plants</div>
+        <div className="font-body text-ghost text-[12px]">{b.percentile}th percentile · {b.total} plants</div>
       </div>
       {/* Peers */}
       {b.peers?.length > 0 && (
         <div className="flex-shrink-0 space-y-0.5 w-36">
           {b.peers.map((p, i) => (
             <div key={i} className="flex items-center justify-between gap-2">
-              <span className="font-body text-ghost text-[10px] truncate">{p.name}</span>
-              <span className="font-body font-medium text-ink text-[10px] tabular-nums">{p.value}</span>
+              <span className="font-body text-ghost text-[12px] truncate">{p.name}</span>
+              <span className="font-body font-medium text-ink text-[12px] tabular-nums">{p.value}</span>
             </div>
           ))}
         </div>
       )}
       {/* Insight */}
       {b.insight && (
-        <div className="font-body text-ok text-[10px] flex-shrink-0 w-40 leading-snug">{b.insight}</div>
+        <div className="font-body text-ok text-[12px] flex-shrink-0 w-40 leading-snug">{b.insight}</div>
       )}
     </div>
   )
@@ -278,9 +279,9 @@ function Module({ title, badge, children, defaultOpen = false }) {
       <button type="button" onClick={() => setOpen(v => !v)}
         className="w-full flex items-center justify-between px-5 py-3.5 hover:bg-stone2 transition-colors text-left">
         <div className="flex items-center gap-3 min-w-0">
-          <span className="font-body font-medium text-ink text-[12px]">{title}</span>
+          <span className="font-body font-medium text-ink text-[14px]">{title}</span>
           {badge && (
-            <span className="font-body text-ghost text-[10px] px-2 py-0.5 bg-stone2 border border-rule2 rounded-btn flex-shrink-0">
+            <span className="font-body text-ghost text-[12px] px-2 py-0.5 bg-stone2 border border-rule2 rounded-btn flex-shrink-0">
               {badge}
             </span>
           )}
@@ -336,44 +337,29 @@ export default function Analytics() {
     <div className="flex flex-col h-full overflow-hidden content-reveal">
 
       {/* ── Scope bar ──────────────────────────────────────────────────────── */}
-      <div className="flex items-center gap-4 px-6 py-2.5 border-b border-rule2 bg-stone flex-shrink-0">
-        <div className="flex items-center gap-2">
-          <span className="font-body text-ghost text-[10px]">Plant</span>
-          <div className="relative">
-            <select value={scopePlant} onChange={e => setScopePlant(e.target.value)}
-              className="appearance-none font-body font-medium text-ink text-[12px] bg-stone2 border border-rule2 pl-3 pr-6 py-1 focus:outline-none focus:border-ochre cursor-pointer">
-              {PLANTS_META.map(p => <option key={p.id} value={p.id}>{p.label}</option>)}
-            </select>
-            <ChevronDown size={9} className="absolute right-2 top-1/2 -translate-y-1/2 text-ghost pointer-events-none" />
-          </div>
-        </div>
-        <div className="w-px h-3.5 bg-rule2" />
-        <div className="flex items-center gap-2">
-          <span className="font-body text-ghost text-[10px]">Grain</span>
-          <div className="relative">
-            <select value={timeGrain} onChange={e => setTimeGrain(e.target.value)}
-              className="appearance-none font-body font-medium text-ink text-[12px] bg-stone2 border border-rule2 pl-3 pr-6 py-1 focus:outline-none focus:border-ochre cursor-pointer">
-              {GRAINS.map(g => <option key={g.id} value={g.id}>{g.label}</option>)}
-            </select>
-            <ChevronDown size={9} className="absolute right-2 top-1/2 -translate-y-1/2 text-ghost pointer-events-none" />
-          </div>
-        </div>
-        <div className="w-px h-3.5 bg-rule2" />
-        <div className="flex items-center gap-2">
-          <span className="font-body text-ghost text-[10px]">Compare</span>
-          {STRIP_BASE.filter(p => p.id !== scopePlant).map(p => (
-            <button key={p.id} type="button" onClick={() => toggleCompare(p.id)}
-              className={`font-body text-[10px] px-2 py-0.5 border rounded-btn transition-colors ${
-                compare.includes(p.id) ? 'bg-ink text-stone border-ink' : 'border-rule2 text-ghost hover:text-muted'
-              }`}>
-              {p.name}
-            </button>
-          ))}
-        </div>
+      <div className="flex items-center gap-2 px-6 py-2.5 border-b border-rule2 bg-stone flex-shrink-0">
+        <FilterDropdown
+          label="Plant"
+          options={PLANTS_META.map(p => ({ value: p.id, label: p.label }))}
+          value={scopePlant}
+          onChange={(id) => { setScopePlant(id); setCompare(prev => prev.filter(p => p !== id)) }}
+        />
+        <FilterDropdown
+          label="Grain"
+          options={GRAINS.map(g => ({ value: g.id, label: g.label }))}
+          value={timeGrain}
+          onChange={setTimeGrain}
+        />
+        <MultiFilterDropdown
+          label="Compare"
+          options={STRIP_BASE.filter(p => p.id !== scopePlant).map(p => ({ value: p.id, label: p.name }))}
+          values={compare}
+          onChange={setCompare}
+        />
         <div className="ml-auto flex items-center gap-3">
-          <span className="font-body text-ghost text-[10px]">{facility.name} · Apr 16, 2026</span>
+          <span className="font-body text-ghost text-[12px]">{facility.name} · Apr 16, 2026</span>
           <button type="button" onClick={handleExport} disabled={exportState === 'loading'}
-            className="flex items-center gap-1.5 font-body text-[11px] text-ghost px-3 py-1.5 border border-rule2 hover:border-ink/30 hover:text-muted transition-colors disabled:opacity-50">
+            className="flex items-center gap-1.5 font-body text-[13px] text-ghost px-3 py-1.5 border border-rule2 hover:border-ink/30 hover:text-muted transition-colors disabled:opacity-50">
             {exportState === 'done'
               ? <><Check size={11} strokeWidth={2} className="text-ok" />Exported</>
               : <><Download size={11} strokeWidth={2} />{exportState === 'loading' ? 'Preparing…' : 'Export'}</>}
@@ -393,15 +379,15 @@ export default function Analytics() {
                 isActive ? 'border-b-ochre bg-stone' : 'border-b-transparent hover:bg-stone3'
               } ${dimmed ? 'opacity-45' : ''}`}>
               <div>
-                <div className="font-body text-ghost text-[10px] mb-0.5">{p.code} · {p.name}</div>
+                <div className="font-body text-ghost text-[12px] mb-0.5">{p.code} · {p.name}</div>
                 <div className="flex items-baseline gap-2">
                   <span className={`display-num text-[22px] font-bold leading-none ${atTgt ? 'text-ok' : 'text-warn'}`}>{p.oee}%</span>
-                  <span className={`font-body text-[10px] font-medium ${p.delta >= 0 ? 'text-ok' : 'text-danger'}`}>
+                  <span className={`font-body text-[12px] font-medium ${p.delta >= 0 ? 'text-ok' : 'text-danger'}`}>
                     {p.delta >= 0 ? '+' : ''}{p.delta}pp
                   </span>
                 </div>
               </div>
-              <div className={`font-body text-[10px] ${atTgt ? 'text-ok' : 'text-warn'}`}>
+              <div className={`font-body text-[12px] ${atTgt ? 'text-ok' : 'text-warn'}`}>
                 {atTgt ? 'At target' : `${+(p.target - p.oee).toFixed(1)}pp below ${p.target}%`}
               </div>
             </button>
@@ -415,22 +401,22 @@ export default function Analytics() {
 
           {/* ── Attribution hero ─────────────────────────────────────────── */}
           <section className="mb-8">
-            <div className="font-body text-ghost text-[10px] uppercase tracking-widest mb-5">
+            <div className="font-body text-ghost text-[12px] tracking-normal mb-5">
               {attr.line} · OEE Attribution · {GRAINS.find(g => g.id === timeGrain)?.label}
             </div>
 
             <div className="flex items-start gap-8 mb-5">
               <div>
                 <div className="display-num text-[64px] font-bold text-ink leading-none">{attr.actual}%</div>
-                <div className="font-body text-ghost text-[11px] mt-1">Actual OEE</div>
+                <div className="font-body text-ghost text-[13px] mt-1">Actual OEE</div>
               </div>
               <div className="pt-2">
                 <div className="flex items-baseline gap-3 mb-2">
                   <span className={`display-num text-[24px] font-bold leading-none ${totalDelta >= 0 ? 'text-ok' : 'text-danger'}`}>
                     {totalDelta >= 0 ? '+' : ''}{totalDelta}pp
                   </span>
-                  <span className="font-body text-ghost text-[12px]">above {attr.baseline}% baseline</span>
-                  <span className={`font-body text-[11px] font-medium px-2.5 py-0.5 rounded-btn flex items-center gap-1.5 ${
+                  <span className="font-body text-ghost text-[14px]">above {attr.baseline}% baseline</span>
+                  <span className={`font-body text-[13px] font-medium px-2.5 py-0.5 rounded-btn flex items-center gap-1.5 ${
                     atTarget ? 'bg-ok/10 text-ok' : 'bg-warn/10 text-warn'
                   }`}>
                     {atTarget
@@ -438,17 +424,17 @@ export default function Analytics() {
                       : `${+(attr.target - attr.actual).toFixed(1)}pp below ${attr.target}% target`}
                   </span>
                 </div>
-                <div className="font-body text-ink2 text-[13px] leading-snug">
+                <div className="font-body text-ink2 text-[15px] leading-snug">
                   {attr.plant} {attr.line} {attr.narrative}
                 </div>
               </div>
             </div>
 
             <div className="flex items-center gap-2 flex-wrap mb-6">
-              <span className="font-body text-ghost text-[10px] mr-1">Biggest drivers:</span>
+              <span className="font-body text-ghost text-[12px] mr-1">Biggest drivers:</span>
               {topDrivers.map(d => (
-                <span key={d.id} className={`font-body text-[11px] font-medium px-2.5 py-0.5 rounded-btn ${
-                  d.delta >= 0 ? 'bg-ok/10 text-ok' : 'bg-danger/10 text-danger'
+                <span key={d.id} className={`font-body text-[13px] font-medium px-2.5 py-0.5 rounded-btn ${
+                  d.delta >= 0 ? 'bg-ok/10 text-ok' : 'bg-danger/[0.04] text-danger'
                 }`}>
                   {d.delta >= 0 ? '+' : ''}{d.delta}pp {d.label}
                 </span>
@@ -462,25 +448,25 @@ export default function Analytics() {
 
           {/* ── Recovery table ───────────────────────────────────────────── */}
           <section className="mb-10">
-            <div className="font-body text-ghost text-[10px] uppercase tracking-widest mb-3">Recovery actions</div>
+            <div className="font-body text-ghost text-[12px] tracking-normal mb-3">Recovery actions</div>
             <div className="border border-rule2 bg-stone divide-y divide-rule2">
               <div className="grid px-5 py-2 bg-stone2" style={{ gridTemplateColumns: '1.1fr 1fr 116px' }}>
-                <span className="font-body text-ghost text-[10px]">Driver</span>
-                <span className="font-body text-ghost text-[10px] pl-5">Recommended action</span>
-                <span className="font-body text-ghost text-[10px] text-right">Module</span>
+                <span className="font-body text-ghost text-[12px]">Driver</span>
+                <span className="font-body text-ghost text-[12px] pl-5">Recommended action</span>
+                <span className="font-body text-ghost text-[12px] text-right">Module</span>
               </div>
               {attr.drivers.map(d => (
                 <div key={d.id}
                   className={`grid items-start px-5 py-3.5 border-l-2 ${d.delta >= 0 ? 'border-l-ok/30' : 'border-l-danger/40'}`}
                   style={{ gridTemplateColumns: '1.1fr 1fr 116px' }}>
                   <div>
-                    <div className="font-body font-medium text-ink text-[12px]">{d.label}</div>
-                    <div className="font-body text-ghost text-[10px] mt-0.5">{d.note}</div>
+                    <div className="font-body font-medium text-ink text-[14px]">{d.label}</div>
+                    <div className="font-body text-ghost text-[12px] mt-0.5">{d.note}</div>
                   </div>
-                  <div className="font-body text-ink2 text-[11px] pl-5 leading-snug pt-0.5">{d.action}</div>
+                  <div className="font-body text-ink2 text-[13px] pl-5 leading-snug pt-0.5">{d.action}</div>
                   <div className="flex justify-end self-start pt-1">
                     <Link to={d.route}
-                      className="flex items-center gap-1 font-body text-muted text-[10px] hover:text-ink transition-colors">
+                      className="flex items-center gap-1 font-body text-muted text-[12px] hover:text-ink transition-colors">
                       {d.module} <ArrowRight size={9} />
                     </Link>
                   </div>
@@ -492,16 +478,16 @@ export default function Analytics() {
           <div className="h-px bg-rule2 mb-8" />
 
           {/* ── Supporting intelligence ───────────────────────────────────── */}
-          <div className="font-body text-ghost text-[10px] uppercase tracking-widest mb-3">Supporting intelligence</div>
+          <div className="font-body text-ghost text-[12px] tracking-normal mb-3">Supporting intelligence</div>
           <div className="space-y-px">
 
             <Module title="Impact" badge="$312K protected · 47 interventions · Q2 2026" defaultOpen>
               <div className="bg-ok/[0.02] border-b border-rule2 px-5 py-4 flex items-baseline gap-6">
                 <div>
-                  <div className="font-body text-ghost text-[9px] uppercase tracking-[0.1em] mb-1">Value protected · Q2 2026</div>
+                  <div className="font-body text-ghost text-[12px] tracking-[0.1em] mb-1">Value protected · Q2 2026</div>
                   <div className="flex items-baseline gap-2">
                     <span className="display-num text-[40px] leading-none text-ok">$312K</span>
-                    <span className="font-body text-ok text-[11px]">+$47K vs Q1</span>
+                    <span className="font-body text-ok text-[13px]">+$47K vs Q1</span>
                   </div>
                 </div>
                 <div className="flex-1 border-l border-rule2 pl-6 grid grid-cols-3 gap-6">
@@ -513,9 +499,9 @@ export default function Analytics() {
                     const c = m.tone === 'ok' ? 'var(--color-ok)' : 'var(--color-warn)'
                     return (
                       <div key={m.label}>
-                        <div className="font-body text-ghost text-[9px] uppercase tracking-[0.08em] mb-1">{m.label}</div>
+                        <div className="font-body text-ghost text-[12px] tracking-[0.08em] mb-1">{m.label}</div>
                         <div className="display-num text-[20px] leading-none mb-0.5" style={{ color: c }}>{m.value}</div>
-                        <div className="font-body text-ghost text-[10px] mb-1.5">{m.sub}</div>
+                        <div className="font-body text-ghost text-[12px] mb-1.5">{m.sub}</div>
                         <div className="h-[3px] bg-rule2">
                           <div className="h-full" style={{ width: `${m.bar * 100}%`, background: c, opacity: 0.7 }} />
                         </div>
@@ -549,32 +535,32 @@ export default function Analytics() {
                         { label: 'Quick approvals', val: String(lowDwellCount), tone: lowDwellCount > 0 ? 'text-danger' : 'text-ok' },
                       ].map(({ label, val, tone }) => (
                         <div key={label} className="bg-stone px-5 py-3.5">
-                          <div className="font-body text-ghost text-[9px] uppercase tracking-widest mb-1">{label}</div>
+                          <div className="font-body text-ghost text-[12px] tracking-normal mb-1">{label}</div>
                           <div className={`display-num text-[24px] leading-none ${tone}`}>{val}</div>
                         </div>
                       ))}
                     </div>
                     {/* Decision distribution by consequence */}
                     <div className="px-5 py-4 border-b border-rule2">
-                      <div className="font-body text-ghost text-[9px] uppercase tracking-widest mb-3">Decision distribution by consequence</div>
+                      <div className="font-body text-ghost text-[12px] tracking-normal mb-3">Decision distribution by consequence</div>
                       <div className="space-y-2">
                         {decisionBars.map(d => {
                           const total = d.approved + d.overridden + d.deferred
                           return (
                             <div key={d.label} className="flex items-center gap-3">
-                              <span className="font-body text-ghost text-[10px] w-14 flex-shrink-0">{d.label}</span>
+                              <span className="font-body text-ghost text-[12px] w-14 flex-shrink-0">{d.label}</span>
                               <div className="flex-1 h-3 bg-rule2 flex overflow-hidden">
                                 {d.approved > 0 && <div className="h-full bg-ok/60" style={{ width: `${(d.approved/total)*100}%` }} />}
                                 {d.overridden > 0 && <div className="h-full bg-ghost/40" style={{ width: `${(d.overridden/total)*100}%` }} />}
                                 {d.deferred > 0 && <div className="h-full bg-stone3" style={{ width: `${(d.deferred/total)*100}%` }} />}
                               </div>
-                              <span className="font-body text-ghost text-[9px] w-4 text-right">{total}</span>
+                              <span className="font-body text-ghost text-[12px] w-4 text-right">{total}</span>
                             </div>
                           )
                         })}
                         <div className="flex items-center gap-4 mt-2">
                           {[{ label: 'Approved', color: 'bg-ok/60' }, { label: 'Overridden', color: 'bg-ghost/40' }, { label: 'Deferred', color: 'bg-stone3' }].map(l => (
-                            <span key={l.label} className="flex items-center gap-1.5 font-body text-ghost text-[9px]">
+                            <span key={l.label} className="flex items-center gap-1.5 font-body text-ghost text-[12px]">
                               <span className={`w-2 h-2 ${l.color} flex-shrink-0`} />{l.label}
                             </span>
                           ))}
@@ -582,8 +568,8 @@ export default function Analytics() {
                       </div>
                     </div>
                     <div className="px-5 py-3 flex items-center justify-between">
-                      <span className="font-body text-ghost text-[10px]">Approval rate 62% · Override rate 25% · Deferred 13%</span>
-                      <Link to="/agents" className="flex items-center gap-1 font-body text-ghost text-[10px] hover:text-ink transition-colors">
+                      <span className="font-body text-ghost text-[12px]">Approval rate 62% · Override rate 25% · Deferred 13%</span>
+                      <Link to="/agents" className="flex items-center gap-1 font-body text-ghost text-[12px] hover:text-ink transition-colors">
                         <ArrowRight size={10} />View Agent Control
                       </Link>
                     </div>
@@ -613,14 +599,14 @@ export default function Analytics() {
                         { label: 'Quick approvals', val: String(interventionSummary.lowDwellDecisions), tone: interventionSummary.lowDwellDecisions > 0 ? 'text-danger' : 'text-ok' },
                       ].map(({ label, val, tone }) => (
                         <div key={label} className="bg-stone px-5 py-3.5">
-                          <div className="font-body text-ghost text-[9px] uppercase tracking-widest mb-1">{label}</div>
+                          <div className="font-body text-ghost text-[12px] tracking-normal mb-1">{label}</div>
                           <div className={`display-num text-[24px] leading-none ${tone}`}>{val}</div>
                         </div>
                       ))}
                     </div>
                     {/* Outcome distribution bar */}
                     <div className="px-5 py-4 border-b border-rule2">
-                      <div className="font-body text-ghost text-[9px] uppercase tracking-widest mb-3">Outcome distribution</div>
+                      <div className="font-body text-ghost text-[12px] tracking-normal mb-3">Outcome distribution</div>
                       <div className="h-4 bg-rule2 flex overflow-hidden mb-2">
                         {positiveCount > 0 && <div className="h-full bg-ok/70" style={{ width: `${(positiveCount/interventionSummary.total)*100}%` }} />}
                         {unclearCount > 0  && <div className="h-full bg-ochre/60" style={{ width: `${(unclearCount/interventionSummary.total)*100}%` }} />}
@@ -632,15 +618,15 @@ export default function Analytics() {
                           { label: `Unclear (${unclearCount})`,   color: 'bg-ochre/60'  },
                           { label: `Negative (${negativeCount})`, color: 'bg-danger/60' },
                         ].map(l => (
-                          <span key={l.label} className="flex items-center gap-1.5 font-body text-ghost text-[9px]">
+                          <span key={l.label} className="flex items-center gap-1.5 font-body text-ghost text-[12px]">
                             <span className={`w-2 h-2 ${l.color} flex-shrink-0`} />{l.label}
                           </span>
                         ))}
                       </div>
                     </div>
                     <div className="px-5 py-3 flex items-center justify-between">
-                      <span className="font-body text-ghost text-[10px]">Confidence reflects how certain we are the action caused the outcome. Below 60% means the cause isn't clear.</span>
-                      <Link to="/impact" className="flex items-center gap-1 font-body text-ghost text-[10px] hover:text-ink transition-colors">
+                      <span className="font-body text-ghost text-[12px]">Confidence reflects how certain we are the action caused the outcome. Below 60% means the cause isn't clear.</span>
+                      <Link to="/impact" className="flex items-center gap-1 font-body text-ghost text-[12px] hover:text-ink transition-colors">
                         <ArrowRight size={10} />View ImpactLoop
                       </Link>
                     </div>
@@ -662,7 +648,7 @@ export default function Analytics() {
                   return (
                     <div key={label} className={`grid items-center px-5 py-3 border-l-2 ${bg} ${borderL}`}
                       style={{ gridTemplateColumns: '140px 1fr 56px 180px' }}>
-                      <div className="font-body text-[11px] font-medium text-ink">{label}</div>
+                      <div className="font-body text-[13px] font-medium text-ink">{label}</div>
                       <div className="pr-6">
                         <div className="h-[3px] bg-rule2 relative">
                           {label === 'Closure rate' && (
@@ -672,7 +658,7 @@ export default function Analytics() {
                         </div>
                       </div>
                       <div className="display-num text-[18px] leading-none tabular-nums" style={{ color: c }}>{val}</div>
-                      <div className="font-body text-ghost text-[10px] text-right">{sub}</div>
+                      <div className="font-body text-ghost text-[12px] text-right">{sub}</div>
                     </div>
                   )
                 })}
@@ -687,13 +673,13 @@ export default function Analytics() {
                   return (
                     <div key={g.id} className={`px-5 py-4 ${!onTrack ? 'bg-warn/[0.02]' : 'bg-stone'}`}>
                       <div className="flex items-start justify-between mb-1">
-                        <div className="font-body text-ghost text-[9px] uppercase tracking-[0.08em]">{g.label}</div>
-                        <span className="font-mono text-[9px] text-ghost tabular-nums">T−46d</span>
+                        <div className="font-body text-ghost text-[12px] tracking-[0.08em]">{g.label}</div>
+                        <span className="font-mono text-[12px] text-ghost tabular-nums">T−46d</span>
                       </div>
                       <div className="display-num text-[32px] font-bold leading-none mb-0.5" style={{ color: toneColor }}>
                         {g.current}{g.unit}
                       </div>
-                      <div className="font-body text-ghost text-[10px] mb-2">
+                      <div className="font-body text-ghost text-[12px] mb-2">
                         Target {g.target}{g.unit} · {onTrack ? 'On track' : 'Behind'}
                       </div>
                       {/* Bullet chart — 6px, calibrated */}
@@ -721,7 +707,7 @@ export default function Analytics() {
               <div className="grid px-5 py-2 bg-stone2 border-b border-rule2"
                 style={{ gridTemplateColumns: '1fr 1fr 56px 56px 160px' }}>
                 {['Metric', 'Percentile position (0–100)', 'Score', 'Rank', 'Delta'].map(h => (
-                  <div key={h} className="font-body text-ghost text-[9px] uppercase tracking-[0.08em]">{h}</div>
+                  <div key={h} className="font-body text-ghost text-[12px] tracking-[0.08em]">{h}</div>
                 ))}
               </div>
               {/* Shared percentile registry — all metrics on the same 0-100 axis */}
@@ -732,7 +718,7 @@ export default function Analytics() {
                 return (
                   <div key={i} className={`grid items-center px-5 py-3 border-b border-rule2/50 border-l-2 ${bg} ${borderL}`}
                     style={{ gridTemplateColumns: '1fr 1fr 56px 56px 160px' }}>
-                    <div className="font-body text-ink text-[11px] font-medium pr-4 leading-snug">{b.metric}</div>
+                    <div className="font-body text-ink text-[13px] font-medium pr-4 leading-snug">{b.metric}</div>
                     <div className="pr-6">
                       <div className="relative h-[4px] bg-rule2">
                         {/* Median reference at 50th */}
@@ -745,14 +731,14 @@ export default function Analytics() {
                       </div>
                     </div>
                     <div className="display-num text-[16px] tabular-nums leading-none" style={{ color: toneColor }}>{b.score}</div>
-                    <div className="font-mono text-[11px] text-ghost tabular-nums">{b.percentile}th</div>
-                    <div className="font-body text-[10px] text-ghost">{b.delta}</div>
+                    <div className="font-mono text-[13px] text-ghost tabular-nums">{b.percentile}th</div>
+                    <div className="font-body text-[12px] text-ghost">{b.delta}</div>
                   </div>
                 )
               })}
               <div className="px-5 py-2 bg-stone2 border-t border-rule2 flex items-center gap-2">
                 <div className="w-px h-[8px] bg-ghost/30 flex-shrink-0" />
-                <span className="font-body text-ghost text-[9px]">Median reference · 50th percentile</span>
+                <span className="font-body text-ghost text-[12px]">Median reference · 50th percentile</span>
               </div>
             </Module>
 
@@ -761,7 +747,7 @@ export default function Analytics() {
               <div className="grid px-5 py-2 bg-stone2 border-b border-rule2"
                 style={{ gridTemplateColumns: '1fr 120px 80px 80px' }}>
                 {['Signal', 'Plants', 'Confidence', 'Status'].map(h => (
-                  <div key={h} className="font-body text-ghost text-[9px] uppercase tracking-[0.08em]">{h}</div>
+                  <div key={h} className="font-body text-ghost text-[12px] tracking-[0.08em]">{h}</div>
                 ))}
               </div>
               {/* Active signals */}
@@ -780,25 +766,25 @@ export default function Analytics() {
                     <div>
                       <div className="flex items-center gap-2">
                         {s.locked && <Lock size={9} strokeWidth={2} className="text-ghost flex-shrink-0" />}
-                        <div className="font-body text-[11px] font-medium text-ink">{s.label}</div>
+                        <div className="font-body text-[13px] font-medium text-ink">{s.label}</div>
                       </div>
-                      <div className="font-body text-ghost text-[10px]">{s.note}</div>
+                      <div className="font-body text-ghost text-[12px]">{s.note}</div>
                     </div>
-                    <div className="font-mono text-[10px] text-ghost">{s.plants}</div>
+                    <div className="font-mono text-[12px] text-ghost">{s.plants}</div>
                     <div>
                       {!s.locked && (
                         <div className="h-[3px] bg-rule2">
                           <div className="h-full" style={{ width: `${s.conf}%`, background: toneColor, opacity: 0.75 }} />
                         </div>
                       )}
-                      {!s.locked && <div className="font-mono text-[9px] tabular-nums mt-0.5" style={{ color: toneColor }}>{s.conf}%</div>}
+                      {!s.locked && <div className="font-mono text-[12px] tabular-nums mt-0.5" style={{ color: toneColor }}>{s.conf}%</div>}
                     </div>
-                    <div className="font-body text-[10px]" style={{ color: toneColor }}>{s.status}</div>
+                    <div className="font-body text-[12px]" style={{ color: toneColor }}>{s.status}</div>
                   </div>
                 )
               })}
               <div className="px-5 py-2 bg-stone2 border-t border-rule2">
-                <span className="font-body text-ghost text-[9px]">Locked signals activate at 3 connected plants · Topeka Plant (KS-02) not yet onboarded</span>
+                <span className="font-body text-ghost text-[12px]">Locked signals activate at 3 connected plants · Topeka Plant (KS-02) not yet onboarded</span>
               </div>
             </Module>
 
@@ -811,12 +797,12 @@ export default function Analytics() {
                     { label: 'Last retrained',   value: 'Apr 2 · 14 shifts ago'               },
                   ].map(({ label, value, color }) => (
                     <div key={label}>
-                      <div className="font-body text-ghost text-[10px] mb-0.5">{label}</div>
-                      <div className={`font-body font-medium text-[12px] ${color || 'text-ink'}`}>{value}</div>
+                      <div className="font-body text-ghost text-[12px] mb-0.5">{label}</div>
+                      <div className={`font-body font-medium text-[14px] ${color || 'text-ink'}`}>{value}</div>
                     </div>
                   ))}
                 </div>
-                <p className="font-body text-ghost text-[10px] leading-relaxed">
+                <p className="font-body text-ghost text-[12px] leading-relaxed">
                   Every actioned finding and dismissed pattern contributes to the model. At 300 shifts, Line 4 accuracy is expected to reach 88–91%. Cross-plant intelligence activates at 3 connected plants.
                 </p>
               </div>
@@ -825,8 +811,8 @@ export default function Analytics() {
           </div>
 
           <footer className="mt-10 pt-5 border-t border-rule2 flex items-center justify-between">
-            <span className="font-body text-ghost text-[10px]">Takorin Total Intelligence · {facility.name}</span>
-            <span className="font-body text-ghost text-[10px]">Data through Apr 16, 2026 · 06:42</span>
+            <span className="font-body text-ghost text-[12px]">Takorin Total Intelligence · {facility.name}</span>
+            <span className="font-body text-ghost text-[12px]">Data through Apr 16, 2026 · 06:42</span>
           </footer>
 
         </div>

@@ -91,34 +91,34 @@ function ExposureOverlay({ triggerRef, active, actions, onAction, onBulkAction, 
        }`}>
         {/* Card header */}
         <div className="flex items-baseline justify-between px-4 pt-3 pb-1.5">
-         <span className="font-body font-semibold text-ink text-[13px]">{e.supplier}</span>
-         <span className="font-mono text-ghost text-[10px]">Lot {e.lotId}</span>
+         <span className="font-body font-semibold text-ink text-[15px]">{e.supplier}</span>
+         <span className="font-mono text-ghost text-[12px]">Lot {e.lotId}</span>
         </div>
         {/* Ingredient + units */}
         <div className="px-4 pb-2">
-         <span className="font-body text-ghost text-[10px]">
+         <span className="font-body text-ghost text-[12px]">
           {e.ingredient || e.supplier} · {e.totalUnits.toLocaleString()} units
          </span>
         </div>
         {/* Plant chips + note + FSMA */}
         <div className="flex items-center gap-2 px-4 pb-3 flex-wrap">
          {e.affectedPlants.map(id => (
-          <span key={id} className={`font-body text-[10px] font-medium px-1.5 py-0.5 rounded-btn ${
-           isCross ? 'bg-danger/10 text-danger' : 'bg-warn/10 text-warn'
+          <span key={id} className={`font-body text-[12px] font-medium px-1.5 py-0.5 rounded-btn ${
+           isCross ? 'bg-danger/[0.04] text-danger' : 'bg-warn/10 text-warn'
           }`}>{PLANT_CODE[id] || id}</span>
          ))}
          {e.note && (
-          <span className={`font-body text-[10px] ${isCross ? 'text-danger/70' : 'text-warn/70'}`}>
+          <span className={`font-body text-[12px] ${isCross ? 'text-danger/70' : 'text-warn/70'}`}>
            · {e.note}
           </span>
          )}
-         <span className="font-body text-ghost text-[10px] ml-auto">24h FSMA</span>
+         <span className="font-body text-ghost text-[12px] ml-auto">24h FSMA</span>
         </div>
         {/* Action row */}
         {action ? (
          <div className="flex items-center gap-1.5 px-4 pb-3 border-t border-rule2 pt-2.5">
           <CheckCircle2 size={11} strokeWidth={2} className="text-ok flex-shrink-0" />
-          <span className="font-body text-ok text-[10px]">
+          <span className="font-body text-ok text-[12px]">
            {action === 'hold' ? 'Hold issued · MES frozen · ERP locked' : 'Notified'}
           </span>
          </div>
@@ -177,10 +177,10 @@ function ExposureCommandSurface({ exposures, actions, containmentMode, onAction,
     className="w-full flex items-center gap-3 px-6 py-3.5 border-b-2 border-b-danger/30 bg-danger/[0.025] flex-shrink-0 text-left"
    >
     <div className="w-2 h-2 rounded-full bg-danger flex-shrink-0 beat" />
-    <span className="font-body font-semibold text-ink text-[13px] flex-1">
+    <span className="font-body font-semibold text-ink text-[15px] flex-1">
      {active.length} active exposure{active.length > 1 ? 's' : ''}
     </span>
-    <span className="font-body text-ghost text-[10px]">
+    <span className="font-body text-ghost text-[12px]">
      {totalUnits.toLocaleString()} units · {allPlantCodes.join(' · ')} · 24h FSMA
     </span>
     <ChevronDown
@@ -216,12 +216,12 @@ function SupplierRegistry({ rows }) {
    {/* Column headers */}
    <div className="grid px-6 py-2 bg-stone2 border-b border-rule2 flex-shrink-0"
     style={{ gridTemplateColumns: COL }}>
-    <span className="font-body text-ghost text-[10px] uppercase tracking-widest">Supplier</span>
-    <span className="font-body text-ghost text-[10px] uppercase tracking-widest text-right">Net. Risk</span>
-    <span className="font-body text-ghost text-[10px] uppercase tracking-widest text-center">Exposures</span>
-    <span className="font-body text-ghost text-[10px] uppercase tracking-widest">Affected Plants</span>
-    <span className="font-body text-ghost text-[10px] uppercase tracking-widest text-right">Trend</span>
-    <span className="font-body text-ghost text-[10px] uppercase tracking-widest text-right">Confidence</span>
+    <span className="font-body text-ghost text-[12px] tracking-normal">Supplier</span>
+    <span className="font-body text-ghost text-[12px] tracking-normal text-right">Net. Risk</span>
+    <span className="font-body text-ghost text-[12px] tracking-normal text-center">Exposures</span>
+    <span className="font-body text-ghost text-[12px] tracking-normal">Affected Plants</span>
+    <span className="font-body text-ghost text-[12px] tracking-normal text-right">Trend</span>
+    <span className="font-body text-ghost text-[12px] tracking-normal text-right">Confidence</span>
    </div>
 
    {/* Supplier rows */}
@@ -240,11 +240,11 @@ function SupplierRegistry({ rows }) {
        <div className="flex items-center gap-2 min-w-0 pr-3">
         {hasExposure && <div className="w-1.5 h-1.5 rounded-full bg-danger flex-shrink-0 beat" />}
         <div className="min-w-0">
-         <div className={`font-body font-medium text-[12px] truncate ${hasExposure ? 'text-danger' : 'text-ink'}`}>
+         <div className={`font-body font-medium text-[14px] truncate ${hasExposure ? 'text-danger' : 'text-ink'}`}>
           {s.name}
          </div>
          {s.note && (
-          <div className={`font-body text-[10px] mt-0.5 truncate ${hasExposure ? 'text-danger/70' : 'text-ghost'}`}>
+          <div className={`font-body text-[12px] mt-0.5 truncate ${hasExposure ? 'text-danger/70' : 'text-ghost'}`}>
            {s.note}
           </div>
          )}
@@ -259,16 +259,16 @@ function SupplierRegistry({ rows }) {
        {/* Exposure Count */}
        <div className="flex justify-center">
         {s.activeExposureCount > 0 ? (
-         <span className="font-body text-danger text-[10px] font-medium px-2 py-0.5 bg-danger/10 rounded-btn whitespace-nowrap">
+         <span className="font-body text-danger text-[12px] font-medium px-2 py-0.5 bg-danger/[0.04] rounded-btn whitespace-nowrap">
           {s.activeExposureCount} active
          </span>
         ) : (
-         <span className="font-body text-ghost text-[10px]">—</span>
+         <span className="font-body text-ghost text-[12px]">—</span>
         )}
        </div>
 
        {/* Affected Plants — always inline, never hidden */}
-       <div className="font-body text-[11px] min-w-0">
+       <div className="font-body text-[13px] min-w-0">
         {s.affectedPlantCodes.length > 0 ? (
          <span className={hasExposure ? 'text-danger' : 'text-ink'}>
           {s.affectedPlantCodes.join(' · ')}
@@ -281,7 +281,7 @@ function SupplierRegistry({ rows }) {
        {/* Trend */}
        <div className="flex items-center justify-end gap-1">
         {s.trend === 'down' && <TrendingDown size={10} strokeWidth={2} className="text-danger flex-shrink-0" />}
-        <span className={`font-body text-[10px] ${
+        <span className={`font-body text-[12px] ${
          hasExposure || s.tone === 'danger' ? 'text-danger' :
          s.tone === 'warn' ? 'text-warn' : 'text-ghost'
         }`}>
@@ -296,7 +296,7 @@ function SupplierRegistry({ rows }) {
           s.confidence >= 85 ? 'text-danger' : s.confidence >= 70 ? 'text-warn' : 'text-ghost'
          }`}>{s.confidence}%</span>
         ) : (
-         <span className="font-body text-ghost text-[10px]">—</span>
+         <span className="font-body text-ghost text-[12px]">—</span>
         )}
        </div>
       </div>
@@ -309,7 +309,7 @@ function SupplierRegistry({ rows }) {
     <div className="border-t border-rule2 flex-shrink-0">
      <div className="px-6 py-2 bg-stone2 border-b border-rule2 flex items-center gap-2">
       <Brain size={10} strokeWidth={1.75} className="text-ghost" />
-      <span className="font-body text-ghost text-[10px] uppercase tracking-widest">
+      <span className="font-body text-ghost text-[12px] tracking-normal">
        {lockedSignals.length} intelligence signals locked — activate at 3 connected plants
       </span>
      </div>
@@ -317,8 +317,8 @@ function SupplierRegistry({ rows }) {
       <div key={sig.id} className="flex items-start gap-3 px-6 py-3 border-b border-rule2 last:border-b-0 opacity-40">
        <Lock size={10} strokeWidth={2} className="text-ghost flex-shrink-0 mt-0.5" />
        <div className="flex-1 min-w-0">
-        <div className="font-body text-ghost text-[11px] leading-snug">{sig.label}</div>
-        <div className="font-body text-ghost text-[10px] mt-0.5">{sig.detail}</div>
+        <div className="font-body text-ghost text-[13px] leading-snug">{sig.label}</div>
+        <div className="font-body text-ghost text-[12px] mt-0.5">{sig.detail}</div>
        </div>
       </div>
      ))}
@@ -327,7 +327,7 @@ function SupplierRegistry({ rows }) {
 
    {/* Registry footer */}
    <div className="px-6 py-2 border-t border-rule2 bg-stone2 flex-shrink-0">
-    <span className="font-body text-ghost text-[10px]">
+    <span className="font-body text-ghost text-[12px]">
      Net. Risk = lowest percentile rank across connected plants · Updated weekly · Confidence = AI signal strength
     </span>
    </div>
@@ -365,13 +365,13 @@ function NetworkSummaryBar({ activeExposures, containmentMode }) {
       <div key={p.code} className={`px-5 py-4 border-r border-rule2 last:border-r-0 ${hasExposure ? 'bg-danger/[0.025]' : ''}`}>
        <div className="flex items-center gap-1.5 mb-1">
         {hasExposure && <div className="w-1.5 h-1.5 rounded-full bg-danger beat flex-shrink-0" />}
-        <span className="font-body text-ghost text-[10px]">{p.code} · {p.name}</span>
+        <span className="font-body text-ghost text-[12px]">{p.code} · {p.name}</span>
        </div>
        <div className={`display-num text-[22px] font-bold leading-none ${riskColor}`}>
         {p.risk}
-        <span className="font-body text-ghost text-[10px] font-normal ml-1">pct.</span>
+        <span className="font-body text-ghost text-[12px] font-normal ml-1">pct.</span>
        </div>
-       <div className="font-body text-ghost text-[9px] mt-0.5">network risk</div>
+       <div className="font-body text-ghost text-[12px] mt-0.5">network risk</div>
       </div>
      )
     })}
@@ -379,13 +379,13 @@ function NetworkSummaryBar({ activeExposures, containmentMode }) {
 
    {/* Active intelligence signals */}
    <div className="flex-1 px-6 py-4 flex flex-col justify-center gap-2.5">
-    <div className="font-body text-ghost text-[9px] uppercase tracking-widest mb-0.5">Active signals</div>
+    <div className="font-body text-ghost text-[12px] tracking-normal mb-0.5">Active signals</div>
     {activeSignals.map(sig => (
      <div key={sig.id} className="flex items-start gap-3">
       <span className={`display-num text-[14px] font-bold flex-shrink-0 tabular-nums leading-none mt-px ${
        sig.confidence >= 85 ? 'text-danger' : 'text-warn'
       }`}>{sig.confidence}%</span>
-      <span className="font-body text-muted text-[11px] leading-snug">{sig.label}</span>
+      <span className="font-body text-muted text-[13px] leading-snug">{sig.label}</span>
      </div>
     ))}
    </div>
@@ -395,8 +395,8 @@ function NetworkSummaryBar({ activeExposures, containmentMode }) {
     <div className="flex items-center gap-2 px-6 border-l border-rule2">
      <CheckCircle2 size={14} strokeWidth={2} className="text-ok" />
      <div>
-      <div className="font-body font-medium text-ok text-[12px]">Containment active</div>
-      <div className="font-body text-ghost text-[10px]">All lots held · FSMA 204 documentation in progress</div>
+      <div className="font-body font-medium text-ok text-[14px]">Containment active</div>
+      <div className="font-body text-ghost text-[12px]">All lots held · FSMA 204 documentation in progress</div>
      </div>
     </div>
    )}

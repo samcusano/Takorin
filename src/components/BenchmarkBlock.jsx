@@ -6,7 +6,7 @@ export default function BenchmarkBlock({ metric, rank, total, score, delta, delt
  <div className="border-b border-rule last:border-0">
  <div className="flex items-center justify-between px-4 pt-3 pb-2">
  <span className="font-body text-xs text-muted">{metric}</span>
- <div className="flex items-center gap-1 px-2 py-0.5 border border-rule text-[10px] font-body text-ghost">
+ <div className="flex items-center gap-1 px-2 py-0.5 border border-rule text-[12px] font-body text-ghost">
  <BarChart2 className="w-3 h-3" />
  {rank} / {total} plants
  </div>
@@ -35,18 +35,18 @@ export default function BenchmarkBlock({ metric, rank, total, score, delta, delt
  style={{ left: `${percentile}%` }}
  />
  </div>
- <span className="font-body text-[10px] text-ghost whitespace-nowrap">
+ <span className="font-body text-[12px] text-ghost whitespace-nowrap">
  Index <strong className="font-semibold not-italic text-ochre">{Math.round(percentile)}</strong>
  </span>
  </div>
 
  {peers && peers.length > 0 && (
  <div className="px-4 pb-2 border-t border-rule pt-2">
- <div className="text-[10px] font-body uppercase tracking-wide text-ghost mb-2">Top plants · comparable category</div>
+ <div className="text-[12px] font-body tracking-wide text-ghost mb-2">Top plants · comparable category</div>
  {peers.map((p, i) => (
  <div key={i} className="flex items-center gap-2 py-1 border-b border-rule last:border-0">
- <span className="display-num text-[11px] text-ghost w-4 flex-shrink-0">{i + 1}</span>
- <span className="flex-1 font-body text-[11px] text-muted">{p.name}</span>
+ <span className="display-num text-[13px] text-ghost w-4 flex-shrink-0">{i + 1}</span>
+ <span className="flex-1 font-body text-[13px] text-muted">{p.name}</span>
  <span className="font-display text-xs font-bold text-ink">{p.value}</span>
  </div>
  ))}
@@ -64,7 +64,7 @@ export default function BenchmarkBlock({ metric, rank, total, score, delta, delt
  </div>
  <div className="flex">
  {zones.map((z, i) => (
- <div key={i} className="flex-1 text-center font-body text-[10px] " style={{ color: z.color }}>
+ <div key={i} className="flex-1 text-center font-body text-[12px] " style={{ color: z.color }}>
  <div>● {z.label}</div>
  <div className="text-ghost">{z.range}</div>
  </div>
@@ -74,7 +74,7 @@ export default function BenchmarkBlock({ metric, rank, total, score, delta, delt
  )}
 
  {insight && (
- <div className="px-4 py-2 bg-warn/5 border-t border-rule font-body text-[11px] text-warn">
+ <div className="px-4 py-2 bg-warn/5 border-t border-rule font-body text-[13px] text-warn">
  {insight}
  </div>
  )}

@@ -288,27 +288,27 @@ function ReadinessInstrument({ score, resolved }) {
 
   return (
     <div className="px-5 pt-5 pb-4 border-b border-rule2 flex-shrink-0">
-      <div className="font-body text-ghost text-[10px] uppercase tracking-widest mb-3">Data Readiness</div>
+      <div className="font-body text-ghost text-[12px] tracking-normal mb-3">Data Readiness</div>
 
       {/* Score */}
       <div className="flex items-baseline gap-3 mb-1">
         <span key={score} className={`display-num text-[64px] leading-none score-tick ${zoneText}`}>{score}</span>
         <div className="pb-1">
-          <div className={`font-body font-semibold text-[12px] ${zoneText}`}>{zone}</div>
+          <div className={`font-body font-semibold text-[14px] ${zoneText}`}>{zone}</div>
         </div>
       </div>
 
       {/* Projected */}
       {totalGain > 0 ? (
         <div className="flex items-baseline gap-1.5 mb-4">
-          <span className="font-body text-ghost text-[10px]">Projected after queued fixes:</span>
-          <span className="display-num text-[13px] font-bold text-ok">{projected}</span>
-          <span className="font-body text-ok text-[10px]">(+{totalGain})</span>
+          <span className="font-body text-ghost text-[12px]">Projected after queued fixes:</span>
+          <span className="display-num text-[15px] font-bold text-ok">{projected}</span>
+          <span className="font-body text-ok text-[12px]">(+{totalGain})</span>
         </div>
       ) : (
         <div className="flex items-center gap-1.5 mb-4">
           <Check size={10} strokeWidth={2.5} className="text-ok" />
-          <span className="font-body text-ok text-[10px]">All scored gaps resolved</span>
+          <span className="font-body text-ok text-[12px]">All scored gaps resolved</span>
         </div>
       )}
 
@@ -316,8 +316,8 @@ function ReadinessInstrument({ score, resolved }) {
       <div className="space-y-1.5 mb-4">
         {moduleRows.map(m => (
           <div key={m.label} className="flex items-baseline justify-between">
-            <span className="font-body text-ghost text-[10px]">{m.label}</span>
-            <span className={`display-num text-[11px] font-bold tabular-nums ${m.danger ? 'text-danger' : m.ok ? 'text-ok' : 'text-warn'}`}>
+            <span className="font-body text-ghost text-[12px]">{m.label}</span>
+            <span className={`display-num text-[13px] font-bold tabular-nums ${m.danger ? 'text-danger' : m.ok ? 'text-ok' : 'text-warn'}`}>
               {m.value}
             </span>
           </div>
@@ -328,12 +328,12 @@ function ReadinessInstrument({ score, resolved }) {
       <div className="border-t border-rule2 pt-3">
         <div className="flex items-baseline justify-between mb-2">
           <div className="flex items-baseline gap-1.5">
-            <span className="display-num text-[11px] font-bold text-ok">+6</span>
-            <span className="font-body text-ghost text-[10px]">this week</span>
+            <span className="display-num text-[13px] font-bold text-ok">+6</span>
+            <span className="font-body text-ghost text-[12px]">this week</span>
           </div>
           <div className="flex items-baseline gap-1">
-            <span className="display-num text-[11px] font-bold text-danger">−3</span>
-            <span className="font-body text-ghost text-[9px]">ERP mismatch</span>
+            <span className="display-num text-[13px] font-bold text-danger">−3</span>
+            <span className="font-body text-ghost text-[12px]">ERP mismatch</span>
           </div>
         </div>
         <TrendChart />
@@ -356,23 +356,23 @@ function QueueClusterRow({ cluster, resolved, selected, onSelect }) {
       }`}>
       {/* Cluster badge */}
       <div className="flex items-center gap-1.5 mb-1.5">
-        <span className={`font-body text-[9px] px-1.5 py-px rounded-btn font-semibold uppercase tracking-wider ${
+        <span className={`font-body text-[12px] px-1.5 py-px rounded-btn font-semibold tracking-wider ${
           allResolved ? 'bg-ok/10 text-ok' : 'bg-ochre/15 text-ochre'
         }`}>
           {allResolved ? 'Resolved' : 'High impact cluster'}
         </span>
       </div>
-      <div className={`font-body font-medium text-[12px] leading-snug mb-1 ${allResolved ? 'text-ghost line-through' : 'text-ink'}`}>
+      <div className={`font-body font-medium text-[14px] leading-snug mb-1 ${allResolved ? 'text-ghost line-through' : 'text-ink'}`}>
         {cluster.label}
       </div>
       {!allResolved && (
         <>
-          <div className="font-body text-ochre text-[10px] mb-1.5">Resolve together → {cluster.gainLabel}</div>
+          <div className="font-body text-ochre text-[12px] mb-1.5">Resolve together → {cluster.gainLabel}</div>
           <div className="space-y-0.5">
             {cluster.memberLabels.map((m, i) => (
               <div key={m.key} className="flex items-center gap-1.5">
-                <span className="font-body text-ghost text-[10px]">{i + 1}.</span>
-                <span className={`font-body text-[10px] ${resolved[m.key] ? 'text-ok line-through' : 'text-muted'}`}>{m.label}</span>
+                <span className="font-body text-ghost text-[12px]">{i + 1}.</span>
+                <span className={`font-body text-[12px] ${resolved[m.key] ? 'text-ok line-through' : 'text-muted'}`}>{m.label}</span>
                 {resolved[m.key] && <Check size={8} strokeWidth={2.5} className="text-ok" />}
               </div>
             ))}
@@ -398,16 +398,16 @@ function QueueIssueRow({ item, resolved, selected, onSelect }) {
       }`}>
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
-          <div className={`font-body font-medium text-[11px] leading-snug ${isResolved ? 'text-ghost line-through' : 'text-ink'}`}>
+          <div className={`font-body font-medium text-[13px] leading-snug ${isResolved ? 'text-ghost line-through' : 'text-ink'}`}>
             {item.label}
           </div>
           {item.permanent && !isResolved && (
-            <div className="font-body text-warn text-[10px] mt-0.5">Needs maintenance</div>
+            <div className="font-body text-warn text-[12px] mt-0.5">Needs maintenance</div>
           )}
-          {isResolved && <div className="font-body text-ok text-[10px] mt-0.5">Resolved</div>}
+          {isResolved && <div className="font-body text-ok text-[12px] mt-0.5">Resolved</div>}
         </div>
         {!isResolved && (
-          <span className={`display-num text-[11px] font-bold tabular-nums flex-shrink-0 ${
+          <span className={`display-num text-[13px] font-bold tabular-nums flex-shrink-0 ${
             item.permanent ? 'text-ghost/50' : 'text-ok'
           }`}>
             +{item.points}
@@ -415,7 +415,7 @@ function QueueIssueRow({ item, resolved, selected, onSelect }) {
         )}
       </div>
       {item.blockedBy && !isResolved && (
-        <div className="font-body text-ghost text-[9px] mt-1">Blocked by: {item.blockedBy}</div>
+        <div className="font-body text-ghost text-[12px] mt-1">Blocked by: {item.blockedBy}</div>
       )}
     </button>
   )
@@ -426,7 +426,7 @@ function ResolutionQueue({ selected, onSelect, resolved }) {
   return (
     <div className="flex-1 overflow-y-auto">
       <div className="px-4 py-2 border-b border-rule2 bg-stone2 flex-shrink-0">
-        <span className="font-body text-ghost text-[10px] uppercase tracking-widest">AI Resolution Queue</span>
+        <span className="font-body text-ghost text-[12px] tracking-normal">AI Resolution Queue</span>
       </div>
 
       {/* Cluster */}
@@ -434,7 +434,7 @@ function ResolutionQueue({ selected, onSelect, resolved }) {
 
       {/* Individual issues */}
       <div className="px-4 py-1.5 border-b border-rule2 bg-stone2 flex-shrink-0">
-        <span className="font-body text-ghost text-[9px] uppercase tracking-widest">Individual issues</span>
+        <span className="font-body text-ghost text-[12px] tracking-normal">Individual issues</span>
       </div>
       <QueueIssueRow item={ISSUE_CTX}   resolved={resolved} selected={selected} onSelect={onSelect} />
       <QueueIssueRow item={ISSUE_TRACE} resolved={resolved} selected={selected} onSelect={onSelect} />
@@ -445,13 +445,13 @@ function ResolutionQueue({ selected, onSelect, resolved }) {
       {/* Advisory */}
       <button type="button" onClick={() => setAdvisoryOpen(v => !v)}
         className="w-full flex items-center justify-between px-4 py-2 border-b border-rule2 bg-stone2 hover:bg-stone3 transition-colors">
-        <span className="font-body text-ghost text-[9px] uppercase tracking-widest">Advisory · no score impact</span>
+        <span className="font-body text-ghost text-[12px] tracking-normal">Advisory · no score impact</span>
         {advisoryOpen ? <ChevronUp size={10} className="text-ghost" /> : <ChevronDown size={10} className="text-ghost" />}
       </button>
       {advisoryOpen && ADVISORY_ITEMS.map(a => (
         <div key={a.key} className="px-4 py-2.5 border-b border-rule2 border-l-2 border-l-rule2">
-          <div className="font-body text-muted text-[11px]">{a.label}</div>
-          <div className="font-body text-ghost text-[10px] mt-0.5">{a.detail}</div>
+          <div className="font-body text-muted text-[13px]">{a.label}</div>
+          <div className="font-body text-ghost text-[12px] mt-0.5">{a.detail}</div>
         </div>
       ))}
     </div>
@@ -469,7 +469,7 @@ function ResolutionFeedback({ feedback, onDismiss }) {
     <div className="flex-shrink-0 px-8 py-4 border-b-2 border-b-ok/30 bg-ok/[0.04] slide-in">
       <div className="flex items-center gap-2 mb-3">
         <Check size={14} strokeWidth={2.5} className="text-ok flex-shrink-0" />
-        <span className="font-body font-semibold text-ok text-[13px]">{feedback.label} — resolved</span>
+        <span className="font-body font-semibold text-ok text-[15px]">{feedback.label} — resolved</span>
       </div>
       <div className="grid grid-cols-3 gap-6">
         {[
@@ -478,17 +478,17 @@ function ResolutionFeedback({ feedback, onDismiss }) {
           { label: 'SupplierIQ confidence', from: `${feedback.prevSupplierIQ}%`, to: `${feedback.newSupplierIQ}%`, gain: feedback.newSupplierIQ > feedback.prevSupplierIQ },
         ].map(r => (
           <div key={r.label}>
-            <div className="font-body text-ghost text-[10px] mb-1">{r.label}</div>
+            <div className="font-body text-ghost text-[12px] mb-1">{r.label}</div>
             <div className="flex items-baseline gap-2">
               <span className="display-num text-[14px] text-ghost tabular-nums">{r.from}</span>
-              <span className="font-body text-ghost text-[10px]">→</span>
+              <span className="font-body text-ghost text-[12px]">→</span>
               <span className={`display-num text-[18px] font-bold tabular-nums ${r.gain ? 'text-ok' : 'text-ink'}`}>{r.to}</span>
             </div>
           </div>
         ))}
       </div>
       {feedback.downgradedCount > 0 && (
-        <div className="font-body text-ok/80 text-[10px] mt-2.5">
+        <div className="font-body text-ok/80 text-[12px] mt-2.5">
           {feedback.downgradedCount} dependent {feedback.downgradedCount === 1 ? 'issue' : 'issues'} downgraded from Critical → Warning
         </div>
       )}
@@ -498,7 +498,7 @@ function ResolutionFeedback({ feedback, onDismiss }) {
 
 function SectionLabel({ children }) {
   return (
-    <div className="font-body text-ghost text-[10px] uppercase tracking-widest mb-2">{children}</div>
+    <div className="font-body text-ghost text-[12px] tracking-normal mb-2">{children}</div>
   )
 }
 
@@ -527,31 +527,31 @@ function WorkspacePanel({ item, isCluster, resolved, onResolve, onResolveCluster
         {/* Issue context */}
         <div>
           <div className="flex items-center gap-2 mb-2">
-            {isCluster && <span className="font-body text-[10px] px-1.5 py-px bg-ochre/15 text-ochre rounded-btn font-semibold uppercase tracking-wider">Cluster</span>}
-            <span className={`font-body text-[10px] font-medium ${severityColor}`}>{severityLabel}</span>
-            {item.detectedAgo && <span className="font-body text-ghost text-[10px]">· Detected {item.detectedAgo}</span>}
-            {isResolved && <span className="font-body text-ok text-[10px] flex items-center gap-1"><Check size={10} strokeWidth={2.5} />Resolved</span>}
+            {isCluster && <span className="font-body text-[12px] px-1.5 py-px bg-ochre/15 text-ochre rounded-btn font-semibold tracking-wider">Cluster</span>}
+            <span className={`font-body text-[12px] font-medium ${severityColor}`}>{severityLabel}</span>
+            {item.detectedAgo && <span className="font-body text-ghost text-[12px]">· Detected {item.detectedAgo}</span>}
+            {isResolved && <span className="font-body text-ok text-[12px] flex items-center gap-1"><Check size={10} strokeWidth={2.5} />Resolved</span>}
           </div>
           <h2 className="font-display font-bold text-ink text-[22px] leading-snug mb-3">{item.label}</h2>
           <div className="grid grid-cols-3 gap-4">
             {item.systemsImpacted?.length > 0 && (
               <div>
-                <div className="font-body text-ghost text-[10px] mb-1">Systems impacted</div>
-                <div className="font-body text-muted text-[11px]">{item.systemsImpacted.join(' · ')}</div>
+                <div className="font-body text-ghost text-[12px] mb-1">Systems impacted</div>
+                <div className="font-body text-muted text-[13px]">{item.systemsImpacted.join(' · ')}</div>
               </div>
             )}
             {item.confidenceDrop > 0 && (
               <div>
-                <div className="font-body text-ghost text-[10px] mb-1">Confidence degradation</div>
+                <div className="font-body text-ghost text-[12px] mb-1">Confidence degradation</div>
                 <div className="display-num text-[16px] font-bold text-danger">−{item.confidenceDrop}%</div>
               </div>
             )}
             {item.unlocks?.length > 0 && (
               <div>
-                <div className="font-body text-ghost text-[10px] mb-1">Unlocks</div>
+                <div className="font-body text-ghost text-[12px] mb-1">Unlocks</div>
                 <div className="space-y-0.5">
                   {item.unlocks.map(u => (
-                    <div key={u} className="font-body text-ok text-[10px]">· {u}</div>
+                    <div key={u} className="font-body text-ok text-[12px]">· {u}</div>
                   ))}
                 </div>
               </div>
@@ -560,13 +560,13 @@ function WorkspacePanel({ item, isCluster, resolved, onResolve, onResolveCluster
           {item.blockedBy && (
             <div className="flex items-center gap-2 mt-3 px-3 py-2 bg-warn/[0.06] border border-warn/20 rounded-btn">
               <AlertTriangle size={11} strokeWidth={2} className="text-warn flex-shrink-0" />
-              <span className="font-body text-warn text-[11px]">Blocked by: {item.blockedBy}</span>
+              <span className="font-body text-warn text-[13px]">Blocked by: {item.blockedBy}</span>
             </div>
           )}
           {isCluster && (
             <div className="mt-3 px-3 py-2 bg-stone2 border border-rule2 rounded-btn">
-              <div className="font-body text-ghost text-[10px] mb-1">Why grouped</div>
-              <div className="font-body text-muted text-[11px] leading-relaxed">{item.why}</div>
+              <div className="font-body text-ghost text-[12px] mb-1">Why grouped</div>
+              <div className="font-body text-muted text-[13px] leading-relaxed">{item.why}</div>
             </div>
           )}
         </div>
@@ -577,8 +577,8 @@ function WorkspacePanel({ item, isCluster, resolved, onResolve, onResolveCluster
             <SectionLabel>AI Assessment</SectionLabel>
             <div className="border border-rule2 bg-stone2 px-4 py-3.5 rounded-btn">
               <div className="flex items-start justify-between gap-3 mb-2">
-                <div className="font-body text-ink text-[12px] leading-relaxed flex-1">{item.aiAssessment.text}</div>
-                <span className="font-mono text-[11px] font-bold text-ochre flex-shrink-0 px-2 py-0.5 bg-ochre/10 rounded-btn">
+                <div className="font-body text-ink text-[14px] leading-relaxed flex-1">{item.aiAssessment.text}</div>
+                <span className="font-mono text-[13px] font-bold text-ochre flex-shrink-0 px-2 py-0.5 bg-ochre/10 rounded-btn">
                   {item.aiAssessment.confidence}%
                 </span>
               </div>
@@ -593,15 +593,15 @@ function WorkspacePanel({ item, isCluster, resolved, onResolve, onResolveCluster
             <div className="border border-rule2 bg-stone divide-y divide-rule2 rounded-btn">
               {item.fixSequence.map((step, i) => (
                 <div key={i} className="flex items-center gap-4 px-4 py-3">
-                  <span className="display-num text-[13px] font-bold text-ghost/60 flex-shrink-0 w-4">{i + 1}</span>
-                  <span className="font-body text-ink text-[12px] flex-1">{step.step}</span>
-                  <span className="font-mono text-ghost text-[10px] flex-shrink-0">{step.duration}</span>
+                  <span className="display-num text-[15px] font-bold text-ghost/60 flex-shrink-0 w-4">{i + 1}</span>
+                  <span className="font-body text-ink text-[14px] flex-1">{step.step}</span>
+                  <span className="font-mono text-ghost text-[12px] flex-shrink-0">{step.duration}</span>
                 </div>
               ))}
               {item.estimatedMinutes && (
                 <div className="flex items-center justify-between px-4 py-2.5 bg-stone2">
-                  <span className="font-body text-ghost text-[10px]">Estimated completion</span>
-                  <span className="font-body text-muted text-[11px] font-medium">{item.estimatedMinutes} minutes</span>
+                  <span className="font-body text-ghost text-[12px]">Estimated completion</span>
+                  <span className="font-body text-muted text-[13px] font-medium">{item.estimatedMinutes} minutes</span>
                 </div>
               )}
             </div>
@@ -615,19 +615,19 @@ function WorkspacePanel({ item, isCluster, resolved, onResolve, onResolveCluster
             <div className="border border-rule2 bg-stone px-4 py-4 rounded-btn">
               <div className="flex items-center gap-2 mb-3">
                 <Zap size={12} strokeWidth={2} className="text-ochre flex-shrink-0" />
-                <span className="font-body font-semibold text-ink text-[12px]">Eligible for automatic remediation</span>
+                <span className="font-body font-semibold text-ink text-[14px]">Eligible for automatic remediation</span>
               </div>
               <div className="space-y-1 mb-4">
-                <div className="font-body text-ghost text-[10px] mb-1.5">Safe to auto-resolve because:</div>
+                <div className="font-body text-ghost text-[12px] mb-1.5">Safe to auto-resolve because:</div>
                 {item.autoSafeReason.map(r => (
                   <div key={r} className="flex items-center gap-2">
                     <Check size={9} strokeWidth={2.5} className="text-ok flex-shrink-0" />
-                    <span className="font-body text-muted text-[10px]">{r}</span>
+                    <span className="font-body text-muted text-[12px]">{r}</span>
                   </div>
                 ))}
               </div>
               <div className="border-t border-rule2 pt-3">
-                <div className="font-body text-ghost text-[10px] mb-2">Human confirmation required — action will be logged for audit.</div>
+                <div className="font-body text-ghost text-[12px] mb-2">Human confirmation required — action will be logged for audit.</div>
                 {autoConfirming ? (
                   <div className="flex gap-2">
                     <Btn variant="primary" onClick={() => { setAutoConfirming(false); onResolve(item.key, item.points, item.label) }}>
@@ -655,7 +655,7 @@ function WorkspacePanel({ item, isCluster, resolved, onResolve, onResolveCluster
                   <div className="flex-shrink-0 text-right w-14">
                     <div className="display-num text-[14px] font-bold text-muted tabular-nums">{r.hours}h</div>
                   </div>
-                  <div className="font-body text-muted text-[11px] leading-snug">{r.consequence}</div>
+                  <div className="font-body text-muted text-[13px] leading-snug">{r.consequence}</div>
                 </div>
               ))}
             </div>
@@ -667,7 +667,7 @@ function WorkspacePanel({ item, isCluster, resolved, onResolve, onResolveCluster
           <div className="border-t border-rule2 pt-6">
             {isCluster ? (
               <>
-                <div className="font-body text-ghost text-[10px] mb-3">Resolving this cluster closes {item.memberKeys.length} issues and adds +{item.totalPoints} pts readiness.</div>
+                <div className="font-body text-ghost text-[12px] mb-3">Resolving this cluster closes {item.memberKeys.length} issues and adds +{item.totalPoints} pts readiness.</div>
                 {confirming ? (
                   <div className="flex gap-2">
                     <Btn variant="primary" onClick={() => { setConfirming(false); onResolveCluster(item) }}>Confirm resolution</Btn>
@@ -696,7 +696,7 @@ function WorkspacePanel({ item, isCluster, resolved, onResolve, onResolveCluster
           <div className="border-t border-rule2 pt-6">
             <div className="flex items-center gap-2 px-4 py-3 bg-warn/[0.06] border border-warn/20 rounded-btn">
               <AlertTriangle size={12} strokeWidth={2} className="text-warn flex-shrink-0" />
-              <span className="font-body text-warn text-[11px]">Resolution requires external action — cannot be completed from this interface</span>
+              <span className="font-body text-warn text-[13px]">Resolution requires external action — cannot be completed from this interface</span>
             </div>
           </div>
         )}
@@ -705,7 +705,7 @@ function WorkspacePanel({ item, isCluster, resolved, onResolve, onResolveCluster
         {isResolved && (
           <div className="flex items-center gap-2 px-4 py-3 bg-ok/[0.06] border border-ok/20 rounded-btn">
             <Check size={13} strokeWidth={2} className="text-ok flex-shrink-0" />
-            <span className="font-body font-medium text-ok text-[12px]">Resolved — downstream systems updating</span>
+            <span className="font-body font-medium text-ok text-[14px]">Resolved — downstream systems updating</span>
           </div>
         )}
 
@@ -718,7 +718,7 @@ function EmptyWorkspace() {
   return (
     <div className="flex-1 flex flex-col items-center justify-center text-center px-8">
       <div className="font-display font-bold text-ink text-[17px] mb-2">Select an issue to begin</div>
-      <div className="font-body text-ghost text-[12px] max-w-[320px] leading-relaxed">
+      <div className="font-body text-ghost text-[14px] max-w-[320px] leading-relaxed">
         Choose a cluster or individual issue from the queue. The workspace will show full context, AI assessment, and resolution steps.
       </div>
     </div>

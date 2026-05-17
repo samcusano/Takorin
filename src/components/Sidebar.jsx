@@ -28,12 +28,12 @@ function Badge({ badge, badgeType }) {
  <span className="ml-auto w-1.5 h-1.5 rounded-full bg-ok beat" />
  )
  if (badgeType === 'score') return (
- <span className="ml-auto text-[10px] font-semibold px-1.5 py-0.5 bg-ochre text-stone font-body rounded-btn">
+ <span className="ml-auto text-[12px] font-semibold px-1.5 py-0.5 bg-danger text-white font-body rounded-btn">
  {badge}
  </span>
  )
  return (
- <span className="ml-auto text-[10px] font-semibold px-1.5 py-0.5 bg-danger text-white rounded-btn">
+ <span className="ml-auto text-[12px] font-semibold px-1.5 py-0.5 bg-danger text-white rounded-btn">
  {badge}
  </span>
  )
@@ -55,8 +55,8 @@ function SideItem({ to, icon: Icon, label, badge, badgeType, disabled, id, onDis
  className={({ isActive }) =>
  `flex items-center gap-3 px-4 py-2.5 text-sm transition-colors duration-100 border-l-2 ` +
  (isActive
- ? `border-ochre bg-ochre/10 text-stone font-medium`
- : `border-transparent text-stone/70 hover:bg-sidebar-2 hover:text-stone`)
+ ? `border-ochre bg-ochre/10 text-white font-medium`
+ : `border-transparent text-white/50 hover:bg-sidebar-2 hover:text-white`)
  }
  >
  {({ isActive }) => (<>
@@ -87,15 +87,15 @@ function PlantItem() {
    className={({ isActive }) =>
     `flex items-center gap-3 px-4 py-2.5 text-sm transition-colors duration-100 border-l-2 ` +
     (isActive
-     ? `border-ochre bg-ochre/10 text-stone font-medium`
-     : `border-transparent text-stone/70 hover:bg-sidebar-2 hover:text-stone`)
+     ? `border-ochre bg-ochre/10 text-white font-medium`
+     : `border-transparent text-white/50 hover:bg-sidebar-2 hover:text-white`)
    }
   >
    {() => (<>
     <LayoutGrid size={15} strokeWidth={1.75} className="flex-shrink-0" />
     <span className="font-body flex-1">Overview</span>
     {activeCount > 0 && (
-     <span className={`ml-auto text-[10px] font-semibold px-1.5 py-0.5 ${
+     <span className={`ml-auto text-[12px] font-semibold px-1.5 py-0.5 ${
       criticalCount > 0 ? 'bg-danger text-white' : 'bg-warn/20 text-warn'
      }`}>
       {activeCount}
@@ -146,7 +146,7 @@ function PlantDropdown({ triggerRef, onClose, complianceState, currentPlant, set
  }, [onClose, triggerRef])
 
  const complianceTone =
-  complianceState === 'blocked' ? { cls: 'text-danger bg-danger/10', icon: AlertTriangle, label: 'Compliance blocked' }
+  complianceState === 'blocked' ? { cls: 'text-danger bg-danger/[0.04]', icon: AlertTriangle, label: 'Compliance blocked' }
   : complianceState === 'attention' ? { cls: 'text-warn bg-warn/10', icon: AlertTriangle, label: 'Needs attention' }
   : { cls: 'text-ok bg-ok/10', icon: ShieldCheck, label: 'Compliance clear' }
 
@@ -165,13 +165,13 @@ function PlantDropdown({ triggerRef, onClose, complianceState, currentPlant, set
       <div className="w-14 h-14 rounded-2xl bg-sidebar-3 border border-sidebar-border flex items-center justify-center mb-3 flex-shrink-0">
        <Building2 size={24} strokeWidth={1.5} className="text-ochre" />
       </div>
-      <h2 className="font-display font-bold text-stone text-[15px] leading-snug">{currentPlant.name}</h2>
-      <p className="font-body text-stone/70 text-[11px] mt-0.5">{currentPlant.code}</p>
-      <div className="flex items-center gap-1 mt-1.5 font-body text-stone/70/60 text-[10px]">
+      <h2 className="font-display font-bold text-whitetext-[15px] leading-snug">{currentPlant.name}</h2>
+      <p className="font-body text-white/50 text-[13px] mt-0.5">{currentPlant.code}</p>
+      <div className="flex items-center gap-1 mt-1.5 font-body text-white/50 text-[12px]">
        <MapPin size={9} strokeWidth={2} />
        <span>{currentPlant.region} · AM shift</span>
       </div>
-      <div className={`flex items-center gap-1 mt-2 px-2 py-0.5 rounded font-body text-[10px] font-medium ${complianceTone.cls}`}>
+      <div className={`flex items-center gap-1 mt-2 px-2 py-0.5 rounded font-body text-[12px] font-medium ${complianceTone.cls}`}>
        <complianceTone.icon size={9} strokeWidth={2.5} />
        {complianceTone.label}
       </div>
@@ -182,7 +182,7 @@ function PlantDropdown({ triggerRef, onClose, complianceState, currentPlant, set
 
      {/* Network plants */}
      <div className="px-5 pt-3 pb-4">
-      <p className="font-body text-stone/70/40 text-[10px] uppercase tracking-widest mb-2">Network plants</p>
+      <p className="font-body text-white/50 text-[12px] tracking-normal mb-2">Network plants</p>
       {AVAILABLE_PLANTS.map(p => {
        const isActive = currentPlant.id === p.id
        const modeColor = p.workerMode === 'robot' ? 'text-ochre' : p.workerMode === 'hybrid' ? 'text-warn' : 'text-ok'
@@ -196,16 +196,16 @@ function PlantDropdown({ triggerRef, onClose, complianceState, currentPlant, set
         >
          <div className="flex items-center gap-2">
           <div className="w-5 h-5 rounded bg-sidebar-3 flex items-center justify-center flex-shrink-0">
-           <Building2 size={10} strokeWidth={1.75} className={isActive ? 'text-ochre' : 'text-stone/70'} />
+           <Building2 size={10} strokeWidth={1.75} className={isActive ? 'text-ochre' : 'text-white/50'} />
           </div>
           <div className="text-left">
-           <span className={`font-body text-[11px] block leading-tight ${isActive ? 'text-stone font-medium' : 'text-stone/70'}`}>{p.name}</span>
-           <span className={`font-body text-[9px] ${modeColor}`}>{modeLabel}</span>
+           <span className={`font-body text-[13px] block leading-tight ${isActive ? 'text-white font-medium' : 'text-white/50'}`}>{p.name}</span>
+           <span className={`font-body text-[12px] ${modeColor}`}>{modeLabel}</span>
           </div>
          </div>
          {isActive
-          ? <span className="font-body text-ochre text-[10px]">Active</span>
-          : <span className="font-body text-stone/70/60 text-[10px]">Switch →</span>
+          ? <span className="font-body text-ochre text-[12px]">Active</span>
+          : <span className="font-body text-white/50 text-[12px]">Switch →</span>
          }
         </button>
        )
@@ -214,11 +214,11 @@ function PlantDropdown({ triggerRef, onClose, complianceState, currentPlant, set
        <div key={p.name} className="flex items-center justify-between py-1.5 opacity-40">
         <div className="flex items-center gap-2">
          <div className="w-5 h-5 rounded bg-sidebar-3 flex items-center justify-center flex-shrink-0">
-          <Building2 size={10} strokeWidth={1.75} className="text-stone/70" />
+          <Building2 size={10} strokeWidth={1.75} className="text-white/50" />
          </div>
-         <span className="font-body text-stone/70 text-[11px]">{p.name}</span>
+         <span className="font-body text-white/50 text-[13px]">{p.name}</span>
         </div>
-        <span className="font-body text-stone/70/60 text-[10px]">Not in pilot</span>
+        <span className="font-body text-white/50 text-[12px]">Not in pilot</span>
        </div>
       ))}
      </div>
@@ -226,7 +226,7 @@ function PlantDropdown({ triggerRef, onClose, complianceState, currentPlant, set
      {/* Demo sector plants */}
      <div className="mx-5 h-px bg-sidebar-border" />
      <div className="px-5 pt-3 pb-4">
-      <p className="font-body text-stone/70/40 text-[10px] uppercase tracking-widest mb-2">Sector demos</p>
+      <p className="font-body text-white/50 text-[12px] tracking-normal mb-2">Sector demos</p>
       {DEMO_PLANTS.map(p => {
        const isActive = currentPlant.id === p.id
        const sectorColor = SECTOR_COLORS[p.sector] ?? 'text-ghost'
@@ -237,16 +237,16 @@ function PlantDropdown({ triggerRef, onClose, complianceState, currentPlant, set
          className={`flex items-center justify-between w-full py-1.5 ${isActive ? 'cursor-default' : 'hover:opacity-80 transition-opacity'}`}>
          <div className="flex items-center gap-2">
           <div className="w-5 h-5 rounded bg-sidebar-3 flex items-center justify-center flex-shrink-0">
-           <Building2 size={10} strokeWidth={1.75} className={isActive ? 'text-ochre' : 'text-stone/70'} />
+           <Building2 size={10} strokeWidth={1.75} className={isActive ? 'text-ochre' : 'text-white/50'} />
           </div>
           <div className="text-left">
-           <span className={`font-body text-[11px] block leading-tight ${isActive ? 'text-stone font-medium' : 'text-stone/70'}`}>{p.name}</span>
-           <span className={`font-body text-[9px] ${sectorColor}`}>{sectorLabel}</span>
+           <span className={`font-body text-[13px] block leading-tight ${isActive ? 'text-white font-medium' : 'text-white/50'}`}>{p.name}</span>
+           <span className={`font-body text-[12px] ${sectorColor}`}>{sectorLabel}</span>
           </div>
          </div>
          {isActive
-          ? <span className="font-body text-ochre text-[10px]">Active</span>
-          : <span className="font-body text-stone/70/60 text-[10px]">Switch →</span>
+          ? <span className="font-body text-ochre text-[12px]">Active</span>
+          : <span className="font-body text-white/50 text-[12px]">Switch →</span>
          }
         </button>
        )
@@ -311,9 +311,9 @@ function UserDropdown({ triggerRef, onClose, viewingRole, setViewingRole }) {
      {/* Header */}
      <div className="flex flex-col items-center text-center px-5 pt-5 pb-4">
       <PersonAvatar name="J. Crocker" size={48} />
-      <h2 className="font-display font-bold text-stone text-[15px] leading-snug mt-3">J. Crocker</h2>
-      <p className="font-body text-stone/70 text-[11px] mt-0.5">Plant Director</p>
-      <p className="font-body text-stone/70/50 text-[10px] mt-0.5">Salina Campus · SL-04</p>
+      <h2 className="font-display font-bold text-whitetext-[15px] leading-snug mt-3">J. Crocker</h2>
+      <p className="font-body text-white/50 text-[13px] mt-0.5">Plant Director</p>
+      <p className="font-body text-white/35 text-[12px] mt-0.5">Salina Campus · SL-04</p>
      </div>
 
      {/* Divider */}
@@ -321,7 +321,7 @@ function UserDropdown({ triggerRef, onClose, viewingRole, setViewingRole }) {
 
      {/* Viewing as */}
      <div className="px-5 pt-3 pb-4">
-      <p className="font-body text-stone/70/40 text-[10px] uppercase tracking-widest mb-2">Viewing as</p>
+      <p className="font-body text-white/50 text-[12px] tracking-normal mb-2">Viewing as</p>
       {roles.map(r => (
        <button key={r.id} type="button"
         aria-pressed={viewingRole === r.id}
@@ -331,10 +331,10 @@ function UserDropdown({ triggerRef, onClose, viewingRole, setViewingRole }) {
         <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 transition-colors ${viewingRole === r.id ? 'bg-ochre' : 'bg-sidebar-border group-hover:bg-sidebar-3'}`} />
         <PersonAvatar name={r.name} size={20} />
         <div className="flex-1 text-left min-w-0">
-         <div className={`font-body text-[11px] font-medium truncate transition-colors ${viewingRole === r.id ? 'text-stone' : 'text-stone/70 group-hover:text-stone/80'}`}>{r.name}</div>
-         <div className="font-body text-stone/70/40 text-[10px]">{r.role}</div>
+         <div className={`font-body text-[13px] font-medium truncate transition-colors ${viewingRole === r.id ? 'text-white' : 'text-white/50 group-hover:text-white/70'}`}>{r.name}</div>
+         <div className="font-body text-white/50 text-[12px]">{r.role}</div>
         </div>
-        {viewingRole === r.id && <span className="font-body text-ochre text-[10px] flex-shrink-0">Active</span>}
+        {viewingRole === r.id && <span className="font-body text-ochre text-[12px] flex-shrink-0">Active</span>}
        </button>
       ))}
      </div>
@@ -354,12 +354,12 @@ function AgentItem({ count }) {
  return (
   <NavLink to="/agents"
    className={({ isActive }) =>
-    `flex items-center gap-3 px-4 py-2.5 w-full text-left transition-colors hover:bg-sidebar2 border-l-2 ${isActive ? 'bg-sidebar2 border-l-stone text-stone' : 'border-l-transparent text-stone/70 hover:text-stone'}`
+    `flex items-center gap-3 px-4 py-2.5 w-full text-left transition-colors hover:bg-sidebar2 border-l-2 ${isActive ? 'bg-sidebar2 border-l-danger text-white' : 'border-l-transparent text-white/50 hover:text-white'}`
    }>
    <Cpu size={15} strokeWidth={1.75} className="flex-shrink-0" />
-   <span className="font-body text-[13px]">Agents</span>
+   <span className="font-body text-[15px]">Agents</span>
    {count > 0 && (
-    <span className="ml-auto text-[10px] font-semibold px-1.5 py-0.5 bg-ochre text-stone rounded-btn">
+    <span className="ml-auto text-[12px] font-semibold px-1.5 py-0.5 bg-danger text-white rounded-btn">
      {count}
     </span>
    )}
@@ -380,7 +380,7 @@ export default function Sidebar() {
  const allergenSigned = checklistSigned?.['allergen'] || !!allergenOverride
  const complianceState = currentPlant?.id === 'ks' ? 'clear' : (!blockingEvidenceUploaded ? 'blocked' : !allergenSigned ? 'attention' : 'clear')
  const complianceLabel = complianceState === 'blocked' ? 'Blocked' : complianceState === 'attention' ? 'Attention' : 'Clear'
- const complianceColor = complianceState === 'blocked' ? 'text-danger bg-danger/10' : complianceState === 'attention' ? 'text-warn bg-warn/10' : 'text-ok bg-ok/10'
+ const complianceColor = complianceState === 'blocked' ? 'text-danger bg-danger/[0.04]' : complianceState === 'attention' ? 'text-warn bg-warn/10' : 'text-ok bg-ok/10'
  // Standing compliance items (2 always present + 1 evidence gap if not yet uploaded)
  // plus dynamic safety events the director hasn't seen
  const standingCount = blockingEvidenceUploaded ? 2 : 3
@@ -404,10 +404,10 @@ export default function Sidebar() {
  <path d="M8 13 L14 13 L14 7 Z" fill="#C17D2A"/>
  </svg>
  <div>
- <div className="font-display font-bold text-stone text-base tracking-tight leading-none">
+ <div className="font-display font-bold text-whitetext-base tracking-tight leading-none">
  takorin
  </div>
- <div className="font-body text-stone/70 text-[10px] mt-0.5">
+ <div className="font-body text-white/50 text-[12px] mt-0.5">
  Total intelligence
  </div>
  </div>
@@ -421,15 +421,15 @@ export default function Sidebar() {
   className="flex items-center gap-2.5 px-4 py-3 border-b border-sidebar-border w-full text-left hover:bg-sidebar2 transition-colors"
  >
   <div className="w-8 h-8 rounded-full bg-sidebar-2 flex items-center justify-center flex-shrink-0">
-  <Building2 size={15} className="text-stone/70" strokeWidth={1.75} />
+  <Building2 size={15} className="text-white/50" strokeWidth={1.75} />
   </div>
   <div className="flex-1 min-w-0">
-  <div className="font-body text-stone text-[13px] font-medium truncate">{currentPlant?.name || 'Salina Campus'}</div>
-  <div className="font-body text-stone/70 text-[10px]">Plant ID {currentPlant?.code || 'SL-04'}</div>
+  <div className="font-body text-whitetext-[15px] font-medium truncate">{currentPlant?.name || 'Salina Campus'}</div>
+  <div className="font-body text-white/50 text-[12px]">Plant ID {currentPlant?.code || 'SL-04'}</div>
   </div>
   <ChevronDown
   size={13}
-  className={`text-stone/70 flex-shrink-0 transition-transform duration-200 ease-spring ${plantOpen ? 'rotate-180' : ''}`}
+  className={`text-white/50 flex-shrink-0 transition-transform duration-200 ease-spring ${plantOpen ? 'rotate-180' : ''}`}
   />
  </button>
 
@@ -455,17 +455,17 @@ export default function Sidebar() {
  {/* ── Supervisor: 3 screens (ShiftIQ contains Handoff/Fleet/Allocation as tabs) */}
  {viewingRole === 'supervisor' && (
   <>
-   <div className="px-4 pt-3 pb-1 text-[10px] tracking-widest uppercase text-stone/40 font-body font-medium">Operational</div>
+   <div className="px-4 pt-3 pb-1 text-[12px] tracking-normal text-white/50 font-body font-medium">Operational</div>
    <SideItem to="/shift"  id="shift"  icon={Activity} label="ShiftIQ"      badge="3" badgeType="alert" />
    <AgentItem count={agentPendingCount} />
-   <div className="px-4 pt-4 pb-1 text-[10px] tracking-widest uppercase text-stone/40 font-body font-medium">Causality</div>
+   <div className="px-4 pt-4 pb-1 text-[12px] tracking-normal text-white/50 font-body font-medium">Causality</div>
    <SideItem to="/impact" id="impact" icon={CircleDot} label="Outcomes" badge={null} />
-   <div className="px-4 pt-4 pb-1 text-[10px] tracking-widest uppercase text-stone/40 font-body font-medium">Activity</div>
+   <div className="px-4 pt-4 pb-1 text-[12px] tracking-normal text-white/50 font-body font-medium">Activity</div>
    <button type="button" onClick={() => setNotifOpen(true)}
-    className="flex items-center gap-3 px-4 py-2.5 w-full text-left transition-colors hover:bg-sidebar2 text-stone/80">
+    className="flex items-center gap-3 px-4 py-2.5 w-full text-left transition-colors hover:bg-sidebar2 text-white/70">
     <Bell size={15} strokeWidth={1.75} className="flex-shrink-0" />
-    <span className="font-body text-[13px]">Notifications</span>
-    <span className="ml-auto text-[10px] font-semibold px-1.5 py-0.5 bg-danger text-white rounded-btn">4</span>
+    <span className="font-body text-[15px]">Notifications</span>
+    <span className="ml-auto text-[12px] font-semibold px-1.5 py-0.5 bg-danger text-white rounded-btn">4</span>
    </button>
    {notifOpen && <NotificationCenter onClose={() => setNotifOpen(false)} />}
   </>
@@ -476,18 +476,18 @@ export default function Sidebar() {
   <>
    <PlantItem />
 
-   <div className="px-4 pt-3 pb-1 text-[10px] tracking-widest uppercase text-stone/40 font-body font-medium">Operations</div>
+   <div className="px-4 pt-3 pb-1 text-[12px] tracking-normal text-white/50 font-body font-medium">Operations</div>
    {modules.map(m => <SideItem key={m.id} to={m.path} id={m.id} {...m} />)}
    <AgentItem count={agentPendingCount} />
    <SideItem to="/impact" id="impact" icon={CircleDot} label="Outcomes" badge={null} />
 
-   <div className="px-4 pt-4 pb-1 text-[10px] tracking-widest uppercase text-stone/40 font-body font-medium">Platform</div>
+   <div className="px-4 pt-4 pb-1 text-[12px] tracking-normal text-white/50 font-body font-medium">Platform</div>
    <SideItem to="/batch"      id="batch"      icon={FlaskConical}    label="Batches"    badge={null} />
    <SideItem to="/compliance" id="compliance" icon={Scale}           label="Compliance" badge={null} />
    <SideItem to="/hierarchy"  id="hierarchy"  icon={LayoutDashboard} label="Site"       badge={null} />
    <SideItem to="/knowledge"  id="knowledge"  icon={BookOpen}        label="Knowledge"  badge={null} />
 
-   <div className="px-4 pt-4 pb-1 text-[10px] tracking-widest uppercase text-stone/40 font-body font-medium">Extended</div>
+   <div className="px-4 pt-4 pb-1 text-[12px] tracking-normal text-white/50 font-body font-medium">Extended</div>
    <SideItem to="/execution" id="execution" icon={Workflow} label="Execution" badge={null} />
    {currentPlant?.sector === 'pharma' && (
     <SideItem to="/records"  id="records"  icon={FileLock2}  label="Records"     badge={null} />
@@ -499,16 +499,16 @@ export default function Sidebar() {
     <SideItem to="/equipment" id="equipment" icon={ScanLine} label="Equipment" badge={null} />
    )}
 
-   <div className="px-4 pt-4 pb-1 text-[10px] tracking-widest uppercase text-stone/40 font-body font-medium">System</div>
+   <div className="px-4 pt-4 pb-1 text-[12px] tracking-normal text-white/50 font-body font-medium">System</div>
    <SideItem to="/integration" id="integration" icon={Network} label="Integrations" badge={null} />
    <SideItem to="/readiness"   id="readiness"   icon={Gauge}   label="Readiness"    badge={null} />
 
-   <div className="px-4 pt-4 pb-1 text-[10px] tracking-widest uppercase text-stone/40 font-body font-medium">Activity</div>
+   <div className="px-4 pt-4 pb-1 text-[12px] tracking-normal text-white/50 font-body font-medium">Activity</div>
    <button type="button" onClick={() => setNotifOpen(true)}
-    className="flex items-center gap-3 px-4 py-2.5 w-full text-left transition-colors hover:bg-sidebar2 text-stone/80">
+    className="flex items-center gap-3 px-4 py-2.5 w-full text-left transition-colors hover:bg-sidebar2 text-white/70">
     <Bell size={15} strokeWidth={1.75} className="flex-shrink-0" />
-    <span className="font-body text-[13px]">Notifications</span>
-    <span className="ml-auto text-[10px] font-semibold px-1.5 py-0.5 bg-danger text-white rounded-btn">4</span>
+    <span className="font-body text-[15px]">Notifications</span>
+    <span className="ml-auto text-[12px] font-semibold px-1.5 py-0.5 bg-danger text-white rounded-btn">4</span>
    </button>
    {notifOpen && <NotificationCenter onClose={() => setNotifOpen(false)} />}
   </>
@@ -519,18 +519,18 @@ export default function Sidebar() {
  {/* Worker mode + Compliance */}
  <div className="px-4 py-2.5 border-t border-sidebar-border">
  <div className="flex items-center justify-between mb-1.5">
-  <span className="font-body text-stone/70/60 text-[10px]">Workforce</span>
-  <span className={`font-body font-medium text-[10px] ${WORKER_MODE_COLORS[workerMode || 'human']}`}>
+  <span className="font-body text-white/50 text-[12px]">Workforce</span>
+  <span className={`font-body font-medium text-[12px] ${WORKER_MODE_COLORS[workerMode || 'human']}`}>
    {workerMode === 'robot' ? 'Robotic' : workerMode === 'hybrid' ? 'Hybrid' : 'Human'}
   </span>
  </div>
  <div className="flex items-center justify-between">
- <span className="font-body text-stone/70 text-[10px]">Compliance</span>
- <span className={`font-body font-medium text-[10px] px-2 py-0.5 ${complianceColor}`}>
+ <span className="font-body text-white/50 text-[12px]">Compliance</span>
+ <span className={`font-body font-medium text-[12px] px-2 py-0.5 ${complianceColor}`}>
  {complianceLabel}
  </span>
  </div>
- <div className="font-body text-stone/70 text-[10px] mt-0.5 leading-relaxed">
+ <div className="font-body text-white/50 text-[12px] mt-0.5 leading-relaxed">
  {complianceState === 'blocked' && 'CAPA-2604-006 evidence missing · FDA export blocked'}
  {complianceState === 'attention' && 'Allergen changeover log unsigned · Line 4'}
  {complianceState === 'clear' && 'No blocking compliance items · 18d to FDA inspection'}
@@ -546,12 +546,12 @@ export default function Sidebar() {
  >
   <PersonAvatar name="J. Crocker" size={28} />
   <div className="flex-1 min-w-0">
-  <div className="font-body text-stone text-[12px] font-medium">J. Crocker</div>
-  <div className="font-body text-stone/70 text-[10px]">
+  <div className="font-body text-whitetext-[14px] font-medium">J. Crocker</div>
+  <div className="font-body text-white/50 text-[12px]">
    {viewingRole === 'supervisor' ? <span className="text-ochre">Viewing as Kowalski</span> : viewingRole === 'operator-reyes' ? <span className="text-ochre">Viewing as C. Reyes</span> : viewingRole === 'operator-okonkwo' ? <span className="text-ochre">Viewing as P. Okonkwo</span> : 'Plant Director'}
   </div>
   </div>
-  <ChevronDown size={13} className={`text-stone/70 flex-shrink-0 transition-transform duration-200 ease-spring ${userOpen ? 'rotate-180' : ''}`} />
+  <ChevronDown size={13} className={`text-white/50 flex-shrink-0 transition-transform duration-200 ease-spring ${userOpen ? 'rotate-180' : ''}`} />
  </button>
  {userOpen && (
   <UserDropdown
@@ -565,7 +565,7 @@ export default function Sidebar() {
  {/* Toast */}
  {toast && (
  <div className="fixed bottom-4 left-4 z-50 bg-sidebar border border-sidebar-border px-3 py-2 slide-in">
- <span className="font-body text-stone/70 text-[11px]">{toast} — not available in pilot</span>
+ <span className="font-body text-white/50 text-[13px]">{toast} — not available in pilot</span>
  </div>
  )}
  </aside>

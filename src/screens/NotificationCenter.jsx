@@ -12,10 +12,10 @@ const INTELLIGENCE_SIGNALS = [
 
 // Type → visual style mapping
 const TYPE = {
-  safety:       { label: 'Safety',       chip: 'bg-danger/10 text-danger', bar: 'border-l-danger', row: 'bg-danger/[0.03]' },
+  safety:       { label: 'Safety',       chip: 'bg-danger/[0.04] text-danger', bar: 'border-l-danger', row: 'bg-danger/[0.03]' },
   near_miss:    { label: 'Near miss',    chip: 'bg-warn/10 text-warn',    bar: 'border-l-warn',   row: 'bg-warn/[0.02]' },
-  override:     { label: 'Override',     chip: 'bg-danger/10 text-danger', bar: 'border-l-danger', row: 'bg-danger/[0.03]' },
-  escalation:   { label: 'Escalation',   chip: 'bg-danger/10 text-danger', bar: 'border-l-danger', row: '' },
+  override:     { label: 'Override',     chip: 'bg-danger/[0.04] text-danger', bar: 'border-l-danger', row: 'bg-danger/[0.03]' },
+  escalation:   { label: 'Escalation',   chip: 'bg-danger/[0.04] text-danger', bar: 'border-l-danger', row: '' },
   compliance:   { label: 'Compliance',   chip: 'bg-warn/10 text-warn',    bar: 'border-l-warn',   row: '' },
   capa:         { label: 'CAPA',         chip: 'bg-warn/10 text-warn',    bar: 'border-l-warn',   row: '' },
   evidence:     { label: 'Evidence',     chip: 'bg-ok/10 text-ok',        bar: 'border-l-ok',     row: '' },
@@ -65,42 +65,53 @@ const sampleActivity = [
   },
 ]
 
-function NotifItem({ item, read, onRead, onNavigate }) {
- const s = TYPE[item.type] || TYPE.compliance
- const isRead = read.has(item.id)
+// Map border-l-* to bg-* for the top accent bar
+function barFill(barCls) {
+  return barCls.replace('border-l-', 'bg-')
+}
 
- return (
-  <div className={`border-b border-rule2 border-l-2 ${s.bar} ${s.row} ${isRead ? 'opacity-40' : ''} transition-opacity duration-200`}>
-   <div className="px-4 py-3 flex gap-3">
-    <div className="flex-1 min-w-0">
-     <div className="flex items-center gap-2 mb-1">
-      <span className={`font-body font-medium text-[10px] px-1.5 py-px rounded-btn ${s.chip}`}>{s.label}</span>
-      <span className="font-body text-ghost text-[10px]">{item.time}</span>
-     </div>
-     <div className="font-body font-medium text-ink text-[12px] leading-snug mb-0.5">{item.title}</div>
-     {item.body && <div className="font-body text-muted text-[11px] leading-relaxed">{item.body}</div>}
-     {item.link && (
-      <button
-       type="button"
-       onClick={() => onNavigate(item.link)}
-       className="font-body text-int text-[10px] mt-1.5 flex items-center gap-1 transition-colors hover:text-ink"
-      ><ArrowRight size={12} />{item.linkLabel || 'Open in module'}
-      </button>
-     )}
+function NotifItem({ item, read, onRead, onNavigate }) {
+  const s = TYPE[item.type] || TYPE.compliance
+  const isRead = read.has(item.id)
+  const hasFooter = item.link || !isRead
+
+  return (
+    <div
+      className={`bg-stone border border-rule rounded-lg overflow-hidden transition-opacity duration-200 ${isRead ? 'opacity-40' : ''}`}
+      style={{ boxShadow: isRead ? 'none' : '0 1px 3px rgba(16,24,40,0.06)' }}
+    >
+      {/* Urgency accent bar — article: visual hierarchy first */}
+      <div className={`h-[3px] w-full ${barFill(s.bar)}`} />
+      {/* Header: type chip + timestamp */}
+      <div className="flex items-center justify-between px-4 pt-3 pb-1">
+        <span className={`font-body font-medium text-[12px] px-1.5 py-px rounded-btn ${s.chip}`}>{s.label}</span>
+        <span className="font-body text-ghost text-[12px]">{item.time}</span>
+      </div>
+      {/* Body: title + description */}
+      <div className="px-4 pb-3">
+        <div className="font-body font-medium text-ink text-[14px] leading-snug">{item.title}</div>
+        {item.body && <div className="font-body text-muted text-[13px] leading-relaxed mt-1">{item.body}</div>}
+      </div>
+      {/* Footer: single primary CTA + dismiss — article: one action per card */}
+      {hasFooter && (
+        <div className="flex items-center justify-between px-4 py-2.5 border-t border-rule2/60">
+          {item.link ? (
+            <button type="button" onClick={() => onNavigate(item.link)}
+              className="font-body text-int text-[12px] flex items-center gap-1 hover:text-ink transition-colors">
+              <ArrowRight size={10} />{item.linkLabel || 'Open in module'}
+            </button>
+          ) : <span />}
+          {!isRead && (
+            <button type="button" onClick={() => onRead(item.id)}
+              className="font-body text-ghost text-[12px] hover:text-muted transition-colors"
+              aria-label="Mark as read">
+              Mark read
+            </button>
+          )}
+        </div>
+      )}
     </div>
-    {!isRead && (
-     <button
-      type="button"
-      onClick={() => onRead(item.id)}
-      className="font-body text-ghost text-[10px] hover:text-muted transition-colors flex-shrink-0 self-start pt-0.5"
-      aria-label="Mark as read"
-     >
-      Mark read
-     </button>
-    )}
-   </div>
-  </div>
- )
+  )
 }
 
 export default function NotificationCenter({ onClose }) {
@@ -178,7 +189,7 @@ export default function NotificationCenter({ onClose }) {
    {/* Header */}
    <div className="px-4 py-3 bg-ink flex-shrink-0">
     <div className="font-display font-bold text-stone text-[15px] leading-tight">Notifications</div>
-    <div className="font-body text-stone/70 text-[11px] mt-0.5">
+    <div className="font-body text-stone/70 text-[13px] mt-0.5">
      {totalUnread > 0 ? `${totalUnread} unread · ` : 'All read · '}J. Crocker · April 16, 2026
     </div>
    </div>
@@ -192,9 +203,9 @@ export default function NotificationCenter({ onClose }) {
       onClick={() => setActiveFilter(f)}
       className={`flex items-center gap-1.5 py-1 border-b-2 transition-colors ${activeFilter === f ? 'border-b-ochre' : 'border-b-transparent'}`}
      >
-      <span className={`font-body text-[11px] ${activeFilter === f ? 'text-ink' : 'text-muted'}`}>{f}</span>
+      <span className={`font-body text-[13px] ${activeFilter === f ? 'text-ink' : 'text-muted'}`}>{f}</span>
       {counts[f] > 0 && (
-       <span className="font-body text-muted text-[10px] px-1.5 py-px bg-stone3 rounded-btn">{counts[f]}</span>
+       <span className="font-body text-muted text-[12px] px-1.5 py-px bg-stone3 rounded-btn">{counts[f]}</span>
       )}
      </button>
     ))}
@@ -203,27 +214,37 @@ export default function NotificationCenter({ onClose }) {
    <div className="flex-1 overflow-y-auto">
    {/* Intelligence summary — always shown on All tab */}
    {activeFilter === 'All' && (
-    <div className="border-b-2 border-b-ochre/30 bg-stone">
+    <div className="border-b border-rule2 bg-stone2">
      <div className="px-4 py-2.5 border-b border-rule2 flex items-center gap-2">
       <Brain size={11} strokeWidth={1.75} className="text-muted" />
-      <span className="font-body text-[10px] uppercase tracking-widest text-muted font-medium">Intelligence summary</span>
-      <span className="font-body text-ghost text-[10px] ml-auto">Updated 06:42</span>
+      <span className="font-body text-[12px] tracking-normal text-muted font-medium">Intelligence summary</span>
+      <span className="font-body text-ghost text-[12px] ml-auto">Updated 06:42</span>
      </div>
-     {INTELLIGENCE_SIGNALS.map((sig, i) => (
-      <div key={i} className={`flex items-start gap-3 px-4 py-3 border-b border-rule2 last:border-b-0 ${sig.tone === 'danger' ? 'bg-danger/[0.02]' : ''}`}>
-       <div className={`display-num text-[13px] font-bold w-8 flex-shrink-0 tabular-nums pt-px ${
-        sig.confidence >= 85 ? 'text-danger' : sig.confidence >= 75 ? 'text-warn' : 'text-muted'
-       }`}>{sig.confidence}%</div>
-       <div className="flex-1 min-w-0">
-        <div className={`font-body font-medium text-[12px] leading-snug mb-0.5 ${sig.tone === 'danger' ? 'text-ink' : 'text-ink'}`}>{sig.label}</div>
-        <div className="font-body text-ghost text-[10px] leading-snug mb-1">{sig.detail}</div>
-        <button type="button" onClick={() => go(sig.route)}
-         className="font-body text-int text-[10px] flex items-center gap-1 hover:text-ink transition-colors">
-         <ArrowRight size={9} />Open in {sig.routeLabel}
-        </button>
+     <div className="px-3 py-3 space-y-2.5">
+      {INTELLIGENCE_SIGNALS.map((sig, i) => (
+       <div key={i}
+        className={`bg-stone border border-rule rounded-lg overflow-hidden ${sig.tone === 'danger' ? 'border-l-[5px] border-l-danger' : 'border-l-[3px] border-l-warn'}`}
+        style={{ boxShadow: '0 1px 3px rgba(16,24,40,0.06)' }}>
+        {/* Body: confidence + label + detail */}
+        <div className="px-4 py-3 flex items-start gap-3">
+         <div className={`font-display font-bold text-[22px] leading-none tabular-nums flex-shrink-0 pt-0.5 ${
+          sig.confidence >= 85 ? 'text-danger' : sig.confidence >= 75 ? 'text-warn' : 'text-muted'
+         }`}>{sig.confidence}%</div>
+         <div className="flex-1 min-w-0">
+          <div className="font-body font-medium text-ink text-[14px] leading-snug">{sig.label}</div>
+          <div className="font-body text-ghost text-[12px] leading-snug mt-0.5">{sig.detail}</div>
+         </div>
+        </div>
+        {/* Footer: single CTA */}
+        <div className="px-4 py-2.5 border-t border-rule2/60">
+         <button type="button" onClick={() => go(sig.route)}
+          className="font-body text-int text-[12px] flex items-center gap-1 hover:text-ink transition-colors">
+          <ArrowRight size={9} />Open in {sig.routeLabel}
+         </button>
+        </div>
        </div>
-      </div>
-     ))}
+      ))}
+     </div>
     </div>
    )}
 
@@ -231,16 +252,18 @@ export default function NotificationCenter({ onClose }) {
    {filteredActivity.length > 0 && (
     <>
      <div className="px-4 py-2 bg-stone2 border-b border-rule2">
-      <span className="font-body text-[10px] uppercase tracking-widest text-muted font-medium">Activity</span>
+      <span className="font-body text-[12px] tracking-normal text-muted font-medium">Activity</span>
      </div>
-     {filteredActivity.map(item => (
-      <NotifItem key={item.id} item={item} read={read} onRead={markRead} onNavigate={go} />
-     ))}
+     <div className="px-3 py-3 space-y-2.5">
+      {filteredActivity.map(item => (
+       <NotifItem key={item.id} item={item} read={read} onRead={markRead} onNavigate={go} />
+      ))}
+     </div>
     </>
    )}
 
    {filteredActivity.length === 0 && (
-    <div className="px-4 py-10 text-center font-body text-ghost text-[12px]">
+    <div className="px-4 py-10 text-center font-body text-ghost text-[14px]">
      {activeFilter === 'All' ? 'No notifications.' : `No ${activeFilter.toLowerCase()} events today.`}
     </div>
    )}

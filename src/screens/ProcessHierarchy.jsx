@@ -188,8 +188,8 @@ function ScoreBar({ score, width = 60 }) {
 function EnvChip({ label, val, tone }) {
   return (
     <div className={`flex items-center gap-1 px-2 py-1 border ${tone === 'ok' ? 'border-ok/20 bg-ok/[0.04]' : 'border-warn/30 bg-warn/[0.04]'}`}>
-      <span className="font-body text-ghost text-[9px] uppercase tracking-widest">{label}</span>
-      <span className={`font-body font-medium text-[11px] tabular-nums ${tone === 'ok' ? 'text-ok' : 'text-warn'}`}>{val}</span>
+      <span className="font-body text-ghost text-[12px] tracking-normal">{label}</span>
+      <span className={`font-body font-medium text-[13px] tabular-nums ${tone === 'ok' ? 'text-ok' : 'text-warn'}`}>{val}</span>
     </div>
   )
 }
@@ -203,10 +203,10 @@ function VesselGrid({ vessels }) {
         return (
           <div key={v.id} className={`bg-stone px-3 py-2.5 ${v.alert ? 'bg-warn/[0.03]' : ''}`}>
             <div className="flex items-baseline justify-between gap-1 mb-1">
-              <span className="font-body font-medium text-ink text-[11px]">{v.id}</span>
-              <span className={`font-body text-[10px] tabular-nums ${toneColor}`}>{v.confidence}%</span>
+              <span className="font-body font-medium text-ink text-[13px]">{v.id}</span>
+              <span className={`font-body text-[12px] tabular-nums ${toneColor}`}>{v.confidence}%</span>
             </div>
-            <div className="font-body text-ghost text-[9px] truncate">{v.batch}</div>
+            <div className="font-body text-ghost text-[12px] truncate">{v.batch}</div>
             <div className="h-0.5 bg-rule2 mt-1.5 mb-1">
               <div className={`h-full ${isComplete ? 'bg-ok' : 'bg-ochre/60'}`}
                 style={{ width: `${Math.min(100, (v.daysElapsed / 185) * 100)}%` }} />
@@ -229,8 +229,8 @@ function Breadcrumb({ crumbs, onNavigate }) {
         <div key={i} className="flex items-center gap-1.5">
           {i > 0 && <ChevronRight size={10} className="text-ghost flex-shrink-0" />}
           {i < crumbs.length - 1
-            ? <button type="button" onClick={() => onNavigate(i)} className="font-body text-muted text-[11px] hover:text-ink transition-colors">{c}</button>
-            : <span className="font-display font-bold text-ink text-[13px]">{c}</span>
+            ? <button type="button" onClick={() => onNavigate(i)} className="font-body text-muted text-[13px] hover:text-ink transition-colors">{c}</button>
+            : <span className="font-display font-bold text-ink text-[15px]">{c}</span>
           }
         </div>
       ))}
@@ -245,7 +245,7 @@ function CausalPanel({ zone, building }) {
     <div className="flex flex-col items-center justify-center h-full px-8 text-center gap-4">
       <Activity size={24} className="text-ghost/40" strokeWidth={1.5} />
       <div>
-        <div className="font-body text-ghost text-[11px] leading-relaxed">Select a zone to see what's driving it</div>
+        <div className="font-body text-ghost text-[13px] leading-relaxed">Select a zone to see what's driving it</div>
       </div>
     </div>
   )
@@ -253,7 +253,7 @@ function CausalPanel({ zone, building }) {
   const causal = CAUSAL_MAP[zone.id] ?? DEFAULT_CAUSAL
   const allVessels = (zone.processes ?? []).flatMap(p => p.vessels ?? [])
   const pressureZone = zone.score < 80
-  const statusLabel = zone.score >= 90 ? 'CLEAR' : zone.score >= 80 ? 'WATCH' : zone.score >= 70 ? 'AT RISK' : 'CRITICAL'
+  const statusLabel = zone.score >= 90 ? 'Clear' : zone.score >= 80 ? 'Watch' : zone.score >= 70 ? 'At risk' : 'Critical'
   const statusColor = zone.score >= 90 ? 'text-ok' : zone.score >= 80 ? 'text-ochre' : zone.score >= 70 ? 'text-warn' : 'text-danger'
 
   return (
@@ -262,28 +262,28 @@ function CausalPanel({ zone, building }) {
       <div className="flex-shrink-0 px-5 py-4 border-b border-rule2 bg-stone">
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
-            <div className="font-body text-ghost text-[9px] uppercase tracking-widest mb-0.5">{building.name} · {building.label}</div>
+            <div className="font-body text-ghost text-[12px] tracking-normal mb-0.5">{building.name} · {building.label}</div>
             <div className="font-display font-bold text-ink text-[18px] leading-none mb-1">{zone.label}</div>
-            <div className="font-body text-ghost text-[10px]">{zone.name} · {zone.vessels} vessels · {zone.activeBatches} active batches</div>
+            <div className="font-body text-ghost text-[12px]">{zone.name} · {zone.vessels} vessels · {zone.activeBatches} active batches</div>
           </div>
           <div className="text-right flex-shrink-0">
             <div className={`font-display font-bold display-num text-[32px] leading-none ${scoreColor(zone.score)}`}>{zone.score}</div>
-            <div className={`font-body font-bold text-[10px] uppercase tracking-widest ${statusColor}`}>{statusLabel}</div>
+            <div className={`font-body font-bold text-[12px] tracking-normal ${statusColor}`}>{statusLabel}</div>
           </div>
         </div>
         {zone.alert && (
           <div className="flex items-start gap-2 mt-3 px-3 py-2.5 bg-warn/[0.06] border border-warn/30 border-l-4 border-l-warn">
             <AlertTriangle size={10} className="text-warn flex-shrink-0 mt-0.5" strokeWidth={2} />
-            <span className="font-body text-warn text-[10px] leading-snug">{zone.alert.msg}</span>
+            <span className="font-body text-warn text-[12px] leading-snug">{zone.alert.msg}</span>
           </div>
         )}
         {causal.confidence != null && (
           <div className="mt-2.5 flex items-center gap-2">
-            <span className="font-body text-ghost text-[9px]">Confidence</span>
+            <span className="font-body text-ghost text-[12px]">Confidence</span>
             <div className="flex-1 h-0.5 bg-rule2">
               <div className={`h-full ${causal.confidence >= 70 ? 'bg-ok' : causal.confidence >= 50 ? 'bg-warn' : 'bg-danger'}`} style={{ width: `${causal.confidence}%` }} />
             </div>
-            <span className={`font-body text-[9px] tabular-nums ${causal.confidence >= 70 ? 'text-ok' : causal.confidence >= 50 ? 'text-warn' : 'text-danger'}`}>{causal.confidence}%</span>
+            <span className={`font-body text-[12px] tabular-nums ${causal.confidence >= 70 ? 'text-ok' : causal.confidence >= 50 ? 'text-warn' : 'text-danger'}`}>{causal.confidence}%</span>
           </div>
         )}
       </div>
@@ -293,19 +293,19 @@ function CausalPanel({ zone, building }) {
         {/* Causal chain — upstream → current → downstream */}
         {(causal.upstream.length > 0 || causal.downstream.length > 0) && (
           <div className="px-5 py-4 border-b border-rule2">
-            <div className="font-body text-ghost text-[9px] uppercase tracking-widest mb-3">Cause chain</div>
+            <div className="font-body text-ghost text-[12px] tracking-normal mb-3">Cause chain</div>
 
             {causal.upstream.length > 0 && (
               <div className="mb-3">
-                <div className="font-body text-ghost text-[9px] mb-1.5 flex items-center gap-1">
+                <div className="font-body text-ghost text-[12px] mb-1.5 flex items-center gap-1">
                   <ArrowDown size={8} className="text-ghost rotate-180" />Upstream contributors
                 </div>
                 <div className="space-y-1.5">
                   {causal.upstream.map((u, i) => (
                     <div key={i} className={`flex items-start gap-3 px-3 py-2.5 border border-l-4 ${u.tone === 'warn' ? 'border-warn/30 border-l-warn bg-warn/[0.03]' : u.tone === 'danger' ? 'border-danger/30 border-l-danger bg-danger/[0.03]' : 'border-rule2 border-l-ok'}`}>
                       <div className="flex-1 min-w-0">
-                        <div className="font-body font-medium text-ink text-[10px] leading-snug">{u.label}</div>
-                        <div className="font-body text-muted text-[9px] leading-snug mt-0.5">{u.detail}</div>
+                        <div className="font-body font-medium text-ink text-[12px] leading-snug">{u.label}</div>
+                        <div className="font-body text-muted text-[12px] leading-snug mt-0.5">{u.detail}</div>
                       </div>
                     </div>
                   ))}
@@ -316,21 +316,21 @@ function CausalPanel({ zone, building }) {
             {/* Current zone marker */}
             <div className="flex items-center gap-2 py-2 px-3 bg-stone2 border border-rule2">
               <div className={`w-2 h-2 rounded-full flex-shrink-0 ${scoreBg(zone.score)}`} />
-              <span className="font-body font-medium text-ink text-[11px]">{zone.label}</span>
-              <span className={`font-body font-bold text-[10px] ml-auto ${statusColor}`}>{statusLabel} · {zone.score}</span>
+              <span className="font-body font-medium text-ink text-[13px]">{zone.label}</span>
+              <span className={`font-body font-bold text-[12px] ml-auto ${statusColor}`}>{statusLabel} · {zone.score}</span>
             </div>
 
             {causal.downstream.length > 0 && (
               <div className="mt-3">
-                <div className="font-body text-ghost text-[9px] mb-1.5 flex items-center gap-1">
+                <div className="font-body text-ghost text-[12px] mb-1.5 flex items-center gap-1">
                   <ArrowDown size={8} className="text-ghost" />Downstream exposure
                 </div>
                 <div className="space-y-1.5">
                   {causal.downstream.map((d, i) => (
                     <div key={i} className={`flex items-start gap-3 px-3 py-2.5 border border-l-4 ${d.risk === 'high' ? 'border-danger/20 border-l-danger bg-danger/[0.02]' : d.risk === 'medium' ? 'border-warn/20 border-l-warn' : 'border-rule2 border-l-ok/40'}`}>
                       <div className="flex-1 min-w-0">
-                        <div className="font-body font-medium text-ink text-[10px] leading-snug">{d.label}</div>
-                        <div className="font-body text-muted text-[9px] leading-snug mt-0.5">{d.detail}</div>
+                        <div className="font-body font-medium text-ink text-[12px] leading-snug">{d.label}</div>
+                        <div className="font-body text-muted text-[12px] leading-snug mt-0.5">{d.detail}</div>
                       </div>
                     </div>
                   ))}
@@ -341,7 +341,7 @@ function CausalPanel({ zone, building }) {
             {causal.propagation && (
               <div className="mt-3 flex items-start gap-2 px-3 py-2.5 bg-danger/[0.04] border border-danger/20">
                 <Zap size={10} className="text-danger flex-shrink-0 mt-0.5" strokeWidth={2} />
-                <span className="font-body text-danger text-[9px] leading-snug">{causal.propagation}</span>
+                <span className="font-body text-danger text-[12px] leading-snug">{causal.propagation}</span>
               </div>
             )}
           </div>
@@ -351,7 +351,7 @@ function CausalPanel({ zone, building }) {
         {allVessels.length > 0 && (
           <div className="border-b border-rule2">
             <div className="px-5 py-2.5 bg-stone2 border-b border-rule2">
-              <span className="font-body text-ghost text-[9px] uppercase tracking-widest">{allVessels.length} vessels</span>
+              <span className="font-body text-ghost text-[12px] tracking-normal">{allVessels.length} vessels</span>
             </div>
             <VesselGrid vessels={allVessels} />
           </div>
@@ -360,7 +360,7 @@ function CausalPanel({ zone, building }) {
         {/* Environment */}
         {(zone.temperature || zone.humidity) && (
           <div className="px-5 py-3 border-b border-rule2 flex items-center gap-3">
-            <span className="font-body text-ghost text-[9px] uppercase tracking-widest">Environment</span>
+            <span className="font-body text-ghost text-[12px] tracking-normal">Environment</span>
             {zone.temperature && <EnvChip label="Temp" val={zone.temperature.val} tone={zone.temperature.tone} />}
             {zone.humidity    && <EnvChip label="RH"   val={zone.humidity.val}    tone={zone.humidity.tone} />}
           </div>
@@ -369,12 +369,12 @@ function CausalPanel({ zone, building }) {
         {/* Recommended actions */}
         {causal.actions.length > 0 && (
           <div className="px-5 py-4">
-            <div className="font-body text-ghost text-[9px] uppercase tracking-widest mb-2">Recommended actions</div>
+            <div className="font-body text-ghost text-[12px] tracking-normal mb-2">Recommended actions</div>
             <div className="space-y-2">
               {causal.actions.map((a, i) => (
                 <div key={i} className="border border-rule2 px-4 py-3">
-                  <div className="font-body font-medium text-ink text-[11px] mb-0.5">{a.label}</div>
-                  <div className="font-body text-ghost text-[9px] leading-snug">{a.consequence}</div>
+                  <div className="font-body font-medium text-ink text-[13px] mb-0.5">{a.label}</div>
+                  <div className="font-body text-ghost text-[12px] leading-snug">{a.consequence}</div>
                 </div>
               ))}
             </div>
@@ -382,7 +382,7 @@ function CausalPanel({ zone, building }) {
         )}
 
         {allVessels.length === 0 && causal.upstream.length === 0 && causal.downstream.length === 0 && (
-          <div className="px-5 py-6 font-body text-ghost text-[11px]">No pressure detected in this zone.</div>
+          <div className="px-5 py-6 font-body text-ghost text-[13px]">No pressure detected in this zone.</div>
         )}
       </div>
     </div>
@@ -396,13 +396,13 @@ function ReasoningPanel({ zone, building }) {
     <div className="flex flex-col items-center justify-center h-full px-8 text-center gap-4">
       <Activity size={24} className="text-ghost/40" strokeWidth={1.5} />
       <div>
-        <div className="font-body text-ghost text-[11px] leading-relaxed">Select a zone to see why the system thinks this</div>
+        <div className="font-body text-ghost text-[13px] leading-relaxed">Select a zone to see why the system thinks this</div>
       </div>
     </div>
   )
 
   const r = REASONING_MAP[zone.id] ?? DEFAULT_REASONING
-  const statusLabel = zone.score >= 90 ? 'CLEAR' : zone.score >= 80 ? 'WATCH' : zone.score >= 70 ? 'AT RISK' : 'CRITICAL'
+  const statusLabel = zone.score >= 90 ? 'Clear' : zone.score >= 80 ? 'Watch' : zone.score >= 70 ? 'At risk' : 'Critical'
   const statusColor = zone.score >= 90 ? 'text-ok' : zone.score >= 80 ? 'text-ochre' : zone.score >= 70 ? 'text-warn' : 'text-danger'
   const confColor = r.confidence != null ? (r.confidence >= 80 ? 'text-ok' : r.confidence >= 65 ? 'text-warn' : 'text-danger') : 'text-ghost'
   const confBg = r.confidence != null ? (r.confidence >= 80 ? 'bg-ok' : r.confidence >= 65 ? 'bg-warn' : 'bg-danger') : 'bg-ghost'
@@ -412,25 +412,25 @@ function ReasoningPanel({ zone, building }) {
       <div className="flex-shrink-0 px-5 py-4 border-b border-rule2 bg-stone">
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
-            <div className="font-body text-ghost text-[9px] uppercase tracking-widest mb-0.5">{building.name} · {building.label}</div>
+            <div className="font-body text-ghost text-[12px] tracking-normal mb-0.5">{building.name} · {building.label}</div>
             <div className="font-display font-bold text-ink text-[18px] leading-none mb-1">{zone.label}</div>
-            <div className="font-body text-ghost text-[10px]">{zone.name}</div>
+            <div className="font-body text-ghost text-[12px]">{zone.name}</div>
           </div>
           <div className="text-right flex-shrink-0">
             <div className={`font-display font-bold display-num text-[32px] leading-none ${scoreColor(zone.score)}`}>{zone.score}</div>
-            <div className={`font-body font-bold text-[10px] uppercase tracking-widest ${statusColor}`}>{statusLabel}</div>
+            <div className={`font-body font-bold text-[12px] tracking-normal ${statusColor}`}>{statusLabel}</div>
           </div>
         </div>
         {r.confidence != null && (
           <div className="mt-3">
             <div className="flex items-center justify-between mb-1">
-              <span className="font-body text-ghost text-[9px]">Confidence</span>
-              <span className={`font-body text-[10px] font-medium tabular-nums ${confColor}`}>{r.confidence}%</span>
+              <span className="font-body text-ghost text-[12px]">Confidence</span>
+              <span className={`font-body text-[12px] font-medium tabular-nums ${confColor}`}>{r.confidence}%</span>
             </div>
             <div className="h-1 bg-rule2 rounded-full overflow-hidden">
               <div className={`h-full transition-all ${confBg}`} style={{ width: `${r.confidence}%` }} />
             </div>
-            <div className="font-body text-ghost/50 text-[9px] mt-0.5">{r.confidenceModel}</div>
+            <div className="font-body text-ghost/50 text-[12px] mt-0.5">{r.confidenceModel}</div>
           </div>
         )}
       </div>
@@ -438,24 +438,24 @@ function ReasoningPanel({ zone, building }) {
       <div className="flex-1 overflow-y-auto">
         {r.recommendation && (
           <div className="px-5 py-4 border-b border-rule2">
-            <div className="font-body text-ghost text-[9px] uppercase tracking-widest mb-2">Recommendation</div>
-            <div className="font-body text-ink text-[12px] leading-relaxed">{r.recommendation}</div>
+            <div className="font-body text-ghost text-[12px] tracking-normal mb-2">Recommendation</div>
+            <div className="font-body text-ink text-[14px] leading-relaxed">{r.recommendation}</div>
           </div>
         )}
 
         {r.primaryContributors.length > 0 && (
           <div className="px-5 py-4 border-b border-rule2">
-            <div className="font-body text-ghost text-[9px] uppercase tracking-widest mb-3">What's driving this</div>
+            <div className="font-body text-ghost text-[12px] tracking-normal mb-3">What's driving this</div>
             <div className="space-y-2.5">
               {r.primaryContributors.map((c, i) => (
                 <div key={i} className="flex items-center gap-3">
                   <div className="w-1.5 h-1.5 rounded-full bg-ok flex-shrink-0" />
-                  <div className="flex-1 min-w-0 font-body text-ink text-[11px] leading-snug">{c.label}</div>
+                  <div className="flex-1 min-w-0 font-body text-ink text-[13px] leading-snug">{c.label}</div>
                   <div className="flex items-center gap-1.5 flex-shrink-0">
                     <div className="w-[52px] h-0.5 bg-rule2">
                       <div className="h-full bg-ok" style={{ width: `${c.pct * (100 / 52)}%`, maxWidth: '100%' }} />
                     </div>
-                    <span className="font-body text-muted text-[9px] tabular-nums w-7 text-right">+{c.pct}%</span>
+                    <span className="font-body text-muted text-[12px] tabular-nums w-7 text-right">+{c.pct}%</span>
                   </div>
                 </div>
               ))}
@@ -465,14 +465,14 @@ function ReasoningPanel({ zone, building }) {
 
         {r.suppressedContributors.length > 0 && (
           <div className="px-5 py-4 border-b border-rule2">
-            <div className="font-body text-ghost text-[9px] uppercase tracking-widest mb-3">Not used</div>
+            <div className="font-body text-ghost text-[12px] tracking-normal mb-3">Not used</div>
             <div className="space-y-2">
               {r.suppressedContributors.map((s, i) => (
                 <div key={i} className="flex items-start gap-3">
                   <div className="w-1.5 h-1.5 rounded-full border border-ghost/30 flex-shrink-0 mt-1" />
                   <div className="flex-1 min-w-0">
-                    <div className="font-body text-ghost text-[11px] leading-snug">{s.label}</div>
-                    <div className="font-body text-ghost/50 text-[9px] leading-snug mt-0.5">{s.reason}</div>
+                    <div className="font-body text-ghost text-[13px] leading-snug">{s.label}</div>
+                    <div className="font-body text-ghost/50 text-[12px] leading-snug mt-0.5">{s.reason}</div>
                   </div>
                 </div>
               ))}
@@ -482,17 +482,17 @@ function ReasoningPanel({ zone, building }) {
 
         {r.competingHypotheses.length > 0 && (
           <div className="px-5 py-4 border-b border-rule2">
-            <div className="font-body text-ghost text-[9px] uppercase tracking-widest mb-3">Other explanations</div>
+            <div className="font-body text-ghost text-[12px] tracking-normal mb-3">Other explanations</div>
             <div className="space-y-2">
               {r.competingHypotheses.map((h, i) => (
                 <div key={i} className="flex items-start gap-3 px-3 py-2.5 border border-rule2 bg-stone2">
-                  <span className="font-body font-bold text-ghost text-[10px] flex-shrink-0 mt-0.5">{String.fromCharCode(65 + i)}</span>
+                  <span className="font-body font-bold text-ghost text-[12px] flex-shrink-0 mt-0.5">{String.fromCharCode(65 + i)}</span>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-2 mb-0.5">
-                      <span className="font-body font-medium text-ink text-[11px] leading-snug">{h.label}</span>
-                      <span className={`font-body text-[10px] tabular-nums flex-shrink-0 ${h.confidence >= 50 ? 'text-warn' : 'text-ghost'}`}>{h.confidence}%</span>
+                      <span className="font-body font-medium text-ink text-[13px] leading-snug">{h.label}</span>
+                      <span className={`font-body text-[12px] tabular-nums flex-shrink-0 ${h.confidence >= 50 ? 'text-warn' : 'text-ghost'}`}>{h.confidence}%</span>
                     </div>
-                    <div className="font-body text-ghost text-[9px] leading-snug">{h.note}</div>
+                    <div className="font-body text-ghost text-[12px] leading-snug">{h.note}</div>
                   </div>
                 </div>
               ))}
@@ -502,16 +502,16 @@ function ReasoningPanel({ zone, building }) {
 
         {r.forecastIfUnbounded && (
           <div className="px-5 py-4">
-            <div className="font-body text-ghost text-[9px] uppercase tracking-widest mb-2">If nothing changes</div>
+            <div className="font-body text-ghost text-[12px] tracking-normal mb-2">If nothing changes</div>
             <div className="flex items-start gap-2 px-3 py-2.5 border border-danger/20 bg-danger/[0.03]">
               <Zap size={10} className="text-danger flex-shrink-0 mt-0.5" strokeWidth={2} />
-              <div className="font-body text-danger text-[10px] leading-snug">{r.forecastIfUnbounded}</div>
+              <div className="font-body text-danger text-[12px] leading-snug">{r.forecastIfUnbounded}</div>
             </div>
           </div>
         )}
 
         {!r.recommendation && r.primaryContributors.length === 0 && (
-          <div className="px-5 py-6 font-body text-ghost text-[11px]">No active reasoning for this zone — system stable.</div>
+          <div className="px-5 py-6 font-body text-ghost text-[13px]">No active reasoning for this zone — system stable.</div>
         )}
       </div>
     </div>
@@ -535,7 +535,7 @@ function StateFieldView({ site, ScreenHeader }) {
       <ScreenHeader />
 
       {/* System pressure summary */}
-      <div className="flex-shrink-0 flex items-center gap-4 px-5 py-2.5 border-b border-rule2 bg-stone2 text-[10px] font-body">
+      <div className="flex-shrink-0 flex items-center gap-4 px-5 py-2.5 border-b border-rule2 bg-stone2 text-[12px] font-body">
         <div className="flex items-center gap-1.5">
           <div className="w-2 h-2 rounded-full bg-danger flex-shrink-0" />
           <span className="text-danger font-medium">{pressureZones.length} zone{pressureZones.length !== 1 ? 's' : ''} at risk</span>
@@ -553,7 +553,7 @@ function StateFieldView({ site, ScreenHeader }) {
         <div className="flex-1 overflow-y-auto p-6">
           {/* Pressure legend */}
           <div className="flex items-center gap-4 mb-6">
-            <span className="font-body text-ghost text-[9px] uppercase tracking-widest">Pressure intensity</span>
+            <span className="font-body text-ghost text-[12px] tracking-normal">Pressure intensity</span>
             {[
               { label: 'Clear',    color: 'bg-ok',     range: '90+' },
               { label: 'Watch',    color: 'bg-ochre',  range: '80–89' },
@@ -562,7 +562,7 @@ function StateFieldView({ site, ScreenHeader }) {
             ].map(({ label, color, range }) => (
               <div key={label} className="flex items-center gap-1.5">
                 <div className={`w-2 h-2 rounded-full flex-shrink-0 ${color}`} />
-                <span className="font-body text-ghost text-[9px]">{label} <span className="opacity-60">({range})</span></span>
+                <span className="font-body text-ghost text-[12px]">{label} <span className="opacity-60">({range})</span></span>
               </div>
             ))}
           </div>
@@ -573,9 +573,9 @@ function StateFieldView({ site, ScreenHeader }) {
               {/* Building label */}
               <div className="flex items-center gap-2 mb-3">
                 <div className={`w-px h-4 ${scoreBg(b.score)}`} />
-                <span className="font-body text-ghost text-[10px] uppercase tracking-widest">{b.name}</span>
-                <span className="font-body text-ghost/50 text-[10px]">— {b.label}</span>
-                <span className={`font-body font-medium text-[10px] ml-auto ${scoreColor(b.score)}`}>{b.score}</span>
+                <span className="font-body text-ghost text-[12px] tracking-normal">{b.name}</span>
+                <span className="font-body text-ghost/50 text-[12px]">— {b.label}</span>
+                <span className={`font-body font-medium text-[12px] ml-auto ${scoreColor(b.score)}`}>{b.score}</span>
               </div>
 
               {/* Zone pressure cells */}
@@ -598,12 +598,12 @@ function StateFieldView({ site, ScreenHeader }) {
                           <AlertTriangle size={9} className="text-warn animate-pulse" strokeWidth={2} />
                         </span>
                       )}
-                      <div className="font-body text-ghost text-[9px] uppercase tracking-widest mb-1">{z.name}</div>
-                      <div className="font-body font-medium text-ink text-[12px] leading-snug mb-2">{z.label}</div>
+                      <div className="font-body text-ghost text-[12px] tracking-normal mb-1">{z.name}</div>
+                      <div className="font-body font-medium text-ink text-[14px] leading-snug mb-2">{z.label}</div>
                       <div className={`font-display font-bold display-num text-[24px] leading-none ${sc} mb-1`}>{z.score}</div>
                       <div className="flex items-center justify-between">
-                        <span className={`font-body text-[9px] font-medium uppercase tracking-widest ${sc}`}>{statusLabel}</span>
-                        <span className="font-body text-ghost text-[9px]">{z.vessels}v</span>
+                        <span className={`font-body text-[12px] font-medium tracking-normal ${sc}`}>{statusLabel}</span>
+                        <span className="font-body text-ghost text-[12px]">{z.vessels}v</span>
                       </div>
                       {isSelected && (
                         <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-ink" />
@@ -622,7 +622,7 @@ function StateFieldView({ site, ScreenHeader }) {
             <div className="flex-shrink-0 flex items-stretch border-b border-rule2 bg-stone2">
               {[{ id: 'context', label: 'Causal Context' }, { id: 'reasoning', label: 'Reasoning' }].map(t => (
                 <button key={t.id} type="button" onClick={() => setRightTab(t.id)}
-                  className={`font-body text-[10px] px-4 py-2.5 border-b-2 transition-colors ${
+                  className={`font-body text-[12px] px-4 py-2.5 border-b-2 transition-colors ${
                     rightTab === t.id ? 'border-b-ochre text-ink' : 'border-b-transparent text-ghost hover:text-muted'
                   }`}>
                   {t.label}
@@ -631,7 +631,7 @@ function StateFieldView({ site, ScreenHeader }) {
             </div>
           ) : (
             <div className="flex-shrink-0 px-5 py-2.5 border-b border-rule2 bg-stone2">
-              <span className="font-body text-ghost text-[9px] uppercase tracking-widest">Select a zone</span>
+              <span className="font-body text-ghost text-[12px] tracking-normal">Select a zone</span>
             </div>
           )}
           <div className="h-[calc(100%-36px)]">
@@ -669,7 +669,7 @@ export default function ProcessHierarchy() {
   const ScreenHeader = () => (
     <div className="flex-shrink-0 flex items-center justify-between px-6 py-3.5 border-b border-rule2 bg-stone">
       <div className="flex-1 min-w-0">
-        <div className="font-body text-ghost text-[9px] uppercase tracking-widest mb-1">Platform Architecture · Process Hierarchy</div>
+        <div className="font-body text-ghost text-[12px] tracking-normal mb-1">Platform Architecture · Process Hierarchy</div>
         {variant === 'B' ? (
           <Breadcrumb crumbs={crumbs} onNavigate={navigateTo} />
         ) : (
@@ -679,11 +679,11 @@ export default function ProcessHierarchy() {
       <div className="flex items-center gap-4 flex-shrink-0">
         <div className="text-right">
           <div className={`font-display font-bold display-num text-[28px] leading-none ${scoreColor(site.score)}`}>{site.score}</div>
-          <div className="font-body text-ghost text-[9px] uppercase tracking-widest">site health</div>
+          <div className="font-body text-ghost text-[12px] tracking-normal">site health</div>
         </div>
         <div className="text-right border-l border-rule2 pl-4">
           <div className="font-display font-bold display-num text-[28px] leading-none text-ochre">{site.activeBatches}</div>
-          <div className="font-body text-ghost text-[9px] uppercase tracking-widest">active batches</div>
+          <div className="font-body text-ghost text-[12px] tracking-normal">active batches</div>
         </div>
         <div className="flex items-stretch border border-rule2 overflow-hidden ml-2">
           {[
@@ -691,7 +691,7 @@ export default function ProcessHierarchy() {
             { v: 'B', label: 'Structure' },
           ].map(({ v, label }) => (
             <button key={v} type="button" onClick={() => { setVariant(v); setPath([]) }}
-              className={`font-body text-[10px] px-3 py-1 transition-colors ${variant === v ? 'bg-ink text-stone' : 'text-ghost hover:text-muted'}`}>
+              className={`font-body text-[12px] px-3 py-1 transition-colors ${variant === v ? 'bg-ink text-stone' : 'text-ghost hover:text-muted'}`}>
               {label}
             </button>
           ))}
@@ -711,15 +711,15 @@ export default function ProcessHierarchy() {
       <ScreenHeader />
       <div className="flex-shrink-0 px-5 py-2 border-b border-rule2 bg-danger/[0.03] flex items-center gap-2">
         <Info size={9} className="text-muted flex-shrink-0" strokeWidth={2} />
-        <span className="font-body text-muted text-[9px]">Structural view — for audit, compliance, and forensic analysis. Not the primary decision-making interface.</span>
+        <span className="font-body text-muted text-[12px]">Structural view — for audit, compliance, and forensic analysis. Not the primary decision-making interface.</span>
       </div>
       <div className="flex-1 overflow-y-auto">
         {!selectedBuilding && (
           <div>
             <div className="px-5 py-2.5 border-b border-rule2 bg-stone2 flex items-center gap-2">
-              <span className="font-body text-ghost text-[9px] uppercase tracking-widest">{site.code} · {site.location}</span>
+              <span className="font-body text-ghost text-[12px] tracking-normal">{site.code} · {site.location}</span>
               <span className="font-body text-ghost">·</span>
-              <span className="font-body text-muted text-[10px]">{site.vessels} vessels · {site.workers.toLocaleString()} workers</span>
+              <span className="font-body text-muted text-[12px]">{site.vessels} vessels · {site.workers.toLocaleString()} workers</span>
             </div>
             <div className="divide-y divide-rule2">
               {site.buildings.map(b => {
@@ -741,9 +741,9 @@ export default function ProcessHierarchy() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-baseline gap-2 mb-1">
                           <span className="font-display font-bold text-ink text-[15px]">{b.name}</span>
-                          <span className="font-body text-ghost text-[11px]">{b.label}</span>
+                          <span className="font-body text-ghost text-[13px]">{b.label}</span>
                         </div>
-                        <div className="flex items-center gap-3 text-[10px] font-body text-ghost mb-2">
+                        <div className="flex items-center gap-3 text-[12px] font-body text-ghost mb-2">
                           <span>{b.zones?.length ?? 0} zones</span><span>·</span>
                           <span>{b.vessels} vessels</span><span>·</span>
                           <span className="text-muted">{b.activeBatches} active batches</span>
@@ -752,10 +752,10 @@ export default function ProcessHierarchy() {
                         {(typeCounts.tank > 0 || typeCounts.chamber > 0) && (
                           <div className="flex items-center gap-2 mb-2">
                             {typeCounts.tank > 0 && (
-                              <span className="font-body text-ghost text-[9px] px-1.5 py-0.5 bg-stone3">{typeCounts.tank} F-tanks</span>
+                              <span className="font-body text-ghost text-[12px] px-1.5 py-0.5 bg-stone3">{typeCounts.tank} F-tanks</span>
                             )}
                             {typeCounts.chamber > 0 && (
-                              <span className="font-body text-ghost text-[9px] px-1.5 py-0.5 bg-stone3">{typeCounts.chamber} K-chambers</span>
+                              <span className="font-body text-ghost text-[12px] px-1.5 py-0.5 bg-stone3">{typeCounts.chamber} K-chambers</span>
                             )}
                           </div>
                         )}
@@ -785,8 +785,8 @@ export default function ProcessHierarchy() {
           <div>
             <div className="px-5 py-3 border-b border-rule2 bg-stone2 flex items-center gap-3">
               <span className="font-display font-bold text-ink text-[14px]">{selectedBuilding.name}</span>
-              <span className="font-body text-ghost text-[11px]">{selectedBuilding.label}</span>
-              <span className="font-body text-ghost text-[10px] ml-auto">{selectedBuilding.zones?.length} zones</span>
+              <span className="font-body text-ghost text-[13px]">{selectedBuilding.label}</span>
+              <span className="font-body text-ghost text-[12px] ml-auto">{selectedBuilding.zones?.length} zones</span>
             </div>
             <div className="divide-y divide-rule2">
               {(selectedBuilding.zones ?? []).map(z => {
@@ -800,9 +800,9 @@ export default function ProcessHierarchy() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-baseline gap-2 mb-1">
                           <span className="font-display font-bold text-ink text-[14px]">{z.name}</span>
-                          <span className="font-body text-ghost text-[11px]">{z.label}</span>
+                          <span className="font-body text-ghost text-[13px]">{z.label}</span>
                         </div>
-                        <div className="flex items-center gap-3 flex-wrap text-[10px] font-body text-ghost mb-1.5">
+                        <div className="flex items-center gap-3 flex-wrap text-[12px] font-body text-ghost mb-1.5">
                           <span>{z.processes?.length ?? 0} processes</span><span>·</span>
                           <span className="text-muted">{z.activeBatches} active batches</span>
                           {z.temperature && <EnvChip label="Temp" val={z.temperature.val} tone={z.temperature.tone} />}
@@ -812,12 +812,12 @@ export default function ProcessHierarchy() {
                         {(lineage.feedsFrom.length > 0 || lineage.feedsInto.length > 0) && (
                           <div className="flex items-center gap-3 mb-1.5">
                             {lineage.feedsFrom.length > 0 && (
-                              <span className="font-body text-ghost text-[9px] flex items-center gap-1">
+                              <span className="font-body text-ghost text-[12px] flex items-center gap-1">
                                 ↑ from <span className="text-muted">{lineage.feedsFrom.map(id => ZONE_NAMES[id]).join(', ')}</span>
                               </span>
                             )}
                             {lineage.feedsInto.length > 0 && (
-                              <span className="font-body text-ghost text-[9px] flex items-center gap-1">
+                              <span className="font-body text-ghost text-[12px] flex items-center gap-1">
                                 ↓ feeds <span className="text-muted">{lineage.feedsInto.map(id => ZONE_NAMES[id]).join(', ')}</span>
                               </span>
                             )}
@@ -826,8 +826,8 @@ export default function ProcessHierarchy() {
                         {/* Vessel-type distribution */}
                         {stats.total > 0 && (
                           <div className="flex items-center gap-2 mb-1.5">
-                            {stats.types.tank > 0 && <span className="font-body text-ghost text-[9px] px-1.5 py-0.5 bg-stone3">{stats.types.tank} F-tanks</span>}
-                            {stats.types.chamber > 0 && <span className="font-body text-ghost text-[9px] px-1.5 py-0.5 bg-stone3">{stats.types.chamber} K-chambers</span>}
+                            {stats.types.tank > 0 && <span className="font-body text-ghost text-[12px] px-1.5 py-0.5 bg-stone3">{stats.types.tank} F-tanks</span>}
+                            {stats.types.chamber > 0 && <span className="font-body text-ghost text-[12px] px-1.5 py-0.5 bg-stone3">{stats.types.chamber} K-chambers</span>}
                           </div>
                         )}
                         {/* Process-stage chips */}
@@ -840,7 +840,7 @@ export default function ProcessHierarchy() {
                             ))}
                           </div>
                         )}
-                        {z.alert && <div className="flex items-center gap-1 text-warn text-[10px] mt-1.5"><AlertTriangle size={9} strokeWidth={2} />{z.alert.msg}</div>}
+                        {z.alert && <div className="flex items-center gap-1 text-warn text-[12px] mt-1.5"><AlertTriangle size={9} strokeWidth={2} />{z.alert.msg}</div>}
                       </div>
                       <div className="flex items-center gap-3 flex-shrink-0">
                         <ScoreBar score={z.score} />
@@ -859,7 +859,7 @@ export default function ProcessHierarchy() {
               <div className="flex items-center justify-between gap-3 mb-2">
                 <div className="flex items-baseline gap-2">
                   <span className="font-display font-bold text-ink text-[16px]">{selectedZone.name}</span>
-                  <span className="font-body text-ghost text-[11px]">{selectedZone.label}</span>
+                  <span className="font-body text-ghost text-[13px]">{selectedZone.label}</span>
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0">
                   {selectedZone.temperature && <EnvChip label="Temp" val={selectedZone.temperature.val} tone={selectedZone.temperature.tone} />}
@@ -871,7 +871,7 @@ export default function ProcessHierarchy() {
                 const lin = ZONE_LINEAGE[selectedZone.id] ?? { feedsFrom: [], feedsInto: [] }
                 if (!lin.feedsFrom.length && !lin.feedsInto.length) return null
                 return (
-                  <div className="flex items-center gap-4 text-[9px] font-body text-ghost">
+                  <div className="flex items-center gap-4 text-[12px] font-body text-ghost">
                     {lin.feedsFrom.length > 0 && (
                       <span className="flex items-center gap-1">↑ receives from <span className="text-muted font-medium">{lin.feedsFrom.map(id => ZONE_NAMES[id]).join(', ')}</span></span>
                     )}
@@ -883,7 +883,7 @@ export default function ProcessHierarchy() {
               })()}
             </div>
             {selectedZone.processes.length === 0
-              ? <div className="px-5 py-8 font-body text-ghost text-[12px]">No active processes in this zone.</div>
+              ? <div className="px-5 py-8 font-body text-ghost text-[14px]">No active processes in this zone.</div>
               : selectedZone.processes.map(proc => {
                 const vessels = proc.vessels ?? []
                 const stageCounts = {}
@@ -900,15 +900,15 @@ export default function ProcessHierarchy() {
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex-1 min-w-0">
                           <div className="font-display font-bold text-ink text-[14px] mb-0.5">{proc.name}</div>
-                          <div className="flex items-center gap-2 text-[10px] font-body text-ghost mb-2">
+                          <div className="flex items-center gap-2 text-[12px] font-body text-ghost mb-2">
                             <span>{proc.sku}</span><span>·</span>
                             <span className="text-muted">{proc.activeBatches} batches</span><span>·</span>
                             <span className="text-muted">{vessels.length} vessels</span>
                           </div>
                           {/* Vessel type distribution */}
                           <div className="flex items-center gap-2 mb-1.5">
-                            {typeCounts.tank > 0 && <span className="font-body text-ghost text-[9px] px-1.5 py-0.5 bg-stone3">{typeCounts.tank} F-tanks</span>}
-                            {typeCounts.chamber > 0 && <span className="font-body text-ghost text-[9px] px-1.5 py-0.5 bg-stone3">{typeCounts.chamber} K-chambers</span>}
+                            {typeCounts.tank > 0 && <span className="font-body text-ghost text-[12px] px-1.5 py-0.5 bg-stone3">{typeCounts.tank} F-tanks</span>}
+                            {typeCounts.chamber > 0 && <span className="font-body text-ghost text-[12px] px-1.5 py-0.5 bg-stone3">{typeCounts.chamber} K-chambers</span>}
                           </div>
                           {/* Stage chips */}
                           <div className="flex items-center gap-1.5 flex-wrap">
@@ -932,10 +932,10 @@ export default function ProcessHierarchy() {
           <div>
             <div className="px-5 py-3 border-b border-rule2 bg-stone2 flex items-center gap-3">
               <span className="font-display font-bold text-ink text-[14px]">{selectedProcess.name}</span>
-              <span className="font-body text-ghost text-[10px]">{selectedProcess.sku}</span>
+              <span className="font-body text-ghost text-[12px]">{selectedProcess.sku}</span>
             </div>
             <VesselGrid vessels={selectedProcess.vessels ?? []} />
-            <div className="px-5 py-6 font-body text-ghost text-[11px]">Select a vessel to open its batch intelligence record.</div>
+            <div className="px-5 py-6 font-body text-ghost text-[13px]">Select a vessel to open its batch intelligence record.</div>
           </div>
         )}
       </div>

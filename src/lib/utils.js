@@ -9,7 +9,7 @@ export const riskColorClass = (score) =>
   score >= 75 ? 'text-danger' : score >= 60 ? 'text-warn' : 'text-ok'
 
 export const riskLabel = (score) =>
-  score >= 75 ? 'AT RISK' : score >= 60 ? 'WATCH' : 'CLEAR'
+  score >= 75 ? 'At risk' : score >= 60 ? 'Watch' : 'Clear'
 
 export const riskBgColor = (score) =>
   score >= 75 ? '#C43820' : score >= 60 ? '#C4920A' : '#3A8A5A'

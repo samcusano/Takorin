@@ -5,7 +5,7 @@ import { AlertTriangle, CheckCircle2, Wrench, Activity, Clock } from 'lucide-rea
 const STATUS_CFG = {
   active:      { label: 'Active',       dot: 'bg-ok',     badge: 'bg-ok/10 text-ok border border-ok/30' },
   maintenance: { label: 'Maintenance',  dot: 'bg-warn',   badge: 'bg-warn/10 text-warn border border-warn/30' },
-  offline:     { label: 'Offline',      dot: 'bg-danger', badge: 'bg-danger/10 text-danger border border-danger/30' },
+  offline:     { label: 'Offline',      dot: 'bg-danger', badge: 'bg-danger/[0.04] text-danger border border-danger/30' },
   idle:        { label: 'Idle',         dot: 'bg-ghost',  badge: 'bg-stone3 text-ghost border border-rule2' },
 }
 
@@ -22,7 +22,7 @@ function HealthBar({ score }) {
       <div className="flex-1 h-0.5 bg-rule2">
         <div className={`h-full ${tone}`} style={{ width: `${score}%` }} />
       </div>
-      <span className={`font-body text-[9px] tabular-nums w-6 text-right ${score >= 90 ? 'text-ok' : score >= 75 ? 'text-ochre' : 'text-warn'}`}>
+      <span className={`font-body text-[12px] tabular-nums w-6 text-right ${score >= 90 ? 'text-ok' : score >= 75 ? 'text-ochre' : 'text-warn'}`}>
         {score}
       </span>
     </div>
@@ -39,20 +39,20 @@ function EquipmentCard({ eq, selected, onClick }) {
       }`}>
       <div className="flex items-start justify-between gap-2 mb-1">
         <div>
-          <div className="font-body font-medium text-ink text-[11px] leading-snug">{eq.name}</div>
-          <div className="font-body text-ghost text-[9px]">{eq.type} · {eq.zone}</div>
+          <div className="font-body font-medium text-ink text-[13px] leading-snug">{eq.name}</div>
+          <div className="font-body text-ghost text-[12px]">{eq.type} · {eq.zone}</div>
         </div>
         <span className={`font-body text-[8px] px-1.5 py-0.5 border flex-shrink-0 ${cfg.badge}`}>{cfg.label}</span>
       </div>
       {eq.status === 'active' && <HealthBar score={eq.healthScore} />}
       <div className="flex items-center gap-3 mt-1.5">
         {eq.activeLot && (
-          <span className="font-body text-ghost text-[9px]">{eq.activeLot}</span>
+          <span className="font-body text-ghost text-[12px]">{eq.activeLot}</span>
         )}
         {spcCfg && (
           <div className="flex items-center gap-1 ml-auto">
             <span className={`w-1.5 h-1.5 rounded-full ${spcCfg.dot}`} />
-            <span className={`font-body text-[9px] ${spcCfg.tone}`}>{spcCfg.label}</span>
+            <span className={`font-body text-[12px] ${spcCfg.tone}`}>{spcCfg.label}</span>
           </div>
         )}
       </div>
@@ -63,7 +63,7 @@ function EquipmentCard({ eq, selected, onClick }) {
 function SPCChart({ eqId }) {
   const data = spcData[eqId]
   if (!data || !data.points || data.points.length < 2) return (
-    <div className="flex items-center justify-center h-full font-body text-ghost text-[11px]">
+    <div className="flex items-center justify-center h-full font-body text-ghost text-[13px]">
       {!data ? 'No SPC data available' : 'Insufficient data — 2 runs minimum'}
     </div>
   )
@@ -99,9 +99,9 @@ function SPCChart({ eqId }) {
     <div className="flex flex-col h-full">
       <div className="flex-shrink-0 px-5 py-2.5 border-b border-rule2 bg-stone2 flex items-center justify-between">
         <div>
-          <span className="font-body text-ghost text-[9px] uppercase tracking-widest">SPC · {param}</span>
+          <span className="font-body text-ghost text-[12px] tracking-normal">SPC · {param}</span>
         </div>
-        <div className="flex items-center gap-4 text-[9px] font-body">
+        <div className="flex items-center gap-4 text-[12px] font-body">
           <span className="flex items-center gap-1 text-danger"><span className="w-3 border-t border-dashed border-danger" />UCL {ucl}{unit}</span>
           <span className="flex items-center gap-1 text-ok"><span className="w-3 border-t border-dotted border-ok" />Target {target}{unit}</span>
           <span className="flex items-center gap-1 text-danger"><span className="w-3 border-t border-dashed border-danger" />LCL {lcl}{unit}</span>
@@ -140,7 +140,7 @@ function RecipePanel({ recipeId }) {
   return (
     <div className="flex-shrink-0 border-t border-rule2">
       <div className="px-5 py-2.5 border-b border-rule2 bg-stone2">
-        <div className="font-body text-ghost text-[9px] uppercase tracking-widest">
+        <div className="font-body text-ghost text-[12px] tracking-normal">
           Active recipe · {recipe.name} <span className="text-muted">v{recipe.version}</span>
         </div>
       </div>
@@ -149,17 +149,17 @@ function RecipePanel({ recipeId }) {
           <thead>
             <tr className="border-b border-rule2 bg-stone2">
               {['Parameter', 'LCL', 'Target', 'UCL'].map(h => (
-                <th key={h} className="px-4 py-1.5 text-left font-body text-ghost text-[8px] uppercase tracking-widest">{h}</th>
+                <th key={h} className="px-4 py-1.5 text-left font-body text-ghost text-[8px] tracking-normal">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {recipe.parameters.map(p => (
               <tr key={p.name} className="border-b border-rule2 hover:bg-stone2/40">
-                <td className="px-4 py-2 font-body text-ink text-[10px]">{p.name}</td>
-                <td className="px-4 py-2 font-body text-warn text-[10px] tabular-nums">{p.lcl}{p.unit}</td>
-                <td className="px-4 py-2 font-body font-medium text-ink text-[10px] tabular-nums">{p.target}{p.unit}</td>
-                <td className="px-4 py-2 font-body text-warn text-[10px] tabular-nums">{p.ucl}{p.unit}</td>
+                <td className="px-4 py-2 font-body text-ink text-[12px]">{p.name}</td>
+                <td className="px-4 py-2 font-body text-warn text-[12px] tabular-nums">{p.lcl}{p.unit}</td>
+                <td className="px-4 py-2 font-body font-medium text-ink text-[12px] tabular-nums">{p.target}{p.unit}</td>
+                <td className="px-4 py-2 font-body text-warn text-[12px] tabular-nums">{p.ucl}{p.unit}</td>
               </tr>
             ))}
           </tbody>
@@ -181,19 +181,19 @@ function RunHistory({ eqId }) {
   return (
     <div className="flex-shrink-0 border-t border-rule2">
       <div className="px-5 py-2.5 border-b border-rule2 bg-stone2">
-        <div className="font-body text-ghost text-[9px] uppercase tracking-widest">Run history</div>
+        <div className="font-body text-ghost text-[12px] tracking-normal">Run history</div>
       </div>
       {runs.map(r => {
         const oc = OUTCOME_CFG[r.outcome] ?? OUTCOME_CFG.released
         return (
           <div key={r.run} className="flex items-center gap-3 px-5 py-2.5 border-b border-rule2">
-            <span className="font-body text-ghost text-[9px] w-8 flex-shrink-0">R{r.run}</span>
+            <span className="font-body text-ghost text-[12px] w-8 flex-shrink-0">R{r.run}</span>
             <div className="flex-1 min-w-0">
-              <div className="font-body text-ink text-[10px]">{r.lot}</div>
-              <div className="font-body text-ghost text-[9px]">{r.recipe} · {r.startDate}{r.endDate ? ` → ${r.endDate}` : ' → present'}</div>
+              <div className="font-body text-ink text-[12px]">{r.lot}</div>
+              <div className="font-body text-ghost text-[12px]">{r.recipe} · {r.startDate}{r.endDate ? ` → ${r.endDate}` : ' → present'}</div>
             </div>
             <div className="text-right flex-shrink-0">
-              <div className={`font-body text-[9px] ${oc.cls}`}>{oc.label}</div>
+              <div className={`font-body text-[12px] ${oc.cls}`}>{oc.label}</div>
               {r.spcViolations > 0 && (
                 <div className="font-body text-warn text-[8px]">{r.spcViolations} SPC violation{r.spcViolations > 1 ? 's' : ''}</div>
               )}
@@ -207,7 +207,7 @@ function RunHistory({ eqId }) {
 
 function EquipmentDetail({ eq }) {
   if (!eq) return (
-    <div className="flex items-center justify-center h-full font-body text-ghost text-[11px]">
+    <div className="flex items-center justify-center h-full font-body text-ghost text-[13px]">
       Select equipment
     </div>
   )
@@ -219,16 +219,16 @@ function EquipmentDetail({ eq }) {
       {/* Header */}
       <div className="flex-shrink-0 px-6 py-4 border-b border-rule2">
         <div className="flex items-center gap-2 mb-2">
-          <span className={`font-body text-[9px] px-1.5 py-0.5 border ${cfg.badge}`}>{cfg.label}</span>
+          <span className={`font-body text-[12px] px-1.5 py-0.5 border ${cfg.badge}`}>{cfg.label}</span>
           {spcCfg && (
-            <span className={`flex items-center gap-1 font-body text-[9px] ${spcCfg.tone}`}>
+            <span className={`flex items-center gap-1 font-body text-[12px] ${spcCfg.tone}`}>
               <span className={`w-1.5 h-1.5 rounded-full ${spcCfg.dot}`} />
               SPC {spcCfg.label}
             </span>
           )}
         </div>
         <div className="font-display font-bold text-ink text-[20px] leading-none mb-0.5">{eq.name}</div>
-        <div className="font-body text-ghost text-[12px]">{eq.type} · {eq.zone}</div>
+        <div className="font-body text-ghost text-[14px]">{eq.type} · {eq.zone}</div>
       </div>
 
       {/* Metrics */}
@@ -240,8 +240,8 @@ function EquipmentDetail({ eq }) {
           { label: 'Next PM', val: eq.nextPM, tone: eq.status === 'maintenance' ? 'text-warn' : 'text-muted' },
         ].map(({ label, val, tone }) => (
           <div key={label} className="bg-stone px-3 py-2.5">
-            <div className="font-body text-ghost text-[9px] uppercase tracking-widest mb-0.5">{label}</div>
-            <div className={`font-body font-medium text-[13px] ${tone}`}>{val}</div>
+            <div className="font-body text-ghost text-[12px] tracking-normal mb-0.5">{label}</div>
+            <div className={`font-body font-medium text-[15px] ${tone}`}>{val}</div>
           </div>
         ))}
       </div>
@@ -254,7 +254,7 @@ function EquipmentDetail({ eq }) {
           </div>
         ) : (
           <div className="h-16 flex items-center justify-center border-b border-rule2">
-            <span className="font-body text-ghost text-[10px]">
+            <span className="font-body text-ghost text-[12px]">
               {eq.status === 'maintenance' ? 'Equipment in maintenance — SPC suspended' : 'No active run — SPC not available'}
             </span>
           </div>
@@ -280,16 +280,16 @@ export default function EquipmentIntelligence() {
       {/* Left: equipment list */}
       <div className="w-[260px] flex-shrink-0 border-r border-rule2 flex flex-col bg-stone">
         <div className="flex-shrink-0 px-5 py-4 border-b border-rule2 bg-stone2">
-          <div className="font-body text-ghost text-[9px] uppercase tracking-widest mb-0.5">Frontier Layer</div>
+          <div className="font-body text-ghost text-[12px] tracking-normal mb-0.5">Frontier Layer</div>
           <div className="font-display font-bold text-ink text-[18px] leading-none">Equipment Intelligence</div>
-          <div className="font-body text-ghost text-[10px] mt-1">Tool → Recipe → Run</div>
+          <div className="font-body text-ghost text-[12px] mt-1">Tool → Recipe → Run</div>
           <div className="flex items-center gap-3 mt-2">
-            <span className="font-body text-ok text-[10px]">{equipment.filter(e => e.status === 'active').length} active</span>
+            <span className="font-body text-ok text-[12px]">{equipment.filter(e => e.status === 'active').length} active</span>
             {maintenance.length > 0 && (
-              <span className="font-body text-warn text-[10px]">{maintenance.length} in maintenance</span>
+              <span className="font-body text-warn text-[12px]">{maintenance.length} in maintenance</span>
             )}
             {warnings.length > 0 && (
-              <span className="flex items-center gap-0.5 font-body text-warn text-[10px]">
+              <span className="flex items-center gap-0.5 font-body text-warn text-[12px]">
                 <AlertTriangle size={8} strokeWidth={2} />{warnings.length} SPC warn
               </span>
             )}
@@ -304,23 +304,12 @@ export default function EquipmentIntelligence() {
           ))}
         </div>
 
-        <div className="flex-shrink-0 px-4 py-3 border-t border-rule2 bg-stone2">
-          <div className="font-body text-ghost text-[9px] uppercase tracking-widest mb-1">SPC legend</div>
-          <div className="flex flex-col gap-1">
-            {Object.entries(SPC_CFG).map(([k, v]) => (
-              <div key={k} className="flex items-center gap-1.5">
-                <span className={`w-1.5 h-1.5 rounded-full ${v.dot}`} />
-                <span className={`font-body text-[9px] ${v.tone}`}>{v.label}</span>
-              </div>
-            ))}
-          </div>
-        </div>
       </div>
 
       {/* Right: equipment detail + SPC + recipe + runs */}
       <div className="flex-1 flex flex-col overflow-hidden bg-stone">
         <div className="flex-shrink-0 px-5 py-2.5 border-b border-rule2 bg-stone2">
-          <span className="font-body text-ghost text-[9px] uppercase tracking-widest">Equipment detail</span>
+          <span className="font-body text-ghost text-[12px] tracking-normal">Equipment detail</span>
         </div>
         <EquipmentDetail eq={selectedEq} />
       </div>
