@@ -30,11 +30,11 @@ function CommandBanner({ critItems, watchItems, pendingIds, readiness, activeExp
     <div className="flex items-start gap-3 mb-4">
      <div className="w-2 h-2 rounded-full bg-danger flex-shrink-0 mt-2 beat" />
      <div>
-      <div className="font-body text-danger text-[12px] tracking-normal mb-1">Active network exposure</div>
-      <div className="font-display font-bold text-ink text-[24px] leading-none mb-1.5">
+      <div className="font-body text-danger text-label tracking-normal mb-1">Active network exposure</div>
+      <div className="font-display font-bold text-ink text-2xl leading-none mb-1.5">
        {supplier} hold active
       </div>
-      <div className="font-body text-ink2 text-[14px] leading-relaxed">
+      <div className="font-body text-ink2 text-body leading-relaxed">
        {totalUnits.toLocaleString()} units · {affectedPlants} plant{affectedPlants > 1 ? 's' : ''} · FSMA 204 window: 24h remaining
       </div>
      </div>
@@ -54,13 +54,13 @@ function CommandBanner({ critItems, watchItems, pendingIds, readiness, activeExp
     <div className="flex items-start gap-3 mb-4">
      <div className={`w-2 h-2 rounded-full flex-shrink-0 mt-2 ${isDanger ? 'bg-danger beat' : 'bg-warn'}`} />
      <div>
-      <div className={`font-body text-[12px] tracking-normal mb-1 ${isDanger ? 'text-danger' : 'text-warn'}`}>
+      <div className={`font-body text-label tracking-normal mb-1 ${isDanger ? 'text-danger' : 'text-warn'}`}>
        {isNow ? 'Immediate action required' : 'Emerging risk'}
       </div>
-      <div className="font-display font-bold text-ink text-[24px] leading-none mb-1.5">
+      <div className="font-display font-bold text-ink text-2xl leading-none mb-1.5">
        {topItem.title}
       </div>
-      <div className="font-body text-ink2 text-[14px] leading-relaxed">{topItem.action}</div>
+      <div className="font-body text-ink2 text-body leading-relaxed">{topItem.action}</div>
      </div>
     </div>
     <div className="pl-5">
@@ -77,9 +77,9 @@ function CommandBanner({ critItems, watchItems, pendingIds, readiness, activeExp
    <div className="flex items-start gap-3">
     <div className="w-2 h-2 rounded-full bg-ok flex-shrink-0 mt-2" />
     <div>
-     <div className="font-body text-ok text-[12px] tracking-normal mb-1">No critical interventions</div>
-     <div className="font-display font-bold text-ink text-[24px] leading-none mb-1.5">Plant running clean</div>
-     <div className="font-body text-ghost text-[14px]">
+     <div className="font-body text-ok text-label tracking-normal mb-1">No critical interventions</div>
+     <div className="font-display font-bold text-ink text-2xl leading-none mb-1.5">Plant running clean</div>
+     <div className="font-body text-muted text-body">
       {watchItems.length > 0
        ? `${watchItems.length} item${watchItems.length > 1 ? 's' : ''} watching · `
        : ''}
@@ -95,7 +95,7 @@ function CommandBanner({ critItems, watchItems, pendingIds, readiness, activeExp
 // Stacked urgency groups, not columns. Compact rows with temporal labels.
 
 const ESC_STATE_CFG = {
- open:         { label: 'Open',         color: 'text-ghost' },
+ open:         { label: 'Open',         color: 'text-muted' },
  assigned:     { label: 'Assigned',     color: 'text-muted' },
  acknowledged: { label: 'Active',       color: 'text-ok'    },
  escalated:    { label: 'Escalated',    color: 'text-danger' },
@@ -110,13 +110,13 @@ function TriageRow({ item, isPending, onAcknowledge, escalation }) {
   return (
    <div className="flex items-center gap-3 px-4 py-2.5 border-b border-rule2 border-l-2 border-l-ok bg-ok/5">
     <Check size={11} strokeWidth={2} className="text-ok flex-shrink-0" />
-    <span className="font-body text-ok text-[12px] flex-1 truncate">Acknowledged</span>
+    <span className="font-body text-ok text-label flex-1 truncate">Acknowledged</span>
    </div>
   )
  }
 
  const borderCls = { danger: 'border-l-danger', warn: 'border-l-warn', watch: 'border-l-rule2' }[item.urgency]
- const timeCls = { danger: 'text-danger', warn: 'text-warn', watch: 'text-ghost' }[item.urgency]
+ const timeCls = { danger: 'text-danger', warn: 'text-warn', watch: 'text-muted' }[item.urgency]
  const isWatch = item.urgency === 'watch'
  const isNow = item.timeWindow === 'now'
  const holdTone = item.urgency === 'danger' ? 'danger' : 'warn'
@@ -131,8 +131,8 @@ function TriageRow({ item, isPending, onAcknowledge, escalation }) {
    <div className="flex items-center gap-3 px-4 py-3">
     <div className="flex-1 min-w-0">
      <div className="flex items-center gap-2 mb-0.5 flex-wrap">
-      <span className="font-body text-[12px] font-medium" style={{ color: item.moduleAccent }}>{item.moduleLabel}</span>
-      <span className={`font-body text-[12px] ${timeCls}`}>
+      <span className="font-body text-label font-medium" style={{ color: item.moduleAccent }}>{item.moduleLabel}</span>
+      <span className={`font-body text-label ${timeCls}`}>
        {isNow && !prefersReducedMotion && (
         <span className="inline-block w-1 h-1 rounded-full bg-current mr-0.5 align-middle animate-pulse" aria-hidden="true" />
        )}
@@ -140,7 +140,7 @@ function TriageRow({ item, isPending, onAcknowledge, escalation }) {
       </span>
       {/* Escalation state badge */}
       {escCfg && (
-       <span className={`font-body text-[12px] ${escCfg.color}`}>
+       <span className={`font-body text-label ${escCfg.color}`}>
         {escalation.state === 'acknowledged' && escalation.owner
          ? `${escalation.owner} responding`
          : escalation.state === 'escalated'
@@ -149,20 +149,20 @@ function TriageRow({ item, isPending, onAcknowledge, escalation }) {
        </span>
       )}
      </div>
-     <p className={`font-body text-[14px] leading-snug truncate ${isWatch ? 'text-ink2' : 'text-ink'}`}>{item.title}</p>
+     <p className={`font-body text-body leading-snug truncate ${isWatch ? 'text-ink2' : 'text-ink'}`}>{item.title}</p>
      {/* Ownership sub-line — only when not the director's turn */}
      {isDelegated && (
-      <p className="font-body text-[12px] text-ghost mt-0.5">
+      <p className="font-body text-label text-muted mt-0.5">
        {escalation.owner} has this · Not your turn
       </p>
      )}
      {isEscalatedToDirector && !directorOnFloor && (
-      <p className="font-body text-[12px] text-danger mt-0.5">
+      <p className="font-body text-label text-danger mt-0.5">
        No response · Escalated to you — act now
       </p>
      )}
      {isEscalatedToDirector && directorOnFloor && (
-      <p className="font-body text-[12px] text-warn mt-0.5">
+      <p className="font-body text-label text-warn mt-0.5">
        Escalation paused · {floorBackup} notified as backup
       </p>
      )}
@@ -170,7 +170,7 @@ function TriageRow({ item, isPending, onAcknowledge, escalation }) {
     <div className="flex items-center gap-1.5 flex-shrink-0">
      {MODULE_ROUTES[item.module] && (
       <button type="button" onClick={() => navigate(MODULE_ROUTES[item.module])}
-       className="p-1 text-ghost hover:text-int transition-colors" aria-label={`View in ${item.moduleLabel}`}>
+       className="p-1 text-muted hover:text-ochre transition-colors" aria-label={`View in ${item.moduleLabel}`}>
        <ArrowRight size={11} strokeWidth={2} />
       </button>
      )}
@@ -200,14 +200,14 @@ function TriageRow({ item, isPending, onAcknowledge, escalation }) {
 function TriageSection({ label, urgency, items, pendingIds, onAcknowledge, escalationStates }) {
  const visibleCount = items.filter(i => !pendingIds.has(i.id)).length
  if (items.length === 0) return null
- const hdrColor = { danger: 'text-danger', warn: 'text-warn', watch: 'text-ghost' }[urgency]
+ const hdrColor = { danger: 'text-danger', warn: 'text-warn', watch: 'text-muted' }[urgency]
  const hdrBg = { danger: 'bg-danger/[0.04]', warn: 'bg-warn/[0.04]', watch: 'bg-stone2' }[urgency]
  const hdrBorder = { danger: 'border-b-danger/30', warn: 'border-b-warn/30', watch: 'border-b-rule2' }[urgency]
  return (
   <div>
    <div className={`flex items-baseline gap-2.5 px-4 py-2.5 border-b-2 ${hdrBorder} ${hdrBg} flex-shrink-0`}>
-    <span className={`display-num text-[22px] font-bold leading-none ${hdrColor}`}>{visibleCount}</span>
-    <span className={`font-body font-semibold text-[12px] tracking-normal ${hdrColor}`}>{label}</span>
+    <span className={`display-num text-title font-bold leading-none ${hdrColor}`}>{visibleCount}</span>
+    <span className={`font-body font-semibold text-label tracking-normal ${hdrColor}`}>{label}</span>
    </div>
    {items.map(item => (
     <TriageRow
@@ -227,7 +227,7 @@ function TriageQueue({ critItems, warnItems, watchItems, pendingIds, onAcknowled
  return (
   <div className="flex-1 overflow-y-auto">
    {allEmpty ? (
-    <div className="px-4 py-10 text-center font-body text-ghost text-[13px]">Queue clear</div>
+    <div className="px-4 py-10 text-center font-body text-muted text-label">Queue clear</div>
    ) : (
     <>
      <TriageSection label="Critical" urgency="danger" items={critItems} pendingIds={pendingIds} onAcknowledge={onAcknowledge} escalationStates={escalationStates} />
@@ -255,17 +255,17 @@ function PlantStrip() {
      onClick={() => directorOnFloor ? returnFromFloor() : goToFloor('D. Kowalski')}
      className="w-full text-left"
     >
-     <div className="font-body text-ghost text-[12px] tracking-normal mb-0.5">Director status</div>
-     <div className={`font-body text-[12px] font-medium ${directorOnFloor ? 'text-warn' : 'text-muted'}`}>
+     <div className="font-body text-muted text-label tracking-normal mb-0.5">Director status</div>
+     <div className={`font-body text-label font-medium ${directorOnFloor ? 'text-warn' : 'text-muted'}`}>
       {directorOnFloor ? `On floor · ${floorBackup} backup` : 'At desk'}
      </div>
      {directorOnFloor && (
-      <div className="font-body text-ghost text-[12px] mt-0.5">Escalation paused · tap to return</div>
+      <div className="font-body text-muted text-label mt-0.5">Escalation paused · tap to return</div>
      )}
     </button>
    </div>
    <div className="px-3 py-2 border-b border-rule2 bg-stone2 flex-shrink-0">
-    <span className="font-body text-ghost text-[12px] tracking-normal">Lines</span>
+    <span className="font-body text-muted text-label tracking-normal">Lines</span>
    </div>
    <div className="flex-1">
     {shiftData.lines.map(line => {
@@ -279,9 +279,9 @@ function PlantStrip() {
       <button key={line.id} type="button"
        onClick={() => navigate(`/shift?line=${line.id}`)}
        className="w-full flex items-center gap-2 px-3 py-3 border-b border-rule2 last:border-b-0 hover:bg-stone2 transition-colors text-left">
-       <span className="font-body text-ghost text-[12px] w-6 flex-shrink-0">{code}</span>
-       <span className={`display-num text-[18px] font-bold leading-none ${color}`}>{s}</span>
-       <span className={`ml-auto font-body text-[13px] flex-shrink-0 ${indColor}`}>{indicator}</span>
+       <span className="font-body text-muted text-label w-6 flex-shrink-0">{code}</span>
+       <span className={`display-num text-head font-bold leading-none ${color}`}>{s}</span>
+       <span className={`ml-auto font-body text-label flex-shrink-0 ${indColor}`}>{indicator}</span>
       </button>
      )
     })}
@@ -290,19 +290,19 @@ function PlantStrip() {
    {/* System confidence */}
    <div className="border-t border-rule2 flex-shrink-0 px-3 py-2">
     <div className="flex items-center justify-between mb-1">
-     <span className="font-body text-ghost text-[12px] tracking-normal">System confidence</span>
-     <span className={`display-num text-[14px] font-bold ${(systemConfidence||79) >= 85 ? 'text-ok' : (systemConfidence||79) >= 65 ? 'text-warn' : 'text-danger'}`}>
+     <span className="font-body text-muted text-label tracking-normal">System confidence</span>
+     <span className={`display-num text-body font-bold ${(systemConfidence||79) >= 85 ? 'text-ok' : (systemConfidence||79) >= 65 ? 'text-warn' : 'text-danger'}`}>
       {systemConfidence ?? 79}%
      </span>
     </div>
     <div className="h-1 bg-rule2">
      <div
-      className={`h-full transition-all ${(systemConfidence||79) >= 85 ? 'bg-ok' : (systemConfidence||79) >= 65 ? 'bg-warn' : 'bg-danger'}`}
+      className={`h-full transition-[width,background-color] ${(systemConfidence||79) >= 85 ? 'bg-ok' : (systemConfidence||79) >= 65 ? 'bg-warn' : 'bg-danger'}`}
       style={{ width:`${systemConfidence ?? 79}%` }}
      />
     </div>
     {(systemConfidence||79) < 85 && (
-     <button type="button" onClick={() => navigate('/agents')} className="font-body text-ghost text-[12px] mt-1 hover:text-muted transition-colors text-left w-full">
+     <button type="button" onClick={() => navigate('/agents')} className="font-body text-muted text-label mt-1 hover:text-muted transition-colors text-left w-full">
       HR data stale — agents degraded
      </button>
     )}
@@ -316,16 +316,16 @@ function PlantStrip() {
      className="w-full flex items-center gap-1.5 px-3 py-2 bg-stone2 hover:bg-stone2/80 transition-colors"
     >
      <Cpu size={10} className="text-ochre" strokeWidth={1.75} />
-     <span className="font-body text-ghost text-[12px] tracking-normal flex-1">Agents</span>
+     <span className="font-body text-muted text-label tracking-normal flex-1">Agents</span>
      {pendingAgentActions.length > 0 && (
-      <span className="font-body text-[12px] bg-warn/20 text-warn px-1 py-0.5">{pendingAgentActions.length}</span>
+      <span className="font-body text-label bg-warn/20 text-warn px-1 py-0.5">{pendingAgentActions.length}</span>
      )}
     </button>
     <div className="px-3 py-2 space-y-2">
      {(agentActions || []).slice(0, 3).map(a => (
-      <div key={a.id} className="text-[12px] font-body">
+      <div key={a.id} className="text-label font-body">
        <div className={`truncate ${a.status === 'pending-review' ? 'text-warn' : 'text-stone/70'}`}>{a.action}</div>
-       <div className="text-ghost text-[12px] truncate">{a.timestamp} · {a.agentName.replace(' Agent','')}</div>
+       <div className="text-muted text-label truncate">{a.timestamp} · {a.agentName.replace(' Agent','')}</div>
       </div>
      ))}
     </div>
@@ -339,13 +339,13 @@ function PlantStrip() {
 function UndoToast({ entries, onUndo }) {
  if (entries.length === 0) return null
  return (
-  <div className="fixed bottom-4 left-[calc(240px+1rem)] z-[70] flex flex-col gap-2">
+  <div className="fixed bottom-4 left-[calc(240px+1rem)] z-toast flex flex-col gap-2">
    {entries.map(({ id, title }) => (
     <div key={id} className="flex flex-col bg-ink border border-ink2 slide-in overflow-hidden">
      <div className="flex items-center gap-4 px-4 py-2.5">
-      <span className="font-body text-stone text-[13px] flex-1 min-w-0 truncate">Acknowledged: {title}</span>
+      <span className="font-body text-stone text-label flex-1 min-w-0 truncate">Acknowledged: {title}</span>
       <button type="button" onClick={() => onUndo(id)}
-       className="font-body font-medium text-[13px] text-ochre hover:text-ochre-light flex-shrink-0 transition-colors min-h-[44px] px-2">
+       className="font-body font-medium text-label text-ochre hover:text-ochre-light flex-shrink-0 transition-colors min-h-[44px] px-2">
        Undo
       </button>
      </div>

@@ -4,7 +4,7 @@ import { useFocusTrap, useExitAnimation } from '../lib/utils'
 import { FileText, BarChart2, ShieldCheck, Clock, Brain, Search } from 'lucide-react'
 import StatBar from '../components/StatBar.jsx'
 import { Check, X, AlertTriangle, ArrowRight, TrendingUp, ChevronRight } from 'lucide-react'
-import { StatusPill, SecHd, SP, ActionBanner, Btn, HoldButton } from '../components/UI'
+import { StatusPill, SP, ActionBanner, Btn, HoldButton } from '../components/UI'
 import { openCases, patternRows, benchmarks } from '../data/capa.js'
 import { haccpData, goalsData } from '../data'
 import { useAppState } from '../context/AppState'
@@ -46,10 +46,10 @@ function CaseDetailPanel({ caseData, onClose }) {
  <aside ref={panelRef} role="dialog" aria-modal="true" aria-label={`CAPA case — ${caseData.capaId}`} className={`fixed top-0 right-0 bottom-0 w-full max-w-[480px] bg-stone border-l border-rule2 z-50 flex flex-col ${exiting ? 'slide-right-out' : 'slide-right'}`}>
  <div className="flex items-start justify-between px-4 py-4 border-b border-rule2 bg-stone2 flex-shrink-0">
  <div>
- <div className="font-body text-[12px] text-muted mb-1">{caseData.capaId}</div>
+ <div className="font-body text-label text-muted mb-1">{caseData.capaId}</div>
  <div className="font-display text-base font-black text-ink">{caseData.title}</div>
  </div>
- <button type="button" onClick={() => exit(onClose)} aria-label="Close case detail" className="p-1 text-ghost hover:text-ink transition-colors duration-100 ease-standard flex-shrink-0">
+ <button type="button" onClick={() => exit(onClose)} aria-label="Close case detail" className="p-1 text-muted hover:text-ink transition-colors duration-100 ease-standard flex-shrink-0">
  <X size={14} strokeWidth={2} aria-hidden="true" />
  </button>
  </div>
@@ -57,26 +57,26 @@ function CaseDetailPanel({ caseData, onClose }) {
  <div className="grid grid-cols-2 gap-px bg-rule border-b border-rule2">
  {[{l:'Status',v:caseData.badge,vc:caseData.badgeColor},{l:'Administrative owner',v:caseData.administrativeOwner||caseData.assigned},{l:'Due date',v:caseData.due,vc:caseData.dueColor},{l:'Source',v:caseData.source}].map(m=>(
  <div key={m.l} className="bg-stone2 px-4 py-3">
- <div className="font-body text-[12px] text-muted mb-1">{m.l}</div>
+ <div className="font-body text-label text-muted mb-1">{m.l}</div>
  <div className={`font-body text-xs font-medium ${m.vc||'text-ink'}`}>{m.v}</div>
  </div>
  ))}
  </div>
  <div className="px-4 py-3 border-b border-rule2">
- <div className="font-body text-[12px] text-muted mb-2">Root cause</div>
+ <div className="font-body text-label text-muted mb-2">Root cause</div>
  <div className="flex gap-1.5 flex-wrap">
  {caseData.rootCauseTags.map(t=><StatusPill key={t} tone="warn">{t}</StatusPill>)}
  </div>
  </div>
  <div className="px-4 py-3 border-b border-rule2">
- <div className="font-body text-[12px] text-muted mb-2">Regulatory mapping</div>
+ <div className="font-body text-label text-muted mb-2">Regulatory mapping</div>
  <div className="flex gap-1.5 flex-wrap">
  {caseData.regulatory.map(r=><StatusPill key={r} tone="int">{r}</StatusPill>)}
  </div>
  </div>
  <div className="px-4 py-3 border-b border-rule2">
  <div className="flex items-center justify-between mb-2">
- <div className="font-body text-[12px] text-muted">Evidence files</div>
+ <div className="font-body text-label text-muted">Evidence files</div>
  <StatusPill tone={allFiles.length > 0 ? 'ok' : 'critical'}>{allFiles.length > 0 ? `${allFiles.length} attached` : '0 of 1 required'}</StatusPill>
  </div>
  <input ref={fileInputRef} type="file" className="hidden" onChange={e => { const f=e.target.files[0]; if(f) setLocalFiles(p=>[...p,f.name]); e.target.value='' }} />
@@ -85,24 +85,24 @@ function CaseDetailPanel({ caseData, onClose }) {
  {allFiles.map(f=>(
  <div key={f} className="flex items-center gap-2 py-1.5 border-b border-rule2 last:border-0">
  <FileText size={12} className="text-muted flex-shrink-0" />
- <span className="font-body text-[13px] text-muted">{f}</span>
+ <span className="font-body text-label text-muted">{f}</span>
  </div>
  ))}
  <Btn variant="secondary" className="mt-2" onClick={()=>fileInputRef.current?.click()}>Add another file</Btn>
  </div>
  ) : (
  <div className="flex flex-col items-center py-4 text-center gap-3">
- <FileText size={20} className="text-ghost" />
- <p className="font-body text-[13px] text-ghost">No evidence attached. Upload at least one file to close this case.</p>
+ <FileText size={20} className="text-muted" />
+ <p className="font-body text-label text-muted">No evidence attached. Upload at least one file to close this case.</p>
  <Btn variant="primary" onClick={()=>fileInputRef.current?.click()}>Upload evidence</Btn>
  </div>
  )}
  </div>
  <div className="px-4 py-3">
- <div className="font-body text-[12px] text-muted mb-3">Activity log</div>
+ <div className="font-body text-label text-muted mb-3">Activity log</div>
  {caseData.activity.map((a,i)=>(
  <div key={i} className="py-2 border-b border-rule2 last:border-0">
- <div className="font-body text-[12px] text-muted mb-0.5">{a.time}</div>
+ <div className="font-body text-label text-muted mb-0.5">{a.time}</div>
  <div className="font-body text-xs text-muted leading-relaxed">{a.text}</div>
  </div>
  ))}
@@ -155,8 +155,8 @@ function CollapsibleSection({ label, isOpen, onToggle, children }) {
  <div className="border-b border-rule2 last:border-b-0">
  <button type="button" onClick={onToggle}
  className="w-full flex items-center justify-between px-4 py-2.5 hover:bg-stone2 transition-colors">
- <span className="font-body text-ghost text-[12px] tracking-normal">{label}</span>
- <span className={`text-ghost text-[12px] transition-transform ${isOpen ? 'rotate-180' : ''}`}>▾</span>
+ <span className="font-body text-muted text-label tracking-normal">{label}</span>
+ <span className={`text-muted text-label transition-transform ${isOpen ? 'rotate-180' : ''}`}>▾</span>
  </button>
  {isOpen && <div className="border-t border-rule2 bg-stone">{children}</div>}
  </div>
@@ -181,33 +181,33 @@ function PriorityQueueRow({ c, isSelected, onSelect, isEscalated, isResolved }) 
   </StatusPill>
   {/* Directed ownership indicator */}
   {c.directorTurn && !isResolved && !isEscalated && (
-   <span className="font-body text-[12px] bg-ochre/10 text-ochre px-1.5 py-0.5 font-medium">Your turn</span>
+   <span className="font-body text-label bg-ochre/10 text-ochre px-1.5 py-0.5 font-medium">Your turn</span>
   )}
   {c.currentOwner && !c.directorTurn && !isResolved && !isEscalated && (
-   <span className="font-body text-ghost text-[12px]">{c.currentOwner}</span>
+   <span className="font-body text-muted text-label">{c.currentOwner}</span>
   )}
-  <span className="font-body text-ghost text-[12px]">{c.capaId}</span>
+  <span className="font-body text-muted text-label">{c.capaId}</span>
   </div>
-  <div className={`font-body font-medium text-[13px] leading-snug truncate ${isResolved || isEscalated ? 'text-muted' : 'text-ink'}`}>
+  <div className={`font-body font-medium text-label leading-snug truncate ${isResolved || isEscalated ? 'text-muted' : 'text-ink'}`}>
   {c.title}
   </div>
   {c.due && !isResolved && !isEscalated && (
-  <div className={`font-body text-[12px] mt-0.5 leading-snug ${c.dueColor || 'text-muted'}`}>
+  <div className={`font-body text-label mt-0.5 leading-snug ${c.dueColor || 'text-muted'}`}>
    {shiftRelativeDue(c.due)}
   </div>
   )}
   {c.priorityReason && !isResolved && !isEscalated && (
-  <div className="font-body text-[12px] mt-0.5 leading-snug text-ghost">
+  <div className="font-body text-label mt-0.5 leading-snug text-muted">
    {c.priorityReason}
   </div>
   )}
   {isEscalated && (
-  <div className="font-body text-[12px] mt-0.5 text-ghost">Delegated — moved to bottom</div>
+  <div className="font-body text-label mt-0.5 text-muted">Delegated — moved to bottom</div>
   )}
  </div>
  {score > 0 && !isResolved && !isEscalated && (
-  <div className={`display-num text-[15px] font-bold flex-shrink-0 tabular-nums ${
-   score >= 80 ? 'text-danger/50' : score >= 55 ? 'text-warn/50' : 'text-ghost/40'
+  <div className={`display-num text-base font-bold flex-shrink-0 tabular-nums ${
+   score >= 80 ? 'text-danger/50' : score >= 55 ? 'text-warn/50' : 'text-muted/40'
   }`}>
    {score}
   </div>
@@ -222,12 +222,12 @@ function ClosureRecord({ record }) {
  <div className="px-4 py-5 border-b border-rule2 bg-ok/[0.04] slide-in">
   <div className="flex items-center gap-2 mb-4">
    <ShieldCheck size={14} strokeWidth={2} className="text-ok flex-shrink-0" />
-   <span className="font-body font-medium text-ok text-[15px]">Case closed · Closure record generated</span>
+   <span className="font-body font-medium text-ok text-base">Case closed · Closure record generated</span>
   </div>
   <div className="space-y-2.5 bg-stone border border-ok/20 p-4">
    <div className="flex items-center justify-between border-b border-rule2 pb-2 mb-2">
-    <span className="font-body text-ghost text-[12px] tracking-normal">Closure record</span>
-    <span className="font-body text-ghost text-[12px]">FDA 21 CFR 110</span>
+    <span className="font-body text-muted text-label tracking-normal">Closure record</span>
+    <span className="font-body text-muted text-label">FDA 21 CFR 110</span>
    </div>
    {[
     ['Case ID', record.capaId],
@@ -236,16 +236,16 @@ function ClosureRecord({ record }) {
     ['Root cause', record.rootCause],
    ].map(([k, v]) => (
     <div key={k} className="flex gap-3">
-     <span className="font-body text-ghost text-[12px] w-24 flex-shrink-0 pt-px">{k}</span>
-     <span className="font-body text-ink text-[13px] leading-snug">{v}</span>
+     <span className="font-body text-muted text-label w-24 flex-shrink-0 pt-px">{k}</span>
+     <span className="font-body text-ink text-label leading-snug">{v}</span>
     </div>
    ))}
    <div className="flex gap-3 pt-1 border-t border-rule2">
-    <span className="font-body text-ghost text-[12px] w-24 flex-shrink-0 pt-px">Corrective measure</span>
-    <span className="font-body text-ink text-[13px] leading-snug">{record.correctiveMeasure}</span>
+    <span className="font-body text-muted text-label w-24 flex-shrink-0 pt-px">Corrective measure</span>
+    <span className="font-body text-ink text-label leading-snug">{record.correctiveMeasure}</span>
    </div>
    <div className="flex gap-1.5 flex-wrap pt-1 border-t border-rule2">
-    <span className="font-body text-ghost text-[12px] w-24 flex-shrink-0 pt-0.5">Regulatory</span>
+    <span className="font-body text-muted text-label w-24 flex-shrink-0 pt-0.5">Regulatory</span>
     <div className="flex gap-1 flex-wrap">{record.regulatory.map(r => <StatusPill key={r} tone="int">{r}</StatusPill>)}</div>
    </div>
   </div>
@@ -316,11 +316,11 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
  {/* Case header */}
  <div className="px-4 py-4 border-b border-rule2 bg-stone2 flex-shrink-0">
  <div className="flex items-center gap-2 mb-1">
- <span className="font-body text-muted text-[12px]">{c.capaId}</span>
+ <span className="font-body text-muted text-label">{c.capaId}</span>
  <StatusPill tone={c.badgeColor === 'text-danger' ? 'danger' : c.badgeColor === 'text-ok' ? 'ok' : 'warn'}>{c.badge}</StatusPill>
  </div>
  <div className="font-display text-lg font-black text-ink leading-tight">{c.title}</div>
- <div className="font-body text-muted text-[13px] mt-0.5">
+ <div className="font-body text-muted text-label mt-0.5">
  {c.assigned} · {c.due}
  </div>
  </div>
@@ -337,23 +337,23 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
  {/* ── Not director's turn — ownership context ── */}
  {!c.directorTurn && c.currentOwner && !isClosed && !actionTaken && c.handoffNote && (
   <div className="px-4 py-2.5 border-b border-rule2 bg-stone2 flex items-center gap-2">
-   <span className="font-body text-ghost text-[12px] tracking-normal">Ball is with</span>
-   <span className="font-body text-muted text-[13px] font-medium">{c.currentOwner}</span>
-   <span className="font-body text-ghost text-[12px]">·</span>
-   <span className="font-body text-ghost text-[12px]">{c.handoffNote}</span>
+   <span className="font-body text-muted text-label tracking-normal">Ball is with</span>
+   <span className="font-body text-muted text-label font-medium">{c.currentOwner}</span>
+   <span className="font-body text-muted text-label">·</span>
+   <span className="font-body text-muted text-label">{c.handoffNote}</span>
   </div>
  )}
  {/* ── Assignment acknowledgment gate ── */}
  {!assignmentAcknowledged && !isClosed && !actionTaken && (
   <div className="px-4 py-3 border-b border-rule2 bg-warn/[0.04] flex items-center justify-between gap-4">
    <div>
-    <div className="font-body font-medium text-ink text-[14px]">Assignment not yet acknowledged</div>
-    <div className="font-body text-ghost text-[12px] mt-0.5">
+    <div className="font-body font-medium text-ink text-body">Assignment not yet acknowledged</div>
+    <div className="font-body text-muted text-label mt-0.5">
      Administrative owner: <span className="text-muted font-medium">{c.administrativeOwner || c.assigned}</span> · Ownership clock starts on acknowledgment
     </div>
    </div>
    <button type="button" onClick={() => acknowledgeCapaAssignment?.(c.id)}
-    className="font-body text-[13px] px-3 py-1.5 border border-rule2 bg-stone text-muted hover:text-ink hover:border-rule transition-colors flex-shrink-0">
+    className="font-body text-label px-3 py-1.5 border border-rule2 bg-stone text-muted hover:text-ink hover:border-rule transition-colors flex-shrink-0">
     Acknowledge assignment
    </button>
   </div>
@@ -361,7 +361,7 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
  {/* ── Recommended action (the operative section) ── */}
  {!isClosed && !actionTaken && (
  <div className={`px-4 py-5 border-b border-rule2 border-l-2 ${isBlocking ? 'border-l-danger bg-danger/[0.02]' : c.type === 'ca' ? 'border-l-ok bg-ok/[0.015]' : 'border-l-warn bg-stone2'}`}>
- <div className="font-body text-ghost text-[12px] tracking-normal mb-3">
+ <div className="font-body text-muted text-label tracking-normal mb-3">
  Recommended action
  </div>
 
@@ -372,8 +372,8 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
  <div className="flex items-start gap-2">
   <Check size={12} strokeWidth={2} className="text-ok flex-shrink-0 mt-0.5" />
   <div>
-   <div className="font-body text-ghost text-[12px] mb-1">If you act</div>
-   <div className="font-body text-ink text-[14px] leading-snug">{c.expectedImpact}</div>
+   <div className="font-body text-muted text-label mb-1">If you act</div>
+   <div className="font-body text-ink text-body leading-snug">{c.expectedImpact}</div>
   </div>
  </div>
  )}
@@ -381,8 +381,8 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
  <div className="flex items-start gap-2">
   <X size={12} strokeWidth={2} className="text-danger flex-shrink-0 mt-0.5" />
   <div>
-   <div className="font-body text-ghost text-[12px] mb-1">If you delay</div>
-   <div className="font-body text-ink text-[14px] leading-snug">{c.riskIfIgnored}</div>
+   <div className="font-body text-muted text-label mb-1">If you delay</div>
+   <div className="font-body text-ink text-body leading-snug">{c.riskIfIgnored}</div>
   </div>
  </div>
  )}
@@ -394,7 +394,7 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
  <>
  <input ref={fileInputRef} type="file" className="hidden" onChange={handleUpload} />
  <button type="button" onClick={() => fileInputRef.current?.click()}
- className="w-full font-body font-medium text-[14px] px-4 py-3 bg-ink text-stone hover:bg-ink2 transition-colors text-left flex items-center justify-between">
+ className="w-full font-body font-medium text-body px-4 py-3 bg-ink text-stone hover:bg-ink2 transition-colors text-left flex items-center justify-between">
  <span>{c.recommendedAction}</span>
  <ChevronRight size={13} strokeWidth={2} className="opacity-60" />
  </button>
@@ -403,22 +403,22 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
  closureStep === 'measure' ? (
  <div className="space-y-3">
   <div>
-   <div className="font-body text-ghost text-[12px] mb-1">Root cause confirmed</div>
-   <div className="font-body text-ink2 text-[13px] px-3 py-2 bg-stone border border-rule2">{c.rootCause}</div>
+   <div className="font-body text-muted text-label mb-1">Root cause confirmed</div>
+   <div className="font-body text-ink2 text-label px-3 py-2 bg-stone border border-rule2">{c.rootCause}</div>
   </div>
   <div>
-   <div className="font-body text-ghost text-[12px] mb-1">Corrective measure <span className="text-danger">*</span></div>
+   <div className="font-body text-muted text-label mb-1">Corrective measure <span className="text-danger">*</span></div>
    <textarea
     value={correctiveMeasure}
     onChange={e => setCorrectiveMeasure(e.target.value)}
     placeholder="Describe what was done to resolve this case and prevent recurrence…"
     rows={3}
-    className="w-full font-body text-ink text-[13px] bg-stone border border-rule2 px-3 py-2 resize-none focus:border-ink outline-none"
+    className="w-full font-body text-ink text-label bg-stone border border-rule2 px-3 py-2 resize-none focus:border-ink outline-none"
    />
   </div>
   {/* Evidence declaration checklist — required before close */}
   <div className="space-y-2 py-3 border-t border-rule2">
-   <div className="font-body text-ghost text-[12px] tracking-normal mb-2">Evidence declaration — required before closing</div>
+   <div className="font-body text-muted text-label tracking-normal mb-2">Evidence declaration — required before closing</div>
    {[
     { key: 'rootCause', label: 'Evidence addresses the root cause documented in this case' },
     { key: 'corrective', label: 'Corrective measure is documented and specific to this incident' },
@@ -430,11 +430,11 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
      }`} onClick={() => toggleDeclaration(key)}>
       {declaration[key] && <Check size={10} strokeWidth={3} className="text-stone" />}
      </div>
-     <span className="font-body text-[13px] text-muted leading-snug">{label}</span>
+     <span className="font-body text-label text-muted leading-snug">{label}</span>
     </label>
    ))}
    {!declarationComplete && (
-    <p className="font-body text-ghost text-[12px] italic mt-1">All three must be checked before the case can close.</p>
+    <p className="font-body text-muted text-label italic mt-1">All three must be checked before the case can close.</p>
    )}
   </div>
   <HoldButton
@@ -446,18 +446,18 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
    disabled={!correctiveMeasure.trim() || !declarationComplete}
    onConfirm={handleApprove}
   />
-  <button type="button" onClick={() => setClosureStep(null)} className="font-body text-ghost text-[12px] hover:text-muted transition-colors">← Back</button>
+  <button type="button" onClick={() => setClosureStep(null)} className="font-body text-muted text-label hover:text-muted transition-colors">← Back</button>
  </div>
  ) : (
  <button type="button" onClick={() => setClosureStep('measure')}
- className="w-full font-body font-medium text-[14px] px-4 py-3 bg-ink text-stone hover:bg-ink2 transition-colors text-left flex items-center justify-between">
+ className="w-full font-body font-medium text-body px-4 py-3 bg-ink text-stone hover:bg-ink2 transition-colors text-left flex items-center justify-between">
  <span>{c.recommendedAction || 'Approve & close case'}</span>
  <ChevronRight size={13} strokeWidth={2} className="opacity-60" />
  </button>
  )
  ) : (
  <button type="button" onClick={handleEscalate}
- className="w-full font-body font-medium text-[14px] px-4 py-3 bg-ink text-stone hover:bg-ink2 transition-colors text-left flex items-center justify-between">
+ className="w-full font-body font-medium text-body px-4 py-3 bg-ink text-stone hover:bg-ink2 transition-colors text-left flex items-center justify-between">
  <span>{c.recommendedAction || c.primaryLabel}</span>
  <ChevronRight size={13} strokeWidth={2} className="opacity-60" />
  </button>
@@ -473,11 +473,11 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
  <div className="px-4 py-5 bg-ok/10 border-b border-ok/20 slide-in">
  <div className="flex items-center gap-2 mb-1">
  <Check size={12} strokeWidth={2} className="text-ok flex-shrink-0" />
- <span className="font-body font-medium text-ok text-[15px]">
+ <span className="font-body font-medium text-ok text-base">
  {actionTaken === 'uploaded' ? 'Evidence uploaded.' : 'Action delegated.'}
  </span>
  </div>
- <div className="font-body text-ok/70 text-[13px]">
+ <div className="font-body text-ok/70 text-label">
  {actionTaken === 'uploaded' ? 'FDA audit package unblocked. Queue updated.'
  : `${c.capaId} delegated. Moving to next item.`}
  </div>
@@ -493,8 +493,8 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
  ].map(tab => (
   <button key={tab.id} type="button"
   onClick={() => setDetailTab(tab.id)}
-  className={`px-4 py-2 font-body text-[12px] tracking-normal font-medium border-b-2 transition-colors cursor-pointer ${
-   detailTab === tab.id ? 'border-b-ochre text-ink' : 'border-b-transparent text-ghost hover:text-muted'
+  className={`px-4 py-2 font-body text-label tracking-normal font-medium border-b-2 transition-colors cursor-pointer ${
+   detailTab === tab.id ? 'border-b-ochre text-ink' : 'border-b-transparent text-muted hover:text-muted'
   }`}>
   {tab.label}
   </button>
@@ -506,18 +506,18 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
  <div className="px-4 py-4 space-y-4 border-b border-rule2">
   {c.description && (
   <div>
-   <div className="font-body text-ghost text-[12px] mb-0.5">Description</div>
-   <p className="font-body text-muted text-[13px] leading-relaxed">{c.description}</p>
+   <div className="font-body text-muted text-label mb-0.5">Description</div>
+   <p className="font-body text-muted text-label leading-relaxed">{c.description}</p>
   </div>
   )}
   <div>
-  <div className="font-body text-ghost text-[12px] mb-1.5">Regulatory</div>
+  <div className="font-body text-muted text-label mb-1.5">Regulatory</div>
   <div className="flex gap-1.5 flex-wrap">
    {(c.regulatory||[]).map(r => <StatusPill key={r} tone="int">{r}</StatusPill>)}
   </div>
   </div>
   <div>
-  <div className="font-body text-ghost text-[12px] mb-1.5">Root cause tags</div>
+  <div className="font-body text-muted text-label mb-1.5">Root cause tags</div>
   <div className="flex gap-1.5 flex-wrap">
    {(c.rootCauseTags||[]).map(t => <StatusPill key={t} tone="warn">{t}</StatusPill>)}
   </div>
@@ -529,7 +529,7 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
  {detailTab === 'evidence' && (
  <div className="px-4 py-4 border-b border-rule2">
   <div className="flex items-center justify-between mb-2">
-   <div className="font-body text-ghost text-[12px]">Evidence files</div>
+   <div className="font-body text-muted text-label">Evidence files</div>
    <StatusPill tone={allFiles.length > 0 ? 'ok' : c.type === 'ca' ? 'warn' : 'info'}>
    {allFiles.length > 0 ? `${allFiles.length} filed` : 'None attached'}
    </StatusPill>
@@ -537,10 +537,10 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
   {allFiles.length > 0 ? allFiles.map(f => (
    <div key={f} className="flex items-center gap-2 py-1.5 border-b border-rule2 last:border-0">
    <FileText size={11} className="text-muted flex-shrink-0" />
-   <span className="font-body text-[13px] text-muted">{f}</span>
+   <span className="font-body text-label text-muted">{f}</span>
    </div>
   )) : (
-   <div className="font-body text-ghost text-[13px] mb-2">No files attached.</div>
+   <div className="font-body text-muted text-label mb-2">No files attached.</div>
   )}
   <Btn variant="secondary" className="mt-2" onClick={() => fileInputRef.current?.click()}>
    {allFiles.length > 0 ? 'Add file' : 'Upload evidence'}
@@ -553,8 +553,8 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
  <div className="px-4 py-2">
   {(c.activity||[]).map((a, i) => (
   <div key={i} className="py-2.5 border-b border-rule2 last:border-0">
-   <div className="font-body text-[12px] text-muted mb-0.5">{a.time}</div>
-   <div className="font-body text-[13px] text-ink2 leading-relaxed">{a.text}</div>
+   <div className="font-body text-label text-muted mb-0.5">{a.time}</div>
+   <div className="font-body text-label text-ink2 leading-relaxed">{a.text}</div>
   </div>
   ))}
  </div>
@@ -637,17 +637,17 @@ function LayoutQueue({ visibleCases, blockingEvidenceUploaded, setBlockingEviden
  {/* Search */}
  <div className="px-3 py-2 border-b border-rule2 flex-shrink-0">
   <div className="flex items-center gap-2 bg-stone2 px-2 py-1.5 border border-rule2">
-   <Search size={11} strokeWidth={2} className="text-ghost flex-shrink-0" />
+   <Search size={11} strokeWidth={2} className="text-muted flex-shrink-0" />
    <input
     type="text"
     value={searchQuery}
     onChange={e => setSearchQuery(e.target.value)}
     placeholder="Search cases…"
     aria-label="Search CAPA cases"
-    className="flex-1 font-body text-[13px] text-ink bg-transparent outline-none placeholder:text-ghost"
+    className="flex-1 font-body text-label text-ink bg-transparent outline-none placeholder:text-muted"
    />
    {searchQuery && (
-    <button type="button" onClick={() => setSearchQuery('')} aria-label="Clear search" className="text-ghost hover:text-muted transition-colors">
+    <button type="button" onClick={() => setSearchQuery('')} aria-label="Clear search" className="text-muted hover:text-muted transition-colors">
      <X size={10} strokeWidth={2} />
     </button>
    )}
@@ -656,8 +656,8 @@ function LayoutQueue({ visibleCases, blockingEvidenceUploaded, setBlockingEviden
 
  {/* Model ranking signal */}
  <div className="px-4 py-2.5 border-b border-rule2 bg-stone2 flex items-center gap-2 flex-shrink-0">
-  <Brain size={10} strokeWidth={1.75} className="text-ghost flex-shrink-0" />
-  <span className="font-body text-ghost text-[12px]">
+  <Brain size={10} strokeWidth={1.75} className="text-muted flex-shrink-0" />
+  <span className="font-body text-muted text-label">
    Ranked by priority score · <span className="text-muted font-medium">88%</span> model confidence · FDA deadline + evidence gaps weighted highest
   </span>
  </div>
@@ -678,12 +678,12 @@ function LayoutQueue({ visibleCases, blockingEvidenceUploaded, setBlockingEviden
  <div className="flex-1 flex items-center justify-center px-4 text-center">
  <div>
  <div className="font-display font-bold text-ok text-2xl mb-1">All clear</div>
- <div className="font-body text-ghost text-[13px]">No open cases.</div>
+ <div className="font-body text-muted text-label">No open cases.</div>
  </div>
  </div>
  )}
  {sortedQueue.length > 0 && searchQuery && filteredQueue.length === 0 && (
- <div className="px-4 py-8 text-center font-body text-ghost text-[13px]">No cases match "{searchQuery}"</div>
+ <div className="px-4 py-8 text-center font-body text-muted text-label">No cases match "{searchQuery}"</div>
  )}
  </div>
 
@@ -708,7 +708,7 @@ function LayoutQueue({ visibleCases, blockingEvidenceUploaded, setBlockingEviden
  <div className="flex-1 flex items-center justify-center text-center px-8">
  <div>
  <div className="font-display font-bold text-ok text-2xl mb-2">All clear</div>
- <div className="font-body text-ghost text-[14px]">No open cases require attention.</div>
+ <div className="font-body text-muted text-body">No open cases require attention.</div>
  </div>
  </div>
  )}
@@ -755,7 +755,7 @@ export default function CapaEngine() {
  aria-label="Reassign overdue cases to"
  value={reassignTarget}
  onChange={e => setReassignTarget(e.target.value)}
- className="font-body text-ink text-[13px] bg-stone border border-rule2 px-2 py-1 flex-1 cursor-pointer"
+ className="font-body text-ink text-label bg-stone border border-rule2 px-2 py-1 flex-1 cursor-pointer"
  >
  <option value="">Reassign overdue cases to…</option>
  <option>M. Santos · Line 4 PM</option>

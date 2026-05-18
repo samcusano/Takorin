@@ -129,9 +129,8 @@ function pressureCls(score) {
   return 'border-l-[2px] border-l-ok/50'
 }
 
-function pressureStyle(score) {
-  if (score >= 75) return { boxShadow: '0 1px 4px rgba(217,45,32,0.07)' }
-  return {}
+function pressureClass(score) {
+  return score >= 75 ? 'shadow-card-alert' : ''
 }
 
 // ─── Root ─────────────────────────────────────────────────────────────────────
@@ -269,41 +268,41 @@ export default function PlantOverview() {
         <div className="flex items-center gap-2">
           <Activity size={13} strokeWidth={1.75}
             className={critCount > 0 ? 'text-danger' : watchCount > 0 ? 'text-warn' : 'text-ok'} />
-          <span className="font-display font-bold text-ink text-[16px]">{plantName}</span>
-          <span className="font-body text-ghost text-[12px]">· April 16 · AM shift</span>
+          <span className="font-display font-bold text-ink text-base">{plantName}</span>
+          <span className="font-body text-muted text-label">· April 16 · AM shift</span>
           {mode === 'whatif' && (
-            <span className="font-body text-[12px] text-ochre bg-ochre/[0.08] px-1.5 py-0.5 ml-1">What if mode</span>
+            <span className="font-body text-label text-ochre bg-ochre/[0.08] px-1.5 py-0.5 ml-1">What if mode</span>
           )}
         </div>
         <div className="flex items-center gap-3">
           {critCount > 0 && (
-            <span className="font-body text-danger text-[12px] flex items-center gap-1">
+            <span className="font-body text-danger text-label flex items-center gap-1">
               <span className="w-1.5 h-1.5 rounded-full bg-danger" />
               {critCount} at risk
-              {mode === 'whatif' && anyAdjusted && <span className="text-ghost ml-0.5">(projected)</span>}
+              {mode === 'whatif' && anyAdjusted && <span className="text-muted ml-0.5">(projected)</span>}
             </span>
           )}
           {watchCount > 0 && (
-            <span className="font-body text-warn text-[12px] flex items-center gap-1">
+            <span className="font-body text-warn text-label flex items-center gap-1">
               <span className="w-1.5 h-1.5 rounded-full bg-warn" />{watchCount} watch
             </span>
           )}
           {clearCount > 0 && (
-            <span className="font-body text-ok text-[12px] flex items-center gap-1">
+            <span className="font-body text-ok text-label flex items-center gap-1">
               <span className="w-1.5 h-1.5 rounded-full bg-ok" />{clearCount} clear
             </span>
           )}
           <div className="flex items-center border-l border-rule2 pl-3 gap-px">
             {[['normal', 'Live'], ['whatif', 'What if'], ['compare', 'Compare']].map(([m, label]) => (
               <button key={m} type="button" onClick={() => switchMode(m)}
-                className={`font-body text-[12px] px-2.5 py-1.5 transition-colors ${
-                  mode === m ? 'bg-ink text-stone' : 'text-ghost hover:text-ink border border-transparent hover:border-rule2'
+                className={`font-body text-label px-2.5 py-1.5 transition-colors ${
+                  mode === m ? 'bg-ink text-stone' : 'text-muted hover:text-ink border border-transparent hover:border-rule2'
                 }`}>
                 {label}
               </button>
             ))}
           </div>
-          <span className="font-body text-ghost text-[12px] flex items-center gap-1.5 border-l border-rule2 pl-3">
+          <span className="font-body text-muted text-label flex items-center gap-1.5 border-l border-rule2 pl-3">
             <Users size={11} strokeWidth={2} />
             {rawLines.length} lines · {totalWorkers} workers
           </span>
@@ -315,35 +314,35 @@ export default function PlantOverview() {
         <button type="button" onClick={() => setImpactExpanded(e => !e)}
           className="flex items-center gap-4 px-6 py-2 bg-stone2 hover:bg-stone3 transition-colors text-left w-full">
           <CircleDot size={10} strokeWidth={2} className="text-ok flex-shrink-0" />
-          <span className="font-body text-ghost text-[12px] tracking-normal">Impact · Last 30 days</span>
+          <span className="font-body text-muted text-label tracking-normal">Impact · Last 30 days</span>
           <div className="flex items-center gap-4 ml-2">
-            <span className="font-body text-ink text-[12px]">
+            <span className="font-body text-ink text-label">
               <span className="font-medium">{interventionSummary.total}</span>
-              <span className="text-ghost ml-1">interventions</span>
+              <span className="text-muted ml-1">interventions</span>
             </span>
             <span className="w-px h-3 bg-rule2" />
-            <span className="font-body text-ok text-[12px]">
+            <span className="font-body text-ok text-label">
               <span className="font-medium">{interventionSummary.positive}</span>
-              <span className="text-ghost ml-1">positive outcomes</span>
+              <span className="text-muted ml-1">positive outcomes</span>
             </span>
             <span className="w-px h-3 bg-rule2" />
-            <span className="font-body text-[12px]">
+            <span className="font-body text-label">
               <span className={`font-medium ${interventionSummary.avgAttributionConfidence >= 0.7 ? 'text-ok' : 'text-warn'}`}>
                 {Math.round(interventionSummary.avgAttributionConfidence * 100)}%
               </span>
-              <span className="text-ghost ml-1">avg attribution</span>
+              <span className="text-muted ml-1">avg attribution</span>
             </span>
             {interventionSummary.lowDwellDecisions > 0 && (
               <>
                 <span className="w-px h-3 bg-rule2" />
-                <span className="flex items-center gap-1 font-body text-danger text-[12px]">
+                <span className="flex items-center gap-1 font-body text-danger text-label">
                   <AlertTriangle size={8} strokeWidth={2} />
                   {interventionSummary.lowDwellDecisions} low-dwell
                 </span>
               </>
             )}
           </div>
-          {impactExpanded ? <ChevronUp size={10} className="text-ghost ml-auto" /> : <ChevronDown size={10} className="text-ghost ml-auto" />}
+          {impactExpanded ? <ChevronUp size={10} className="text-muted ml-auto" /> : <ChevronDown size={10} className="text-muted ml-auto" />}
         </button>
         {impactExpanded && (
           <div className="bg-stone px-6 py-3 border-t border-rule2">
@@ -355,12 +354,12 @@ export default function PlantOverview() {
                   <div key={iv.id} className="flex items-center gap-3 px-4 py-2.5">
                     <div className={`h-1.5 w-1.5 rounded-full flex-shrink-0 ${pos ? 'bg-ok' : 'bg-warn'}`} />
                     <div className="flex-1 min-w-0">
-                      <div className="font-body font-medium text-ink text-[13px] truncate">{iv.agentObservation?.label ?? iv.id}</div>
-                      <div className="font-body text-ghost text-[12px] truncate">
+                      <div className="font-body font-medium text-ink text-label truncate">{iv.agentObservation?.label ?? iv.id}</div>
+                      <div className="font-body text-muted text-label truncate">
                         {outcome?.metric ?? ''}{outcome?.observed?.delta ? ` · ${outcome.observed.delta}` : ''}
                       </div>
                     </div>
-                    <div className="font-body text-ghost text-[12px] flex-shrink-0">
+                    <div className="font-body text-muted text-label flex-shrink-0">
                       {iv.attributionConfidence != null ? `${Math.round(iv.attributionConfidence * 100)}% conf` : '—'}
                     </div>
                   </div>
@@ -368,7 +367,7 @@ export default function PlantOverview() {
               })}
             </div>
             <button type="button" onClick={() => navigate('/impact')}
-              className="flex items-center gap-1 font-body text-ghost text-[12px] hover:text-ink transition-colors">
+              className="flex items-center gap-1 font-body text-muted text-label hover:text-ink transition-colors">
               <ExternalLink size={9} strokeWidth={2} />Full ImpactLoop view
             </button>
           </div>
@@ -406,10 +405,10 @@ export default function PlantOverview() {
         />
         {activeFilters > 0 && (
           <div className="flex items-center gap-3 ml-auto">
-            <span className="font-body text-ghost text-[12px]">{filteredCount} of {rawLines.length} lines</span>
+            <span className="font-body text-muted text-label">{filteredCount} of {rawLines.length} lines</span>
             <button type="button"
               onClick={() => { setZoneFilter('all'); setAreaFilter('all'); setFindingsFilter('all') }}
-              className="font-body text-[12px] text-ghost hover:text-ink transition-colors flex items-center gap-1">
+              className="font-body text-label text-muted hover:text-ink transition-colors flex items-center gap-1">
               <X size={10} strokeWidth={2} />Clear all
             </button>
           </div>
@@ -420,27 +419,27 @@ export default function PlantOverview() {
       {mode === 'whatif' && (
         <div className="flex-shrink-0 px-5 py-3 border-b border-rule2 bg-stone2">
           <div className="flex items-center gap-2 mb-1.5">
-            <span className="font-body text-ghost text-[12px] tracking-normal">Projected cascade</span>
+            <span className="font-body text-muted text-label tracking-normal">Projected cascade</span>
             {anyAdjusted && (
               <button type="button" onClick={() => setWhatIfScores({})}
-                className="font-body text-[12px] text-danger hover:text-ink transition-colors ml-auto">
+                className="font-body text-label text-danger hover:text-ink transition-colors ml-auto">
                 Reset all
               </button>
             )}
           </div>
           {!anyAdjusted ? (
-            <span className="font-body text-ghost text-[12px]">Drag sliders on tiles to model downstream impact</span>
+            <span className="font-body text-muted text-label">Drag sliders on tiles to model downstream impact</span>
           ) : zoneTransitions.length > 0 ? (
             <div className="space-y-1.5">
               {zoneTransitions.map((t, i) => {
                 const zc = z => z === 'at-risk' ? 'text-danger' : z === 'watch' ? 'text-warn' : 'text-ok'
                 return (
-                  <div key={i} className="flex items-center gap-2 font-body text-[12px]">
+                  <div key={i} className="flex items-center gap-2 font-body text-label">
                     <span className={`w-1 h-1 rounded-full flex-shrink-0 ${t.delta < 0 ? 'bg-ok' : 'bg-danger'}`} />
                     <span className="font-medium text-ink">{t.line.name}</span>
-                    <span className="text-ghost">moves</span>
+                    <span className="text-muted">moves</span>
                     <span className={zc(t.from)}>{t.from}</span>
-                    <span className="text-ghost">→</span>
+                    <span className="text-muted">→</span>
                     <span className={zc(t.to)}>{t.to}</span>
                     <span className={`tabular-nums ${t.delta < 0 ? 'text-ok' : 'text-danger'}`}>
                       ({t.delta > 0 ? '+' : ''}{t.delta})
@@ -451,8 +450,8 @@ export default function PlantOverview() {
             </div>
           ) : (
             <div className="flex items-center gap-5">
-              <span className="font-body text-muted text-[12px]">No zone changes — within existing classification</span>
-              <span className="font-body text-ghost text-[12px]">
+              <span className="font-body text-muted text-label">No zone changes — within existing classification</span>
+              <span className="font-body text-muted text-label">
                 Plant avg:
                 <span className={`font-medium ml-1 ${projAvg > realAvg ? 'text-danger' : projAvg < realAvg ? 'text-ok' : 'text-ink'}`}>
                   {projAvg}
@@ -468,14 +467,14 @@ export default function PlantOverview() {
       {mode === 'compare' && (
         <div className="flex-shrink-0 border-b border-rule2">
           <div className="px-5 py-1.5 bg-stone3 border-b border-rule2 flex items-center gap-2">
-            <span className="font-body text-ghost text-[12px] tracking-normal">
+            <span className="font-body text-muted text-label tracking-normal">
               {compareLines.length < 2
                 ? `Select ${2 - compareLines.length} more line${2 - compareLines.length !== 1 ? 's' : ''} to compare`
                 : `${compareLines[0].name} vs ${compareLines[1].name}`}
             </span>
             {compareLines.length > 0 && (
               <button type="button" onClick={() => setCompareSelected([])}
-                className="ml-auto font-body text-[12px] text-danger hover:text-ink transition-colors">
+                className="ml-auto font-body text-label text-danger hover:text-ink transition-colors">
                 Clear
               </button>
             )}
@@ -494,41 +493,41 @@ export default function PlantOverview() {
                   <div key={line.id} className="px-5 py-4">
                     <div className="flex items-start justify-between mb-2">
                       <div>
-                        <div className="font-body text-ghost text-[12px] tracking-normal mb-0.5">
+                        <div className="font-body text-muted text-label tracking-normal mb-0.5">
                           {LINE_AREAS[line.id]?.area ?? ''} · {line.name}
                         </div>
-                        <div className="font-body text-muted text-[12px]">{meta?.supervisor}</div>
+                        <div className="font-body text-muted text-label">{meta?.supervisor}</div>
                       </div>
                       <MiniSparkline data={meta?.sparkline} color={riskBgColor(line.score)} />
                     </div>
-                    <div className={`font-display font-bold text-[44px] leading-none tabular-nums mb-0.5 ${riskColorClass(line.score)}`}>
+                    <div className={`font-display font-bold text-display leading-none tabular-nums mb-0.5 ${riskColorClass(line.score)}`}>
                       {line.score}
                     </div>
-                    <div className={`font-body font-medium text-[13px] mb-3 ${
-                      delta > 0 ? 'text-danger' : delta < 0 ? 'text-ok' : 'text-ghost'
+                    <div className={`font-body font-medium text-label mb-3 ${
+                      delta > 0 ? 'text-danger' : delta < 0 ? 'text-ok' : 'text-muted'
                     }`}>
                       {delta === 0 ? 'Equal score' : `${delta > 0 ? '+' : ''}${delta} vs ${other.name}`}
                     </div>
                     <div className="grid grid-cols-3 gap-3 mb-3">
                       <div>
-                        <div className="font-body text-ghost text-[12px] mb-0.5">Findings</div>
-                        <div className={`font-display font-bold text-[20px] leading-none ${
+                        <div className="font-body text-muted text-label mb-0.5">Findings</div>
+                        <div className={`font-display font-bold text-subhead leading-none ${
                           pend > otherPend ? 'text-warn' : pend < otherPend ? 'text-ok' : 'text-ink'
                         }`}>{pend}</div>
                       </div>
                       <div>
-                        <div className="font-body text-ghost text-[12px] mb-0.5">Model</div>
-                        <div className={`font-display font-bold text-[20px] leading-none ${
+                        <div className="font-body text-muted text-label mb-0.5">Model</div>
+                        <div className={`font-display font-bold text-subhead leading-none ${
                           conf >= 90 ? 'text-ok' : conf >= 80 ? 'text-muted' : 'text-warn'
                         }`}>{conf}%</div>
                       </div>
                       <div>
-                        <div className="font-body text-ghost text-[12px] mb-0.5">Workers</div>
-                        <div className="font-display font-bold text-[20px] leading-none text-ink">{meta?.workerCount ?? '—'}</div>
+                        <div className="font-body text-muted text-label mb-0.5">Workers</div>
+                        <div className="font-display font-bold text-subhead leading-none text-ink">{meta?.workerCount ?? '—'}</div>
                       </div>
                     </div>
                     <div className="h-[3px] bg-rule2 overflow-hidden">
-                      <div className="h-full transition-all duration-500"
+                      <div className="h-full transition-[width] duration-500"
                         style={{
                           width: `${line.score}%`,
                           background: line.score >= 75 ? 'var(--color-danger)' : line.score >= 60 ? 'var(--color-warn)' : 'var(--color-ok)',
@@ -547,12 +546,12 @@ export default function PlantOverview() {
 
         {domainGroups.length === 0 ? (
           <div className="flex items-center gap-3 px-5 py-12">
-            <span className="font-body text-ghost text-[14px]">
+            <span className="font-body text-muted text-body">
               No lines match the active filters
             </span>
             <button type="button"
               onClick={() => { setZoneFilter('all'); setAreaFilter('all'); setFindingsFilter('all') }}
-              className="font-body text-[12px] text-ochre hover:text-ink transition-colors">
+              className="font-body text-label text-ochre hover:text-ink transition-colors">
               Clear filters
             </button>
           </div>
@@ -568,8 +567,8 @@ export default function PlantOverview() {
 
                 {/* Sticky domain header */}
                 <div className="sticky top-0 z-10 flex items-center gap-2.5 px-5 py-2 bg-stone border-b border-t border-rule2">
-                  <span className="font-body font-semibold text-ink text-[13px] tracking-tight">{group.area}</span>
-                  <span className={`font-body text-[12px] px-1.5 py-0.5 font-medium ${
+                  <span className="font-body font-semibold text-ink text-label tracking-tight">{group.area}</span>
+                  <span className={`font-body text-label px-1.5 py-0.5 font-medium ${
                     worstZone === 'risk'  ? 'bg-danger/[0.04] text-danger'
                     : worstZone === 'watch' ? 'bg-warn/[0.08] text-warn'
                     : 'bg-ok/[0.07] text-ok'
@@ -577,11 +576,11 @@ export default function PlantOverview() {
                     {worstZone === 'risk' ? 'At risk' : worstZone === 'watch' ? 'Watch' : 'All clear'}
                   </span>
                   {(atRiskN > 0 || watchN > 0) && (
-                    <span className="font-body text-ghost text-[12px]">
+                    <span className="font-body text-muted text-label">
                       {[atRiskN > 0 && `${atRiskN} at risk`, watchN > 0 && `${watchN} watch`].filter(Boolean).join(' · ')}
                     </span>
                   )}
-                  <span className="ml-auto font-body text-ghost text-[12px]">
+                  <span className="ml-auto font-body text-muted text-label">
                     {group.lines.length} line{group.lines.length !== 1 ? 's' : ''}
                   </span>
                 </div>
@@ -601,8 +600,7 @@ export default function PlantOverview() {
                     return (
                       <article
                         key={line.id}
-                        className={`relative bg-stone ${pressureCls(eff)}`}
-                        style={pressureStyle(eff)}
+                        className={`relative bg-stone ${pressureCls(eff)} ${pressureClass(eff)}`}
                       >
                         {/* Compare checkbox indicator */}
                         {mode === 'compare' && (
@@ -631,20 +629,20 @@ export default function PlantOverview() {
                           {/* Name + sparkline */}
                           <div className="flex items-start justify-between mb-2">
                             <div>
-                              <div className="font-display font-bold text-ink text-[15px] leading-none">{line.name}</div>
-                              <div className="font-body text-ghost text-[12px] mt-0.5">{meta.supervisor}</div>
+                              <div className="font-display font-bold text-ink text-base leading-none">{line.name}</div>
+                              <div className="font-body text-muted text-label mt-0.5">{meta.supervisor}</div>
                             </div>
                             <MiniSparkline data={meta.sparkline} color={riskBgColor(eff)} />
                           </div>
 
                           {/* Score — pressure-weighted color, smooth transition */}
                           <div
-                            className={`font-display font-bold display-num text-[48px] leading-none tabular-nums mb-2 ${riskColorClass(eff)}`}
+                            className={`font-display font-bold display-num text-score leading-none tabular-nums mb-2 ${riskColorClass(eff)}`}
                             style={{ transition: 'color 250ms var(--ease-standard)' }}
                           >
                             {eff}
                             {modified && (
-                              <span className="font-body font-normal text-ghost text-[13px] ml-2 align-middle">
+                              <span className="font-body font-normal text-muted text-label ml-2 align-middle">
                                 was {line.score}
                               </span>
                             )}
@@ -654,10 +652,10 @@ export default function PlantOverview() {
                           <div className="mb-2.5">
                             <div className="flex items-center justify-between mb-1">
                               <div className="flex items-center gap-1">
-                                <Brain size={8} strokeWidth={1.75} className="text-ghost" />
-                                <span className="font-body text-ghost text-[12px]">Model</span>
+                                <Brain size={8} strokeWidth={1.75} className="text-muted" />
+                                <span className="font-body text-muted text-label">Model</span>
                               </div>
-                              <span className={`font-body font-medium text-[12px] tabular-nums ${
+                              <span className={`font-body font-medium text-label tabular-nums ${
                                 meta.modelConfidence >= 90 ? 'text-ok' : meta.modelConfidence >= 80 ? 'text-muted' : 'text-warn'
                               }`}>{meta.modelConfidence}%</span>
                             </div>
@@ -671,14 +669,14 @@ export default function PlantOverview() {
 
                           {/* Zone label + findings pip */}
                           <div className="flex items-center justify-between">
-                            <span className={`font-body text-[12px] tracking-normal ${riskColorClass(eff)}`}>
+                            <span className={`font-body text-label tracking-normal ${riskColorClass(eff)}`}>
                               {riskLabel(eff)}
                             </span>
                             {pend > 0
-                              ? <span className="font-body text-[12px] text-warn flex items-center gap-0.5">
+                              ? <span className="font-body text-label text-warn flex items-center gap-0.5">
                                   <AlertTriangle size={9} strokeWidth={2} />{pend} pending
                                 </span>
-                              : <span className="font-body text-[12px] text-ok flex items-center gap-0.5">
+                              : <span className="font-body text-label text-ok flex items-center gap-0.5">
                                   <CheckCircle size={9} strokeWidth={2} />Clear
                                 </span>
                             }
@@ -689,11 +687,11 @@ export default function PlantOverview() {
                         {mode === 'whatif' && (
                           <div className="px-5 pb-3 pt-2 border-t border-rule2/40 bg-stone2/40">
                             <div className="flex items-center justify-between mb-1">
-                              <span className="font-body text-ghost text-[12px]">
+                              <span className="font-body text-muted text-label">
                                 Real: <span className="text-muted font-medium">{line.score}</span>
                               </span>
                               {delta !== 0 && (
-                                <span className={`font-body font-bold text-[12px] tabular-nums ${delta > 0 ? 'text-danger' : 'text-ok'}`}>
+                                <span className={`font-body font-bold text-label tabular-nums ${delta > 0 ? 'text-danger' : 'text-ok'}`}>
                                   {delta > 0 ? '+' : ''}{delta}
                                 </span>
                               )}
@@ -718,16 +716,16 @@ export default function PlantOverview() {
         {/* ── Cross-line findings feed ─────────────────────────────────── */}
         <section className="border-t-2 border-rule2 mt-0">
           <div className="sticky top-0 z-10 flex items-center justify-between px-5 py-2 border-b border-rule2 bg-stone2">
-            <span className="font-body font-bold text-ink text-[13px]">
+            <span className="font-body font-bold text-ink text-label">
               Pending across all lines
               {allFindings.length > 0 && (
-                <span className="ml-2 font-body text-warn text-[12px] font-normal">
+                <span className="ml-2 font-body text-warn text-label font-normal">
                   {allFindings.length} finding{allFindings.length > 1 ? 's' : ''}
                 </span>
               )}
             </span>
             {allFindings.length === 0 && (
-              <span className="font-body text-ok text-[12px] flex items-center gap-1">
+              <span className="font-body text-ok text-label flex items-center gap-1">
                 <CheckCircle size={10} strokeWidth={2} />All lines clear
               </span>
             )}
@@ -744,8 +742,8 @@ export default function PlantOverview() {
                     className={`mt-0.5 flex-shrink-0 ${f.urgency === 'danger' ? 'text-danger' : 'text-warn'}`}
                     strokeWidth={1.75} />
                   <div className="flex-1 min-w-0">
-                    <div className="font-body font-medium text-ink text-[14px] leading-snug">{f.title}</div>
-                    <div className="font-body text-ghost text-[12px] mt-0.5">
+                    <div className="font-body font-medium text-ink text-body leading-snug">{f.title}</div>
+                    <div className="font-body text-muted text-label mt-0.5">
                       {f.line.name} · {f.meta.supervisor}
                       {f.meta.minutesRemaining > 0 && (
                         <span className="ml-2 inline-flex items-center gap-1">
@@ -759,7 +757,7 @@ export default function PlantOverview() {
             : (
                 <div className="flex items-center gap-3 px-5 py-10">
                   <CheckCircle size={16} className="text-ok flex-shrink-0" strokeWidth={2} />
-                  <span className="font-body text-ghost text-[14px]">All lines running clean — no pending findings</span>
+                  <span className="font-body text-muted text-body">All lines running clean — no pending findings</span>
                 </div>
               )
           }

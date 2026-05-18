@@ -24,18 +24,18 @@ const FRESHNESS_CFG = {
 }
 
 function DwellBadge({ ms }) {
-  if (ms === 0) return <span className="font-body text-ghost text-[12px]">Auto</span>
+  if (ms === 0) return <span className="font-body text-muted text-label">Auto</span>
   const secs = Math.round(ms / 1000)
   const color = secs < 5 ? 'text-danger' : secs < 15 ? 'text-warn' : 'text-ok'
-  return <span className={`font-body text-[12px] tabular-nums ${color}`}>{secs}s review</span>
+  return <span className={`font-body text-label tabular-nums ${color}`}>{secs}s review</span>
 }
 
 function FilterChip({ active, tone, dot, onClick, children }) {
   const activeClass = tone ?? 'bg-ochre/10 text-ochre'
   return (
     <button type="button" onClick={onClick}
-      className={`inline-flex items-center gap-1 font-body font-medium text-[12px] px-2 py-0.5 rounded-btn transition-colors whitespace-nowrap ${
-        active ? activeClass : 'bg-stone3 text-ghost hover:text-muted'
+      className={`inline-flex items-center gap-1 font-body font-medium text-label px-2 py-0.5 rounded-btn transition-colors whitespace-nowrap ${
+        active ? activeClass : 'bg-stone3 text-muted hover:text-muted'
       }`}>
       <span className={`w-1 h-1 rounded-full flex-shrink-0 ${dot ?? 'bg-current'}`} />
       {children}
@@ -50,8 +50,8 @@ function EventChain({ entry, compact = false }) {
 
   if (compact) {
     return (
-      <div className="flex items-center gap-1.5 text-[12px] font-body flex-wrap">
-        <span className="text-ghost">{entry.agent}</span>
+      <div className="flex items-center gap-1.5 text-label font-body flex-wrap">
+        <span className="text-muted">{entry.agent}</span>
         <ArrowRight size={8} className="text-rule2 flex-shrink-0" />
         <span className={dc.cls}>{dc.label}</span>
         <ArrowRight size={8} className="text-rule2 flex-shrink-0" />
@@ -63,35 +63,35 @@ function EventChain({ entry, compact = false }) {
   return (
     <div className="flex items-stretch gap-0">
       <div className="flex-1 min-w-0 px-3 py-2.5 bg-stone2 border border-rule2">
-        <div className="font-body text-ghost text-[8px] tracking-normal mb-0.5">AI observation</div>
-        <div className="font-body text-ink text-[12px] leading-snug truncate">{entry.agent}</div>
-        <div className={`font-body text-[12px] ${fc.cls}`}>{fc.label} signals</div>
-        <div className="font-body text-ghost text-[12px]">{Math.round(entry.signalCompleteness * 100)}% complete</div>
+        <div className="font-body text-muted text-micro tracking-normal mb-0.5">AI observation</div>
+        <div className="font-body text-ink text-label leading-snug truncate">{entry.agent}</div>
+        <div className={`font-body text-label ${fc.cls}`}>{fc.label} signals</div>
+        <div className="font-body text-muted text-label">{Math.round(entry.signalCompleteness * 100)}% complete</div>
       </div>
       <div className="flex items-center px-1 text-rule2">
         <ArrowRight size={10} />
       </div>
       <div className="flex-1 min-w-0 px-3 py-2.5 bg-stone2 border border-rule2">
-        <div className="font-body text-ghost text-[8px] tracking-normal mb-0.5">Human decision</div>
-        <div className={`font-body font-medium text-[12px] ${dc.cls}`}>{dc.label}</div>
-        <div className="font-body text-ghost text-[12px]">{entry.reviewedBy}</div>
+        <div className="font-body text-muted text-micro tracking-normal mb-0.5">Human decision</div>
+        <div className={`font-body font-medium text-label ${dc.cls}`}>{dc.label}</div>
+        <div className="font-body text-muted text-label">{entry.reviewedBy}</div>
         <DwellBadge ms={entry.dwellTimeMs} />
       </div>
       <div className="flex items-center px-1 text-rule2">
         <ArrowRight size={10} />
       </div>
       <div className={`flex-1 min-w-0 px-3 py-2.5 border ${entry.outcomeClassification === 'positive' ? 'bg-ok/[0.04] border-ok/30' : entry.outcomeClassification === 'unclear' ? 'bg-ochre/[0.04] border-ochre/30' : 'bg-stone2 border-rule2'}`}>
-        <div className="font-body text-ghost text-[8px] tracking-normal mb-0.5">Consequence</div>
-        <div className="font-body font-medium text-[12px]">
+        <div className="font-body text-muted text-micro tracking-normal mb-0.5">Consequence</div>
+        <div className="font-body font-medium text-label">
           <span className={`inline-flex items-center gap-1 ${entry.outcomeClassification === 'positive' ? 'text-ok' : entry.outcomeClassification === 'unclear' ? 'text-ochre' : 'text-muted'}`}>
             <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${oc.dot}`} />
             {oc.label}
           </span>
         </div>
         {entry.kpiDelta && (
-          <div className="font-body text-[12px] text-muted leading-snug">{entry.kpiDelta.metric}</div>
+          <div className="font-body text-label text-muted leading-snug">{entry.kpiDelta.metric}</div>
         )}
-        <div className="font-body text-ghost text-[12px]">{entry.attributionConfidence != null ? `${Math.round(entry.attributionConfidence * 100)}%` : '—'} attribution</div>
+        <div className="font-body text-muted text-label">{entry.attributionConfidence != null ? `${Math.round(entry.attributionConfidence * 100)}%` : '—'} attribution</div>
       </div>
     </div>
   )
@@ -107,16 +107,16 @@ function InterventionCard({ entry, selected, onClick }) {
       }`}>
       <div className="flex items-start gap-2 mb-2">
         <div className="flex-1 min-w-0">
-          <div className="font-body font-medium text-ink text-[14px] leading-snug mb-0.5">{entry.action}</div>
-          <div className="font-body text-ghost text-[12px]">{entry.recommendedLabel}</div>
+          <div className="font-body font-medium text-ink text-body leading-snug mb-0.5">{entry.action}</div>
+          <div className="font-body text-muted text-label">{entry.recommendedLabel}</div>
         </div>
-        <span className={`font-body text-[8px] px-1.5 py-0.5 border flex-shrink-0 ${oc.badge}`}>{oc.label}</span>
+        <span className={`font-body text-micro px-1.5 py-0.5 border flex-shrink-0 ${oc.badge}`}>{oc.label}</span>
       </div>
       <EventChain entry={entry} compact />
       {entry.cautionNote && (
         <div className="flex items-center gap-1 mt-1.5">
           <AlertCircle size={8} className="text-warn flex-shrink-0" />
-          <span className="font-body text-warn text-[12px]">{entry.cautionNote}</span>
+          <span className="font-body text-warn text-label">{entry.cautionNote}</span>
         </div>
       )}
       {entry.kpiDelta && (
@@ -126,7 +126,7 @@ function InterventionCard({ entry, selected, onClick }) {
             : entry.kpiDelta.direction === 'degradation'
               ? <TrendingDown size={9} className="text-warn" strokeWidth={2} />
               : null}
-          <span className="font-body text-ghost text-[12px]">{entry.kpiDelta.metric}: {entry.kpiDelta.before} → {entry.kpiDelta.after}</span>
+          <span className="font-body text-muted text-label">{entry.kpiDelta.metric}: {entry.kpiDelta.before} → {entry.kpiDelta.after}</span>
         </div>
       )}
     </button>
@@ -135,7 +135,7 @@ function InterventionCard({ entry, selected, onClick }) {
 
 function InterventionDetail({ entry }) {
   if (!entry) return (
-    <div className="flex items-center justify-center h-full font-body text-ghost text-[13px]">
+    <div className="flex items-center justify-center h-full font-body text-muted text-label">
       Select an intervention to see the full event chain
     </div>
   )
@@ -148,42 +148,42 @@ function InterventionDetail({ entry }) {
     <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
       <div>
         <div className="flex items-center gap-2 mb-2">
-          <span className={`font-body text-[12px] px-1.5 py-0.5 border ${oc.badge}`}>{oc.label}</span>
-          <span className="font-body text-ghost text-[12px]">{entry.agent} · {entry.agentTier} tier</span>
+          <span className={`font-body text-label px-1.5 py-0.5 border ${oc.badge}`}>{oc.label}</span>
+          <span className="font-body text-muted text-label">{entry.agent} · {entry.agentTier} tier</span>
           {entry.wasReversed && (
-            <span className="flex items-center gap-1 font-body text-muted text-[12px] ml-auto">
+            <span className="flex items-center gap-1 font-body text-muted text-label ml-auto">
               <RotateCcw size={8} strokeWidth={2} />Reversed
             </span>
           )}
         </div>
-        <div className="font-display font-bold text-ink text-[20px] leading-tight">{entry.action}</div>
-        <div className="font-body text-ghost text-[13px] mt-0.5">{entry.recommendedLabel}</div>
+        <div className="font-display font-bold text-ink text-subhead leading-tight">{entry.action}</div>
+        <div className="font-body text-muted text-label mt-0.5">{entry.recommendedLabel}</div>
       </div>
 
       <div>
-        <div className="font-body text-ghost text-[12px] tracking-normal mb-2">Event chain</div>
+        <div className="font-body text-muted text-label tracking-normal mb-2">Event chain</div>
         <EventChain entry={entry} compact={false} />
       </div>
 
       <div className="px-4 py-3 bg-stone2 border border-rule2 border-l-4 border-l-ochre">
-        <div className="font-body text-ghost text-[12px] tracking-normal mb-1">AI rationale</div>
-        <p className="font-body text-ink text-[13px] leading-relaxed">{entry.rationaleText}</p>
+        <div className="font-body text-muted text-label tracking-normal mb-1">AI rationale</div>
+        <p className="font-body text-ink text-label leading-relaxed">{entry.rationaleText}</p>
       </div>
 
       <div>
-        <div className="font-body text-ghost text-[12px] tracking-normal mb-2">
+        <div className="font-body text-muted text-label tracking-normal mb-2">
           Source signals · <span className={fc.cls}>{fc.label}</span> · {Math.round(entry.signalCompleteness * 100)}% complete
         </div>
         <div className="border border-rule2 divide-y divide-rule2">
           {entry.sourceSignals.map((s, i) => (
             <div key={i} className={`flex items-center gap-3 px-4 py-2.5 ${s.stale ? 'bg-warn/[0.02]' : ''}`}>
               <div className="flex-1">
-                <div className="font-body text-ink text-[12px]">{s.name}</div>
-                <div className="font-body text-ghost text-[12px]">{s.value} vs baseline {s.baseline}</div>
+                <div className="font-body text-ink text-label">{s.name}</div>
+                <div className="font-body text-muted text-label">{s.value} vs baseline {s.baseline}</div>
               </div>
               <div className="text-right flex-shrink-0">
-                <div className={`font-body text-[12px] ${s.stale ? 'text-warn' : 'text-ok'}`}>{s.stale ? 'Stale' : 'Fresh'}</div>
-                <div className="font-body text-ghost text-[8px]">{s.freshnessMin}min ago</div>
+                <div className={`font-body text-label ${s.stale ? 'text-warn' : 'text-ok'}`}>{s.stale ? 'Stale' : 'Fresh'}</div>
+                <div className="font-body text-muted text-micro">{s.freshnessMin}min ago</div>
               </div>
             </div>
           ))}
@@ -191,7 +191,7 @@ function InterventionDetail({ entry }) {
         {entry.sourceSignals.some(s => s.stale) && (
           <div className="flex items-center gap-1.5 mt-1.5">
             <AlertTriangle size={9} className="text-warn" strokeWidth={2} />
-            <span className="font-body text-warn text-[12px]">Stale signals at decision time — confidence reduced</span>
+            <span className="font-body text-warn text-label">Stale signals at decision time — confidence reduced</span>
           </div>
         )}
       </div>
@@ -202,30 +202,30 @@ function InterventionDetail({ entry }) {
           { label: 'Reviewed by',    val: entry.reviewedBy,                                                      tone: 'text-ink' },
           { label: 'Dwell time',     val: entry.dwellTimeMs > 0 ? `${(entry.dwellTimeMs / 1000).toFixed(1)}s` : 'Auto', tone: entry.dwellTimeMs > 0 && entry.dwellTimeMs < 5000 ? 'text-danger' : entry.dwellTimeMs < 15000 ? 'text-warn' : 'text-ok' },
           { label: 'Decision time',  val: entry.decisionLabel,                                                   tone: 'text-muted' },
-          { label: 'Override reason',val: entry.overrideReason ?? 'None',                                        tone: entry.overrideReason ? 'text-ink' : 'text-ghost' },
-          { label: 'Caution',        val: entry.cautionNote ?? 'None',                                           tone: entry.cautionNote ? 'text-warn' : 'text-ghost' },
+          { label: 'Override reason',val: entry.overrideReason ?? 'None',                                        tone: entry.overrideReason ? 'text-ink' : 'text-muted' },
+          { label: 'Caution',        val: entry.cautionNote ?? 'None',                                           tone: entry.cautionNote ? 'text-warn' : 'text-muted' },
         ].map(({ label, val, tone }) => (
           <div key={label} className="bg-stone px-3 py-2.5">
-            <div className="font-body text-ghost text-[12px] tracking-normal mb-0.5">{label}</div>
-            <div className={`font-body font-medium text-[12px] leading-snug ${tone}`}>{val}</div>
+            <div className="font-body text-muted text-label tracking-normal mb-0.5">{label}</div>
+            <div className={`font-body font-medium text-label leading-snug ${tone}`}>{val}</div>
           </div>
         ))}
       </div>
 
       {entry.metricsAfter && (
         <div>
-          <div className="font-body text-ghost text-[12px] tracking-normal mb-2">Before → After (from telemetry)</div>
+          <div className="font-body text-muted text-label tracking-normal mb-2">Before → After (from telemetry)</div>
           <div className="grid grid-cols-2 gap-px bg-rule2 border border-rule2">
             <div className="bg-stone px-3 py-2">
-              <div className="font-body text-ghost text-[12px] mb-1">Before</div>
+              <div className="font-body text-muted text-label mb-1">Before</div>
               {Object.entries(entry.metricsBefore).map(([k, v]) => (
-                <div key={k} className="font-body text-muted text-[12px]">{k}: {v}</div>
+                <div key={k} className="font-body text-muted text-label">{k}: {v}</div>
               ))}
             </div>
             <div className="bg-stone px-3 py-2">
-              <div className="font-body text-ghost text-[12px] mb-1">After · {entry.metricsUpdatedLabel}</div>
+              <div className="font-body text-muted text-label mb-1">After · {entry.metricsUpdatedLabel}</div>
               {Object.entries(entry.metricsAfter).map(([k, v]) => (
-                <div key={k} className="font-body text-ink text-[12px]">{k}: {v}</div>
+                <div key={k} className="font-body text-ink text-label">{k}: {v}</div>
               ))}
             </div>
           </div>
@@ -234,18 +234,18 @@ function InterventionDetail({ entry }) {
 
       {entry.kpiDelta && (
         <div className={`px-4 py-3 border ${entry.kpiDelta.direction === 'improvement' ? 'border-ok/30 bg-ok/[0.04]' : entry.kpiDelta.direction === 'degradation' ? 'border-warn/30 bg-warn/[0.04]' : 'border-rule2 bg-stone2'}`}>
-          <div className="font-body text-ghost text-[12px] tracking-normal mb-1">KPI impact · {entry.kpiDelta.metric}</div>
+          <div className="font-body text-muted text-label tracking-normal mb-1">KPI impact · {entry.kpiDelta.metric}</div>
           <div className="flex items-center gap-3">
-            <span className="font-body text-muted text-[14px]">{entry.kpiDelta.before}</span>
-            <ArrowRight size={12} className="text-ghost" />
-            <span className={`font-body font-bold text-[18px] ${entry.kpiDelta.direction === 'improvement' ? 'text-ok' : entry.kpiDelta.direction === 'degradation' ? 'text-warn' : 'text-ink'}`}>{entry.kpiDelta.after}</span>
+            <span className="font-body text-muted text-body">{entry.kpiDelta.before}</span>
+            <ArrowRight size={12} className="text-muted" />
+            <span className={`font-body font-bold text-head ${entry.kpiDelta.direction === 'improvement' ? 'text-ok' : entry.kpiDelta.direction === 'degradation' ? 'text-warn' : 'text-ink'}`}>{entry.kpiDelta.after}</span>
             {entry.kpiDelta.pct !== undefined && (
-              <span className={`font-body text-[13px] ${entry.kpiDelta.pct > 0 ? 'text-ok' : 'text-warn'}`}>
+              <span className={`font-body text-label ${entry.kpiDelta.pct > 0 ? 'text-ok' : 'text-warn'}`}>
                 {entry.kpiDelta.pct > 0 ? '+' : ''}{entry.kpiDelta.pct}%
               </span>
             )}
           </div>
-          <div className="font-body text-ghost text-[12px] mt-1.5">Confidence: {entry.attributionConfidence != null ? `${Math.round(entry.attributionConfidence * 100)}%` : '—'}</div>
+          <div className="font-body text-muted text-label mt-1.5">Confidence: {entry.attributionConfidence != null ? `${Math.round(entry.attributionConfidence * 100)}%` : '—'}</div>
         </div>
       )}
 
@@ -253,30 +253,30 @@ function InterventionDetail({ entry }) {
         <div className="flex items-start gap-3 px-4 py-3 border border-ok/30 bg-ok/[0.04] border-l-4 border-l-ok">
           <CheckCircle2 size={12} strokeWidth={2} className="text-ok flex-shrink-0 mt-0.5" />
           <div className="flex-1 min-w-0">
-            <div className="font-body text-ghost text-[12px] tracking-normal mb-0.5">Confirmed by operator</div>
-            <div className="font-body font-medium text-ink text-[13px]">{entry.operatorConfirmation.confirmedBy} · {entry.operatorConfirmation.station}</div>
-            <div className="font-body text-ok text-[12px]">{entry.operatorConfirmation.note}</div>
-            <div className="font-body text-ghost text-[12px] mt-0.5">{entry.operatorConfirmation.confirmedAt}</div>
+            <div className="font-body text-muted text-label tracking-normal mb-0.5">Confirmed by operator</div>
+            <div className="font-body font-medium text-ink text-label">{entry.operatorConfirmation.confirmedBy} · {entry.operatorConfirmation.station}</div>
+            <div className="font-body text-ok text-label">{entry.operatorConfirmation.note}</div>
+            <div className="font-body text-muted text-label mt-0.5">{entry.operatorConfirmation.confirmedAt}</div>
           </div>
         </div>
       ) : (
         <div className="flex items-center gap-2 px-4 py-3 border border-rule2 bg-stone2">
-          <div className="w-1.5 h-1.5 rounded-full bg-ghost flex-shrink-0" />
-          <span className="font-body text-ghost text-[12px]">No operator confirmation — outcome estimated from telemetry</span>
+          <div className="w-1.5 h-1.5 rounded-full bg-muted flex-shrink-0" />
+          <span className="font-body text-muted text-label">No operator confirmation — outcome estimated from telemetry</span>
         </div>
       )}
 
       <div className="px-4 py-3 border border-rule2 bg-stone2">
-        <div className="font-body text-ghost text-[12px] tracking-normal mb-1">Outcome narrative</div>
-        <p className="font-body text-ink text-[13px] leading-relaxed">{entry.outcomeNotes}</p>
+        <div className="font-body text-muted text-label tracking-normal mb-1">Outcome narrative</div>
+        <p className="font-body text-ink text-label leading-relaxed">{entry.outcomeNotes}</p>
       </div>
 
       {entry.wasReversed && (
         <div className="flex items-start gap-2 px-3 py-2.5 border border-rule2 bg-stone2">
           <RotateCcw size={10} className="text-muted flex-shrink-0 mt-0.5" strokeWidth={2} />
           <div>
-            <div className="font-body font-medium text-ink text-[12px] mb-0.5">Intervention reversed — {entry.reversedAt}</div>
-            <p className="font-body text-ghost text-[12px] leading-snug">{entry.reversalReason}</p>
+            <div className="font-body font-medium text-ink text-label mb-0.5">Intervention reversed — {entry.reversedAt}</div>
+            <p className="font-body text-muted text-label leading-snug">{entry.reversalReason}</p>
           </div>
         </div>
       )}
@@ -285,7 +285,7 @@ function InterventionDetail({ entry }) {
 }
 
 const OUTCOME_FILTERS = [
-  { value: null,       label: 'All',      chip: 'bg-stone3 text-ghost',          dot: 'bg-ghost'   },
+  { value: null,       label: 'All',      chip: 'bg-stone3 text-muted',          dot: 'bg-muted'   },
   { value: 'positive', label: 'Positive', chip: 'bg-ok/10 text-ok',              dot: 'bg-ok'      },
   { value: 'unclear',  label: 'Unclear',  chip: 'bg-ochre/10 text-ochre',        dot: 'bg-ochre'   },
   { value: 'negative', label: 'Negative', chip: 'bg-danger/[0.04] text-danger',      dot: 'bg-danger'  },
@@ -309,9 +309,9 @@ export default function ImpactLoop() {
 
         {/* Header */}
         <div className="flex-shrink-0 px-5 py-4 border-b border-rule2 bg-stone2">
-          <div className="font-body text-ghost text-[12px] tracking-normal mb-0.5">Causality Layer</div>
-          <div className="font-display font-bold text-ink text-[20px] leading-none">Impact Loop</div>
-          <div className="font-body text-ghost text-[12px] mt-1">AI observation → decision → consequence</div>
+          <div className="font-body text-muted text-label tracking-normal mb-0.5">Causality Layer</div>
+          <div className="font-display font-bold text-ink text-subhead leading-none">Impact Loop</div>
+          <div className="font-body text-muted text-label mt-1">AI observation → decision → consequence</div>
         </div>
 
         {/* Summary stats — 2×2 grid */}
@@ -323,8 +323,8 @@ export default function ImpactLoop() {
             { label: 'Low-dwell',         val: String(lowDwellCount), tone: lowDwellCount > 0 ? 'text-danger' : 'text-ok'                                  },
           ].map(({ label, val, tone }) => (
             <div key={label} className="bg-stone px-4 py-3">
-              <div className="font-body text-ghost text-[8px] tracking-normal mb-0.5">{label}</div>
-              <div className={`font-body font-bold text-[18px] display-num ${tone}`}>{val}</div>
+              <div className="font-body text-muted text-micro tracking-normal mb-0.5">{label}</div>
+              <div className={`font-body font-bold text-head display-num ${tone}`}>{val}</div>
             </div>
           ))}
         </div>
@@ -333,7 +333,7 @@ export default function ImpactLoop() {
         {lowDwellCount > 0 && (
           <div className="flex-shrink-0 flex items-start gap-2 px-4 py-2.5 border-b border-rule2 bg-danger/[0.03]">
             <AlertTriangle size={9} className="text-danger flex-shrink-0 mt-0.5" strokeWidth={2} />
-            <p className="font-body text-danger text-[12px] leading-snug">
+            <p className="font-body text-danger text-label leading-snug">
               {lowDwellCount} decision{lowDwellCount > 1 ? 's' : ''} made with &lt;5s rationale review. Approval legitimacy is unclear.
             </p>
           </div>
@@ -341,19 +341,19 @@ export default function ImpactLoop() {
 
         {/* Intervention list */}
         <div className="flex-shrink-0 flex items-center justify-between px-4 py-2 bg-stone2 border-b border-rule2">
-          <span className="font-body text-ghost text-[12px]">
+          <span className="font-body text-muted text-label">
             {filtered.length} intervention{filtered.length !== 1 ? 's' : ''}
           </span>
           <div className="flex items-center gap-3">
-            <span className="flex items-center gap-1 font-body text-ok text-[12px]"><span className="w-1.5 h-1.5 rounded-full bg-ok" />Positive</span>
-            <span className="flex items-center gap-1 font-body text-ochre text-[12px]"><span className="w-1.5 h-1.5 rounded-full bg-ochre" />Unclear</span>
-            <span className="flex items-center gap-1 font-body text-danger text-[12px]"><span className="w-1.5 h-1.5 rounded-full bg-danger" />Negative</span>
+            <span className="flex items-center gap-1 font-body text-ok text-label"><span className="w-1.5 h-1.5 rounded-full bg-ok" />Positive</span>
+            <span className="flex items-center gap-1 font-body text-ochre text-label"><span className="w-1.5 h-1.5 rounded-full bg-ochre" />Unclear</span>
+            <span className="flex items-center gap-1 font-body text-danger text-label"><span className="w-1.5 h-1.5 rounded-full bg-danger" />Negative</span>
           </div>
         </div>
 
         <div className="flex-1 overflow-y-auto">
           {filtered.length === 0 ? (
-            <div className="flex items-center justify-center h-full font-body text-ghost text-[13px]">
+            <div className="flex items-center justify-center h-full font-body text-muted text-label">
               No interventions match this filter
             </div>
           ) : filtered.map(e => (
@@ -365,14 +365,14 @@ export default function ImpactLoop() {
 
         {/* Attribution footnote */}
         <div className="flex-shrink-0 px-4 py-2.5 border-t border-rule2 bg-stone2">
-          <p className="font-body text-ghost text-[12px] leading-snug">Confidence reflects how certain we are the action caused the outcome. Below 60% means other factors may have been involved.</p>
+          <p className="font-body text-muted text-label leading-snug">Confidence reflects how certain we are the action caused the outcome. Below 60% means other factors may have been involved.</p>
         </div>
       </div>
 
       {/* ── Right: event chain detail ─────────────────────────────────── */}
       <div className="flex-1 flex flex-col overflow-hidden bg-stone">
         <div className="flex-shrink-0 px-5 py-2.5 border-b border-rule2 bg-stone2">
-          <span className="font-body text-ghost text-[12px] tracking-normal">Event chain detail</span>
+          <span className="font-body text-muted text-label tracking-normal">Event chain detail</span>
         </div>
         <InterventionDetail entry={selectedEntry} />
       </div>

@@ -3,7 +3,7 @@ import { deliverySummary, orders, demandForecast, carbonBreakdown, skuVolatility
 import { TrendingUp, TrendingDown, Leaf, Package, AlertTriangle, CheckCircle2 } from 'lucide-react'
 
 const STATUS_CFG = {
-  'scheduled':     { label: 'Scheduled',     dot: 'bg-ghost',  badge: 'bg-stone3 text-ghost border border-rule2' },
+  'scheduled':     { label: 'Scheduled',     dot: 'bg-muted',  badge: 'bg-stone3 text-muted border border-rule2' },
   'in-production': { label: 'In production', dot: 'bg-ochre',  badge: 'bg-ochre/10 text-ochre border border-ochre/30' },
   'finishing':     { label: 'Finishing',     dot: 'bg-warn',   badge: 'bg-warn/10 text-warn border border-warn/30' },
   'shipped':       { label: 'Shipped',       dot: 'bg-ok',     badge: 'bg-ok/10 text-ok border border-ok/30' },
@@ -52,32 +52,32 @@ function OrderRow({ order, selected, onClick }) {
       <div className="flex items-start gap-2 mb-1.5">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5 mb-0.5">
-            <span className="font-body font-medium text-ink text-[12px]">{order.id}</span>
+            <span className="font-body font-medium text-ink text-label">{order.id}</span>
             {!order.onTrack && (
               <AlertTriangle size={8} className="text-warn flex-shrink-0" strokeWidth={2} />
             )}
           </div>
-          <div className="font-body text-ghost text-[12px]">{order.customer} · {order.skuLabel}</div>
+          <div className="font-body text-muted text-label">{order.customer} · {order.skuLabel}</div>
         </div>
-        <span className={`font-body text-[8px] px-1.5 py-0.5 border flex-shrink-0 ${cfg.badge}`}>{cfg.label}</span>
+        <span className={`font-body text-micro px-1.5 py-0.5 border flex-shrink-0 ${cfg.badge}`}>{cfg.label}</span>
       </div>
       <div className="flex items-center gap-3">
         <div className="flex items-center gap-1">
-          <span className="font-body text-ghost text-[12px]">Ship:</span>
-          <span className={`font-body text-[12px] font-medium ${!order.onTrack && order.status !== 'shipped' ? 'text-warn' : 'text-ink'}`}>{order.targetShip}</span>
-          {order.delayDays && <span className="font-body text-warn text-[12px]">+{order.delayDays}d late</span>}
+          <span className="font-body text-muted text-label">Ship:</span>
+          <span className={`font-body text-label font-medium ${!order.onTrack && order.status !== 'shipped' ? 'text-warn' : 'text-ink'}`}>{order.targetShip}</span>
+          {order.delayDays && <span className="font-body text-warn text-label">+{order.delayDays}d late</span>}
         </div>
         {order.leadTimeDays != null && (
           <>
             <span className="text-rule2">·</span>
-            <span className={`font-body text-[12px] tabular-nums ${leadOver ? 'text-warn' : 'text-ghost'}`}>{order.leadTimeDays}d lead</span>
+            <span className={`font-body text-label tabular-nums ${leadOver ? 'text-warn' : 'text-muted'}`}>{order.leadTimeDays}d lead</span>
           </>
         )}
         {order.carbonPerUnit != null && (
           <>
             <span className="text-rule2">·</span>
             <Leaf size={8} strokeWidth={2} className={carbonOver ? 'text-warn' : 'text-ok'} />
-            <span className={`font-body text-[12px] tabular-nums ${carbonOver ? 'text-warn' : 'text-ok'}`}>{order.carbonPerUnit} kg</span>
+            <span className={`font-body text-label tabular-nums ${carbonOver ? 'text-warn' : 'text-ok'}`}>{order.carbonPerUnit} kg</span>
           </>
         )}
       </div>
@@ -87,7 +87,7 @@ function OrderRow({ order, selected, onClick }) {
 
 function OrderDetail({ order }) {
   if (!order) return (
-    <div className="flex items-center justify-center h-full font-body text-ghost text-[13px]">
+    <div className="flex items-center justify-center h-full font-body text-muted text-label">
       Select an order
     </div>
   )
@@ -100,16 +100,16 @@ function OrderDetail({ order }) {
       {/* Header */}
       <div>
         <div className="flex items-center gap-2 mb-2">
-          <span className={`font-body text-[12px] px-1.5 py-0.5 border ${cfg.badge}`}>{cfg.label}</span>
+          <span className={`font-body text-label px-1.5 py-0.5 border ${cfg.badge}`}>{cfg.label}</span>
           {!order.onTrack && (
-            <span className="flex items-center gap-1 font-body text-warn text-[12px]">
+            <span className="flex items-center gap-1 font-body text-warn text-label">
               <AlertTriangle size={9} strokeWidth={2} />
               {order.delayDays ? `${order.delayDays}d late` : 'At risk'}
             </span>
           )}
         </div>
-        <div className="font-display font-bold text-ink text-[20px] leading-none mb-1">{order.id}</div>
-        <div className="font-body text-ghost text-[14px]">{order.customer}</div>
+        <div className="font-display font-bold text-ink text-subhead leading-none mb-1">{order.id}</div>
+        <div className="font-body text-muted text-body">{order.customer}</div>
       </div>
 
       {/* Key metrics */}
@@ -127,12 +127,12 @@ function OrderDetail({ order }) {
           {
             label: 'Carbon / unit',
             val: order.carbonPerUnit != null ? `${order.carbonPerUnit} kg CO₂e` : '—',
-            tone: carbonOver ? 'text-warn' : order.carbonPerUnit != null ? 'text-ok' : 'text-ghost',
+            tone: carbonOver ? 'text-warn' : order.carbonPerUnit != null ? 'text-ok' : 'text-muted',
           },
         ].map(({ label, val, tone }) => (
           <div key={label} className="bg-stone px-3 py-2.5">
-            <div className="font-body text-ghost text-[12px] tracking-normal mb-0.5">{label}</div>
-            <div className={`font-body font-medium text-[13px] ${tone}`}>{val}</div>
+            <div className="font-body text-muted text-label tracking-normal mb-0.5">{label}</div>
+            <div className={`font-body font-medium text-label ${tone}`}>{val}</div>
           </div>
         ))}
       </div>
@@ -140,24 +140,24 @@ function OrderDetail({ order }) {
       {/* Carbon breakdown */}
       {order.carbonPerUnit != null && (
         <div>
-          <div className="font-body text-ghost text-[12px] tracking-normal mb-2">Carbon breakdown (site avg)</div>
+          <div className="font-body text-muted text-label tracking-normal mb-2">Carbon breakdown (site avg)</div>
           <div className="space-y-2">
             {carbonBreakdown.components.map(c => (
               <div key={c.label} className="flex items-center gap-3">
-                <div className="font-body text-ghost text-[12px] w-[140px] flex-shrink-0">{c.label}</div>
+                <div className="font-body text-muted text-label w-[140px] flex-shrink-0">{c.label}</div>
                 <div className="flex-1 h-1 bg-rule2">
                   <div className={`h-full ${c.value > c.target ? 'bg-warn' : 'bg-ok'}`}
                     style={{ width: `${(c.value / carbonBreakdown.total) * 100}%` }} />
                 </div>
-                <span className={`font-body text-[12px] tabular-nums w-16 text-right ${c.value > c.target ? 'text-warn' : 'text-ok'}`}>
+                <span className={`font-body text-label tabular-nums w-16 text-right ${c.value > c.target ? 'text-warn' : 'text-ok'}`}>
                   {c.value} kg
                 </span>
               </div>
             ))}
           </div>
           <div className="flex items-center justify-between mt-2 pt-2 border-t border-rule2">
-            <span className="font-body text-ghost text-[12px]">Total vs target</span>
-            <span className={`font-body font-medium text-[13px] ${carbonOver ? 'text-warn' : 'text-ok'}`}>
+            <span className="font-body text-muted text-label">Total vs target</span>
+            <span className={`font-body font-medium text-label ${carbonOver ? 'text-warn' : 'text-ok'}`}>
               {order.carbonPerUnit} vs {order.carbonTarget} kg CO₂e
             </span>
           </div>
@@ -184,9 +184,9 @@ export default function ValueChain() {
       {/* Left: summary + demand */}
       <div className="w-[260px] flex-shrink-0 border-r border-rule2 flex flex-col bg-stone">
         <div className="flex-shrink-0 px-5 py-4 border-b border-rule2 bg-stone2">
-          <div className="font-body text-ghost text-[12px] tracking-normal mb-0.5">Frontier Layer</div>
-          <div className="font-display font-bold text-ink text-[18px] leading-none">Value Chain</div>
-          <div className="font-body text-ghost text-[12px] mt-1">Supplier → Production → Customer</div>
+          <div className="font-body text-muted text-label tracking-normal mb-0.5">Frontier Layer</div>
+          <div className="font-display font-bold text-ink text-head leading-none">Value Chain</div>
+          <div className="font-body text-muted text-label mt-1">Supplier → Production → Customer</div>
         </div>
 
         {/* KPI strip */}
@@ -217,26 +217,26 @@ export default function ValueChain() {
             <div key={label} className="bg-stone px-4 py-3">
               <div className="flex items-center gap-1.5 mb-0.5">
                 <Icon size={9} strokeWidth={2} className={tone} />
-                <span className="font-body text-ghost text-[12px] tracking-normal">{label}</span>
+                <span className="font-body text-muted text-label tracking-normal">{label}</span>
               </div>
-              <div className={`font-display font-bold display-num text-[20px] ${tone}`}>{val}</div>
-              <div className="font-body text-ghost text-[12px]">{sub}</div>
+              <div className={`font-display font-bold display-num text-subhead ${tone}`}>{val}</div>
+              <div className="font-body text-muted text-label">{sub}</div>
             </div>
           ))}
         </div>
 
         {/* Demand chart */}
         <div className="flex-shrink-0 px-4 py-3 border-b border-rule2">
-          <div className="font-body text-ghost text-[12px] tracking-normal mb-2">Demand forecast vs actual</div>
+          <div className="font-body text-muted text-label tracking-normal mb-2">Demand forecast vs actual</div>
           <MiniDemandChart />
           <div className="flex items-center gap-4 mt-2">
             <div className="flex items-center gap-1.5">
               <div className="w-4 h-px bg-ochre" />
-              <span className="font-body text-ghost text-[8px]">Actual</span>
+              <span className="font-body text-muted text-micro">Actual</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <div className="w-4 border-t border-dashed border-ghost" />
-              <span className="font-body text-ghost text-[8px]">Forecast</span>
+              <div className="w-4 border-t border-dashed border-muted" />
+              <span className="font-body text-muted text-micro">Forecast</span>
             </div>
           </div>
         </div>
@@ -244,17 +244,17 @@ export default function ValueChain() {
         {/* SKU volatility */}
         <div className="flex-1 overflow-y-auto">
           <div className="px-4 py-2 border-b border-rule2 bg-stone2">
-            <div className="font-body text-ghost text-[12px] tracking-normal">SKU demand trend</div>
+            <div className="font-body text-muted text-label tracking-normal">SKU demand trend</div>
           </div>
           {skuVolatility.map(s => (
             <div key={s.sku} className="flex items-center justify-between px-4 py-2.5 border-b border-rule2">
               <div>
-                <div className="font-body text-ink text-[12px]">{s.label}</div>
-                <div className="font-body text-ghost text-[12px]">{s.openOrders} open orders</div>
+                <div className="font-body text-ink text-label">{s.label}</div>
+                <div className="font-body text-muted text-label">{s.openOrders} open orders</div>
               </div>
-              <div className={`flex items-center gap-1 ${s.trend === 'up' ? 'text-ok' : s.trend === 'down' ? 'text-warn' : 'text-ghost'}`}>
+              <div className={`flex items-center gap-1 ${s.trend === 'up' ? 'text-ok' : s.trend === 'down' ? 'text-warn' : 'text-muted'}`}>
                 {s.trend === 'up' ? <TrendingUp size={10} strokeWidth={2} /> : s.trend === 'down' ? <TrendingDown size={10} strokeWidth={2} /> : null}
-                <span className="font-body font-medium text-[12px]">
+                <span className="font-body font-medium text-label">
                   {s.growthPct > 0 ? '+' : ''}{s.growthPct}%
                 </span>
               </div>
@@ -266,7 +266,7 @@ export default function ValueChain() {
       {/* Center: order pipeline */}
       <div className="w-[360px] flex-shrink-0 border-r border-rule2 flex flex-col">
         <div className="flex-shrink-0 px-4 py-2.5 border-b border-rule2 bg-stone2 flex items-center justify-between">
-          <span className="font-body text-ghost text-[12px] tracking-normal">
+          <span className="font-body text-muted text-label tracking-normal">
             Orders · {filtered.length}
             {deliverySummary.lateOrders > 0 && (
               <span className="ml-2 text-warn">{deliverySummary.lateOrders} late</span>
@@ -277,13 +277,13 @@ export default function ValueChain() {
         {/* Status filter */}
         <div className="flex-shrink-0 flex border-b border-rule2 bg-stone overflow-x-auto">
           <button type="button" onClick={() => setFilterStatus(null)}
-            className={`px-3 py-2 font-body text-[12px] border-b-2 whitespace-nowrap transition-colors ${
-              !filterStatus ? 'border-ochre text-ink' : 'border-transparent text-ghost hover:text-muted'
+            className={`px-3 py-2 font-body text-label border-b-2 whitespace-nowrap transition-colors ${
+              !filterStatus ? 'border-ochre text-ink' : 'border-transparent text-muted hover:text-muted'
             }`}>All</button>
           {Object.entries(STATUS_CFG).map(([k, v]) => (
             <button key={k} type="button" onClick={() => setFilterStatus(k)}
-              className={`px-3 py-2 font-body text-[12px] border-b-2 whitespace-nowrap transition-colors ${
-                filterStatus === k ? 'border-ochre text-ink' : 'border-transparent text-ghost hover:text-muted'
+              className={`px-3 py-2 font-body text-label border-b-2 whitespace-nowrap transition-colors ${
+                filterStatus === k ? 'border-ochre text-ink' : 'border-transparent text-muted hover:text-muted'
               }`}>{v.label}</button>
           ))}
         </div>
@@ -299,8 +299,8 @@ export default function ValueChain() {
         {/* Footer */}
         <div className="flex-shrink-0 px-4 py-3 border-t border-rule2 bg-stone2">
           <div className="flex items-center justify-between">
-            <span className="font-body text-ghost text-[12px]">{deliverySummary.openOrders} open orders</span>
-            <span className="font-body text-ghost text-[12px]">{deliverySummary.fulfillmentRate}% fulfillment rate</span>
+            <span className="font-body text-muted text-label">{deliverySummary.openOrders} open orders</span>
+            <span className="font-body text-muted text-label">{deliverySummary.fulfillmentRate}% fulfillment rate</span>
           </div>
         </div>
       </div>
@@ -308,7 +308,7 @@ export default function ValueChain() {
       {/* Right: order detail */}
       <div className="flex-1 flex flex-col overflow-hidden bg-stone">
         <div className="flex-shrink-0 px-5 py-2.5 border-b border-rule2 bg-stone2">
-          <span className="font-body text-ghost text-[12px] tracking-normal">Order detail</span>
+          <span className="font-body text-muted text-label tracking-normal">Order detail</span>
         </div>
         <OrderDetail order={selectedOrder} />
       </div>

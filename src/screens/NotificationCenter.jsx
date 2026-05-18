@@ -22,7 +22,7 @@ const TYPE = {
   acknowledged: { label: 'Acknowledged', chip: 'bg-ok/10 text-ok',        bar: 'border-l-ok',     row: '' },
   acknowledgment: { label: 'Acknowledged', chip: 'bg-ok/10 text-ok',      bar: 'border-l-ok',     row: '' },
   handoff:      { label: 'Handoff',      chip: 'bg-ok/10 text-ok',        bar: 'border-l-ok',     row: '' },
-  intervention: { label: 'Action',       chip: 'bg-int/10 text-int',      bar: 'border-l-int',    row: '' },
+  intervention: { label: 'Action',       chip: 'bg-ochre/10 text-ochre',      bar: 'border-l-ochre',    row: '' },
 }
 
 const FILTER = {
@@ -77,33 +77,32 @@ function NotifItem({ item, read, onRead, onNavigate }) {
 
   return (
     <div
-      className={`bg-stone border border-rule rounded-lg overflow-hidden transition-opacity duration-200 ${isRead ? 'opacity-40' : ''}`}
-      style={{ boxShadow: isRead ? 'none' : '0 1px 3px rgba(16,24,40,0.06)' }}
+      className={`bg-stone border border-rule rounded-lg overflow-hidden transition-opacity duration-200 ${isRead ? 'opacity-40' : 'shadow-card'}`}
     >
       {/* Urgency accent bar — article: visual hierarchy first */}
       <div className={`h-[3px] w-full ${barFill(s.bar)}`} />
       {/* Header: type chip + timestamp */}
       <div className="flex items-center justify-between px-4 pt-3 pb-1">
-        <span className={`font-body font-medium text-[12px] px-1.5 py-px rounded-btn ${s.chip}`}>{s.label}</span>
-        <span className="font-body text-ghost text-[12px]">{item.time}</span>
+        <span className={`font-body font-medium text-label px-1.5 py-px rounded-btn ${s.chip}`}>{s.label}</span>
+        <span className="font-body text-muted text-label">{item.time}</span>
       </div>
       {/* Body: title + description */}
       <div className="px-4 pb-3">
-        <div className="font-body font-medium text-ink text-[14px] leading-snug">{item.title}</div>
-        {item.body && <div className="font-body text-muted text-[13px] leading-relaxed mt-1">{item.body}</div>}
+        <div className="font-body font-medium text-ink text-body leading-snug">{item.title}</div>
+        {item.body && <div className="font-body text-muted text-label leading-relaxed mt-1">{item.body}</div>}
       </div>
       {/* Footer: single primary CTA + dismiss — article: one action per card */}
       {hasFooter && (
         <div className="flex items-center justify-between px-4 py-2.5 border-t border-rule2/60">
           {item.link ? (
             <button type="button" onClick={() => onNavigate(item.link)}
-              className="font-body text-int text-[12px] flex items-center gap-1 hover:text-ink transition-colors">
+              className="font-body text-ochre text-label flex items-center gap-1 hover:text-ink transition-colors">
               <ArrowRight size={10} />{item.linkLabel || 'Open in module'}
             </button>
           ) : <span />}
           {!isRead && (
             <button type="button" onClick={() => onRead(item.id)}
-              className="font-body text-ghost text-[12px] hover:text-muted transition-colors"
+              className="font-body text-muted text-label hover:text-muted transition-colors"
               aria-label="Mark as read">
               Mark read
             </button>
@@ -188,8 +187,8 @@ export default function NotificationCenter({ onClose }) {
   <div className="flex flex-col h-full overflow-hidden">
    {/* Header */}
    <div className="px-4 py-3 bg-ink flex-shrink-0">
-    <div className="font-display font-bold text-stone text-[15px] leading-tight">Notifications</div>
-    <div className="font-body text-stone/70 text-[13px] mt-0.5">
+    <div className="font-display font-bold text-stone text-base leading-tight">Notifications</div>
+    <div className="font-body text-stone/70 text-label mt-0.5">
      {totalUnread > 0 ? `${totalUnread} unread · ` : 'All read · '}J. Crocker · April 16, 2026
     </div>
    </div>
@@ -203,9 +202,9 @@ export default function NotificationCenter({ onClose }) {
       onClick={() => setActiveFilter(f)}
       className={`flex items-center gap-1.5 py-1 border-b-2 transition-colors ${activeFilter === f ? 'border-b-ochre' : 'border-b-transparent'}`}
      >
-      <span className={`font-body text-[13px] ${activeFilter === f ? 'text-ink' : 'text-muted'}`}>{f}</span>
+      <span className={`font-body text-label ${activeFilter === f ? 'text-ink' : 'text-muted'}`}>{f}</span>
       {counts[f] > 0 && (
-       <span className="font-body text-muted text-[12px] px-1.5 py-px bg-stone3 rounded-btn">{counts[f]}</span>
+       <span className="font-body text-muted text-label px-1.5 py-px bg-stone3 rounded-btn">{counts[f]}</span>
       )}
      </button>
     ))}
@@ -217,28 +216,27 @@ export default function NotificationCenter({ onClose }) {
     <div className="border-b border-rule2 bg-stone2">
      <div className="px-4 py-2.5 border-b border-rule2 flex items-center gap-2">
       <Brain size={11} strokeWidth={1.75} className="text-muted" />
-      <span className="font-body text-[12px] tracking-normal text-muted font-medium">Intelligence summary</span>
-      <span className="font-body text-ghost text-[12px] ml-auto">Updated 06:42</span>
+      <span className="font-body text-label tracking-normal text-muted font-medium">Intelligence summary</span>
+      <span className="font-body text-muted text-label ml-auto">Updated 06:42</span>
      </div>
      <div className="px-3 py-3 space-y-2.5">
       {INTELLIGENCE_SIGNALS.map((sig, i) => (
        <div key={i}
-        className={`bg-stone border border-rule rounded-lg overflow-hidden ${sig.tone === 'danger' ? 'border-l-[5px] border-l-danger' : 'border-l-[3px] border-l-warn'}`}
-        style={{ boxShadow: '0 1px 3px rgba(16,24,40,0.06)' }}>
+        className={`bg-stone border border-rule rounded-lg overflow-hidden shadow-card ${sig.tone === 'danger' ? 'border-l-[5px] border-l-danger' : 'border-l-[3px] border-l-warn'}`}>
         {/* Body: confidence + label + detail */}
         <div className="px-4 py-3 flex items-start gap-3">
-         <div className={`font-display font-bold text-[22px] leading-none tabular-nums flex-shrink-0 pt-0.5 ${
+         <div className={`font-display font-bold text-title leading-none tabular-nums flex-shrink-0 pt-0.5 ${
           sig.confidence >= 85 ? 'text-danger' : sig.confidence >= 75 ? 'text-warn' : 'text-muted'
          }`}>{sig.confidence}%</div>
          <div className="flex-1 min-w-0">
-          <div className="font-body font-medium text-ink text-[14px] leading-snug">{sig.label}</div>
-          <div className="font-body text-ghost text-[12px] leading-snug mt-0.5">{sig.detail}</div>
+          <div className="font-body font-medium text-ink text-body leading-snug">{sig.label}</div>
+          <div className="font-body text-muted text-label leading-snug mt-0.5">{sig.detail}</div>
          </div>
         </div>
         {/* Footer: single CTA */}
         <div className="px-4 py-2.5 border-t border-rule2/60">
          <button type="button" onClick={() => go(sig.route)}
-          className="font-body text-int text-[12px] flex items-center gap-1 hover:text-ink transition-colors">
+          className="font-body text-ochre text-label flex items-center gap-1 hover:text-ink transition-colors">
           <ArrowRight size={9} />Open in {sig.routeLabel}
          </button>
         </div>
@@ -252,7 +250,7 @@ export default function NotificationCenter({ onClose }) {
    {filteredActivity.length > 0 && (
     <>
      <div className="px-4 py-2 bg-stone2 border-b border-rule2">
-      <span className="font-body text-[12px] tracking-normal text-muted font-medium">Activity</span>
+      <span className="font-body text-label tracking-normal text-muted font-medium">Activity</span>
      </div>
      <div className="px-3 py-3 space-y-2.5">
       {filteredActivity.map(item => (
@@ -263,7 +261,7 @@ export default function NotificationCenter({ onClose }) {
    )}
 
    {filteredActivity.length === 0 && (
-    <div className="px-4 py-10 text-center font-body text-ghost text-[14px]">
+    <div className="px-4 py-10 text-center font-body text-muted text-body">
      {activeFilter === 'All' ? 'No notifications.' : `No ${activeFilter.toLowerCase()} events today.`}
     </div>
    )}

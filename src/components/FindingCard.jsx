@@ -79,11 +79,11 @@ export default function FindingCard({
  <div className="flex gap-2 flex-wrap">
  {!actioned ? (
  <>
- <button onClick={handlePrimary} className="font-body font-medium text-[13px] px-3 py-1.5 bg-ink text-stone hover:opacity-90 transition-opacity">
+ <button onClick={handlePrimary} className="font-body font-medium text-label px-3 py-1.5 bg-ink text-stone hover:opacity-90 transition-opacity">
  {primaryLabel}
  </button>
  {secondaryLabel && (
- <button className="font-body font-medium text-[13px] px-3 py-1.5 bg-stone3 text-muted hover:bg-stone2 transition-colors">{secondaryLabel}</button>
+ <button className="font-body font-medium text-label px-3 py-1.5 bg-stone3 text-muted hover:bg-stone2 transition-colors">{secondaryLabel}</button>
  )}
  </>
  ) : (
@@ -103,13 +103,13 @@ export default function FindingCard({
  {/* Acknowledgment row */}
  {ackState !== 'dismissed' && (
  <div className="flex flex-wrap items-center gap-2 px-4 py-2 bg-takorin-stone-2 border-t border-takorin-rule">
- <span className="font-body text-[12px] text-takorin-ghost flex-shrink-0">
+ <span className="font-body text-label text-takorin-ghost flex-shrink-0">
  Your response:
  </span>
  <div className="flex gap-1.5 flex-wrap">
  <button
  onClick={handleActioning}
- className={`flex items-center gap-1 px-2.5 py-1 text-[12px] font-body font-medium transition-colors ${
+ className={`flex items-center gap-1 px-2.5 py-1 text-label font-body font-medium transition-colors ${
  ackState === 'actioning'
  ? 'bg-ok/10 text-ok'
  : 'bg-takorin-stone-3 text-takorin-muted hover:bg-takorin-stone-4'
@@ -120,7 +120,7 @@ export default function FindingCard({
  </button>
  <button
  onClick={handleDismiss}
- className="flex items-center gap-1 px-2.5 py-1 text-[12px] font-body font-medium bg-takorin-stone-3 text-takorin-muted hover:bg-takorin-stone-4 transition-colors"
+ className="flex items-center gap-1 px-2.5 py-1 text-label font-body font-medium bg-takorin-stone-3 text-takorin-muted hover:bg-takorin-stone-4 transition-colors"
  >
  <XCircle className="w-2.5 h-2.5" />
  Dismiss
@@ -131,12 +131,12 @@ export default function FindingCard({
  <select
  value={dismissReason}
  onChange={e => setDismissReason(e.target.value)}
- className="flex-1 text-[13px] font-body bg-takorin-stone text-takorin-muted px-2 py-1.5 border border-takorin-rule focus:outline-none focus:border-takorin-ochre"
+ className="flex-1 text-label font-body bg-takorin-stone text-takorin-muted px-2 py-1.5 border border-takorin-rule focus:outline-none focus:border-takorin-ochre"
  >
  <option value="">Reason for dismissing…</option>
  {DISMISS_REASONS.map(r => <option key={r} value={r}>{r}</option>)}
  </select>
- <button onClick={confirmDismiss} className="font-body font-medium text-[12px] px-3 py-1.5 bg-stone3 text-muted hover:bg-stone2 transition-colors">
+ <button onClick={confirmDismiss} className="font-body font-medium text-label px-3 py-1.5 bg-stone3 text-muted hover:bg-stone2 transition-colors">
  Confirm
  </button>
  </div>
@@ -145,7 +145,7 @@ export default function FindingCard({
  )}
  {ackState === 'dismissed' && (
  <div className="px-4 py-2 bg-danger/5 border-t border-takorin-rule">
- <span className="font-body text-[12px] text-danger">
+ <span className="font-body text-label text-danger">
  Dismissed{dismissReason ? `: ${dismissReason}` : ' — no reason logged'} · recorded
  </span>
  </div>

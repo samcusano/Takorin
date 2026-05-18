@@ -45,7 +45,7 @@ export default function TrustStrip() {
           )}
           <span className={`relative inline-flex rounded-full h-1.5 w-1.5 ${cfg.dot}`} />
         </div>
-        <span className={`font-body font-medium text-[12px] tracking-normal ${cfg.text}`}>{cfg.label}</span>
+        <span className={`font-body font-medium text-label tracking-normal ${cfg.text}`}>{cfg.label}</span>
       </div>
 
       <div className="w-px h-3 bg-rule2 flex-shrink-0" />
@@ -57,9 +57,9 @@ export default function TrustStrip() {
         ) : (
           <WifiOff size={9} className="text-warn" strokeWidth={2} />
         )}
-        <span className="font-body text-ghost text-[12px]">
+        <span className="font-body text-muted text-label">
           <span className={activeConnectors >= totalConnectors * 0.8 ? 'text-ok' : 'text-warn'}>{activeConnectors}</span>
-          <span className="text-ghost">/{totalConnectors} connectors</span>
+          <span className="text-muted">/{totalConnectors} connectors</span>
         </span>
       </div>
 
@@ -69,7 +69,7 @@ export default function TrustStrip() {
           <div className="w-px h-3 bg-rule2 flex-shrink-0" />
           <div className="flex items-center gap-1">
             <AlertTriangle size={9} className="text-warn" strokeWidth={2} />
-            <span className="font-body text-warn text-[12px]">{stale} stale signal{stale > 1 ? 's' : ''}</span>
+            <span className="font-body text-warn text-label">{stale} stale signal{stale > 1 ? 's' : ''}</span>
           </div>
         </>
       )}
@@ -78,7 +78,7 @@ export default function TrustStrip() {
       {conflictCount > 0 && (
         <>
           <div className="w-px h-3 bg-rule2 flex-shrink-0" />
-          <span className="font-body text-warn text-[12px]">{conflictCount} semantic conflict{conflictCount > 1 ? 's' : ''}</span>
+          <span className="font-body text-warn text-label">{conflictCount} semantic conflict{conflictCount > 1 ? 's' : ''}</span>
         </>
       )}
 
@@ -86,11 +86,11 @@ export default function TrustStrip() {
       {trustLevel === 'degraded' && (
         <>
           <div className="w-px h-3 bg-rule2 flex-shrink-0" />
-          <span className="font-body text-danger text-[12px] font-medium">Data coverage degraded — review signal health</span>
+          <span className="font-body text-danger text-label font-medium">Data coverage degraded — review signal health</span>
         </>
       )}
 
-      <div className="ml-auto font-body text-ghost text-[12px]">
+      <div className="ml-auto font-body text-muted text-label">
         {integrationSummary.totalSignals.toLocaleString()} signals · {integrationSummary.streamingSources} streaming
       </div>
     </div>

@@ -86,7 +86,7 @@ function PlantItem() {
     <LayoutGrid size={15} strokeWidth={1.75} className="flex-shrink-0" />
     <span className="font-body flex-1">Overview</span>
     {activeCount > 0 && (
-     <span className={`ml-auto text-[12px] font-semibold px-1.5 py-0.5 ${
+     <span className={`ml-auto text-label font-semibold px-1.5 py-0.5 ${
       criticalCount > 0 ? 'bg-danger text-white' : 'bg-warn/20 text-warn'
      }`}>
       {activeCount}
@@ -105,7 +105,7 @@ const DISABLED_PLANTS = [
 ]
 
 const SECTOR_LABELS = { food: 'Food', pharma: 'Pharma', electronics: 'Electronics', semiconductor: 'Semiconductor' }
-const SECTOR_COLORS = { food: 'text-ok', pharma: 'text-ochre', electronics: 'text-warn', semiconductor: 'text-ghost' }
+const SECTOR_COLORS = { food: 'text-ok', pharma: 'text-ochre', electronics: 'text-warn', semiconductor: 'text-muted' }
 
 function PlantDropdown({ triggerRef, onClose, complianceState, currentPlant, setCurrentPlant }) {
  const dropRef = useRef(null)
@@ -169,8 +169,8 @@ function PlantDropdown({ triggerRef, onClose, complianceState, currentPlant, set
            <Building2 size={10} strokeWidth={1.75} className={isActive ? 'text-ochre' : 'text-white/50'} />
           </div>
           <div className="text-left">
-           <span className={`font-body text-[13px] block leading-tight ${isActive ? 'text-white font-medium' : 'text-white/50'}`}>{p.name}</span>
-           <span className={`font-body text-white/50 text-[12px]`}>{modeLabel}</span>
+           <span className={`font-body text-label block leading-tight ${isActive ? 'text-white font-medium' : 'text-white/50'}`}>{p.name}</span>
+           <span className={`font-body text-white/50 text-label`}>{modeLabel}</span>
           </div>
          </div>
         </button>
@@ -182,9 +182,9 @@ function PlantDropdown({ triggerRef, onClose, complianceState, currentPlant, set
          <div className="w-5 h-5 rounded bg-sidebar-3 flex items-center justify-center flex-shrink-0">
           <Building2 size={10} strokeWidth={1.75} className="text-white/50" />
          </div>
-         <span className="font-body text-white/50 text-[13px]">{p.name}</span>
+         <span className="font-body text-white/50 text-label">{p.name}</span>
         </div>
-        <span className="font-body text-white/50 text-[12px]">Not in pilot</span>
+        <span className="font-body text-white/50 text-label">Not in pilot</span>
        </div>
       ))}
      </div>
@@ -192,10 +192,10 @@ function PlantDropdown({ triggerRef, onClose, complianceState, currentPlant, set
      {/* Demo sector plants */}
      <div className="mx-5 h-px bg-sidebar-border" />
      <div className="px-5 pt-3 pb-4">
-      <p className="font-body text-white/50 text-[12px] tracking-normal mb-2">Sector demos</p>
+      <p className="font-body text-white/50 text-label tracking-normal mb-2">Sector demos</p>
       {DEMO_PLANTS.map(p => {
        const isActive = currentPlant.id === p.id
-       const sectorColor = SECTOR_COLORS[p.sector] ?? 'text-ghost'
+       const sectorColor = SECTOR_COLORS[p.sector] ?? 'text-muted'
        const sectorLabel = SECTOR_LABELS[p.sector] ?? p.sector
        return (
         <button key={p.id} type="button"
@@ -206,8 +206,8 @@ function PlantDropdown({ triggerRef, onClose, complianceState, currentPlant, set
            <Building2 size={10} strokeWidth={1.75} className={isActive ? 'text-ochre' : 'text-white/50'} />
           </div>
           <div className="text-left">
-           <span className={`font-body text-[13px] block leading-tight ${isActive ? 'text-white font-medium' : 'text-white/50'}`}>{p.name}</span>
-           <span className={`font-body text-[12px] ${sectorColor}`}>{sectorLabel}</span>
+           <span className={`font-body text-label block leading-tight ${isActive ? 'text-white font-medium' : 'text-white/50'}`}>{p.name}</span>
+           <span className={`font-body text-label ${sectorColor}`}>{sectorLabel}</span>
           </div>
          </div>
         </button>
@@ -280,8 +280,8 @@ function UserDropdown({ triggerRef, onClose, viewingRole, setViewingRole }) {
         <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 transition-colors ${viewingRole === r.id ? 'bg-ochre' : 'bg-sidebar-border group-hover:bg-sidebar-3'}`} />
         <PersonAvatar name={r.name} size={20} />
         <div className="flex-1 text-left min-w-0">
-         <div className={`font-body text-[13px] font-medium truncate transition-colors ${viewingRole === r.id ? 'text-white' : 'text-white/50 group-hover:text-white/70'}`}>{r.name}</div>
-         <div className="font-body text-white/50 text-[12px]">{r.role}</div>
+         <div className={`font-body text-label font-medium truncate transition-colors ${viewingRole === r.id ? 'text-white' : 'text-white/50 group-hover:text-white/70'}`}>{r.name}</div>
+         <div className="font-body text-white/50 text-label">{r.role}</div>
         </div>
        </button>
       ))}
@@ -305,7 +305,7 @@ function AgentItem({ count }) {
     `flex items-center gap-3 px-4 py-2.5 w-full text-left transition-colors hover:bg-sidebar2 border-l-2 ${isActive ? 'bg-sidebar2 border-l-danger text-white' : 'border-l-transparent text-white/50 hover:text-white'}`
    }>
    <Cpu size={15} strokeWidth={1.75} className="flex-shrink-0" />
-   <span className="font-body text-[15px]">Agents</span>
+   <span className="font-body text-base">Agents</span>
    {count > 0 && <StatusPill tone="alert" dot={false} className="ml-auto">{count}</StatusPill>}
   </NavLink>
  )
@@ -351,7 +351,7 @@ export default function Sidebar() {
  <div className="font-display font-bold text-white text-base tracking-tight leading-none">
  takorin
  </div>
- <div className="font-body text-white/50 text-[12px] mt-0.5">
+ <div className="font-body text-white/50 text-label mt-0.5">
  Total intelligence
  </div>
  </div>
@@ -368,8 +368,8 @@ export default function Sidebar() {
   <Building2 size={15} className="text-white/50" strokeWidth={1.75} />
   </div>
   <div className="flex-1 min-w-0">
-  <div className="font-body text-white text-[15px] font-medium truncate">{currentPlant?.name || 'Salina Campus'}</div>
-  <div className="font-body text-white/50 text-[12px]">Plant ID {currentPlant?.code || 'SL-04'}</div>
+  <div className="font-body text-white text-base font-medium truncate">{currentPlant?.name || 'Salina Campus'}</div>
+  <div className="font-body text-white/50 text-label">Plant ID {currentPlant?.code || 'SL-04'}</div>
   </div>
   <ChevronDown
   size={13}
@@ -399,16 +399,16 @@ export default function Sidebar() {
  {/* ── Supervisor: 3 screens (ShiftIQ contains Handoff/Fleet/Allocation as tabs) */}
  {viewingRole === 'supervisor' && (
   <>
-   <div className="px-4 pt-3 pb-1 text-[12px] tracking-normal text-white/50 font-body font-medium">Operational</div>
+   <div className="px-4 pt-3 pb-1 text-label tracking-normal text-white/50 font-body font-medium">Operational</div>
    <SideItem to="/shift"  id="shift"  icon={Activity} label="ShiftIQ"      badge="3" badgeType="alert" />
    <AgentItem count={agentPendingCount} />
-   <div className="px-4 pt-4 pb-1 text-[12px] tracking-normal text-white/50 font-body font-medium">Causality</div>
+   <div className="px-4 pt-4 pb-1 text-label tracking-normal text-white/50 font-body font-medium">Causality</div>
    <SideItem to="/impact" id="impact" icon={CircleDot} label="Outcomes" badge={null} />
-   <div className="px-4 pt-4 pb-1 text-[12px] tracking-normal text-white/50 font-body font-medium">Activity</div>
+   <div className="px-4 pt-4 pb-1 text-label tracking-normal text-white/50 font-body font-medium">Activity</div>
    <button type="button" onClick={() => setNotifOpen(true)}
     className="flex items-center gap-3 px-4 py-2.5 w-full text-left transition-colors hover:bg-sidebar2 text-white/70">
     <Bell size={15} strokeWidth={1.75} className="flex-shrink-0" />
-    <span className="font-body text-[15px]">Notifications</span>
+    <span className="font-body text-base">Notifications</span>
     <StatusPill tone="alert" dot={false} className="ml-auto">4</StatusPill>
    </button>
    {notifOpen && <NotificationCenter onClose={() => setNotifOpen(false)} />}
@@ -420,18 +420,18 @@ export default function Sidebar() {
   <>
    <PlantItem />
 
-   <div className="px-4 pt-3 pb-1 text-[12px] tracking-normal text-white/50 font-body font-medium">Operations</div>
+   <div className="px-4 pt-3 pb-1 text-label tracking-normal text-white/50 font-body font-medium">Operations</div>
    {modules.map(m => <SideItem key={m.id} to={m.path} id={m.id} {...m} />)}
    <AgentItem count={agentPendingCount} />
    <SideItem to="/impact" id="impact" icon={CircleDot} label="Outcomes" badge={null} />
 
-   <div className="px-4 pt-4 pb-1 text-[12px] tracking-normal text-white/50 font-body font-medium">Platform</div>
+   <div className="px-4 pt-4 pb-1 text-label tracking-normal text-white/50 font-body font-medium">Platform</div>
    <SideItem to="/batch"      id="batch"      icon={FlaskConical}    label="Batches"    badge={null} />
    <SideItem to="/compliance" id="compliance" icon={Scale}           label="Compliance" badge={null} />
    <SideItem to="/hierarchy"  id="hierarchy"  icon={LayoutDashboard} label="Site"       badge={null} />
    <SideItem to="/knowledge"  id="knowledge"  icon={BookOpen}        label="Knowledge"  badge={null} />
 
-   <div className="px-4 pt-4 pb-1 text-[12px] tracking-normal text-white/50 font-body font-medium">Extended</div>
+   <div className="px-4 pt-4 pb-1 text-label tracking-normal text-white/50 font-body font-medium">Extended</div>
    <SideItem to="/execution" id="execution" icon={Workflow} label="Execution" badge={null} />
    {currentPlant?.sector === 'pharma' && (
     <SideItem to="/records"  id="records"  icon={FileLock2}  label="Records"     badge={null} />
@@ -443,15 +443,15 @@ export default function Sidebar() {
     <SideItem to="/equipment" id="equipment" icon={ScanLine} label="Equipment" badge={null} />
    )}
 
-   <div className="px-4 pt-4 pb-1 text-[12px] tracking-normal text-white/50 font-body font-medium">System</div>
+   <div className="px-4 pt-4 pb-1 text-label tracking-normal text-white/50 font-body font-medium">System</div>
    <SideItem to="/integration" id="integration" icon={Network} label="Integrations" badge={null} />
    <SideItem to="/readiness"   id="readiness"   icon={Gauge}   label="Readiness"    badge={null} />
 
-   <div className="px-4 pt-4 pb-1 text-[12px] tracking-normal text-white/50 font-body font-medium">Activity</div>
+   <div className="px-4 pt-4 pb-1 text-label tracking-normal text-white/50 font-body font-medium">Activity</div>
    <button type="button" onClick={() => setNotifOpen(true)}
     className="flex items-center gap-3 px-4 py-2.5 w-full text-left transition-colors hover:bg-sidebar2 text-white/70">
     <Bell size={15} strokeWidth={1.75} className="flex-shrink-0" />
-    <span className="font-body text-[15px]">Notifications</span>
+    <span className="font-body text-base">Notifications</span>
     <StatusPill tone="alert" dot={false} className="ml-auto">4</StatusPill>
    </button>
    {notifOpen && <NotificationCenter onClose={() => setNotifOpen(false)} />}
@@ -463,18 +463,18 @@ export default function Sidebar() {
  {/* Worker mode + Compliance */}
  <div className="px-4 py-2.5 border-t border-sidebar-border">
  <div className="flex items-center justify-between mb-1.5">
-  <span className="font-body text-white/50 text-[12px]">Workforce</span>
-  <span className={`font-body font-medium text-[12px] ${WORKER_MODE_COLORS[workerMode || 'human']}`}>
+  <span className="font-body text-white/50 text-label">Workforce</span>
+  <span className={`font-body font-medium text-label ${WORKER_MODE_COLORS[workerMode || 'human']}`}>
    {workerMode === 'robot' ? 'Robotic' : workerMode === 'hybrid' ? 'Hybrid' : 'Human'}
   </span>
  </div>
  <div className="flex items-center justify-between">
- <span className="font-body text-white/50 text-[12px]">Compliance</span>
- <span className={`font-body font-medium text-[12px] px-2 py-0.5 ${complianceColor}`}>
+ <span className="font-body text-white/50 text-label">Compliance</span>
+ <span className={`font-body font-medium text-label px-2 py-0.5 ${complianceColor}`}>
  {complianceLabel}
  </span>
  </div>
- <div className="font-body text-white/50 text-[12px] mt-0.5 leading-relaxed">
+ <div className="font-body text-white/50 text-label mt-0.5 leading-relaxed">
  {complianceState === 'blocked' && 'CAPA-2604-006 evidence missing · FDA export blocked'}
  {complianceState === 'attention' && 'Allergen changeover log unsigned · Line 4'}
  {complianceState === 'clear' && 'No blocking compliance items · 18d to FDA inspection'}
@@ -490,8 +490,8 @@ export default function Sidebar() {
  >
   <PersonAvatar name="J. Crocker" size={28} />
   <div className="flex-1 min-w-0">
-  <div className="font-body text-white text-[14px] font-medium">J. Crocker</div>
-  <div className="font-body text-white/50 text-[12px]">
+  <div className="font-body text-white text-body font-medium">J. Crocker</div>
+  <div className="font-body text-white/50 text-label">
    {viewingRole === 'supervisor' ? <span className="text-ochre">Viewing as Kowalski</span> : viewingRole === 'operator-reyes' ? <span className="text-ochre">Viewing as C. Reyes</span> : viewingRole === 'operator-okonkwo' ? <span className="text-ochre">Viewing as P. Okonkwo</span> : 'Plant Director'}
   </div>
   </div>
@@ -509,7 +509,7 @@ export default function Sidebar() {
  {/* Toast */}
  {toast && (
  <div className="fixed bottom-4 left-4 z-50 bg-sidebar border border-sidebar-border px-3 py-2 slide-in">
- <span className="font-body text-white/50 text-[13px]">{toast} — not available in pilot</span>
+ <span className="font-body text-white/50 text-label">{toast} — not available in pilot</span>
  </div>
  )}
  </aside>

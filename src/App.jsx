@@ -39,7 +39,7 @@ const ValueChain            = lazy(() => import('./screens/ValueChain'))
 const EquipmentIntelligence = lazy(() => import('./screens/EquipmentIntelligence'))
 const ImpactLoop            = lazy(() => import('./screens/ImpactLoop'))
 function ScreenLoader() {
- return <div className="flex-1 flex items-center justify-center font-body text-ghost text-[13px]">Loading…</div>
+ return <div className="flex-1 flex items-center justify-center font-body text-muted text-label">Loading…</div>
 }
 
 const ROLE_LABELS = {
@@ -61,14 +61,14 @@ export default function App() {
  <TrustStrip />
  {roleInfo && (
  <div className="flex items-center justify-between px-4 py-2 bg-sidebar border-b border-sidebar-border flex-shrink-0">
-  <span className="font-body text-ghost text-[13px]">
+  <span className="font-body text-muted text-label">
    Viewing as <span className="text-ochre font-medium">{roleInfo.name}</span>
-   <span className="text-ghost/60"> · {roleInfo.role}</span>
+   <span className="text-muted/60"> · {roleInfo.role}</span>
   </span>
   <button
    type="button"
    onClick={() => { setViewingRole('director') }}
-   className="font-body text-[12px] text-ghost hover:text-stone transition-colors px-2 py-1 border border-[#3A342E] hover:border-[#5A4A3E]"
+   className="font-body text-label text-muted hover:text-stone transition-colors px-2 py-1 border border-[#3A342E] hover:border-[#5A4A3E]"
   >
    Return to director view
   </button>

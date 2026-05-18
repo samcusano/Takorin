@@ -16,20 +16,20 @@ const TABS = [
 function CompoundRow({ c }) {
   const toneColor = c.tone === 'ok' ? 'text-ok' : c.tone === 'warn' ? 'text-warn' : 'text-danger'
   const ArrowIcon = c.direction === 'up' ? TrendingUp : c.direction === 'down' ? TrendingDown : Minus
-  const arrowColor = c.direction === 'up' ? 'text-ok' : c.direction === 'down' ? 'text-warn' : 'text-ghost'
+  const arrowColor = c.direction === 'up' ? 'text-ok' : c.direction === 'down' ? 'text-warn' : 'text-muted'
   return (
     <div className="flex items-start gap-3 px-5 py-2.5 border-b border-rule2 last:border-0">
       <div className="flex-1 min-w-0">
-        <div className="font-body font-medium text-ink text-[14px]">{c.name}</div>
-        {c.note && <div className="font-body text-ghost text-[12px] mt-0.5 leading-snug">{c.note}</div>}
+        <div className="font-body font-medium text-ink text-body">{c.name}</div>
+        {c.note && <div className="font-body text-muted text-label mt-0.5 leading-snug">{c.note}</div>}
       </div>
       <div className="flex items-center gap-2 flex-shrink-0">
-        <span className="font-body text-ghost text-[12px]">{c.baseline}</span>
-        <span className="font-body text-ghost text-[12px]">baseline</span>
+        <span className="font-body text-muted text-label">{c.baseline}</span>
+        <span className="font-body text-muted text-label">baseline</span>
       </div>
       <div className="flex items-center gap-1.5 flex-shrink-0 w-24 justify-end">
         <ArrowIcon size={10} className={arrowColor} strokeWidth={2} />
-        <span className={`font-body font-medium text-[14px] tabular-nums ${toneColor}`}>
+        <span className={`font-body font-medium text-body tabular-nums ${toneColor}`}>
           {c.val} {c.unit}
         </span>
       </div>
@@ -52,11 +52,11 @@ function SensoryTab() {
               selectedId === r.id ? 'bg-stone2 border-l-ochre' : 'border-l-transparent hover:bg-stone2/50'
             }`}>
             <div className="flex items-baseline justify-between gap-2 mb-1">
-              <span className="font-body font-medium text-ink text-[13px] truncate">{r.batch}</span>
-              <span className={`font-display font-bold text-[18px] tabular-nums ${r.overallScore >= 90 ? 'text-ok' : r.overallScore >= 80 ? 'text-ochre' : 'text-warn'}`}>{r.overallScore}</span>
+              <span className="font-body font-medium text-ink text-label truncate">{r.batch}</span>
+              <span className={`font-display font-bold text-head tabular-nums ${r.overallScore >= 90 ? 'text-ok' : r.overallScore >= 80 ? 'text-ochre' : 'text-warn'}`}>{r.overallScore}</span>
             </div>
-            <div className="font-body text-ghost text-[12px]">{r.source}</div>
-            <div className="font-body text-ghost text-[12px] mt-0.5">
+            <div className="font-body text-muted text-label">{r.source}</div>
+            <div className="font-body text-muted text-label mt-0.5">
               {new Date(r.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
             </div>
           </button>
@@ -66,19 +66,19 @@ function SensoryTab() {
       {/* Reading detail */}
       <div className="flex-1 overflow-y-auto">
         <div className="px-6 py-5 border-b border-rule2">
-          <div className="font-body text-ghost text-[12px] tracking-normal mb-1">{reading.source} · {reading.batch}</div>
+          <div className="font-body text-muted text-label tracking-normal mb-1">{reading.source} · {reading.batch}</div>
           <div className="flex items-baseline gap-4 mb-2">
-            <span className={`font-display font-bold display-num text-[40px] leading-none tabular-nums ${scoreColor}`}>{reading.overallScore}</span>
+            <span className={`font-display font-bold display-num text-display leading-none tabular-nums ${scoreColor}`}>{reading.overallScore}</span>
             <div>
-              <div className="font-body text-muted text-[14px]">Overall aroma score</div>
-              <div className="font-body text-ghost text-[12px]">Projected: {reading.gradeProjection} · {reading.confidence}% confidence</div>
+              <div className="font-body text-muted text-body">Overall aroma score</div>
+              <div className="font-body text-muted text-label">Projected: {reading.gradeProjection} · {reading.confidence}% confidence</div>
             </div>
           </div>
         </div>
 
         <div className="border-b border-rule2">
           <div className="px-5 py-2.5 bg-stone2 border-b border-rule2">
-            <span className="font-body font-bold text-ink text-[13px]">Compound analysis</span>
+            <span className="font-body font-bold text-ink text-label">Compound analysis</span>
           </div>
           <div className="divide-y divide-rule2">
             {reading.compounds.map((c, i) => <CompoundRow key={i} c={c} />)}
@@ -89,10 +89,10 @@ function SensoryTab() {
           <div className="px-6 py-4 border-b border-rule2 bg-ochre/[0.03]">
             <div className="flex items-center gap-2 mb-2">
               <div className="w-1.5 h-1.5 rounded-full bg-ochre" />
-              <span className="font-body text-ghost text-[12px] tracking-normal">Master blender annotation</span>
-              <span className="font-body text-ghost text-[12px]">{reading.expertAnnotation.author}</span>
+              <span className="font-body text-muted text-label tracking-normal">Master blender annotation</span>
+              <span className="font-body text-muted text-label">{reading.expertAnnotation.author}</span>
             </div>
-            <p className="font-body text-ink text-[14px] leading-relaxed">{reading.expertAnnotation.note}</p>
+            <p className="font-body text-ink text-body leading-relaxed">{reading.expertAnnotation.note}</p>
           </div>
         )}
       </div>
@@ -105,34 +105,34 @@ function AnnotationsTab() {
     <div className="flex-1 overflow-y-auto divide-y divide-rule2">
       {expertAnnotations.map(a => {
         const typeLabel = { 'quality-watch': 'Quality watch', 'grade-confirmation': 'Grade confirmation', 'process-note': 'Process note', 'outcome-validation': 'Outcome validation' }[a.type] ?? a.type
-        const typeTone = { 'quality-watch': 'text-warn bg-warn/10 border-warn/30', 'grade-confirmation': 'text-ok bg-ok/10 border-ok/30', 'process-note': 'text-muted bg-stone3 border-rule2', 'outcome-validation': 'text-int bg-int/10 border-int/30' }[a.type] ?? 'text-ghost bg-stone3 border-rule2'
+        const typeTone = { 'quality-watch': 'text-warn bg-warn/10 border-warn/30', 'grade-confirmation': 'text-ok bg-ok/10 border-ok/30', 'process-note': 'text-muted bg-stone3 border-rule2', 'outcome-validation': 'text-ochre bg-ochre/10 border-ochre/30' }[a.type] ?? 'text-muted bg-stone3 border-rule2'
         return (
           <div key={a.id} className="px-6 py-4 hover:bg-stone2 transition-colors">
             <div className="flex items-start justify-between gap-4 mb-2">
               <div className="flex items-center gap-2">
                 <div className="w-6 h-6 rounded-full bg-stone3 border border-rule2 flex items-center justify-center flex-shrink-0">
-                  <span className="font-body text-ghost text-[12px] font-medium">{a.author.split(' ').map(p => p[0]).join('')}</span>
+                  <span className="font-body text-muted text-label font-medium">{a.author.split(' ').map(p => p[0]).join('')}</span>
                 </div>
                 <div>
-                  <div className="font-body font-medium text-ink text-[14px]">{a.author}</div>
-                  <div className="font-body text-ghost text-[12px]">{a.authorTitle}</div>
+                  <div className="font-body font-medium text-ink text-body">{a.author}</div>
+                  <div className="font-body text-muted text-label">{a.authorTitle}</div>
                 </div>
               </div>
               <div className="flex items-center gap-2 flex-shrink-0">
-                <span className={`font-body text-[12px] tracking-normal px-1.5 py-0.5 border ${typeTone}`}>{typeLabel}</span>
-                <span className="font-body text-ghost text-[12px]">
+                <span className={`font-body text-label tracking-normal px-1.5 py-0.5 border ${typeTone}`}>{typeLabel}</span>
+                <span className="font-body text-muted text-label">
                   {new Date(a.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                 </span>
               </div>
             </div>
-            <div className="font-body text-ghost text-[12px] mb-1.5">Batch: {a.batch}</div>
-            <p className="font-body text-ink text-[14px] leading-relaxed mb-2">{a.observation}</p>
+            <div className="font-body text-muted text-label mb-1.5">Batch: {a.batch}</div>
+            <p className="font-body text-ink text-body leading-relaxed mb-2">{a.observation}</p>
             {a.modelResponse && (
               <div className="flex items-start gap-2 px-3 py-2 bg-stone2 border border-rule2">
-                <div className="font-body text-ghost text-[12px] tracking-normal flex-shrink-0 mt-0.5">Model</div>
-                <div className="font-body text-muted text-[12px] leading-snug">{a.modelResponse}</div>
+                <div className="font-body text-muted text-label tracking-normal flex-shrink-0 mt-0.5">Model</div>
+                <div className="font-body text-muted text-label leading-snug">{a.modelResponse}</div>
                 {a.confidenceImpact && (
-                  <span className="font-body text-ok text-[12px] flex-shrink-0 font-medium">{a.confidenceImpact}</span>
+                  <span className="font-body text-ok text-label flex-shrink-0 font-medium">{a.confidenceImpact}</span>
                 )}
               </div>
             )}
@@ -150,27 +150,27 @@ function PriorsTab() {
         <div key={p.id} className={`px-6 py-4 border-l-4 ${p.tone === 'warn' ? 'border-l-warn bg-warn/[0.01]' : 'border-l-ok'} hover:bg-stone2 transition-colors`}>
           <div className="flex items-start justify-between gap-4 mb-2">
             <div className="flex-1">
-              <div className="font-body text-ghost text-[12px] tracking-normal mb-0.5">{p.domain}</div>
-              <div className="font-body font-medium text-ink text-[14px] leading-snug">{p.rule}</div>
+              <div className="font-body text-muted text-label tracking-normal mb-0.5">{p.domain}</div>
+              <div className="font-body font-medium text-ink text-body leading-snug">{p.rule}</div>
             </div>
             <div className="flex flex-col items-end flex-shrink-0 gap-1">
-              <span className={`font-display font-bold display-num text-[24px] leading-none ${p.confidence >= 90 ? 'text-ok' : p.confidence >= 80 ? 'text-ochre' : 'text-warn'}`}>{p.confidence}%</span>
-              <span className="font-body text-ghost text-[12px]">confidence</span>
+              <span className={`font-display font-bold display-num text-2xl leading-none ${p.confidence >= 90 ? 'text-ok' : p.confidence >= 80 ? 'text-ochre' : 'text-warn'}`}>{p.confidence}%</span>
+              <span className="font-body text-muted text-label">confidence</span>
             </div>
           </div>
           <div className="flex items-center gap-3 mt-2">
-            <span className="font-body text-ghost text-[12px]">{p.author}</span>
-            <span className="font-body text-ghost">·</span>
-            <span className="font-body text-ghost text-[12px]">{p.evidenceBatches} batches</span>
-            <span className="font-body text-ghost">·</span>
-            <span className="font-body text-ghost text-[12px]">{p.evidenceYears}</span>
+            <span className="font-body text-muted text-label">{p.author}</span>
+            <span className="font-body text-muted">·</span>
+            <span className="font-body text-muted text-label">{p.evidenceBatches} batches</span>
+            <span className="font-body text-muted">·</span>
+            <span className="font-body text-muted text-label">{p.evidenceYears}</span>
           </div>
           <div className="flex items-center gap-2 mt-2">
-            <div className={`font-body text-[12px] px-1.5 py-0.5 border ${p.tone === 'warn' ? 'text-warn border-warn/30 bg-warn/10' : 'text-ok border-ok/30 bg-ok/10'}`}>
+            <div className={`font-body text-label px-1.5 py-0.5 border ${p.tone === 'warn' ? 'text-warn border-warn/30 bg-warn/10' : 'text-ok border-ok/30 bg-ok/10'}`}>
               {p.modelStatus.split('—')[0].trim()}
             </div>
             {p.activeBatches.length > 0 && (
-              <span className="font-body text-muted text-[12px]">{p.activeBatches.join(', ')}</span>
+              <span className="font-body text-muted text-label">{p.activeBatches.join(', ')}</span>
             )}
           </div>
         </div>
@@ -187,8 +187,8 @@ function BaselinesTab() {
           <div key={i} className={`px-6 py-5 ${s.tone === 'warn' ? 'bg-warn/[0.02]' : ''}`}>
             <div className="flex items-start justify-between gap-2 mb-3">
               <div>
-                <div className="font-body font-bold text-ink text-[14px]">{s.season}</div>
-                <div className="font-body text-ghost text-[12px] mt-0.5">{s.ambientTempRange} ambient</div>
+                <div className="font-body font-bold text-ink text-body">{s.season}</div>
+                <div className="font-body text-muted text-label mt-0.5">{s.ambientTempRange} ambient</div>
               </div>
               {s.tone === 'warn'
                 ? <AlertTriangle size={13} className="text-warn flex-shrink-0" strokeWidth={2} />
@@ -202,12 +202,12 @@ function BaselinesTab() {
                 { label: 'Expected aroma',      val: s.expectedAroma },
               ].map(({ label, val }) => (
                 <div key={label}>
-                  <div className="font-body text-ghost text-[12px] tracking-normal">{label}</div>
-                  <div className="font-body text-ink text-[13px] leading-snug mt-0.5">{val}</div>
+                  <div className="font-body text-muted text-label tracking-normal">{label}</div>
+                  <div className="font-body text-ink text-label leading-snug mt-0.5">{val}</div>
                 </div>
               ))}
               <div className="pt-2 border-t border-rule2">
-                <p className="font-body text-muted text-[12px] leading-relaxed">{s.notes}</p>
+                <p className="font-body text-muted text-label leading-relaxed">{s.notes}</p>
               </div>
             </div>
           </div>
@@ -226,21 +226,21 @@ export default function QualityIntelligence() {
       {/* Header */}
       <div className="flex-shrink-0 flex items-center justify-between px-6 py-4 border-b border-rule2 bg-stone">
         <div>
-          <div className="font-body text-ghost text-[12px] tracking-normal mb-0.5">Platform Architecture</div>
-          <div className="font-display font-bold text-ink text-[22px] leading-none">Quality Intelligence</div>
+          <div className="font-body text-muted text-label tracking-normal mb-0.5">Platform Architecture</div>
+          <div className="font-display font-bold text-ink text-title leading-none">Quality Intelligence</div>
         </div>
         <div className="flex items-center gap-6 text-right">
           <div>
-            <div className="font-display font-bold display-num text-[28px] text-ochre leading-none">{craftPriors.length}</div>
-            <div className="font-body text-ghost text-[12px] tracking-normal">craft priors</div>
+            <div className="font-display font-bold display-num text-metric text-ochre leading-none">{craftPriors.length}</div>
+            <div className="font-body text-muted text-label tracking-normal">craft priors</div>
           </div>
           <div>
-            <div className="font-display font-bold display-num text-[28px] text-ok leading-none">{expertAnnotations.length}</div>
-            <div className="font-body text-ghost text-[12px] tracking-normal">annotations</div>
+            <div className="font-display font-bold display-num text-metric text-ok leading-none">{expertAnnotations.length}</div>
+            <div className="font-body text-muted text-label tracking-normal">annotations</div>
           </div>
           <div>
-            <div className="font-display font-bold display-num text-[28px] text-muted leading-none">{sensoryReadings.length}</div>
-            <div className="font-body text-ghost text-[12px] tracking-normal">readings</div>
+            <div className="font-display font-bold display-num text-metric text-muted leading-none">{sensoryReadings.length}</div>
+            <div className="font-body text-muted text-label tracking-normal">readings</div>
           </div>
         </div>
       </div>
@@ -249,8 +249,8 @@ export default function QualityIntelligence() {
       <div className="flex-shrink-0 flex border-b border-rule2 bg-stone">
         {TABS.map(t => (
           <button key={t.id} type="button" onClick={() => setActiveTab(t.id)}
-            className={`font-body text-[13px] px-5 py-2.5 border-b-2 transition-colors ${
-              activeTab === t.id ? 'border-b-ochre text-ink' : 'border-b-transparent text-ghost hover:text-muted'
+            className={`font-body text-label px-5 py-2.5 border-b-2 transition-colors ${
+              activeTab === t.id ? 'border-b-ochre text-ink' : 'border-b-transparent text-muted hover:text-muted'
             }`}>
             {t.label}
           </button>

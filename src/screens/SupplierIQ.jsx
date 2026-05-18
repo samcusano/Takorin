@@ -6,7 +6,7 @@ import NetworkView from './NetworkView'
 import { useNavigate, Link } from 'react-router-dom'
 import { supplierData, supplierAudits, empResultsHistory } from '../data'
 import { useAppState } from '../context/AppState'
-import { StatusPill, SectionHeader, SP, SecHd, Btn, Layout, ActionBanner, ScoreRing, Spinner, AnimatedCheck, MetadataRow, ExpandableMetadata, ActionCard, SlidePanel } from '../components/UI'
+import { StatusPill, SectionHeader, SP, Btn, Layout, ActionBanner, ScoreRing, Spinner, AnimatedCheck, MetadataRow, ExpandableMetadata, ActionCard, SlidePanel } from '../components/UI'
 import StatBar from '../components/StatBar.jsx'
 
 // ── CoaPanel ──────────────────────────────────────────────────────────────────
@@ -43,13 +43,13 @@ function CoaPanel({ lot, onClose }) {
     >
       {/* ── COA status hero ─────────────────────────────────────────── */}
       <div className={`px-5 py-5 border border-rule2 ${coaPass ? 'bg-ok/[0.035] border-ok/25' : 'bg-danger/[0.035] border-danger/25'}`}>
-        <div className={`font-body text-[12px] tracking-normal mb-2 ${coaPass ? 'text-ok' : 'text-danger'}`}>
+        <div className={`font-body text-label tracking-normal mb-2 ${coaPass ? 'text-ok' : 'text-danger'}`}>
           Certificate of Analysis
         </div>
-        <div className={`font-display font-bold text-[28px] leading-none mb-1.5 ${coaPass ? 'text-ok' : 'text-danger'}`}>
+        <div className={`font-display font-bold text-metric leading-none mb-1.5 ${coaPass ? 'text-ok' : 'text-danger'}`}>
           {coaPass ? 'Verified' : 'Pending receipt'}
         </div>
-        <div className="font-body text-ghost text-[13px]">
+        <div className="font-body text-muted text-label">
           {coaPass
             ? 'Validated Apr 12, 2026 · All parameters within specification'
             : `Not received · Hold active until COA confirmed by ${supplierName}`}
@@ -58,7 +58,7 @@ function CoaPanel({ lot, onClose }) {
 
       {/* ── Lot identity ─────────────────────────────────────────────── */}
       <div>
-        <div className="font-body text-ghost text-[12px] tracking-normal mb-3">Lot details</div>
+        <div className="font-body text-muted text-label tracking-normal mb-3">Lot details</div>
         <div className="space-y-3">
           {[
             { label: 'Ingredient',  value: lot.ing               },
@@ -68,8 +68,8 @@ function CoaPanel({ lot, onClose }) {
             { label: 'Received',    value: lot.deliveryTime       },
           ].map(({ label, value }) => (
             <div key={label} className="flex items-baseline justify-between border-b border-rule2 pb-2">
-              <span className="font-body text-ghost text-[13px]">{label}</span>
-              <span className="font-body font-medium text-ink text-[14px]">{value}</span>
+              <span className="font-body text-muted text-label">{label}</span>
+              <span className="font-body font-medium text-ink text-body">{value}</span>
             </div>
           ))}
         </div>
@@ -78,27 +78,27 @@ function CoaPanel({ lot, onClose }) {
       {/* ── Shelf life bar ───────────────────────────────────────────── */}
       <div>
         <div className="flex items-baseline justify-between mb-2">
-          <span className="font-body text-ghost text-[12px] tracking-normal">Shelf life</span>
-          <span className={`display-num text-[24px] font-bold leading-none ${shelfText}`}>{lot.shelf}<span className="font-body text-[13px] font-normal text-ghost ml-1">days</span></span>
+          <span className="font-body text-muted text-label tracking-normal">Shelf life</span>
+          <span className={`display-num text-2xl font-bold leading-none ${shelfText}`}>{lot.shelf}<span className="font-body text-label font-normal text-muted ml-1">days</span></span>
         </div>
         <div className="h-2 bg-rule2 rounded-full overflow-hidden mb-1">
-          <div className={`h-full rounded-full ${shelfColor} transition-all`} style={{ width: `${shelfPct}%` }} />
+          <div className={`h-full rounded-full ${shelfColor} transition-[width]`} style={{ width: `${shelfPct}%` }} />
         </div>
-        <div className="font-body text-ghost text-[12px]">{lot.shelf} of 45 days remaining · standard shelf life</div>
+        <div className="font-body text-muted text-label">{lot.shelf} of 45 days remaining · standard shelf life</div>
       </div>
 
       {/* ── Lab results ──────────────────────────────────────────────── */}
       <div>
-        <div className="font-body text-ghost text-[12px] tracking-normal mb-3">
+        <div className="font-body text-muted text-label tracking-normal mb-3">
           Lab results{coaPass ? ' · Apr 12, 2026' : ' · Pending'}
         </div>
         {coaPass ? (
           <div className="grid grid-cols-2 gap-px bg-rule2">
             {LAB_RESULTS_PASS.map(r => (
               <div key={r.label} className="bg-stone px-4 py-3.5">
-                <div className="font-body text-ghost text-[12px] mb-1.5">{r.label}</div>
+                <div className="font-body text-muted text-label mb-1.5">{r.label}</div>
                 <div className="flex items-center justify-between">
-                  <span className="font-body font-medium text-ink text-[15px]">{r.value}</span>
+                  <span className="font-body font-medium text-ink text-base">{r.value}</span>
                   <Check size={12} strokeWidth={2.5} className="text-ok" />
                 </div>
               </div>
@@ -108,8 +108,8 @@ function CoaPanel({ lot, onClose }) {
           <div className="grid grid-cols-2 gap-px bg-rule2">
             {LAB_RESULTS_PENDING.map(label => (
               <div key={label} className="bg-stone px-4 py-3.5">
-                <div className="font-body text-ghost text-[12px] mb-1.5">{label}</div>
-                <div className="font-body text-warn text-[13px] font-medium">Not tested</div>
+                <div className="font-body text-muted text-label mb-1.5">{label}</div>
+                <div className="font-body text-warn text-label font-medium">Not tested</div>
               </div>
             ))}
           </div>
@@ -130,9 +130,9 @@ const networkIntel = {
 }
 
 function NetworkBadge({ intel }) {
-  const c = intel.tone === 'danger' ? 'text-danger' : intel.tone === 'warn' ? 'text-warn' : 'text-ghost'
+  const c = intel.tone === 'danger' ? 'text-danger' : intel.tone === 'warn' ? 'text-warn' : 'text-muted'
   return (
-    <div className={`font-body text-[12px] mt-0.5 ${c}`}>
+    <div className={`font-body text-label mt-0.5 ${c}`}>
       {intel.percentile}th pct. across {intel.plants} plants{intel.note ? ` · ${intel.note}` : ''}
     </div>
   )
@@ -154,10 +154,10 @@ function AlertChip({ count, tone, label }) {
   const cls = {
     danger: 'border-danger/30 text-danger bg-danger/5',
     warn:   'border-warn/30 text-warn bg-warn/5',
-    muted:  'border-rule2 text-ghost bg-stone2',
+    muted:  'border-rule2 text-muted bg-stone2',
   }[tone]
   return (
-    <div className={`flex items-center gap-1.5 px-2.5 py-1 border font-body text-[12px] flex-shrink-0 ${cls}`}>
+    <div className={`flex items-center gap-1.5 px-2.5 py-1 border font-body text-label flex-shrink-0 ${cls}`}>
       <span className="font-medium">{count}</span>
       <span className="opacity-70">{label}</span>
     </div>
@@ -197,10 +197,10 @@ export default function SupplierIQ() {
             g.tone === 'block' ? 'border-l-danger bg-danger/[0.02]' : g.tone === 'warn' ? 'border-l-warn' : 'border-l-ok'
           }`}>
             <div className="flex justify-between items-start">
-              <div className="font-body font-medium text-ink text-[14px]">{g.title}</div>
-              <span className={`font-body font-semibold text-[12px] ml-2 flex-shrink-0 ${g.badgeColor}`}>{g.badge}</span>
+              <div className="font-body font-medium text-ink text-body">{g.title}</div>
+              <span className={`font-body font-semibold text-label ml-2 flex-shrink-0 ${g.badgeColor}`}>{g.badge}</span>
             </div>
-            <div className="font-body text-ghost text-[12px] mt-0.5">{g.sub}</div>
+            <div className="font-body text-muted text-label mt-0.5">{g.sub}</div>
           </div>
         ))}
       </SP>
@@ -221,8 +221,8 @@ export default function SupplierIQ() {
           { id: 'network',   label: 'Network' },
         ].map(t => (
           <button key={t.id} type="button" onClick={() => setActiveTab(t.id)}
-            className={`px-5 py-2.5 font-body text-[13px] border-b-2 transition-colors ${
-              activeTab === t.id ? 'border-b-ochre text-ink' : 'border-b-transparent text-ghost hover:text-muted'
+            className={`px-5 py-2.5 font-body text-label border-b-2 transition-colors ${
+              activeTab === t.id ? 'border-b-ochre text-ink' : 'border-b-transparent text-muted hover:text-muted'
             }`}>
             {t.label}
           </button>
@@ -279,12 +279,12 @@ export default function SupplierIQ() {
                   actions={
                     <>
                       {coaRequested ? (
-                        <span className="font-body text-ok text-[12px] flex items-center gap-1"><Check size={11} strokeWidth={2} /> COA request sent</span>
+                        <span className="font-body text-ok text-label flex items-center gap-1"><Check size={11} strokeWidth={2} /> COA request sent</span>
                       ) : (
                         <>
                           <Btn variant="primary" onClick={() => setCoaRequested(true)}>Request COA</Btn>
                           <Btn variant="secondary" onClick={() => setCoaViewLot(lot)}>View specs</Btn>
-                          <Link to="/network" className="font-body text-int text-[12px] flex items-center gap-1 hover:text-ink transition-colors self-center">
+                          <Link to="/network" className="font-body text-ochre text-label flex items-center gap-1 hover:text-ink transition-colors self-center">
                             <ArrowRight size={9} />Network impact
                           </Link>
                         </>
@@ -296,11 +296,11 @@ export default function SupplierIQ() {
                     <div className="flex items-start gap-1.5 mt-2 p-2 bg-danger/5 border border-danger/20 rounded-sm">
                       <AlertTriangle size={12} strokeWidth={2} className="text-danger flex-shrink-0 mt-0.5" />
                       <div className="flex-1">
-                        <div className="font-body font-medium text-danger text-[12px]">FSMA 204 blocker</div>
-                        <div className="font-body text-danger text-[12px] mt-0.5 opacity-80">Naming conflict at CTE 2 prevents traceability submission</div>
+                        <div className="font-body font-medium text-danger text-label">FSMA 204 blocker</div>
+                        <div className="font-body text-danger text-label mt-0.5 opacity-80">Naming conflict at CTE 2 prevents traceability submission</div>
                         <button type="button"
                           onClick={() => navigate('/readiness', { state: { highlight: 'conflict-0' } })}
-                          className="font-body text-danger text-[12px] hover:underline mt-1 flex items-center gap-0.5">
+                          className="font-body text-danger text-label hover:underline mt-1 flex items-center gap-0.5">
                           Fix in Data Readiness <ArrowRight size={9} />
                         </button>
                       </div>
@@ -311,7 +311,7 @@ export default function SupplierIQ() {
             })}
 
             {coaRequested && (
-              <div className="flex items-center gap-2 px-4 py-2.5 bg-ok/10 border-b border-ok/20 font-body text-ok text-[13px]">
+              <div className="flex items-center gap-2 px-4 py-2.5 bg-ok/10 border-b border-ok/20 font-body text-ok text-label">
                 <Check size={12} strokeWidth={2} className="flex-shrink-0" />
                 COA request sent to ConAgra · Expected response within 2 hours · Hold maintained until received
               </div>
@@ -365,7 +365,7 @@ export default function SupplierIQ() {
                   actions={
                     <>
                       <button type="button" onClick={() => setCoaViewLot(lot)}
-                        className="font-body font-medium text-[12px] px-3 py-2 min-h-[36px] flex items-center gap-2 border border-rule2 bg-stone2 text-muted hover:border-ghost hover:bg-stone3 transition-colors">
+                        className="font-body font-medium text-label px-3 py-2 min-h-[36px] flex items-center gap-2 border border-rule2 bg-stone2 text-muted hover:border-muted hover:bg-stone3 transition-colors">
                         <Eye size={10} /> View COA
                       </button>
                     </>
@@ -374,7 +374,7 @@ export default function SupplierIQ() {
                   {lot.useFirst && (
                     <div className="flex items-center gap-2 mt-2 p-2 bg-warn/5 border border-warn/20 rounded-sm">
                       <AlertCircle size={11} strokeWidth={2} className="text-warn flex-shrink-0" />
-                      <span className="font-body text-warn text-[12px]">Use-first priority — prioritize in stock rotation</span>
+                      <span className="font-body text-warn text-label">Use-first priority — prioritize in stock rotation</span>
                     </div>
                   )}
                 </ActionCard>
@@ -390,7 +390,7 @@ export default function SupplierIQ() {
               metadata={['High confidence', 'Network intelligence · 14 plants', 'Pattern: delivery delays → scrap spikes']}
               status={null}
               actions={
-                <Link to="/network" className="font-body text-int text-[12px] flex items-center gap-1 hover:text-ink transition-colors self-center">
+                <Link to="/network" className="font-body text-ochre text-label flex items-center gap-1 hover:text-ink transition-colors self-center">
                   <ArrowRight size={9} />View in Network
                 </Link>
               }
@@ -410,7 +410,7 @@ export default function SupplierIQ() {
               status={rfqSent ? <StatusPill status="complete" tone="ok" /> : null}
               actions={
                 rfqSent
-                  ? <span className="font-body text-ok text-[12px] flex items-center gap-1"><Check size={10} strokeWidth={2} /> RFQ sent</span>
+                  ? <span className="font-body text-ok text-label flex items-center gap-1"><Check size={10} strokeWidth={2} /> RFQ sent</span>
                   : <Btn variant="secondary" onClick={() => setRfqSent(true)}>Request alternatives</Btn>
               }
             />
@@ -430,30 +430,30 @@ export default function SupplierIQ() {
               <div className="px-4 py-3 flex items-center gap-4">
                 <ScoreRing pct={s.score} size={32} />
                 <div className="flex-1 min-w-0">
-                  <div className="font-body font-medium text-ink text-[15px]">{s.name}</div>
-                  {audit?.reason && <div className="font-body text-warn text-[12px] mt-0.5">{audit.reason}</div>}
+                  <div className="font-body font-medium text-ink text-base">{s.name}</div>
+                  {audit?.reason && <div className="font-body text-warn text-label mt-0.5">{audit.reason}</div>}
                   {intel && (
                     <div className="flex items-center gap-1 mt-1">
-                      <div className="font-body text-ghost text-[12px]">{intel.percentile}th percentile</div>
+                      <div className="font-body text-muted text-label">{intel.percentile}th percentile</div>
                       <div className="w-1 h-1 rounded-full bg-rule2" />
-                      <div className="font-body text-ghost text-[12px]">{intel.plants} plants</div>
+                      <div className="font-body text-muted text-label">{intel.plants} plants</div>
                       {intel.note && (
                         <>
                           <div className="w-1 h-1 rounded-full bg-rule2" />
-                          <div className={`font-body text-[12px] ${intel.tone === 'danger' ? 'text-danger' : 'text-ghost'}`}>{intel.note}</div>
+                          <div className={`font-body text-label ${intel.tone === 'danger' ? 'text-danger' : 'text-muted'}`}>{intel.note}</div>
                         </>
                       )}
                     </div>
                   )}
                 </div>
-                <span className={`font-body font-medium text-[12px] px-2 py-1 rounded-sm flex-shrink-0 ${
+                <span className={`font-body font-medium text-label px-2 py-1 rounded-sm flex-shrink-0 ${
                   s.tierTone === 'ok' ? 'bg-ok/10 text-ok'
                   : s.tierTone === 'danger' ? 'bg-danger/[0.04] text-danger'
-                  : 'bg-int/10 text-int'
+                  : 'bg-ochre/10 text-ochre'
                 }`}>{s.tier}</span>
                 <div className="text-right flex-shrink-0 min-w-fit">
-                  <div className="font-body text-muted text-[12px]">{audit?.lastAudit}</div>
-                  <div className={`font-body font-medium text-[13px] ${
+                  <div className="font-body text-muted text-label">{audit?.lastAudit}</div>
+                  <div className={`font-body font-medium text-label ${
                     audit?.result === 'Approved' ? 'text-ok'
                     : audit?.result === 'Conditional' ? 'text-warn'
                     : 'text-danger'
@@ -461,7 +461,7 @@ export default function SupplierIQ() {
                 </div>
                 {audit?.needsAction
                   ? <Btn variant="secondary">Schedule</Btn>
-                  : <button type="button" className="font-body text-ghost text-[12px] hover:text-ink transition-colors flex items-center gap-1 px-2 py-2">
+                  : <button type="button" className="font-body text-muted text-label hover:text-ink transition-colors flex items-center gap-1 px-2 py-2">
                     <History size={11} /><span className="sr-only">Audit history</span>
                   </button>
                 }

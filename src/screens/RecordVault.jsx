@@ -26,10 +26,10 @@ function RecordCard({ rec, selected, onClick }) {
       }`}>
       <div className="flex items-start justify-between gap-2 mb-1">
         <div>
-          <div className="font-body font-medium text-ink text-[13px] leading-snug">{rec.batchId}</div>
-          <div className="font-body text-ghost text-[12px] mt-0.5">{rec.product}</div>
+          <div className="font-body font-medium text-ink text-label leading-snug">{rec.batchId}</div>
+          <div className="font-body text-muted text-label mt-0.5">{rec.product}</div>
         </div>
-        <span className={`font-body text-[12px] px-1.5 py-0.5 flex-shrink-0 border ${cfg.badge}`}>{cfg.label}</span>
+        <span className={`font-body text-label px-1.5 py-0.5 flex-shrink-0 border ${cfg.badge}`}>{cfg.label}</span>
       </div>
       {/* Completeness bar */}
       <div className="flex items-center gap-2 mt-2">
@@ -37,12 +37,12 @@ function RecordCard({ rec, selected, onClick }) {
           <div className={`h-full ${rec.completeness >= 1 ? 'bg-ok' : rec.completeness >= 0.5 ? 'bg-ochre' : 'bg-warn'}`}
             style={{ width: `${rec.completeness * 100}%` }} />
         </div>
-        <span className="font-body text-ghost text-[12px] tabular-nums">{Math.round(rec.completeness * 100)}%</span>
+        <span className="font-body text-muted text-label tabular-nums">{Math.round(rec.completeness * 100)}%</span>
       </div>
       <div className="flex items-center gap-3 mt-1.5">
-        <span className="font-body text-ghost text-[12px]">Hold points: {clearedHPs}/{rec.holdPoints.length}</span>
+        <span className="font-body text-muted text-label">Hold points: {clearedHPs}/{rec.holdPoints.length}</span>
         {devs.length > 0 && (
-          <span className="flex items-center gap-0.5 font-body text-warn text-[12px]">
+          <span className="flex items-center gap-0.5 font-body text-warn text-label">
             <AlertTriangle size={8} strokeWidth={2} />{devs.length} dev.
           </span>
         )}
@@ -58,18 +58,18 @@ function HoldPointRow({ hp }) {
     <div className={`flex items-start gap-3 px-4 py-3 border-b border-rule2 ${hp.status === 'active' ? 'bg-warn/[0.02]' : ''}`}>
       <Icon size={12} strokeWidth={2} className={`${cfg.cls} flex-shrink-0 mt-0.5`} />
       <div className="flex-1 min-w-0">
-        <div className="font-body text-ink text-[12px] mb-0.5">{hp.step}</div>
+        <div className="font-body text-ink text-label mb-0.5">{hp.step}</div>
         {hp.status === 'cleared' && (
-          <div className="font-body text-ghost text-[12px]">Cleared by {hp.clearedBy} · {hp.clearedAt}</div>
+          <div className="font-body text-muted text-label">Cleared by {hp.clearedBy} · {hp.clearedAt}</div>
         )}
         {hp.status === 'active' && (
-          <div className="font-body text-warn text-[12px]">Awaiting {hp.requiredRole} signature · Cannot proceed</div>
+          <div className="font-body text-warn text-label">Awaiting {hp.requiredRole} signature · Cannot proceed</div>
         )}
         {hp.status === 'locked' && (
-          <div className="font-body text-muted text-[12px]">Requires {hp.requiredRole} · Prior hold points must clear first</div>
+          <div className="font-body text-muted text-label">Requires {hp.requiredRole} · Prior hold points must clear first</div>
         )}
       </div>
-      <span className={`font-body text-[8px] tracking-normal flex-shrink-0 ${cfg.cls}`}>{cfg.label}</span>
+      <span className={`font-body text-micro tracking-normal flex-shrink-0 ${cfg.cls}`}>{cfg.label}</span>
     </div>
   )
 }
@@ -91,19 +91,19 @@ function StepRow({ step }) {
         }
       </div>
       <div className="flex-1 min-w-0">
-        <div className={`font-body text-[12px] mb-0.5 ${isComplete ? 'text-ink' : 'text-muted'}`}>{step.label}</div>
+        <div className={`font-body text-label mb-0.5 ${isComplete ? 'text-ink' : 'text-muted'}`}>{step.label}</div>
         {isComplete && (
           <div className="flex items-center gap-2">
-            <span className="font-body text-ghost text-[12px]">{step.actor} · {step.role}</span>
-            <span className="font-body text-ghost text-[12px] opacity-50">·</span>
-            <span className="font-body text-ghost text-[12px]">{step.completedAt}</span>
+            <span className="font-body text-muted text-label">{step.actor} · {step.role}</span>
+            <span className="font-body text-muted text-label opacity-50">·</span>
+            <span className="font-body text-muted text-label">{step.completedAt}</span>
             {step.sigHash && (
-              <span className="font-body text-ok text-[12px] font-mono">e-sig {step.sigHash}</span>
+              <span className="font-body text-ok text-label font-mono">e-sig {step.sigHash}</span>
             )}
           </div>
         )}
         {isBlocked && (
-          <div className="font-body text-warn text-[12px]">Blocked — awaiting hold point clearance</div>
+          <div className="font-body text-warn text-label">Blocked — awaiting hold point clearance</div>
         )}
       </div>
     </div>
@@ -113,7 +113,7 @@ function StepRow({ step }) {
 function RecordDetail({ rec }) {
   const [tab, setTab] = useState('bmr')
   if (!rec) return (
-    <div className="flex items-center justify-center h-full font-body text-ghost text-[13px]">
+    <div className="flex items-center justify-center h-full font-body text-muted text-label">
       Select a batch record
     </div>
   )
@@ -126,17 +126,17 @@ function RecordDetail({ rec }) {
       {/* Header */}
       <div className="flex-shrink-0 px-6 py-4 border-b border-rule2">
         <div className="flex items-center gap-2 mb-2">
-          <span className={`font-body text-[12px] px-1.5 py-0.5 border ${cfg.badge}`}>{cfg.label}</span>
+          <span className={`font-body text-label px-1.5 py-0.5 border ${cfg.badge}`}>{cfg.label}</span>
           {rec.regulations.map(r => (
-            <span key={r} className="font-body text-[12px] px-1.5 py-0.5 bg-stone3 text-ghost border border-rule2">{r}</span>
+            <span key={r} className="font-body text-label px-1.5 py-0.5 bg-stone3 text-muted border border-rule2">{r}</span>
           ))}
           <div className="ml-auto flex items-center gap-1">
             <Shield size={9} strokeWidth={2} className="text-ok" />
-            <span className="font-body text-ok text-[12px]">Tamper-evident audit trail active</span>
+            <span className="font-body text-ok text-label">Tamper-evident audit trail active</span>
           </div>
         </div>
-        <div className="font-display font-bold text-ink text-[20px] leading-none mb-0.5">{rec.batchId}</div>
-        <div className="font-body text-ghost text-[14px]">{rec.product} · {rec.vessel}</div>
+        <div className="font-display font-bold text-ink text-subhead leading-none mb-0.5">{rec.batchId}</div>
+        <div className="font-body text-muted text-body">{rec.product} · {rec.vessel}</div>
       </div>
 
       {/* Tabs */}
@@ -148,8 +148,8 @@ function RecordDetail({ rec }) {
           { id: 'qp', label: 'QP Disposition' },
         ].map(t => (
           <button key={t.id} type="button" onClick={() => setTab(t.id)}
-            className={`px-4 py-2.5 font-body text-[12px] border-b-2 transition-colors ${
-              tab === t.id ? 'border-ochre text-ink' : 'border-transparent text-ghost hover:text-muted'
+            className={`px-4 py-2.5 font-body text-label border-b-2 transition-colors ${
+              tab === t.id ? 'border-ochre text-ink' : 'border-transparent text-muted hover:text-muted'
             }`}>
             {t.label}
             {t.id === 'holds' && rec.holdPoints.some(h => h.status === 'active') && (
@@ -171,9 +171,9 @@ function RecordDetail({ rec }) {
               <div className="px-4 py-3 border-b border-rule2 bg-warn/[0.04] flex items-start gap-2">
                 <AlertTriangle size={10} className="text-warn flex-shrink-0 mt-0.5" strokeWidth={2} />
                 <div>
-                  <p className="font-body text-warn text-[12px] font-medium mb-0.5">{devs.length} open deviation{devs.length > 1 ? 's' : ''}</p>
+                  <p className="font-body text-warn text-label font-medium mb-0.5">{devs.length} open deviation{devs.length > 1 ? 's' : ''}</p>
                   {devs.map(d => (
-                    <p key={d.id} className="font-body text-warn text-[12px]">{d.id} — {d.parameter}: {d.observed} (expected {d.expected})</p>
+                    <p key={d.id} className="font-body text-warn text-label">{d.id} — {d.parameter}: {d.observed} (expected {d.expected})</p>
                   ))}
                 </div>
               </div>
@@ -186,7 +186,7 @@ function RecordDetail({ rec }) {
         {tab === 'holds' && (
           <div>
             <div className="px-4 py-3 border-b border-rule2 bg-stone2">
-              <p className="font-body text-ghost text-[12px] leading-snug">Hold points are regulatory gates. Production cannot proceed to the next stage until the hold is cleared by an authorized signatory. Hold points cannot be bypassed without a formal deviation and QP disposition.</p>
+              <p className="font-body text-muted text-label leading-snug">Hold points are regulatory gates. Production cannot proceed to the next stage until the hold is cleared by an authorized signatory. Hold points cannot be bypassed without a formal deviation and QP disposition.</p>
             </div>
             {rec.holdPoints.map(hp => <HoldPointRow key={hp.id} hp={hp} />)}
           </div>
@@ -196,19 +196,19 @@ function RecordDetail({ rec }) {
         {tab === 'audit' && (
           <div>
             <div className="px-4 py-3 border-b border-rule2 bg-stone2">
-              <p className="font-body text-ghost text-[12px] leading-snug">All entries are attributable, contemporaneous, and tamper-evident per 21 CFR Part 11. Records cannot be deleted or modified.</p>
+              <p className="font-body text-muted text-label leading-snug">All entries are attributable, contemporaneous, and tamper-evident per 21 CFR Part 11. Records cannot be deleted or modified.</p>
             </div>
             {rec.auditTrail.map((entry, i) => (
               <div key={i} className="flex items-start gap-3 px-4 py-2.5 border-b border-rule2">
                 <div className="flex-shrink-0 w-1.5 h-1.5 rounded-full bg-rule2 mt-1.5" />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-0.5">
-                    <span className="font-body font-medium text-ink text-[12px]">{entry.event}</span>
-                    <span className="font-body text-ghost text-[12px]">· {entry.actor}</span>
+                    <span className="font-body font-medium text-ink text-label">{entry.event}</span>
+                    <span className="font-body text-muted text-label">· {entry.actor}</span>
                   </div>
-                  <div className="font-body text-ghost text-[12px]">{entry.detail}</div>
+                  <div className="font-body text-muted text-label">{entry.detail}</div>
                 </div>
-                <span className="font-body text-ghost text-[12px] flex-shrink-0">{entry.timestamp}</span>
+                <span className="font-body text-muted text-label flex-shrink-0">{entry.timestamp}</span>
               </div>
             ))}
           </div>
@@ -226,23 +226,23 @@ function RecordDetail({ rec }) {
                     { label: 'Submitted', val: rec.qpDisposition.submittedAt },
                   ].map(({ label, val }) => (
                     <div key={label} className="bg-stone px-3 py-2.5">
-                      <div className="font-body text-ghost text-[12px] tracking-normal mb-0.5">{label}</div>
-                      <div className="font-body font-medium text-ink text-[14px]">{val}</div>
+                      <div className="font-body text-muted text-label tracking-normal mb-0.5">{label}</div>
+                      <div className="font-body font-medium text-ink text-body">{val}</div>
                     </div>
                   ))}
                 </div>
                 {rec.qpDisposition.notes && (
                   <div className="px-4 py-3 border border-rule2 bg-stone2">
-                    <div className="font-body text-ghost text-[12px] tracking-normal mb-1">QP notes</div>
-                    <p className="font-body text-ink text-[13px] leading-relaxed">{rec.qpDisposition.notes}</p>
+                    <div className="font-body text-muted text-label tracking-normal mb-1">QP notes</div>
+                    <p className="font-body text-ink text-label leading-relaxed">{rec.qpDisposition.notes}</p>
                   </div>
                 )}
               </>
             ) : (
               <div className="px-4 py-6 text-center border border-rule2 bg-stone2">
                 <Lock size={16} className="text-muted mx-auto mb-2" strokeWidth={1.5} />
-                <div className="font-body font-medium text-ink text-[13px] mb-1">QP disposition not yet initiated</div>
-                <p className="font-body text-ghost text-[12px]">Hold points must be cleared before batch is submitted for QP release.</p>
+                <div className="font-body font-medium text-ink text-label mb-1">QP disposition not yet initiated</div>
+                <p className="font-body text-muted text-label">Hold points must be cleared before batch is submitted for QP release.</p>
               </div>
             )}
           </div>
@@ -265,20 +265,20 @@ export default function RecordVault() {
       {/* Left: record list */}
       <div className="w-[280px] flex-shrink-0 border-r border-rule2 flex flex-col bg-stone">
         <div className="flex-shrink-0 px-5 py-4 border-b border-rule2 bg-stone2">
-          <div className="font-body text-ghost text-[12px] tracking-normal mb-0.5">Frontier Layer</div>
-          <div className="font-display font-bold text-ink text-[18px] leading-none">Record Vault</div>
-          <div className="font-body text-ghost text-[12px] mt-1">21 CFR Part 11 · EU Annex 11</div>
+          <div className="font-body text-muted text-label tracking-normal mb-0.5">Frontier Layer</div>
+          <div className="font-display font-bold text-ink text-head leading-none">Record Vault</div>
+          <div className="font-body text-muted text-label mt-1">21 CFR Part 11 · EU Annex 11</div>
           <div className="flex items-center gap-3 mt-2">
             {pendingQP > 0 && (
               <div className="flex items-center gap-1">
                 <Clock size={9} strokeWidth={2} className="text-warn" />
-                <span className="font-body text-warn text-[12px]">{pendingQP} pending QP</span>
+                <span className="font-body text-warn text-label">{pendingQP} pending QP</span>
               </div>
             )}
             {openHolds > 0 && (
               <div className="flex items-center gap-1">
                 <Lock size={9} strokeWidth={2} className="text-ochre" />
-                <span className="font-body text-ochre text-[12px]">{openHolds} open hold{openHolds > 1 ? 's' : ''}</span>
+                <span className="font-body text-ochre text-label">{openHolds} open hold{openHolds > 1 ? 's' : ''}</span>
               </div>
             )}
           </div>
@@ -295,16 +295,16 @@ export default function RecordVault() {
         <div className="flex-shrink-0 px-4 py-3 border-t border-rule2 bg-stone2">
           <div className="flex items-center gap-1.5 mb-0.5">
             <FileCheck2 size={10} strokeWidth={2} className="text-ok" />
-            <span className="font-body text-ok text-[12px] font-medium">Records are legally binding</span>
+            <span className="font-body text-ok text-label font-medium">Records are legally binding</span>
           </div>
-          <p className="font-body text-ghost text-[12px] leading-snug">All entries carry e-signature, timestamp, and actor attribution. Cannot be deleted or modified.</p>
+          <p className="font-body text-muted text-label leading-snug">All entries carry e-signature, timestamp, and actor attribution. Cannot be deleted or modified.</p>
         </div>
       </div>
 
       {/* Right: record detail */}
       <div className="flex-1 flex flex-col overflow-hidden bg-stone">
         <div className="flex-shrink-0 px-5 py-2.5 border-b border-rule2 bg-stone2">
-          <span className="font-body text-ghost text-[12px] tracking-normal">Batch Manufacturing Record</span>
+          <span className="font-body text-muted text-label tracking-normal">Batch Manufacturing Record</span>
         </div>
         <RecordDetail rec={selectedRecord} />
       </div>

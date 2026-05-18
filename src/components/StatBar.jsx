@@ -11,11 +11,11 @@ export function StatCell({ type = 'so', label, value, sub, pct }) {
  const s = CELL_STYLES[type] || CELL_STYLES.so
  return (
  <div className="bg-stone px-4 py-3 flex flex-col gap-1 min-w-0">
- <div className="text-[12px] font-body text-muted truncate">{label}</div>
+ <div className="text-label font-body text-muted truncate">{label}</div>
  <div className={`font-display text-2xl font-black tracking-tight leading-none ${s.text}`}>
  {value}
  </div>
- {sub && <div className="text-[12px] font-body text-ghost truncate">{sub}</div>}
+ {sub && <div className="text-label font-body text-muted truncate">{sub}</div>}
  {pct !== undefined && (
  <div className="h-0.5 bg-rule mt-1">
  <div className={`h-full ${s.bar} transition-[width] duration-500 ease-enter`} style={{ width: `${pct}%` }} />

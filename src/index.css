@@ -38,6 +38,10 @@
     --color-danger: #D92D20;
     --color-int: #0052CC;
     --color-ochre: #0052CC;
+    --color-ochre-dark: #003580;
+    --color-dim: #98A2B3;     /* suppressed chart labels, deemphasized decorative text */
+    --color-sidebar: #000000;
+    --color-sidebar-border: #1F1F1F;
     --radius-btn: 4px;
     --radius-sm: 4px;
     --radius-md: 10px;
@@ -198,7 +202,7 @@
   }
   .flash-success {
     animation: flashSuccess 400ms var(--ease-inout) both;
-    background: #46D369;
+    background: var(--color-ok);
     pointer-events: none;
     position: absolute;
     inset: 0;
@@ -303,8 +307,8 @@
   }
 
   /* ── Typography scale ──────────────────────────────────────────────────── */
-  .type-label { font-size: 12px; letter-spacing: 0; color: #6B7280; }
-  .type-body  { font-size: 14px; color: #101828; }
-  .type-value { font-size: 16px; font-family: "Inter", system-ui; color: #101828; }
-  .type-head  { font-size: 18px; font-weight: 700; color: #101828; }
+  .type-label { font-size: 12px; letter-spacing: 0; color: var(--color-ghost); }
+  .type-body  { font-size: 14px; color: var(--color-ink); }
+  .type-value { font-size: 16px; font-family: "Inter", system-ui; color: var(--color-ink); }
+  .type-head  { font-size: 18px; font-weight: 700; color: var(--color-ink); }
 }

@@ -6,7 +6,7 @@ import ResourceAllocation from './ResourceAllocation'
 import { useFocusTrap, useExitAnimation, riskColorClass, riskLabel, riskBgColor } from '../lib/utils'
 import { shiftData, line6Data, wichitaData, denverData, haccpData, productionRate, crewHoursData } from '../data'
 import {
- StatusPill, StatCell, SecHd, CaseCard, Layout,
+ StatusPill, StatCell, CaseCard, Layout,
  Btn, ConsequenceNotice, PageHead, ActionBanner, MetricCard,
  PersonAvatar, Modal, WaveformSparkline, AnimatedCheck, Spinner,
  VaulDrawer, HoldButton
@@ -36,7 +36,7 @@ const FLAG_REASONS = [
 function EmptyLine({ name }) {
  return (
  <div className="flex flex-col items-center justify-center h-full py-12 px-4">
- <div className="font-body text-ghost text-[14px] text-center leading-relaxed">
+ <div className="font-body text-muted text-body text-center leading-relaxed">
  No data for {name}<br />Pilot runs on Line 4 only
  </div>
  </div>
@@ -46,7 +46,7 @@ function EmptyLine({ name }) {
 function ScoreBadge({ score }) {
  return (
   <span
-   className={`display-num text-[64px] leading-none ${riskColorClass(score)}`}
+   className={`display-num text-hero leading-none ${riskColorClass(score)}`}
    aria-label={`Risk score ${score} — ${riskLabel(score)}`}
   >{score}</span>
  )
@@ -63,15 +63,15 @@ function AgentTimeline({ timeline, sparkline, score }) {
  <div className="px-4 pt-5 pb-4 border-b border-rule2 bg-stone">
   <div className="flex items-start justify-between gap-3">
    <div>
-    <div className="font-body text-ghost text-[12px] tracking-normal mb-3">Line 4 · AM shift</div>
-    <div className={`display-num text-[64px] leading-none ${scoreTextColor}`}>{score}</div>
-    <div className={`font-body font-medium text-[12px] tracking-normal mt-1.5 ${scoreTextColor}`}>{zone}</div>
+    <div className="font-body text-muted text-label tracking-normal mb-3">Line 4 · AM shift</div>
+    <div className={`display-num text-hero leading-none ${scoreTextColor}`}>{score}</div>
+    <div className={`font-body font-medium text-label tracking-normal mt-1.5 ${scoreTextColor}`}>{zone}</div>
    </div>
    <div className="pt-5 flex-shrink-0">
     <WaveformSparkline data={sparkline} color={scoreColor} width={64} height={44} />
    </div>
   </div>
-  <div className="font-body text-ghost text-[12px] mt-3 pt-2.5 border-t border-rule2">
+  <div className="font-body text-muted text-label mt-3 pt-2.5 border-t border-rule2">
    Rising · 06:12–06:42
   </div>
  </div>
@@ -79,17 +79,17 @@ function AgentTimeline({ timeline, sparkline, score }) {
  {/* Timeline rows */}
  {timeline.map((row, i) => (
  <div key={i} className="flex gap-2.5 px-4 py-3 border-b border-rule2 last:border-b-0">
- <div className="font-body text-ghost text-[12px] w-11 flex-shrink-0 mt-0.5">{row.time}</div>
+ <div className="font-body text-muted text-label w-11 flex-shrink-0 mt-0.5">{row.time}</div>
  <div className={`w-2 h-2 rounded-full flex-shrink-0 mt-1.5 ${
  row.level === 'now' ? 'bg-ochre' : row.level === 'warn' ? 'bg-warn' : row.level === 'ok' ? 'bg-ok' : 'bg-rule'
  }`} />
  <div className="flex-1">
- <p className="font-body text-ink-2 text-[13px] leading-relaxed">
+ <p className="font-body text-ink-2 text-label leading-relaxed">
  {row.event.split(/\*\*(.*?)\*\*/g).map((part, i) =>
   i % 2 === 1 ? <strong key={i} className="text-ink font-medium">{part}</strong> : part
  )}
  </p>
- {row.delta && <div className={`display-num text-[13px] mt-0.5 ${row.deltaColor}`}>{row.delta}</div>}
+ {row.delta && <div className={`display-num text-label mt-0.5 ${row.deltaColor}`}>{row.delta}</div>}
  </div>
  </div>
  ))}
@@ -106,7 +106,7 @@ const SCORE_FACTORS = [
  { label: 'SCADA — Oven B', contribution: 0, tone: 'warn', state: 'Sensor stale · confidence penalty applied', confidence: 'low', source: 'Last reading 2h 14m ago', tip: 'SCADA (Supervisory Control and Data Acquisition) — the sensor network feeding live oven readings. Stale data reduces model confidence.' },
 ]
 
-const CONF_DOT = { high: 'bg-ok', medium: 'bg-warn', low: 'bg-ghost' }
+const CONF_DOT = { high: 'bg-ok', medium: 'bg-warn', low: 'bg-muted' }
 const CONF_LABEL = { high: 'High confidence', medium: 'Medium confidence', low: 'Low confidence' }
 
 function ScoreExplainer({ score, open, onToggle }) {
@@ -121,11 +121,11 @@ function ScoreExplainer({ score, open, onToggle }) {
    >
     <div className="flex items-center gap-2">
      <Brain size={11} strokeWidth={1.75} className="text-muted" />
-     <span className="font-body text-ghost text-[12px] tracking-normal">Why {score}?</span>
+     <span className="font-body text-muted text-label tracking-normal">Why {score}?</span>
     </div>
     {open
-     ? <ChevronUp size={11} className="text-ghost" />
-     : <ChevronDown size={11} className="text-ghost" />}
+     ? <ChevronUp size={11} className="text-muted" />
+     : <ChevronDown size={11} className="text-muted" />}
    </button>
 
    {open && (
@@ -133,8 +133,8 @@ function ScoreExplainer({ score, open, onToggle }) {
      {/* Base + factor rows */}
      <div className="px-4 py-2 border-b border-rule2 bg-stone">
       <div className="flex items-baseline gap-2">
-       <span className="display-num text-[13px] text-ghost w-8 text-right flex-shrink-0">{baseScore}</span>
-       <span className="font-body text-ghost text-[12px] flex-1">Base risk · no shift conditions</span>
+       <span className="display-num text-label text-muted w-8 text-right flex-shrink-0">{baseScore}</span>
+       <span className="font-body text-muted text-label flex-1">Base risk · no shift conditions</span>
       </div>
      </div>
      {SCORE_FACTORS.map((f, i) => {
@@ -143,19 +143,19 @@ function ScoreExplainer({ score, open, onToggle }) {
       return (
        <div key={i} className={`px-4 py-2.5 border-b border-rule2 last:border-b-0 ${toneBg}`} title={f.tip || undefined}>
         <div className="flex items-start gap-2">
-         <span className={`display-num text-[14px] font-bold w-8 text-right flex-shrink-0 leading-none pt-px ${
-          f.contribution > 0 ? toneText : 'text-ghost'
+         <span className={`display-num text-body font-bold w-8 text-right flex-shrink-0 leading-none pt-px ${
+          f.contribution > 0 ? toneText : 'text-muted'
          }`}>
           {f.contribution > 0 ? `+${f.contribution}` : '—'}
          </span>
          <div className="flex-1 min-w-0">
-          <div className={`font-body font-medium text-[13px] leading-snug ${f.contribution > 0 ? (f.tone === 'danger' ? 'text-danger' : 'text-ink') : 'text-ghost'}`}>
+          <div className={`font-body font-medium text-label leading-snug ${f.contribution > 0 ? (f.tone === 'danger' ? 'text-danger' : 'text-ink') : 'text-muted'}`}>
            {f.label}
           </div>
-          <div className="font-body text-ghost text-[12px] mt-0.5 leading-snug">{f.state}</div>
+          <div className="font-body text-muted text-label mt-0.5 leading-snug">{f.state}</div>
           <div className="flex items-center gap-1 mt-1">
            <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${CONF_DOT[f.confidence]}`} />
-           <span className="font-body text-ghost text-[12px]">{CONF_LABEL[f.confidence]} · {f.source}</span>
+           <span className="font-body text-muted text-label">{CONF_LABEL[f.confidence]} · {f.source}</span>
           </div>
          </div>
         </div>
@@ -167,8 +167,8 @@ function ScoreExplainer({ score, open, onToggle }) {
       <div className="flex items-start gap-2">
        <AlertTriangle size={11} strokeWidth={2} className="text-warn flex-shrink-0 mt-px" />
        <div>
-        <div className="font-body font-medium text-ink text-[12px]">Score adjusted {adjustedFrom} → {score}</div>
-        <div className="font-body text-ghost text-[12px] mt-0.5 leading-snug">
+        <div className="font-body font-medium text-ink text-label">Score adjusted {adjustedFrom} → {score}</div>
+        <div className="font-body text-muted text-label mt-0.5 leading-snug">
          Oven B sensor stale — confidence penalty applied. Restore SCADA feed to remove adjustment.
         </div>
        </div>
@@ -190,10 +190,10 @@ function SignalCard({ sig }) {
     <Activity size={16} strokeWidth={2.2} className={stale ? 'text-danger' : 'text-ok'} aria-hidden="true" />
    </div>
    <div className="min-w-0 flex-1">
-    <div className="truncate font-body text-[14px] font-semibold leading-[1.15] text-ink tracking-normal">{sig.name}</div>
-    <div className="mt-1 truncate font-body text-[12px] leading-[1.15] text-ghost tracking-normal">{sig.sub}</div>
+    <div className="truncate font-body text-body font-semibold leading-[1.15] text-ink tracking-normal">{sig.name}</div>
+    <div className="mt-1 truncate font-body text-label leading-[1.15] text-muted tracking-normal">{sig.sub}</div>
    </div>
-   <span className={`flex-shrink-0 rounded-full border px-4 py-2 font-body text-[12px] font-semibold leading-none ${
+   <span className={`flex-shrink-0 rounded-full border px-4 py-2 font-body text-label font-semibold leading-none ${
     stale
      ? 'border-danger/20 bg-danger/[0.035] text-danger'
      : 'border-ok/20 bg-ok/[0.08] text-ok'
@@ -234,7 +234,7 @@ function OperatorPanel({ name, onClose, onSelectOperator }) {
  const plan = trainingPlans[name]
  const completion = trainingCompletions[name]
  const myFlags = Object.entries(flaggedItems).filter(([, f]) => f).map(([key, f]) => ({ key, ...f }))
- const certC = meta.certPct >= 80 ? '#3A8A5A' : '#C4920A'
+ const certC = meta.certPct >= 80 ? 'var(--color-ok)' : 'var(--color-warn)'
  const panelRef = useRef(null)
  const { exiting, exit } = useExitAnimation(200)
  useFocusTrap(panelRef)
@@ -251,13 +251,13 @@ function OperatorPanel({ name, onClose, onSelectOperator }) {
  <>
  <div className="fixed inset-0 z-40 bg-ink/20" onClick={handleClose} />
  <div ref={panelRef} role="dialog" aria-modal="true" aria-label={`Operator profile — ${name}`} className={`fixed right-0 top-0 bottom-0 z-50 w-[340px] bg-stone border-l border-rule2 flex flex-col overflow-hidden ${exiting ? 'slide-right-out' : 'slide-right'}`}>
- <div className="flex items-center gap-3 px-4 py-3 border-b border-rule2 bg-stone2 flex-shrink-0" style={{ borderTop:'3px solid #C43820' }}>
+ <div className="flex items-center gap-3 px-4 py-3 border-b border-rule2 bg-stone2 flex-shrink-0" style={{ borderTop:'3px solid var(--color-danger)' }}>
  <PersonAvatar name={name} size={32} />
  <div className="flex-1 min-w-0">
- <div className="font-body font-medium text-ink text-[15px]">{name}</div>
- <div className="font-body text-ghost text-[13px]">{meta.station}</div>
+ <div className="font-body font-medium text-ink text-base">{name}</div>
+ <div className="font-body text-muted text-label">{meta.station}</div>
  </div>
- <button type="button" onClick={handleClose} aria-label="Close operator panel" className="text-ghost hover:text-ink transition-colors duration-100 ease-standard p-1 cursor-pointer">
+ <button type="button" onClick={handleClose} aria-label="Close operator panel" className="text-muted hover:text-ink transition-colors duration-100 ease-standard p-1 cursor-pointer">
  <X size={14} strokeWidth={2} aria-hidden="true" />
  </button>
  </div>
@@ -265,30 +265,30 @@ function OperatorPanel({ name, onClose, onSelectOperator }) {
  <div className="flex-1 overflow-y-auto">
  {safety && (
  <div className="border-b border-rule2">
- <div className="px-4 py-2 border-b border-rule2 bg-stone2 font-body text-muted text-[12px]">Safety context · today</div>
+ <div className="px-4 py-2 border-b border-rule2 bg-stone2 font-body text-muted text-label">Safety context · today</div>
  <div className="px-4 py-3 border-l-2 border-l-warn bg-warn/[0.02]">
- <div className="font-body text-ink-2 text-[14px] leading-relaxed">{safety}</div>
+ <div className="font-body text-ink-2 text-body leading-relaxed">{safety}</div>
  </div>
  </div>
  )}
 
  <div className="border-b border-rule2">
  <div className="px-4 py-2 border-b border-rule2 bg-stone2 flex items-baseline justify-between">
- <span className="font-body text-muted text-[12px]">Today's tasks</span>
+ <span className="font-body text-muted text-label">Today's tasks</span>
  {myTasks.some(t => !t.done) && (
- <span className="font-body text-warn text-[12px]">{myTasks.filter(t => !t.done).length} pending</span>
+ <span className="font-body text-warn text-label">{myTasks.filter(t => !t.done).length} pending</span>
  )}
  </div>
  {myTasks.length === 0 ? (
- <div className="px-4 py-3 font-body text-ghost text-[14px]">No tasks assigned — tasks created in ShiftIQ appear here.</div>
+ <div className="px-4 py-3 font-body text-muted text-body">No tasks assigned — tasks created in ShiftIQ appear here.</div>
  ) : myTasks.map((t, i) => (
  <div key={i} className={`flex items-center gap-3 px-4 py-3 border-b border-rule2 last:border-b-0 ${t.done ? 'opacity-50' : ''}`}>
  <div className={`w-4 h-4 rounded-full flex-shrink-0 flex items-center justify-center ${t.done ? 'bg-ok' : 'border-2 border-rule2'}`}>
  {t.done && <AnimatedCheck size={10} color="white" />}
  </div>
  <div className="flex-1">
- <div className={`font-body font-medium text-[14px] ${t.done ? 'line-through text-ghost' : 'text-ink'}`}>{t.label}</div>
- {t.dueTime && <div className="font-body text-ghost text-[12px]">Due {t.dueTime}</div>}
+ <div className={`font-body font-medium text-body ${t.done ? 'line-through text-muted' : 'text-ink'}`}>{t.label}</div>
+ {t.dueTime && <div className="font-body text-muted text-label">Due {t.dueTime}</div>}
  </div>
  </div>
  ))}
@@ -296,13 +296,13 @@ function OperatorPanel({ name, onClose, onSelectOperator }) {
 
  {myFlags.length > 0 && (
  <div className="border-b border-rule2">
- <div className="px-4 py-2 border-b border-rule2 bg-stone2 font-body text-muted text-[12px]">Flagged items</div>
+ <div className="px-4 py-2 border-b border-rule2 bg-stone2 font-body text-muted text-label">Flagged items</div>
  {myFlags.map((f, i) => (
  <div key={i} className="flex gap-2.5 px-4 py-3 border-b border-rule2 last:border-b-0 bg-warn/[0.02]">
  <Flag size={13} strokeWidth={2} className="text-warn flex-shrink-0 mt-0.5" />
  <div>
- <div className="font-body font-medium text-ink text-[14px]">{f.key}</div>
- <div className="font-body text-warn text-[12px]">{f.reason}</div>
+ <div className="font-body font-medium text-ink text-body">{f.key}</div>
+ <div className="font-body text-warn text-label">{f.reason}</div>
  </div>
  </div>
  ))}
@@ -310,9 +310,9 @@ function OperatorPanel({ name, onClose, onSelectOperator }) {
  )}
 
  <div className="border-b border-rule2">
- <div className="px-4 py-2 border-b border-rule2 bg-stone2 font-body text-muted text-[12px]">Certification progress</div>
+ <div className="px-4 py-2 border-b border-rule2 bg-stone2 font-body text-muted text-label">Certification progress</div>
  <div className="px-4 py-3">
- <div className="font-body text-ghost text-[12px] mb-2">{meta.certLabel}</div>
+ <div className="font-body text-muted text-label mb-2">{meta.certLabel}</div>
  <div style={{ height:5, background:'#CAC2B6', marginBottom:8 }}>
  <div style={{ height:'100%', width:`${meta.certPct}%`, background:certC, transition:'width 500ms cubic-bezier(0.19,0.91,0.38,1)' }} />
  </div>
@@ -321,9 +321,9 @@ function OperatorPanel({ name, onClose, onSelectOperator }) {
  </div>
 
  <div>
- <div className="px-4 py-2 border-b border-rule2 bg-stone2 font-body text-muted text-[12px]">Training plan</div>
+ <div className="px-4 py-2 border-b border-rule2 bg-stone2 font-body text-muted text-label">Training plan</div>
  {!plan?.submitted ? (
- <div className="px-4 py-3 font-body text-ghost text-[14px]">
+ <div className="px-4 py-3 font-body text-muted text-body">
  No active training plan.
  {name === 'C. Reyes' && ' Nominated by Kowalski — set up plan in HandoffIQ.'}
  </div>
@@ -331,17 +331,17 @@ function OperatorPanel({ name, onClose, onSelectOperator }) {
  <div className="px-4 py-3 space-y-2">
  {[['Level', plan.level], ['Trainer', plan.trainer], ['Starts', plan.startDate]].map(([k, v]) => (
  <div key={k} className="flex justify-between items-baseline">
- <span className="font-body text-ghost text-[12px]">{k}</span>
- <span className="font-body font-medium text-ink text-[14px]">{v}</span>
+ <span className="font-body text-muted text-label">{k}</span>
+ <span className="font-body font-medium text-ink text-body">{v}</span>
  </div>
  ))}
  {completion ? (
- <div className={`flex items-center gap-1 pt-2 border-t border-rule2 font-body text-[13px] ${completion.outcome === 'Passed' ? 'text-ok' : 'text-warn'}`}>
+ <div className={`flex items-center gap-1 pt-2 border-t border-rule2 font-body text-label ${completion.outcome === 'Passed' ? 'text-ok' : 'text-warn'}`}>
  <Check size={12} strokeWidth={2} className="stroke-current flex-shrink-0" />
  {completion.outcome} · {completion.date} · {completion.hours}h
  </div>
  ) : (
- <div className="flex items-center gap-1 pt-2 border-t border-rule2 font-body text-ghost text-[12px]">
+ <div className="flex items-center gap-1 pt-2 border-t border-rule2 font-body text-muted text-label">
  <div className="w-1.5 h-1.5 rounded-full bg-warn" />
  In progress
  </div>
@@ -357,7 +357,7 @@ function OperatorPanel({ name, onClose, onSelectOperator }) {
     key={opName}
     type="button"
     onClick={() => onSelectOperator?.(opName)}
-    className={`flex items-center justify-center w-9 h-9 rounded-full border-2 transition-all ${name === opName ? 'border-ink bg-ink/10' : 'border-rule2 hover:border-ghost'}`}
+    className={`flex items-center justify-center w-9 h-9 rounded-full border-2 transition-colors ${name === opName ? 'border-ink bg-ink/10' : 'border-rule2 hover:border-muted'}`}
     title={opName}
     aria-label={`View ${opName}'s details`}>
     <PersonAvatar name={opName} size={24} />
@@ -376,12 +376,12 @@ function CrewRow({ m, onView }) {
  return (
  <div className={`flex items-center gap-3 px-4 py-2.5 border-b border-rule2 last:border-b-0 ${fatigue === 'danger' ? 'bg-danger/[0.02]' : ''}`}>
  <div className="flex-1 min-w-0">
- <div className={`font-body text-[14px] font-medium ${m.flag ? 'text-danger' : 'text-ink'}`}>{m.name}</div>
- <div className={`font-body text-[12px] ${m.flag ? 'text-danger' : 'text-ghost'}`}>{m.role}</div>
+ <div className={`font-body text-body font-medium ${m.flag ? 'text-danger' : 'text-ink'}`}>{m.name}</div>
+ <div className={`font-body text-label ${m.flag ? 'text-danger' : 'text-muted'}`}>{m.role}</div>
  </div>
  <div className="flex items-center gap-2">
  {hrs && fatigue && (
- <span className={`font-body text-[12px] px-1 py-px ${fatigue === 'danger' ? 'bg-danger/[0.04] text-danger' : 'bg-warn/10 text-warn'}`}>{hrs.hoursThisWeek}h</span>
+ <span className={`font-body text-label px-1 py-px ${fatigue === 'danger' ? 'bg-danger/[0.04] text-danger' : 'bg-warn/10 text-warn'}`}>{hrs.hoursThisWeek}h</span>
  )}
  <div className="flex gap-1" title={`Skill level: ${m.dots.filter(Boolean).length} of ${m.dots.length}`} aria-label={`Skill level ${m.dots.filter(Boolean).length} of ${m.dots.length}`}>
  {m.dots.map((d, i) => (
@@ -435,25 +435,24 @@ function Finding({ f, onAct, onDismiss, dismissed }) {
    }}>
     <div className="overflow-hidden">
      <article
-      className={`bg-stone border border-rule rounded-lg overflow-hidden ${dismissed ? 'opacity-40 pointer-events-none' : ''}`}
-      style={{ boxShadow: f.urgency === 'danger' ? '0 1px 4px rgba(217,45,32,0.08)' : '0 1px 3px rgba(16,24,40,0.06)' }}>
+      className={`bg-stone border border-rule rounded-lg overflow-hidden ${dismissed ? 'opacity-40 pointer-events-none' : ''} ${f.urgency === 'danger' ? 'shadow-card-alert' : 'shadow-card'}`}>
       {/* Top accent bar */}
       <div className={`h-[3px] w-full ${accentBar}`} />
       {acked ? (
        <div className="flex items-center justify-center py-5">
         <div className="flex items-center justify-center w-10 h-10 rounded-full border border-ok/20 bg-ok/5">
-         <AnimatedCheck size={18} color="#3A8A5A" />
+         <AnimatedCheck size={18} color="currentColor" />
         </div>
        </div>
       ) : (
        <>
         {/* Header: urgency chip + source */}
         <div className="flex items-center justify-between px-4 pt-3 pb-1.5">
-         <span className={`font-body font-medium text-[12px] px-1.5 py-px rounded-btn ${urgencyChipCls}`}>{urgencyLabel}</span>
+         <span className={`font-body font-medium text-label px-1.5 py-px rounded-btn ${urgencyChipCls}`}>{urgencyLabel}</span>
          <div className="flex items-center gap-1.5">
           {f.source && <StatusPill tone="muted">{f.source}</StatusPill>}
           {f.capaId && (
-           <Link to="/capa" className="font-body text-warn text-[12px] flex items-center gap-1 hover:text-ink transition-colors">
+           <Link to="/capa" className="font-body text-warn text-label flex items-center gap-1 hover:text-ink transition-colors">
             <ArrowRight size={9} />{f.capaId}
            </Link>
           )}
@@ -461,8 +460,8 @@ function Finding({ f, onAct, onDismiss, dismissed }) {
         </div>
         {/* Body: title + desc + evidence */}
         <div className="px-4 pb-3 space-y-1.5">
-         <p className="font-body text-ink font-medium text-[15px] leading-snug">{f.title}</p>
-         <p className="font-body text-ink-2 text-[14px] leading-relaxed">{f.desc}</p>
+         <p className="font-body text-ink font-medium text-base leading-snug">{f.title}</p>
+         <p className="font-body text-ink-2 text-body leading-relaxed">{f.desc}</p>
          {f.evidence && (() => {
           const isPrecedent = f.evidence.toLowerCase().startsWith('precedent:')
           const sourceLine = f.evidence.match(/Line\s\d+/)?.[0] || null
@@ -471,17 +470,17 @@ function Finding({ f, onAct, onDismiss, dismissed }) {
           const smallPool = poolSize !== null && poolSize < 5
           return (
            <div className="space-y-1">
-            <p className="font-body text-ghost text-[13px] flex items-start gap-1">
+            <p className="font-body text-muted text-label flex items-start gap-1">
              <ChevronRight size={11} className="flex-shrink-0 mt-px" />{f.evidence}
              {isPrecedent && sourceLine && !isCurrentLine && (
-              <span className="ml-1 font-body text-[12px] text-warn bg-warn/10 px-1 py-0.5 flex-shrink-0">Cross-line</span>
+              <span className="ml-1 font-body text-label text-warn bg-warn/10 px-1 py-0.5 flex-shrink-0">Cross-line</span>
              )}
             </p>
             {isPrecedent && smallPool && (
-             <p className="font-body text-warn text-[12px] pl-4">⚠ Small precedent pool ({poolSize} case{poolSize !== 1 ? 's' : ''}) — treat this match with caution</p>
+             <p className="font-body text-warn text-label pl-4">⚠ Small precedent pool ({poolSize} case{poolSize !== 1 ? 's' : ''}) — treat this match with caution</p>
             )}
             {isPrecedent && sourceLine && !isCurrentLine && (
-             <p className="font-body text-warn text-[12px] pl-4">Precedent from {sourceLine}, not {shiftData.line} — equipment characteristics may differ</p>
+             <p className="font-body text-warn text-label pl-4">Precedent from {sourceLine}, not {shiftData.line} — equipment characteristics may differ</p>
             )}
            </div>
           )
@@ -509,7 +508,7 @@ function Finding({ f, onAct, onDismiss, dismissed }) {
      style={{ top: dismissPos.top, left: dismissPos.left }}>
      <div className="plant-drop-in-content">
       <div className="px-3 py-2.5 border-b border-rule2">
-       <span className="font-body font-medium text-ink text-[13px]">Flag as dismissed</span>
+       <span className="font-body font-medium text-ink text-label">Flag as dismissed</span>
       </div>
       {[
        'Already handled by outgoing supervisor',
@@ -519,7 +518,7 @@ function Finding({ f, onAct, onDismiss, dismissed }) {
        <button type="button"
         key={reason}
         onClick={() => { onDismiss(f.id, f.title, reason); setShowDismiss(false) }}
-        className="flex items-center gap-2.5 w-full text-left font-body text-ink text-[13px] px-3 py-2.5 border-b border-rule2 last:border-b-0 hover:bg-stone2 transition-colors"
+        className="flex items-center gap-2.5 w-full text-left font-body text-ink text-label px-3 py-2.5 border-b border-rule2 last:border-b-0 hover:bg-stone2 transition-colors"
         aria-label={`Dismiss: ${reason}`}>
         <Flag size={10} strokeWidth={2} className="text-warn flex-shrink-0" />
         {reason}
@@ -557,7 +556,7 @@ function CrewAvatarStack({ crew, onSelect, size = 34 }) {
    ))}
    {extra > 0 && (
     <div className="-ml-2 rounded-full border-2 border-stone2 bg-stone3 flex items-center justify-center" style={{ width: size, height: size }}>
-     <span className="font-body text-ghost text-[12px] font-medium">+{extra}</span>
+     <span className="font-body text-muted text-label font-medium">+{extra}</span>
     </div>
    )}
   </div>
@@ -595,11 +594,11 @@ function LineDropdown({ lines, activeLine, onSelect, triggerRef, onClose }) {
  }, [onClose, triggerRef])
 
  return (
-  <div ref={dropRef} className="fixed z-[40] plant-drop-in" style={{ top: pos.top, left: pos.left }}>
+  <div ref={dropRef} className="fixed z-40 plant-drop-in" style={{ top: pos.top, left: pos.left }}>
    <div className="w-[260px] bg-sidebar border border-sidebar-border rounded-2xl shadow-raise overflow-hidden">
     <div className="plant-drop-in-content">
      <div className="px-4 py-2.5 border-b border-sidebar-border">
-      <p className="font-body text-sidebar-ghost/40 text-[12px] tracking-normal">Select line</p>
+      <p className="font-body text-sidebar-ghost/40 text-label tracking-normal">Select line</p>
      </div>
      {lines.map(line => {
       const sc = riskColorClass(line.score)
@@ -614,19 +613,19 @@ function LineDropdown({ lines, activeLine, onSelect, triggerRef, onClose }) {
         className={`flex items-center justify-between w-full px-4 py-3 border-b border-sidebar-border last:border-b-0 transition-colors group ${hasPilotData ? 'hover:bg-sidebar-3 cursor-pointer' : 'opacity-40 cursor-not-allowed'}`}
        >
         <div className="text-left">
-         <div className={`font-body text-[14px] font-medium transition-colors ${isActive ? 'text-stone' : 'text-sidebar-ghost group-hover:text-stone/80'}`}>{line.name}</div>
-         <div className="font-body text-sidebar-ghost/50 text-[12px] mt-0.5">
+         <div className={`font-body text-body font-medium transition-colors ${isActive ? 'text-stone' : 'text-sidebar-ghost group-hover:text-stone/80'}`}>{line.name}</div>
+         <div className="font-body text-sidebar-ghost/50 text-label mt-0.5">
           {hasPilotData ? `${line.supervisor} shift` : 'Not in pilot'}
          </div>
         </div>
         <div className="flex items-center gap-2">
          {hasPilotData ? (
           <>
-           <span className={`font-body text-[12px] tracking-normal ${sc}`}>{zoneLabel}</span>
+           <span className={`font-body text-label tracking-normal ${sc}`}>{zoneLabel}</span>
            <span className={`display-num text-xl ${sc}`} aria-label={`Risk score ${line.score}`}>{line.score}</span>
           </>
          ) : (
-          <span className="font-body text-sidebar-ghost/40 text-[12px]">No data</span>
+          <span className="font-body text-sidebar-ghost/40 text-label">No data</span>
          )}
          {isActive && <div className="w-1.5 h-1.5 rounded-full bg-ochre flex-shrink-0" />}
         </div>
@@ -750,8 +749,8 @@ export default function ShiftIQ() {
    { id: 'allocation', label: 'Allocation',  show: workerMode === 'hybrid' },
   ].filter(t => t.show).map(t => (
    <button key={t.id} type="button" onClick={() => setActiveTab(t.id)}
-    className={`px-5 py-2.5 font-body text-[13px] border-b-2 transition-colors ${
-     activeTab === t.id ? 'border-b-ochre text-ink' : 'border-b-transparent text-ghost hover:text-muted'
+    className={`px-5 py-2.5 font-body text-label border-b-2 transition-colors ${
+     activeTab === t.id ? 'border-b-ochre text-ink' : 'border-b-transparent text-muted hover:text-muted'
     }`}>
     {t.label}
    </button>
@@ -767,39 +766,39 @@ export default function ShiftIQ() {
  {currentQuiet ? (
   <div className="flex items-center gap-3 px-5 py-2.5 bg-ok/[0.06] border-b-2 border-b-ok/30 flex-shrink-0">
    <div className="w-1.5 h-1.5 rounded-full bg-ok flex-shrink-0" />
-   <div className="flex-1 font-body text-[13px]">
+   <div className="flex-1 font-body text-label">
     <span className="font-medium text-ok">Quiet period active — </span>
     <span className="text-muted">{currentQuiet.reason} · Compliance Monitor in log-only mode · Until {currentQuiet.endTime}</span>
    </div>
    <button type="button" onClick={() => clearQuietPeriod(currentQuiet.id)}
-    className="font-body text-ghost text-[12px] hover:text-danger transition-colors flex-shrink-0">
+    className="font-body text-muted text-label hover:text-danger transition-colors flex-shrink-0">
     End quiet period
    </button>
   </div>
  ) : (
   quietForm.open ? (
    <div className="flex items-center gap-2 px-5 py-2 bg-stone2 border-b border-rule2 flex-shrink-0">
-    <span className="font-body text-ghost text-[12px] flex-shrink-0">Quiet period:</span>
+    <span className="font-body text-muted text-label flex-shrink-0">Quiet period:</span>
     <input
      type="text"
      value={quietForm.reason}
      onChange={e => setQuietForm(p => ({...p, reason: e.target.value}))}
      placeholder="Reason (e.g. Allergen changeover)"
-     className="font-body text-ink text-[13px] bg-stone border border-rule2 px-2 py-1 flex-1 focus:outline-none focus:border-rule"
+     className="font-body text-ink text-label bg-stone border border-rule2 px-2 py-1 flex-1 focus:outline-none focus:border-rule"
     />
     <input
      type="text"
      value={quietForm.endTime}
      onChange={e => setQuietForm(p => ({...p, endTime: e.target.value}))}
      placeholder="Until (e.g. 10:30)"
-     className="font-body text-ink text-[13px] bg-stone border border-rule2 px-2 py-1 w-24 focus:outline-none focus:border-rule"
+     className="font-body text-ink text-label bg-stone border border-rule2 px-2 py-1 w-24 focus:outline-none focus:border-rule"
     />
     <button type="button" onClick={handleSetQuietPeriod}
-     className="font-body text-[13px] px-3 py-1 bg-ink text-stone hover:bg-ink2 transition-colors">
+     className="font-body text-label px-3 py-1 bg-ink text-stone hover:bg-ink2 transition-colors">
      Set
     </button>
     <button type="button" onClick={() => setQuietForm({ open:false, reason:'', endTime:'' })}
-     className="font-body text-ghost text-[12px] hover:text-muted transition-colors">
+     className="font-body text-muted text-label hover:text-muted transition-colors">
      Cancel
     </button>
    </div>
@@ -842,25 +841,25 @@ export default function ShiftIQ() {
      onClick={() => setLineDropOpen(o => !o)}
      className="flex items-center gap-2 hover:opacity-80 transition-opacity cursor-pointer"
     >
-     <span className="font-body font-medium text-ink text-[15px]">{al.name}</span>
+     <span className="font-body font-medium text-ink text-base">{al.name}</span>
      <span
-      className={`font-body font-medium tracking-normal text-[12px] ${sc} cursor-help`}
+      className={`font-body font-medium tracking-normal text-label ${sc} cursor-help`}
       title="At risk: score ≥ 75 · Watch: 60–74 · Clear: below 60"
      >{zone}</span>
      <span className={`display-num text-xl leading-none ${sc}`} aria-label={`Risk score ${al.score} — ${zone}`}>{al.score}</span>
      {d.confidence < d.rawConfidence && activeLine === 'l4' && (
-      <span className="font-body text-warn text-[12px]">adj.</span>
+      <span className="font-body text-warn text-label">adj.</span>
      )}
-     <ChevronDown size={12} className={`text-ghost transition-transform duration-200 ${lineDropOpen ? 'rotate-180' : ''}`} />
+     <ChevronDown size={12} className={`text-muted transition-transform duration-200 ${lineDropOpen ? 'rotate-180' : ''}`} />
     </button>
-    <span className="font-body text-ghost/50 text-[13px]">·</span>
-    <span className="font-body text-ghost text-[13px]">{lineSupervisor} · {al.supervisor} shift</span>
+    <span className="font-body text-muted/50 text-label">·</span>
+    <span className="font-body text-muted text-label">{lineSupervisor} · {al.supervisor} shift</span>
     <div className="ml-auto flex items-center gap-3">
      <CrewAvatarStack crew={lineD.crew} onSelect={setViewingOperator} size={22} />
-     <span className="font-body text-ghost text-[12px]">18 workers</span>
+     <span className="font-body text-muted text-label">18 workers</span>
      <button type="button" onClick={() => setQuietForm(p => ({...p, open:true}))}
       aria-label="Set quiet period" title="Set quiet period"
-      className="text-ghost hover:text-muted transition-colors">
+      className="text-muted hover:text-muted transition-colors">
       <Moon size={13} strokeWidth={2} />
      </button>
     </div>
@@ -890,7 +889,7 @@ export default function ShiftIQ() {
  {!briefingAcknowledged && (
  <Modal title="Pre-shift safety briefing">
   <div className="flex items-center justify-between px-4 pt-3 pb-2 border-b border-rule2">
-  <div className="font-body font-medium text-ink text-[15px]" id="modal-title">Pre-shift safety briefing</div>
+  <div className="font-body font-medium text-ink text-base" id="modal-title">Pre-shift safety briefing</div>
   </div>
   <div className="overflow-y-auto flex-1">
   {[
@@ -907,7 +906,7 @@ export default function ShiftIQ() {
    {item.icon === 'flag' && <Flag size={13} strokeWidth={2} />}
    {item.icon === 'rotate' && <RotateCcw size={13} strokeWidth={2} />}
    </span>
-   <span className="font-body text-ink-2 text-[14px] leading-relaxed">{item.text}</span>
+   <span className="font-body text-ink-2 text-body leading-relaxed">{item.text}</span>
    </div>
   ))}
   </div>
@@ -934,8 +933,8 @@ export default function ShiftIQ() {
   ].map(tab => (
    <button type="button" key={tab.id} type="button"
    onClick={() => setCol1Tab(tab.id)}
-   className={`px-4 py-2 font-body text-[12px] tracking-normal font-medium border-b-2 transition-colors cursor-pointer ${
-    col1Tab === tab.id ? 'border-b-ochre text-ink' : 'border-b-transparent text-ghost hover:text-muted'
+   className={`px-4 py-2 font-body text-label tracking-normal font-medium border-b-2 transition-colors cursor-pointer ${
+    col1Tab === tab.id ? 'border-b-ochre text-ink' : 'border-b-transparent text-muted hover:text-muted'
    }`}>
    {tab.label}
    </button>
@@ -952,8 +951,8 @@ export default function ShiftIQ() {
  <div className="flex items-start gap-2 mb-3">
  <AlertTriangle size={16} strokeWidth={2} className="text-danger flex-shrink-0 mt-px" />
  <div>
- <div className="font-body font-medium text-danger text-[14px]">Allergen changeover log unsigned — production start blocked</div>
- <div className="font-body text-danger/80 text-[12px] mt-0.5">
+ <div className="font-body font-medium text-danger text-body">Allergen changeover log unsigned — production start blocked</div>
+ <div className="font-body text-danger/80 text-label mt-0.5">
  {haccpData.allergenChangeover.from} → {haccpData.allergenChangeover.to} requires a signed allergen changeover log before Line 4 can start. Sign via checklist or log an override reason.
  </div>
  </div>
@@ -969,7 +968,7 @@ export default function ShiftIQ() {
       type="text" placeholder="Override reason (required)…"
       value={overrideReason}
       onChange={e => { setOverrideReason(e.target.value); setOverrideShake(false) }}
-      className={`w-full font-body text-ink text-[13px] bg-stone border border-danger/30 px-2 py-1.5 ${overrideShake ? 'shake-error' : ''}`}
+      className={`w-full font-body text-ink text-label bg-stone border border-danger/30 px-2 py-1.5 ${overrideShake ? 'shake-error' : ''}`}
       autoFocus
      />
      <div className="flex gap-2">
@@ -987,7 +986,7 @@ export default function ShiftIQ() {
         }, 650)
        }}
        style={{ transition: 'background-color 180ms ease, color 180ms ease, border-color 180ms ease' }}
-       className={`inline-flex items-center justify-center gap-2 px-4 py-2.5 font-body font-medium text-[14px] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
+       className={`inline-flex items-center justify-center gap-2 px-4 py-2.5 font-body font-medium text-body cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
         overrideConfirmed
          ? 'bg-ok/[0.08] border border-ok/30 text-ok'
          : 'bg-ink text-stone hover:bg-ink2 border-0'
@@ -996,7 +995,7 @@ export default function ShiftIQ() {
         ? <><AnimatedCheck size={13} color="currentColor" />Override logged</>
         : 'Override'}
       </button>
-      <button type="button" onClick={() => { setOverrideMode(false); setOverrideReason('') }} className="font-body text-[13px] px-2 py-1.5 text-ghost">Cancel</button>
+      <button type="button" onClick={() => { setOverrideMode(false); setOverrideReason('') }} className="font-body text-label px-2 py-1.5 text-muted">Cancel</button>
      </div>
     </div>
    </div>
@@ -1006,14 +1005,14 @@ export default function ShiftIQ() {
  </div>
  )}
  {allergenOverride && (
- <div className="flex items-center gap-2 px-4 py-2 bg-warn/10 border-b border-warn/20 font-body text-warn text-[12px] slide-in">
+ <div className="flex items-center gap-2 px-4 py-2 bg-warn/10 border-b border-warn/20 font-body text-warn text-label slide-in">
  <Check size={12} strokeWidth={2} className="text-warn flex-shrink-0" />
  Override logged · CAPA auto-created · Director notified · Reason: "{allergenOverride}"
  </div>
  )}
  {activeLine === 'l4' && checklistSigned['allergen'] && (
- <div className="flex items-center gap-2 px-4 py-2 bg-ok/10 border-b border-ok/20 font-body text-ok text-[12px] slide-in">
- <AnimatedCheck size={12} color="#3A8A5A" className="flex-shrink-0" />
+ <div className="flex items-center gap-2 px-4 py-2 bg-ok/10 border-b border-ok/20 font-body text-ok text-label slide-in">
+ <AnimatedCheck size={12} color="currentColor" className="flex-shrink-0" />
  Allergen changeover log signed — Okonkwo · {checklistSigned['allergen']} · Production start unblocked
  </div>
  )}
@@ -1045,13 +1044,13 @@ export default function ShiftIQ() {
   {/* ── Header ───────────────────────────────────────────────────────── */}
   <div className="flex items-center justify-between px-5 py-2.5 border-b border-rule2 bg-stone2 flex-shrink-0">
    <div className="flex items-center gap-2">
-    <span className="font-body text-ghost text-[12px] tracking-normal">Tasks</span>
+    <span className="font-body text-muted text-label tracking-normal">Tasks</span>
     {pendingTaskCount > 0 && (
-     <span className="font-body text-warn text-[12px] font-medium">{pendingTaskCount} pending</span>
+     <span className="font-body text-warn text-label font-medium">{pendingTaskCount} pending</span>
     )}
    </div>
    <button type="button" onClick={() => setShowTaskForm(true)}
-    className="font-body text-[12px] text-muted hover:text-ink transition-colors px-2 py-0.5 border border-rule2 hover:border-ink/30">
+    className="font-body text-label text-muted hover:text-ink transition-colors px-2 py-0.5 border border-rule2 hover:border-ink/30">
     + Assign
    </button>
   </div>
@@ -1061,8 +1060,7 @@ export default function ShiftIQ() {
   {Object.entries(taskAssignments).flatMap(([op, tasks]) =>
    tasks.map((t, i) => (
     <article key={op + i}
-     className={`bg-stone border border-rule rounded-lg overflow-hidden transition-opacity ${t.done ? 'opacity-50' : ''}`}
-     style={{ boxShadow: '0 1px 3px rgba(16,24,40,0.06)' }}>
+     className={`bg-stone border border-rule rounded-lg overflow-hidden shadow-card transition-opacity ${t.done ? 'opacity-50' : ''}`}>
      {/* Status accent bar */}
      <div className={`h-[3px] w-full ${t.done ? 'bg-ok' : 'bg-rule2'}`} />
      {/* Body: checkbox + task label */}
@@ -1074,14 +1072,14 @@ export default function ShiftIQ() {
        }`}>
        {t.done && <Check size={10} strokeWidth={2.5} className="text-white" />}
       </button>
-      <div className={`font-body font-medium text-[15px] leading-snug flex-1 ${t.done ? 'line-through text-ghost' : 'text-ink'}`}>
+      <div className={`font-body font-medium text-base leading-snug flex-1 ${t.done ? 'line-through text-muted' : 'text-ink'}`}>
        {t.label}
       </div>
      </div>
      {/* Footer: assignee + due time */}
      <div className="flex items-center justify-between px-4 pb-3 pt-2 border-t border-rule2/60">
-      <span className="font-body text-ghost text-[12px]">{op}</span>
-      <span className="font-body text-ghost text-[12px]">{t.dueTime}</span>
+      <span className="font-body text-muted text-label">{op}</span>
+      <span className="font-body text-muted text-label">{t.dueTime}</span>
      </div>
     </article>
    ))
@@ -1089,7 +1087,7 @@ export default function ShiftIQ() {
   </div>
 
   {Object.values(taskAssignments).flat().length === 0 && (
-   <div className="px-5 py-6 font-body text-ghost text-[14px]">
+   <div className="px-5 py-6 font-body text-muted text-body">
     No tasks assigned — use + Assign to add tasks for operators
    </div>
   )}
@@ -1098,40 +1096,39 @@ export default function ShiftIQ() {
   {maintenanceTickets.length > 0 && (
    <>
     <div className="px-5 py-2 border-b border-t border-rule2 bg-stone2 flex-shrink-0">
-     <span className="font-body text-ghost text-[12px] tracking-normal">Maintenance</span>
+     <span className="font-body text-muted text-label tracking-normal">Maintenance</span>
     </div>
     <div className="px-3 py-3 space-y-2.5">
     {maintenanceTickets.map((t, i) => (
      <article key={i}
-      className={`bg-stone border border-rule rounded-lg overflow-hidden ${t.status === 'closed' ? 'opacity-50' : ''}`}
-      style={{ boxShadow: t.urgency === 'danger' && t.status !== 'closed' ? '0 1px 4px rgba(217,45,32,0.08)' : '0 1px 3px rgba(16,24,40,0.06)' }}>
+      className={`bg-stone border border-rule rounded-lg overflow-hidden ${t.status === 'closed' ? 'opacity-50' : ''} ${t.urgency === 'danger' && t.status !== 'closed' ? 'shadow-card-alert' : 'shadow-card'}`}>
       {/* Urgency accent bar */}
       <div className={`h-[3px] w-full ${t.status === 'closed' ? 'bg-ok' : t.urgency === 'danger' ? 'bg-danger' : 'bg-warn'}`} />
       {/* Header: status chip + timestamp */}
       <div className="flex items-center justify-between px-4 pt-3 pb-1">
-       <span className={`font-body font-medium text-[12px] px-1.5 py-px rounded-btn ${
+       <span className={`font-body font-medium text-label px-1.5 py-px rounded-btn ${
         t.status === 'closed' ? 'bg-ok/10 text-ok' : t.urgency === 'danger' ? 'bg-danger/[0.04] text-danger' : 'bg-warn/10 text-warn'
        }`}>{t.status}</span>
-       <span className="font-body text-ghost text-[12px]">{t.createdAt}</span>
+       <span className="font-body text-muted text-label">{t.createdAt}</span>
       </div>
       {/* Body: equipment + issue */}
       <div className="px-4 pb-2">
-       <div className="font-body font-medium text-ink text-[14px] leading-snug">{t.equipment}</div>
-       <div className="font-body text-muted text-[12px] mt-0.5 leading-snug">{t.issue}</div>
+       <div className="font-body font-medium text-ink text-body leading-snug">{t.equipment}</div>
+       <div className="font-body text-muted text-label mt-0.5 leading-snug">{t.issue}</div>
       </div>
       {/* Footer: requester + resolve action */}
       <div className="flex items-center justify-between px-4 pb-3 pt-2 border-t border-rule2/60">
-       <span className="font-body text-ghost text-[12px]">{t.requestedBy}</span>
+       <span className="font-body text-muted text-label">{t.requestedBy}</span>
        {t.status === 'open' ? (
         <button type="button"
          onClick={() => setMaintenanceTickets(p => p.map((x,j) => j===i ? {...x, status:'closed'} : x))}
          className="flex items-center justify-center w-7 h-7 rounded-full border-2 border-rule2 hover:border-ok hover:text-ok transition-colors cursor-pointer"
          aria-label={`Resolve: ${t.equipment}`}>
-         <Check size={13} strokeWidth={2} className="text-ghost" />
+         <Check size={13} strokeWidth={2} className="text-muted" />
         </button>
        ) : (
         <div className="flex items-center justify-center w-7 h-7 rounded-full border border-ok/20 bg-ok/5">
-         <AnimatedCheck size={13} color="#3A8A5A" />
+         <AnimatedCheck size={13} color="currentColor" />
         </div>
        )}
       </div>
@@ -1145,15 +1142,15 @@ export default function ShiftIQ() {
   <div className="border-t border-rule2 px-5 py-3">
    {!showNearMiss && !nearMissSubmitted && (
     <button type="button" onClick={() => setShowNearMiss(true)}
-     className="font-body text-ghost text-[13px] hover:text-muted transition-colors">
+     className="font-body text-muted text-label hover:text-muted transition-colors">
      + Log a near-miss
     </button>
    )}
    {showNearMiss && !nearMissSubmitted && (
     <div className="slide-in space-y-2">
-     <div className="font-body text-ghost text-[12px] tracking-normal">Near-miss report</div>
+     <div className="font-body text-muted text-label tracking-normal">Near-miss report</div>
      <select aria-label="Station where near-miss occurred" value={nearMissForm.station} onChange={e => setNearMissForm(p => ({...p, station: e.target.value}))}
-      className="w-full font-body text-ink text-[13px] bg-stone border border-rule2 px-2 py-1 cursor-pointer">
+      className="w-full font-body text-ink text-label bg-stone border border-rule2 px-2 py-1 cursor-pointer">
       <option value="">Station…</option>
       <option>Sauce Dosing</option>
       <option>Oven Station B</option>
@@ -1161,10 +1158,10 @@ export default function ShiftIQ() {
       <option>Topping Line</option>
      </select>
      <textarea aria-label="What happened" placeholder="What happened?" value={nearMissForm.what} onChange={e => setNearMissForm(p => ({...p, what: e.target.value}))}
-      className="w-full font-body text-ink text-[13px] bg-stone border border-rule2 px-2 py-1 h-16 resize-none" />
+      className="w-full font-body text-ink text-label bg-stone border border-rule2 px-2 py-1 h-16 resize-none" />
      <input aria-label="Corrective step taken" placeholder="Corrective step taken" value={nearMissForm.action} onChange={e => setNearMissForm(p => ({...p, action: e.target.value}))}
-      className="w-full font-body text-ink text-[13px] bg-stone border border-rule2 px-2 py-1" />
-     <label className="flex items-center gap-2 font-body text-muted text-[13px] cursor-pointer">
+      className="w-full font-body text-ink text-label bg-stone border border-rule2 px-2 py-1" />
+     <label className="flex items-center gap-2 font-body text-muted text-label cursor-pointer">
       <input type="checkbox" checked={nearMissForm.atRisk} onChange={e => setNearMissForm(p => ({...p, atRisk: e.target.checked}))} />
       Anyone at risk of injury?
      </label>
@@ -1175,12 +1172,12 @@ export default function ShiftIQ() {
        logActivity({ actor:'D. Kowalski', action:`Near-miss reported — ${nearMissForm.station}`, item: nearMissForm.what, type:'near_miss' })
        setNearMissSubmitted(true); setShowNearMiss(false)
       }}>Submit — auto-CAPA created</Btn>
-      <button type="button" onClick={() => setShowNearMiss(false)} className="font-body text-[13px] px-2 py-1 text-ghost">Cancel</button>
+      <button type="button" onClick={() => setShowNearMiss(false)} className="font-body text-label px-2 py-1 text-muted">Cancel</button>
      </div>
     </div>
    )}
    {nearMissSubmitted && (
-    <div className="font-body text-ok text-[13px] slide-in">Near-miss logged · CAPA created · Assigned to Kowalski for review</div>
+    <div className="font-body text-ok text-label slide-in">Near-miss logged · CAPA created · Assigned to Kowalski for review</div>
    )}
   </div>
 
@@ -1194,7 +1191,7 @@ export default function ShiftIQ() {
   >
    <div className="p-5 space-y-5">
     <div>
-     <div className="font-body text-ghost text-[12px] tracking-normal mb-3">Assign to</div>
+     <div className="font-body text-muted text-label tracking-normal mb-3">Assign to</div>
      <div className="grid grid-cols-5 gap-2">
       {['A. Martinez','C. Reyes','P. Okonkwo','F. Adeyemi','T. Osei'].map(name => (
        <button type="button" key={name} type="button"
@@ -1203,18 +1200,18 @@ export default function ShiftIQ() {
          taskForm.assignee === name ? 'border-ok bg-ok/[0.05]' : 'border-rule2 hover:border-muted'
         }`}>
         <PersonAvatar name={name} size={32} />
-        <span className="font-body text-[12px] text-ink truncate w-full text-center">{name.split(' ')[0]}</span>
+        <span className="font-body text-label text-ink truncate w-full text-center">{name.split(' ')[0]}</span>
        </button>
       ))}
      </div>
     </div>
     <div>
-     <div className="font-body text-ghost text-[12px] tracking-normal mb-3">Due</div>
+     <div className="font-body text-muted text-label tracking-normal mb-3">Due</div>
      <div className="grid grid-cols-2 gap-2">
       {['Before shift end','Tomorrow AM','This week','No deadline'].map(time => (
        <button type="button" key={time} type="button"
         onClick={() => setTaskForm(p => ({...p, dueTime: time}))}
-        className={`font-body text-[13px] px-3 py-2.5 border text-left transition-colors ${
+        className={`font-body text-label px-3 py-2.5 border text-left transition-colors ${
          taskForm.dueTime === time ? 'border-ok bg-ok/[0.05] text-ok' : 'border-rule2 hover:border-muted text-ink'
         }`}>
         {time}
@@ -1223,10 +1220,10 @@ export default function ShiftIQ() {
      </div>
     </div>
     <div>
-     <div className="font-body text-ghost text-[12px] tracking-normal mb-2">Task</div>
+     <div className="font-body text-muted text-label tracking-normal mb-2">Task</div>
      <input aria-label="Task description" placeholder="Describe the task…"
       value={taskForm.label} onChange={e => setTaskForm(p => ({...p, label: e.target.value}))}
-      className="w-full font-body text-ink text-[14px] bg-stone border border-rule2 px-3 py-2.5 focus:outline-none focus:border-ochre" />
+      className="w-full font-body text-ink text-body bg-stone border border-rule2 px-3 py-2.5 focus:outline-none focus:border-ochre" />
     </div>
     <Btn variant="primary"
      disabled={!taskForm.assignee || !taskForm.label || !taskForm.dueTime}
@@ -1259,16 +1256,16 @@ export default function ShiftIQ() {
    {signed && <span key={`flash-${item.key}`} className="flash-success" aria-hidden="true" />}
    <div className="px-4 py-3">
     <div className="flex items-start justify-between gap-2 mb-1.5">
-    <p className={`font-body font-medium text-[15px] leading-snug ${signed ? 'line-through text-ghost' : item.isAllergen && !allergenSigned ? 'text-danger' : 'text-ink'}`}>
+    <p className={`font-body font-medium text-base leading-snug ${signed ? 'line-through text-muted' : item.isAllergen && !allergenSigned ? 'text-danger' : 'text-ink'}`}>
      {item.label}
-     {item.isAllergen && !allergenSigned && <span className="ml-1.5 inline-flex items-center gap-0.5 text-[12px] font-medium"><AlertTriangle size={9} strokeWidth={2} /> BLOCKING</span>}
-     {flag && <span className="ml-1.5 inline-flex items-center gap-0.5 text-[12px] text-warn font-medium"><Flag size={9} strokeWidth={2} /> flagged</span>}
+     {item.isAllergen && !allergenSigned && <span className="ml-1.5 inline-flex items-center gap-0.5 text-label font-medium"><AlertTriangle size={9} strokeWidth={2} /> BLOCKING</span>}
+     {flag && <span className="ml-1.5 inline-flex items-center gap-0.5 text-label text-warn font-medium"><Flag size={9} strokeWidth={2} /> flagged</span>}
     </p>
-    {signed && !empResult && item.key !== 'emp' && <span className="font-body text-ok text-[12px] flex items-center gap-0.5 flex-shrink-0"><AnimatedCheck size={10} color="#3A8A5A" /> {signed}</span>}
-    {signed && item.key === 'emp' && empResult && <span className="font-body text-ok text-[12px] flex items-center gap-0.5 flex-shrink-0"><AnimatedCheck size={10} color="#3A8A5A" /> {empResult.result === 'negative' ? 'Neg' : 'Pos'} · {signed}</span>}
-    {flag && !signed && <span className="font-body text-warn text-[12px] flex items-center gap-0.5 flex-shrink-0"><Flag size={9} strokeWidth={2} /> {flag.reason}</span>}
+    {signed && !empResult && item.key !== 'emp' && <span className="font-body text-ok text-label flex items-center gap-0.5 flex-shrink-0"><AnimatedCheck size={10} color="currentColor" /> {signed}</span>}
+    {signed && item.key === 'emp' && empResult && <span className="font-body text-ok text-label flex items-center gap-0.5 flex-shrink-0"><AnimatedCheck size={10} color="currentColor" /> {empResult.result === 'negative' ? 'Neg' : 'Pos'} · {signed}</span>}
+    {flag && !signed && <span className="font-body text-warn text-label flex items-center gap-0.5 flex-shrink-0"><Flag size={9} strokeWidth={2} /> {flag.reason}</span>}
     </div>
-    <p className="font-body text-ghost text-[13px] mb-2">{item.operator}</p>
+    <p className="font-body text-muted text-label mb-2">{item.operator}</p>
     {!signed && !flag && (
     <div className="flex gap-2">
      <Btn variant="primary" onClick={() => setChecklistSigned(p => ({...p, [item.key]: new Date().toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' })}))}>Sign</Btn>
@@ -1278,11 +1275,11 @@ export default function ShiftIQ() {
    </div>
    {showEmpForm && (
     <div className="pb-2 px-1 space-y-1.5 slide-in">
-    <div className="font-body text-ghost text-[12px] tracking-normal">Swab result required</div>
+    <div className="font-body text-muted text-label tracking-normal">Swab result required</div>
     <div className="flex gap-2">
      {['negative','positive'].map(r => (
      <button type="button" key={r} onClick={() => setEmpForm(p => ({...p, [item.key]: {...p[item.key], result: r}}))}
-      className={`font-body font-medium text-[12px] px-2 py-1 rounded-btn transition-colors ${empForm[item.key]?.result === r ? (r === 'negative' ? 'bg-ok text-white' : 'bg-danger text-white') : 'bg-stone3 text-muted'}`}>
+      className={`font-body font-medium text-label px-2 py-1 rounded-btn transition-colors ${empForm[item.key]?.result === r ? (r === 'negative' ? 'bg-ok text-white' : 'bg-danger text-white') : 'bg-stone3 text-muted'}`}>
       {r.charAt(0).toUpperCase() + r.slice(1)}
      </button>
      ))}
@@ -1290,7 +1287,7 @@ export default function ShiftIQ() {
      <input placeholder="CFU count" type="number"
       value={empForm[item.key]?.cfu || ''}
       onChange={e => setEmpForm(p => ({...p, [item.key]: {...p[item.key], cfu: e.target.value}}))}
-      className="w-20 font-body text-ink text-[12px] bg-stone border border-rule2 px-2 py-0.5" />
+      className="w-20 font-body text-ink text-label bg-stone border border-rule2 px-2 py-0.5" />
      )}
     </div>
     {empForm[item.key]?.result && (
@@ -1305,7 +1302,7 @@ export default function ShiftIQ() {
    {showFlagForm && !flag && (
     <div className="pb-2 px-1 space-y-1.5 slide-in">
     <select aria-label="Reason for flagging this item" value={flagForm[item.key]?.reason || ''} onChange={e => setFlagForm(p => ({...p, [item.key]: {...p[item.key], reason: e.target.value}}))}
-     className="w-full font-body text-ink text-[12px] bg-stone border border-rule2 px-2 py-1 cursor-pointer">
+     className="w-full font-body text-ink text-label bg-stone border border-rule2 px-2 py-1 cursor-pointer">
      <option value="">Reason for flag…</option>
      <option>Equipment malfunction</option>
      <option>Kit or supplies missing</option>
@@ -1319,7 +1316,7 @@ export default function ShiftIQ() {
       if (f.reason === 'Equipment malfunction') setMaintenanceTickets(p => [...p, { id:`MT-${Date.now()}`, equipment: item.label, issue: f.reason, urgency:'warn', status:'open', requestedBy: item.operator, createdAt: new Date().toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' }) }])
       setFlagForm(p => { const n = {...p}; delete n[item.key]; return n })
      }}>Flag item</Btn>
-     <button type="button" onClick={() => setFlagForm(p => { const n = {...p}; delete n[item.key]; return n })} className="font-body text-[12px] text-ghost px-2">Cancel</button>
+     <button type="button" onClick={() => setFlagForm(p => { const n = {...p}; delete n[item.key]; return n })} className="font-body text-label text-muted px-2">Cancel</button>
     </div>
     </div>
    )}
@@ -1350,11 +1347,11 @@ export default function ShiftIQ() {
    className="flex items-center justify-between w-full px-4 py-2.5 bg-stone2 border-b border-rule2 hover:bg-stone3 transition-colors">
     <div className="flex items-center gap-2">
      <Brain size={12} strokeWidth={1.75} className="text-muted" />
-     <span className="font-body text-ghost text-[12px] tracking-normal">Pilot validation</span>
+     <span className="font-body text-muted text-label tracking-normal">Pilot validation</span>
     </div>
     <div className="flex items-center gap-2">
      <span className="display-num text-sm font-bold text-ok">{d.pilotAccuracy}%</span>
-     {pilotExpanded ? <ChevronUp size={11} className="text-ghost" /> : <ChevronDown size={11} className="text-ghost" />}
+     {pilotExpanded ? <ChevronUp size={11} className="text-muted" /> : <ChevronDown size={11} className="text-muted" />}
     </div>
    </button>
 
@@ -1363,20 +1360,20 @@ export default function ShiftIQ() {
     <div className="px-4 py-3 border-b border-rule2">
      <div className="flex items-baseline gap-2 mb-3">
       <span className="display-num text-3xl font-bold text-ok">{d.pilotAccuracy}%</span>
-      <span className="font-body text-ok text-[12px]">accuracy · 28 shifts</span>
+      <span className="font-body text-ok text-label">accuracy · 28 shifts</span>
      </div>
      <div className="mb-3">
-      <div className="font-body text-ghost text-[12px] mb-1">14-day trend</div>
+      <div className="font-body text-muted text-label mb-1">14-day trend</div>
       <svg width="100%" height="28" viewBox="0 0 200 28" preserveAspectRatio="none" aria-label="14-day accuracy trend">
        <polyline points="0,22 15,20 30,18 45,19 60,17 75,14 90,15 105,12 120,10 135,11 150,9 165,8 180,7 200,6"
-        fill="none" stroke="#3A8A5A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-       <circle cx="200" cy="6" r="2.5" fill="#3A8A5A" />
+        fill="none" stroke="var(--color-ok)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+       <circle cx="200" cy="6" r="2.5" fill="var(--color-ok)" />
       </svg>
-      <div className="flex justify-between font-body text-ghost text-[12px] mt-0.5">
+      <div className="flex justify-between font-body text-muted text-label mt-0.5">
        <span>Apr 2</span><span>Today</span>
       </div>
      </div>
-     <div className="font-body text-ghost text-[12px] mb-1.5">Shift outcomes</div>
+     <div className="font-body text-muted text-label mb-1.5">Shift outcomes</div>
      <div className="flex gap-0.5 flex-wrap">
       {d.pilotLog.map((r, i) => (
        <div key={i} title={r === 'ok' ? 'Correct' : r === 'miss' ? 'Missed' : 'Partial'}
@@ -1385,7 +1382,7 @@ export default function ShiftIQ() {
      </div>
      <div className="flex gap-3 mt-1.5">
       {[['ok','Correct','bg-ok'],['part','Partial','bg-warn'],['miss','Missed','bg-danger']].map(([k,l,c]) => (
-       <span key={k} className="flex items-center gap-1 font-body text-ghost text-[12px]">
+       <span key={k} className="flex items-center gap-1 font-body text-muted text-label">
         <span className={`w-2 h-2 rounded-sm ${c}`} />{l}
        </span>
       ))}
@@ -1394,39 +1391,39 @@ export default function ShiftIQ() {
     <div className="px-4 py-3 border-b border-rule2 space-y-1.5">
      {d.pilotStats.map((s, i) => (
       <div key={i} className="flex items-center justify-between">
-       <span className="font-body text-ghost text-[12px]">{s.label}</span>
-       <span className={`font-body font-medium text-[13px] ${s.color}`}>{s.val}</span>
+       <span className="font-body text-muted text-label">{s.label}</span>
+       <span className={`font-body font-medium text-label ${s.color}`}>{s.val}</span>
       </div>
      ))}
     </div>
     <div className="px-4 py-3 border-b border-rule2">
-     <div className="font-body text-ghost text-[12px] mb-2">Model freshness</div>
+     <div className="font-body text-muted text-label mb-2">Model freshness</div>
      <div className="flex items-center gap-2 mb-1.5">
       <RefreshCw size={10} strokeWidth={2} className="text-ok flex-shrink-0" />
-      <span className="font-body text-ink-2 text-[13px]">Last retrained Apr 2 · 14 shifts ago</span>
+      <span className="font-body text-ink-2 text-label">Last retrained Apr 2 · 14 shifts ago</span>
      </div>
      <div className="flex items-center gap-2">
-      <Shield size={10} strokeWidth={2} className="text-ghost flex-shrink-0" />
-      <span className="font-body text-ghost text-[12px]">Retraining recommended after 90 shifts</span>
+      <Shield size={10} strokeWidth={2} className="text-muted flex-shrink-0" />
+      <span className="font-body text-muted text-label">Retraining recommended after 90 shifts</span>
      </div>
     </div>
     <div className="px-4 py-3">
-     <div className="font-body text-ghost text-[12px] mb-2">Pilot scope</div>
-     <div className="font-body text-ink-2 text-[13px] mb-2.5 leading-snug">Line 4 only · 28 shifts validated</div>
+     <div className="font-body text-muted text-label mb-2">Pilot scope</div>
+     <div className="font-body text-ink-2 text-label mb-2.5 leading-snug">Line 4 only · 28 shifts validated</div>
      <button
       type="button"
       onClick={() => { if ((readinessScore ?? 64) >= 75 && d.pilotAccuracy >= 75) setShowExpansionGate(true) }}
       disabled={(readinessScore ?? 64) < 75 || d.pilotAccuracy < 75}
-      className={`w-full font-body font-medium text-[13px] px-3 py-2 transition-colors ${
+      className={`w-full font-body font-medium text-label px-3 py-2 transition-colors ${
        (readinessScore ?? 64) >= 75 && d.pilotAccuracy >= 75
         ? 'bg-ink text-stone hover:bg-ink2'
-        : 'bg-stone3 text-ghost cursor-not-allowed'
+        : 'bg-stone3 text-muted cursor-not-allowed'
       }`}
      >
       {(readinessScore ?? 64) < 75 ? 'Data readiness too low to expand' : d.pilotAccuracy < 75 ? 'Accuracy below threshold' : 'Expand to all lines →'}
      </button>
      {((readinessScore ?? 64) < 75 || d.pilotAccuracy < 75) && (
-      <div className="font-body text-ghost text-[12px] mt-1.5 leading-snug">
+      <div className="font-body text-muted text-label mt-1.5 leading-snug">
        Requires: readiness ≥ 75 · accuracy ≥ 75% on 30-shift window
       </div>
      )}
@@ -1439,7 +1436,7 @@ export default function ShiftIQ() {
   {/* Crew — shown when pilot panel is collapsed */}
   {!pilotExpanded && hasLiveData && (
   <div className="border-t border-rule2">
-   <div className="px-4 py-2.5 border-b border-rule2 font-body text-ghost text-[12px] tracking-normal">Crew</div>
+   <div className="px-4 py-2.5 border-b border-rule2 font-body text-muted text-label tracking-normal">Crew</div>
    {lineD.crew.map((m, i) => <CrewRow key={i} m={m} onView={setViewingOperator} />)}
   </div>
   )}
@@ -1461,13 +1458,13 @@ export default function ShiftIQ() {
   <div className="fixed inset-0 bg-ink/40 z-50 flex items-center justify-center p-6">
    <div className="bg-stone border border-rule2 w-full max-w-[480px] shadow-raise">
     <div className="px-5 py-4 border-b border-rule2 bg-stone2">
-     <div className="font-body text-muted text-[12px] mb-1">Pilot expansion</div>
-     <div className="font-display font-bold text-ink text-[16px]">Expand to all lines</div>
+     <div className="font-body text-muted text-label mb-1">Pilot expansion</div>
+     <div className="font-display font-bold text-ink text-base">Expand to all lines</div>
     </div>
     <div className="p-5 space-y-4">
      {expansionStep === 0 && (
      <div className="space-y-3">
-      <p className="font-body text-ink-2 text-[14px] leading-relaxed">
+      <p className="font-body text-ink-2 text-body leading-relaxed">
        Before expanding, confirm three things. New lines begin at lower confidence and will have a 10-shift calibration period.
       </p>
       <div className="space-y-2.5">
@@ -1478,8 +1475,8 @@ export default function ShiftIQ() {
         <div key={label} className={`flex items-center gap-3 px-3 py-2.5 border ${ok ? 'border-ok/30 bg-ok/[0.04]' : 'border-danger/30 bg-danger/[0.04]'}`}>
          {ok ? <Check size={13} strokeWidth={2} className="text-ok flex-shrink-0" /> : <X size={13} strokeWidth={2} className="text-danger flex-shrink-0" />}
          <div className="flex-1">
-          <div className="font-body text-ink text-[13px] font-medium">{label}</div>
-          <div className="font-body text-ghost text-[12px]">{req}</div>
+          <div className="font-body text-ink text-label font-medium">{label}</div>
+          <div className="font-body text-muted text-label">{req}</div>
          </div>
          <span className={`display-num text-base font-bold ${ok ? 'text-ok' : 'text-danger'}`}>{value}</span>
         </div>
@@ -1487,11 +1484,11 @@ export default function ShiftIQ() {
       </div>
       <div className="flex gap-2 pt-1">
        <button type="button" onClick={() => setExpansionStep(1)}
-        className="flex-1 font-body font-medium text-[14px] px-4 py-2.5 bg-ink text-stone hover:bg-ink2 transition-colors">
+        className="flex-1 font-body font-medium text-body px-4 py-2.5 bg-ink text-stone hover:bg-ink2 transition-colors">
         Continue →
        </button>
        <button type="button" onClick={() => { setShowExpansionGate(false); setExpansionStep(0) }}
-        className="font-body text-ghost text-[13px] px-4 py-2.5 hover:text-muted transition-colors">
+        className="font-body text-muted text-label px-4 py-2.5 hover:text-muted transition-colors">
         Cancel
        </button>
       </div>
@@ -1500,25 +1497,25 @@ export default function ShiftIQ() {
      {expansionStep === 1 && (
      <div className="space-y-3">
       <div>
-       <label className="font-body text-ghost text-[12px] block mb-1.5">Named data owner for expansion <span className="text-danger">*</span></label>
+       <label className="font-body text-muted text-label block mb-1.5">Named data owner for expansion <span className="text-danger">*</span></label>
        <input
         value={dataOwner}
         onChange={e => setDataOwner(e.target.value)}
         placeholder="e.g. T. Osei · Data & Quality Manager"
-        className="w-full font-body text-ink text-[13px] bg-stone border border-rule2 px-3 py-2 focus:border-ink outline-none"
+        className="w-full font-body text-ink text-label bg-stone border border-rule2 px-3 py-2 focus:border-ink outline-none"
        />
-       <div className="font-body text-ghost text-[12px] mt-1">This person is accountable for data quality on new lines during calibration.</div>
+       <div className="font-body text-muted text-label mt-1">This person is accountable for data quality on new lines during calibration.</div>
       </div>
       <div className="flex items-start gap-2.5 px-3 py-2.5 bg-warn/[0.05] border border-warn/20">
        <AlertTriangle size={13} strokeWidth={2} className="text-warn flex-shrink-0 mt-px" />
-       <p className="font-body text-ink-2 text-[13px] leading-snug">
+       <p className="font-body text-ink-2 text-label leading-snug">
         New lines start at lower confidence. The first 10 shifts may surface higher false-positive rates while the model calibrates.
        </p>
       </div>
       <label className="flex items-start gap-2.5 cursor-pointer">
        <input type="checkbox" checked={directorAck} onChange={e => setDirectorAck(e.target.checked)}
         className="mt-0.5 flex-shrink-0" />
-       <span className="font-body text-ink-2 text-[13px] leading-snug">
+       <span className="font-body text-ink-2 text-label leading-snug">
         I understand new lines will have a lower confidence period and have reviewed data readiness for each line.
        </span>
       </label>
@@ -1526,12 +1523,12 @@ export default function ShiftIQ() {
        <button type="button"
         disabled={!dataOwner.trim() || !directorAck}
         onClick={() => { setPilotExpanded(true); setShowExpansionGate(false); setExpansionStep(0); logActivity({ actor:'J. Crocker', action:'Expanded pilot to all lines', item:`Data owner: ${dataOwner}`, type:'system' }) }}
-        className={`flex-1 font-body font-medium text-[14px] px-4 py-2.5 transition-colors ${
-         dataOwner.trim() && directorAck ? 'bg-ok text-white hover:bg-ok/90' : 'bg-stone3 text-ghost cursor-not-allowed'
+        className={`flex-1 font-body font-medium text-body px-4 py-2.5 transition-colors ${
+         dataOwner.trim() && directorAck ? 'bg-ok text-white hover:bg-ok/90' : 'bg-stone3 text-muted cursor-not-allowed'
         }`}>
         Confirm expansion
        </button>
-       <button type="button" onClick={() => setExpansionStep(0)} className="font-body text-ghost text-[13px] px-4 py-2.5 hover:text-muted transition-colors">← Back</button>
+       <button type="button" onClick={() => setExpansionStep(0)} className="font-body text-muted text-label px-4 py-2.5 hover:text-muted transition-colors">← Back</button>
       </div>
      </div>
      )}
@@ -1548,11 +1545,11 @@ export default function ShiftIQ() {
     type="button"
     onClick={() => setChecklistDrawerOpen(true)}
     aria-label={`Open shift checklist — ${remaining > 0 ? `${remaining} items remaining` : 'all signed'}`}
-    className="fixed bottom-6 right-6 z-20 flex items-center gap-2 px-4 py-2.5 min-h-[40px] bg-ink text-stone font-body text-[14px] font-medium rounded-btn shadow-raise hover:bg-ink2 transition-[background-color,box-shadow] duration-100 ease-standard"
+    className="fixed bottom-6 right-6 z-20 flex items-center gap-2 px-4 py-2.5 min-h-[40px] bg-ink text-stone font-body text-body font-medium rounded-btn shadow-raise hover:bg-ink2 transition-[background-color,box-shadow] duration-100 ease-standard"
    >
     {remaining > 0
-     ? <><ListChecks size={14} /><span>Checklist</span><span className="w-4 h-4 flex items-center justify-center bg-warn text-white text-[12px] font-bold rounded-sm flex-shrink-0">{remaining}</span></>
-     : <><ListChecks size={14} /><AnimatedCheck size={11} color="#3A8A5A" />Checklist</>
+     ? <><ListChecks size={14} /><span>Checklist</span><span className="w-4 h-4 flex items-center justify-center bg-warn text-white text-label font-bold rounded-sm flex-shrink-0">{remaining}</span></>
+     : <><ListChecks size={14} /><AnimatedCheck size={11} color="currentColor" />Checklist</>
     }
    </button>
   )
@@ -1565,7 +1562,7 @@ export default function ShiftIQ() {
   title="Shift checklist"
   badge={(() => {
    const r = CHECKLIST_ITEMS.filter(it => !checklistSigned[it.key]).length
-   return r > 0 ? <span className="font-body text-warn text-[12px] font-medium">{r} remaining</span> : <span className="font-body text-ok text-[12px]">All signed</span>
+   return r > 0 ? <span className="font-body text-warn text-label font-medium">{r} remaining</span> : <span className="font-body text-ok text-label">All signed</span>
   })()}
   maxHeight="78vh"
   maxWidth="560px"
@@ -1584,20 +1581,20 @@ export default function ShiftIQ() {
     <div className="px-4 py-3.5 flex items-center justify-between gap-3">
      <div className="flex-1 min-w-0">
       <div className="flex items-baseline gap-2 mb-0.5">
-       <p className={`font-body font-medium text-[15px] leading-snug ${signed ? 'line-through text-ghost' : item.isAllergen && !allergenSigned ? 'text-danger' : 'text-ink'}`}>
+       <p className={`font-body font-medium text-base leading-snug ${signed ? 'line-through text-muted' : item.isAllergen && !allergenSigned ? 'text-danger' : 'text-ink'}`}>
         {item.label}
-        {item.isAllergen && !allergenSigned && <span className="ml-1.5 inline-flex items-center gap-0.5 text-[12px] font-medium"><AlertTriangle size={9} strokeWidth={2} /> BLOCKING</span>}
+        {item.isAllergen && !allergenSigned && <span className="ml-1.5 inline-flex items-center gap-0.5 text-label font-medium"><AlertTriangle size={9} strokeWidth={2} /> BLOCKING</span>}
        </p>
       </div>
-      <p className="font-body text-ghost text-[13px]">{item.operator}</p>
+      <p className="font-body text-muted text-label">{item.operator}</p>
      </div>
      <div className="flex items-center gap-2 flex-shrink-0">
-      {signed && !empResult && item.key !== 'emp' && <span className="font-body text-ok text-[12px] flex items-center gap-0.5"><AnimatedCheck size={10} color="#3A8A5A" />{signed}</span>}
-      {signed && item.key === 'emp' && empResult && <span className="font-body text-ok text-[12px] flex items-center gap-0.5"><AnimatedCheck size={10} color="#3A8A5A" />{empResult.result === 'negative' ? 'Neg' : 'Pos'}</span>}
-      {flag && !signed && <span className="font-body text-warn text-[12px] flex items-center gap-0.5"><Flag size={9} strokeWidth={2} />{flag.reason}</span>}
+      {signed && !empResult && item.key !== 'emp' && <span className="font-body text-ok text-label flex items-center gap-0.5"><AnimatedCheck size={10} color="currentColor" />{signed}</span>}
+      {signed && item.key === 'emp' && empResult && <span className="font-body text-ok text-label flex items-center gap-0.5"><AnimatedCheck size={10} color="currentColor" />{empResult.result === 'negative' ? 'Neg' : 'Pos'}</span>}
+      {flag && !signed && <span className="font-body text-warn text-label flex items-center gap-0.5"><Flag size={9} strokeWidth={2} />{flag.reason}</span>}
       {!signed && !flag && (
        <button type="button" onClick={() => setChecklistSigned(p => ({...p, [item.key]: new Date().toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' })}))}
-        className="flex items-center justify-center w-10 h-10 rounded-full border-2 border-rule2 bg-stone3 hover:border-ghost transition-colors cursor-pointer flex-shrink-0"
+        className="flex items-center justify-center w-10 h-10 rounded-full border-2 border-rule2 bg-stone3 hover:border-muted transition-colors cursor-pointer flex-shrink-0"
         aria-label={`Mark ${item.label} complete`}>
         <Check size={18} strokeWidth={2} className="text-ink" />
        </button>
@@ -1618,9 +1615,9 @@ export default function ShiftIQ() {
       {!signed && !flag && (
        <div className="relative">
         <button type="button" onClick={() => showFlagForm ? setFlagForm(p => { const n = {...p}; delete n[item.key]; return n }) : setFlagForm(p => ({...p, [item.key]: { reason:'', note:'' }}))} 
-         className="flex items-center justify-center w-10 h-10 rounded-full border-2 border-rule2 hover:border-ghost transition-colors cursor-pointer flex-shrink-0"
+         className="flex items-center justify-center w-10 h-10 rounded-full border-2 border-rule2 hover:border-muted transition-colors cursor-pointer flex-shrink-0"
          aria-label={showFlagForm ? 'Close flag selector' : `Flag ${item.label}`}>
-         {showFlagForm ? <X size={18} strokeWidth={2} className="text-ink" /> : <Flag size={18} strokeWidth={2} className="text-ghost" />}
+         {showFlagForm ? <X size={18} strokeWidth={2} className="text-ink" /> : <Flag size={18} strokeWidth={2} className="text-muted" />}
         </button>
         {showFlagForm && (
          <div className="absolute top-0 right-0 flex items-center gap-1 bg-stone border border-rule2 rounded-md px-2 py-1 shadow-raise z-10">
@@ -1661,11 +1658,11 @@ export default function ShiftIQ() {
     </div>
     {showEmpForm && (
      <div className="pb-2 px-1 space-y-1.5 slide-in">
-     <div className="font-body text-ghost text-[12px] tracking-normal">Swab result required</div>
+     <div className="font-body text-muted text-label tracking-normal">Swab result required</div>
      <div className="flex gap-2">
       {['negative','positive'].map(r => (
       <button type="button" key={r} onClick={() => setEmpForm(p => ({...p, [item.key]: {...p[item.key], result: r}}))}
-       className={`font-body font-medium text-[12px] px-2 py-1 rounded-btn transition-colors ${empForm[item.key]?.result === r ? (r === 'negative' ? 'bg-ok text-white' : 'bg-danger text-white') : 'bg-stone3 text-muted'}`}>
+       className={`font-body font-medium text-label px-2 py-1 rounded-btn transition-colors ${empForm[item.key]?.result === r ? (r === 'negative' ? 'bg-ok text-white' : 'bg-danger text-white') : 'bg-stone3 text-muted'}`}>
        {r.charAt(0).toUpperCase() + r.slice(1)}
       </button>
       ))}
@@ -1673,7 +1670,7 @@ export default function ShiftIQ() {
       <input aria-label="CFU count" placeholder="CFU count" type="number"
        value={empForm[item.key]?.cfu || ''}
        onChange={e => setEmpForm(p => ({...p, [item.key]: {...p[item.key], cfu: e.target.value}}))}
-       className="w-20 font-body text-ink text-[12px] bg-stone border border-rule2 px-2 py-0.5" />
+       className="w-20 font-body text-ink text-label bg-stone border border-rule2 px-2 py-0.5" />
       )}
      </div>
      {empForm[item.key]?.result && (
@@ -1693,12 +1690,12 @@ export default function ShiftIQ() {
 
  {/* Dismiss undo toasts */}
  {[...pendingDismiss.entries()].map(([id, { title }]) => (
-  <div key={id} className="fixed bottom-4 left-[calc(240px+1rem)] z-[70]">
+  <div key={id} className="fixed bottom-4 left-[calc(240px+1rem)] z-toast">
    <div className="flex flex-col bg-ink border border-ink2 slide-in overflow-hidden">
     <div className="flex items-center gap-4 px-4 py-2.5">
-     <span className="font-body text-stone text-[13px] flex-1 min-w-0 truncate">Dismissed: {title}</span>
+     <span className="font-body text-stone text-label flex-1 min-w-0 truncate">Dismissed: {title}</span>
      <button type="button" onClick={() => handleUndoDismiss(id)}
-      className="font-body font-medium text-[13px] text-ochre hover:text-ochre/80 flex-shrink-0 transition-colors min-h-[44px] px-2">
+      className="font-body font-medium text-label text-ochre hover:text-ochre/80 flex-shrink-0 transition-colors min-h-[44px] px-2">
       Undo
      </button>
     </div>

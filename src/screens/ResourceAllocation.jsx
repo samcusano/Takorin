@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { AlertTriangle, CheckCircle, ShieldAlert, RotateCcw, Bot, User, ArrowRight } from 'lucide-react'
-import { PageHead, SecHd, StatusPill, ActionBanner, Btn } from '../components/UI'
+import { PageHead, StatusPill, ActionBanner, Btn } from '../components/UI'
 import { taskAllocationData } from '../data'
 import { useAppState } from '../context/AppState'
 
@@ -15,7 +15,7 @@ function AssigneeTag({ assignee }) {
   const Icon = noBackup ? AlertTriangle : isRobot ? Bot : User
 
   return (
-    <div className={`inline-flex items-center gap-1.5 font-body text-[13px] px-2 py-0.5 border ${
+    <div className={`inline-flex items-center gap-1.5 font-body text-label px-2 py-0.5 border ${
       noBackup   ? 'bg-danger/[0.04] border-danger/30 text-danger'
       : certGap  ? 'bg-warn/10 border-warn/30 text-warn'
       : isRobot  ? 'bg-ochre/10 border-ochre/30 text-ochre'
@@ -23,9 +23,9 @@ function AssigneeTag({ assignee }) {
     }`}>
       <Icon size={10} strokeWidth={1.75} className="flex-shrink-0" />
       <span>{assignee.name}</span>
-      {certGap && !noBackup && <span className="text-[12px] opacity-70">· cert gap</span>}
+      {certGap && !noBackup && <span className="text-label opacity-70">· cert gap</span>}
       {!isRobot && !noBackup && assignee.cert && (
-        <span className="text-[12px] opacity-60">{assignee.cert}</span>
+        <span className="text-label opacity-60">{assignee.cert}</span>
       )}
     </div>
   )
@@ -54,23 +54,23 @@ function ImpactPreview({ task, onConfirm, onCancel }) {
     <div className="fixed inset-0 bg-ink/30 z-40 flex items-center justify-center p-6">
       <div className="bg-stone border border-rule2 w-full max-w-md shadow-raise slide-in">
         <div className="px-5 py-4 border-b border-rule2 bg-stone2">
-          <div className="font-body text-ghost text-[12px] tracking-normal mb-1">Reallocation preview</div>
-          <div className="font-display font-bold text-ink text-[15px]">{task.label} — {task.line}</div>
+          <div className="font-body text-muted text-label tracking-normal mb-1">Reallocation preview</div>
+          <div className="font-display font-bold text-ink text-base">{task.label} — {task.line}</div>
         </div>
 
         <div className="px-5 py-4 space-y-4">
           {/* Current → New */}
           <div className="flex items-center gap-3">
             <AssigneeTag assignee={task.assignedTo} />
-            <ArrowRight size={14} className="text-ghost flex-shrink-0" />
+            <ArrowRight size={14} className="text-muted flex-shrink-0" />
             <AssigneeTag assignee={newPrimary} />
           </div>
 
           {/* Downstream effects */}
           <div className="space-y-2">
-            <div className="font-body text-ghost text-[12px] tracking-normal">If you confirm — downstream effects</div>
+            <div className="font-body text-muted text-label tracking-normal">If you confirm — downstream effects</div>
             {effects.map((e, i) => (
-              <div key={i} className={`flex items-start gap-2 font-body text-[13px] ${
+              <div key={i} className={`flex items-start gap-2 font-body text-label ${
                 e.startsWith('⚠') ? 'text-warn' : e.includes('single point') ? 'text-danger' : 'text-muted'
               }`}>
                 <span className="mt-0.5 flex-shrink-0">{e.startsWith('⚠') ? '⚠' : '·'}</span>
@@ -81,8 +81,8 @@ function ImpactPreview({ task, onConfirm, onCancel }) {
 
           {newPrimary.certGap && (
             <div className="px-3 py-2 bg-warn/[0.08] border-l-2 border-l-warn">
-              <p className="font-body text-[13px] text-warn font-medium">Cert gap will raise shift risk score</p>
-              <p className="font-body text-[13px] text-muted mt-0.5">
+              <p className="font-body text-label text-warn font-medium">Cert gap will raise shift risk score</p>
+              <p className="font-body text-label text-muted mt-0.5">
                 Consider assigning a certified backup before confirming.
               </p>
             </div>
@@ -108,15 +108,15 @@ function TaskRow({ task, reallocated, onPreviewReallocate }) {
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
           {isGap && <AlertTriangle size={11} className="text-danger flex-shrink-0" />}
-          <span className="font-body font-medium text-ink text-[14px]">{task.label}</span>
-          <span className="font-body text-ghost text-[12px]">{task.line}</span>
+          <span className="font-body font-medium text-ink text-body">{task.label}</span>
+          <span className="font-body text-muted text-label">{task.line}</span>
         </div>
       </div>
       <div className="flex items-center gap-2 flex-shrink-0 w-48">
         <AssigneeTag assignee={task.assignedTo} />
       </div>
       <div className="flex items-center gap-2 flex-shrink-0 w-52">
-        <span className="font-body text-ghost text-[12px]">→</span>
+        <span className="font-body text-muted text-label">→</span>
         <AssigneeTag assignee={task.fallback} />
       </div>
       <div className="flex-shrink-0">
@@ -126,7 +126,7 @@ function TaskRow({ task, reallocated, onPreviewReallocate }) {
           <button
             type="button"
             onClick={() => onPreviewReallocate(task)}
-            className="font-body text-[13px] text-muted hover:text-ink border border-rule2 hover:border-rule px-2.5 py-1 transition-colors"
+            className="font-body text-label text-muted hover:text-ink border border-rule2 hover:border-rule px-2.5 py-1 transition-colors"
           >
             Reallocate
           </button>
@@ -150,13 +150,13 @@ function SafetyZoneRow({ zone }) {
     <div className="flex items-start gap-4 px-5 py-3 border-b border-rule2 last:border-0">
       <StatusPill tone={t.chip}>{t.label}</StatusPill>
       <div className="flex-1">
-        <div className="font-body font-medium text-ink text-[14px]">{zone.label}</div>
-        <div className="font-body text-ghost text-[12px] mt-0.5 leading-relaxed">
+        <div className="font-body font-medium text-ink text-body">{zone.label}</div>
+        <div className="font-body text-muted text-label mt-0.5 leading-relaxed">
           {zone.type === 'restricted' ? 'Restricted' : 'Collaborative'} · {zone.humanCertRequired} required
           · {zone.speedReduction} · {zone.emergencyStop}
         </div>
         {zone.note && (
-          <div className="font-body text-warn text-[12px] mt-0.5">{zone.note}</div>
+          <div className="font-body text-warn text-label mt-0.5">{zone.note}</div>
         )}
       </div>
     </div>
@@ -224,11 +224,11 @@ export default function ResourceAllocation() {
           { label: 'Cert gaps',     value: String(certGapCount), sub: 'fallback has cert mismatch', fill: null, tone: 'warn'   },
         ].map(s => (
           <div key={s.label} className="flex-1 px-5 py-4 border-r border-rule2 last:border-0">
-            <div className="font-body text-ghost text-[12px] tracking-normal mb-1">{s.label}</div>
-            <div className={`display-num text-[28px] leading-none ${
+            <div className="font-body text-muted text-label tracking-normal mb-1">{s.label}</div>
+            <div className={`display-num text-metric leading-none ${
               s.tone === 'danger' ? 'text-danger' : s.tone === 'warn' ? 'text-warn' : 'text-ink'
             }`}>{s.value}</div>
-            <div className="font-body text-ghost text-[12px] mt-0.5">{s.sub}</div>
+            <div className="font-body text-muted text-label mt-0.5">{s.sub}</div>
           </div>
         ))}
       </div>
@@ -240,10 +240,10 @@ export default function ResourceAllocation() {
             key={t.id}
             type="button"
             onClick={() => setTab(t.id)}
-            className={`font-body text-[13px] px-4 py-2.5 border-b-2 transition-colors ${
+            className={`font-body text-label px-4 py-2.5 border-b-2 transition-colors ${
               tab === t.id
                 ? 'border-b-ochre text-ink font-medium'
-                : 'border-b-transparent text-ghost hover:text-muted'
+                : 'border-b-transparent text-muted hover:text-muted'
             }`}
           >
             {t.label}
@@ -257,10 +257,10 @@ export default function ResourceAllocation() {
         {tab === 'matrix' && (
           <div>
             <div className="flex items-center gap-5 px-5 py-2 bg-stone2 border-b border-rule2">
-              <span className="font-body text-ghost text-[12px] tracking-normal flex-1">Task</span>
-              <span className="font-body text-ghost text-[12px] tracking-normal w-48">Primary</span>
-              <span className="font-body text-ghost text-[12px] tracking-normal w-52">Fallback</span>
-              <span className="font-body text-ghost text-[12px] tracking-normal w-20">Action</span>
+              <span className="font-body text-muted text-label tracking-normal flex-1">Task</span>
+              <span className="font-body text-muted text-label tracking-normal w-48">Primary</span>
+              <span className="font-body text-muted text-label tracking-normal w-52">Fallback</span>
+              <span className="font-body text-muted text-label tracking-normal w-20">Action</span>
             </div>
             {tasks.map(task => (
               <TaskRow
@@ -271,7 +271,7 @@ export default function ResourceAllocation() {
               />
             ))}
             <div className="flex items-center gap-5 px-5 py-2.5 bg-stone2 border-t border-rule2">
-              <div className="flex items-center gap-4 text-[12px] font-body text-ghost">
+              <div className="flex items-center gap-4 text-label font-body text-muted">
                 <div className="flex items-center gap-1.5"><Bot size={10} className="text-ochre" /><span className="text-ochre">Robot primary</span></div>
                 <div className="flex items-center gap-1.5"><User size={10} /><span>Human primary</span></div>
                 <div className="flex items-center gap-1.5"><AlertTriangle size={10} className="text-danger" /><span className="text-danger">No qualified backup</span></div>
@@ -285,7 +285,7 @@ export default function ResourceAllocation() {
         {tab === 'safety' && (
           <div>
             <div className="px-5 py-3 border-b border-rule2 bg-stone2">
-              <p className="font-body text-muted text-[14px]">
+              <p className="font-body text-muted text-body">
                 Collaborative zones reduce robot speed when humans are present. Restricted zones require full robot stop before human entry.
               </p>
             </div>
@@ -302,21 +302,21 @@ export default function ResourceAllocation() {
         {tab === 'redundancy' && (
           <div>
             <div className="px-5 py-3 border-b border-rule2 bg-stone2">
-              <p className="font-body text-muted text-[14px]">
+              <p className="font-body text-muted text-body">
                 For each critical task, both a human and a robot backup must be available. Red = single point of failure.
               </p>
             </div>
             <div className="grid grid-cols-[1fr_80px_80px_88px] px-5 py-2 bg-stone2 border-b border-rule2 gap-4">
-              <span className="font-body text-ghost text-[12px] tracking-normal">Task</span>
-              <span className="font-body text-ghost text-[12px] tracking-normal text-center">Human</span>
-              <span className="font-body text-ghost text-[12px] tracking-normal text-center">Robot</span>
-              <span className="font-body text-ghost text-[12px] tracking-normal text-center">Status</span>
+              <span className="font-body text-muted text-label tracking-normal">Task</span>
+              <span className="font-body text-muted text-label tracking-normal text-center">Human</span>
+              <span className="font-body text-muted text-label tracking-normal text-center">Robot</span>
+              <span className="font-body text-muted text-label tracking-normal text-center">Status</span>
             </div>
             {redundancyMap.map((row, i) => (
               <div key={i} className={`grid grid-cols-[1fr_80px_80px_88px] px-5 py-3 border-b border-rule2 last:border-0 gap-4 ${row.status === 'danger' ? 'bg-danger/[0.015]' : ''}`}>
                 <div>
-                  <div className="font-body font-medium text-ink text-[14px]">{row.task}</div>
-                  {row.note && <div className="font-body text-danger text-[12px] mt-0.5">{row.note}</div>}
+                  <div className="font-body font-medium text-ink text-body">{row.task}</div>
+                  {row.note && <div className="font-body text-danger text-label mt-0.5">{row.note}</div>}
                 </div>
                 <div className="flex justify-center items-center">
                   {row.humanCover
@@ -342,7 +342,7 @@ export default function ResourceAllocation() {
         {tab === 'overrides' && (
           <div>
             <div className="px-5 py-3 border-b border-rule2 bg-stone2">
-              <p className="font-body text-muted text-[14px]">
+              <p className="font-body text-muted text-body">
                 Human-robot overrides are logged here. Patterns (same operator + robot repeatedly) surface as ShiftIQ findings.
               </p>
             </div>
@@ -351,25 +351,25 @@ export default function ResourceAllocation() {
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
                     <RotateCcw size={12} className="text-warn flex-shrink-0" strokeWidth={1.75} />
-                    <span className="font-body font-medium text-ink text-[14px]">{entry.action}</span>
+                    <span className="font-body font-medium text-ink text-body">{entry.action}</span>
                   </div>
-                  <span className="font-body text-ghost text-[12px]">{entry.timestamp}</span>
+                  <span className="font-body text-muted text-label">{entry.timestamp}</span>
                 </div>
                 <div className="grid grid-cols-3 gap-4 mb-2">
                   <div>
-                    <div className="font-body text-ghost text-[12px] tracking-normal mb-0.5">Operator</div>
-                    <div className="font-body text-ink text-[13px]">{entry.operator}</div>
+                    <div className="font-body text-muted text-label tracking-normal mb-0.5">Operator</div>
+                    <div className="font-body text-ink text-label">{entry.operator}</div>
                   </div>
                   <div>
-                    <div className="font-body text-ghost text-[12px] tracking-normal mb-0.5">Robot</div>
-                    <div className="font-body text-ochre text-[13px]">{entry.robotName} ({entry.robotId})</div>
+                    <div className="font-body text-muted text-label tracking-normal mb-0.5">Robot</div>
+                    <div className="font-body text-ochre text-label">{entry.robotName} ({entry.robotId})</div>
                   </div>
                   <div>
-                    <div className="font-body text-ghost text-[12px] tracking-normal mb-0.5">Outcome</div>
-                    <div className="font-body text-ok text-[13px]">{entry.outcome}</div>
+                    <div className="font-body text-muted text-label tracking-normal mb-0.5">Outcome</div>
+                    <div className="font-body text-ok text-label">{entry.outcome}</div>
                   </div>
                 </div>
-                <div className="font-body text-muted text-[13px] italic">{entry.reason}</div>
+                <div className="font-body text-muted text-label italic">{entry.reason}</div>
               </div>
             ))}
           </div>

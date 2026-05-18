@@ -4,7 +4,7 @@ const DOT_COLORS = {
  now: 'bg-danger',
  warn: 'bg-warn',
  ok: 'bg-ok',
- idle: 'bg-ghost',
+ idle: 'bg-muted',
 }
 
 function renderBold(text) {
@@ -39,23 +39,23 @@ export default function AgentTimeline({ events, sparkData }) {
  title={d.label}
  />
  ))}
- <span className="font-body text-[12px] text-ghost ml-2 self-center whitespace-nowrap">
+ <span className="font-body text-label text-muted ml-2 self-center whitespace-nowrap">
  Risk score trajectory
  </span>
  </div>
  )}
  {events.map((ev, i) => (
  <div key={i} className="flex gap-2.5 px-3 py-2 border-b border-rule last:border-0">
- <div className="font-body text-[12px] text-ghost w-11 flex-shrink-0 mt-1">
+ <div className="font-body text-label text-muted w-11 flex-shrink-0 mt-1">
  {ev.time}
  </div>
  <div className={`w-2 h-2 rounded-full flex-shrink-0 mt-1.5 ${DOT_COLORS[ev.dotType] || DOT_COLORS.idle}`} />
  <div className="flex-1 min-w-0">
- <p className="font-body text-[13px] text-muted leading-relaxed">
+ <p className="font-body text-label text-muted leading-relaxed">
  {renderBold(ev.text)}
  </p>
  {ev.delta && (
- <span className={`font-display text-xs font-bold ${ev.deltaColor || 'text-ghost'}`}>
+ <span className={`font-display text-xs font-bold ${ev.deltaColor || 'text-muted'}`}>
  {ev.delta}
  </span>
  )}

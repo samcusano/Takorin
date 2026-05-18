@@ -18,12 +18,12 @@ function PatternDots({ dots }) {
 }
 
 const TREND_ICON = { up: <TrendingUp size={13} />, down: <TrendingDown size={13} />, flat: <Minus size={13} /> }
-const TREND_COLOR = { up: 'text-danger', down: 'text-ok', flat: 'text-ghost' }
+const TREND_COLOR = { up: 'text-danger', down: 'text-ok', flat: 'text-muted' }
 
 export default function PatternMatrix({ rows }) {
  return (
  <div>
- <div className="flex items-center gap-4 px-4 py-2 border-b border-rule bg-stone2 text-[12px] font-body text-ghost">
+ <div className="flex items-center gap-4 px-4 py-2 border-b border-rule bg-stone2 text-label font-body text-muted">
  <div className="flex items-center gap-1">
  {['d4','d3','d2','d1'].map(d => <div key={d} className={`w-2 h-2 rounded-[2px] ${DOT_CLASSES[d]}`} />)}
  <span className="ml-1">Critical</span>
@@ -51,17 +51,17 @@ export default function PatternMatrix({ rows }) {
  >
  <div className="px-4 py-2.5">
  <div className="font-body text-xs font-medium text-ink">{row.label}</div>
- {row.sub && <div className="font-body text-[12px] text-ghost mt-0.5">{row.sub}</div>}
+ {row.sub && <div className="font-body text-label text-muted mt-0.5">{row.sub}</div>}
  </div>
  <PatternDots dots={row.dots} />
  {row.trend ? (
  <div className="px-3 text-center">
- <div className={`font-body text-[15px] font-medium ${TREND_COLOR[row.trend]}`}>{TREND_ICON[row.trend]}</div>
- {row.trendLabel && <div className="font-body text-ghost text-[12px] whitespace-nowrap">{row.trendLabel}</div>}
+ <div className={`font-body text-base font-medium ${TREND_COLOR[row.trend]}`}>{TREND_ICON[row.trend]}</div>
+ {row.trendLabel && <div className="font-body text-muted text-label whitespace-nowrap">{row.trendLabel}</div>}
  </div>
  ) : <div className="px-3" />}
  <div className={`font-display text-base font-bold tracking-tight px-4 text-right ${
- row.critical ? 'text-danger' : row.warn ? 'text-warn' : 'text-ghost'
+ row.critical ? 'text-danger' : row.warn ? 'text-warn' : 'text-muted'
  }`}>
  {row.count}
  </div>

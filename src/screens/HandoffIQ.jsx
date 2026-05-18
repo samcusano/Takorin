@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { handoffData, certExpiry, haccpData, robotFleetData } from '../data'
-import { Btn, ActionBanner, PersonAvatar, AcceptanceGate, CarryForwardItem, SlidePanel, SecHd, StatusPill } from '../components/UI'
+import { Btn, ActionBanner, PersonAvatar, AcceptanceGate, CarryForwardItem, SlidePanel, StatusPill } from '../components/UI'
 import StatBar from '../components/StatBar.jsx'
 import { Check, AlertTriangle, Clock, Brain, Bot, CheckCircle, Cpu } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
@@ -10,7 +10,7 @@ const FINDING_TO_CASE = { sf1: 'I.', sf2: 'II.', sf3: 'II.' }
 
 function CarryForwardDetailPanel({ item, onClose }) {
  if (!item) return null
- const accentColor = item.urgency === 'danger' ? '#C43820' : '#C4920A'
+ const accentColor = item.urgency === 'danger' ? 'var(--color-danger)' : 'var(--color-warn)'
  return (
   <SlidePanel
    title={item.title}
@@ -21,21 +21,21 @@ function CarryForwardDetailPanel({ item, onClose }) {
    footer={<Btn variant="secondary" onClick={onClose}>Close</Btn>}
   >
    <div>
-    <div className="font-body text-ghost text-[12px] mb-1">Operational impact</div>
-    <div className="font-body text-ink text-[14px] leading-relaxed">{item.operationalImpact}</div>
+    <div className="font-body text-muted text-label mb-1">Operational impact</div>
+    <div className="font-body text-ink text-body leading-relaxed">{item.operationalImpact}</div>
    </div>
    <div>
-    <div className="font-body text-ghost text-[12px] mb-1">Context from outgoing supervisor</div>
-    <div className="font-body text-ink2 text-[14px] leading-relaxed">{item.ownerContext}</div>
+    <div className="font-body text-muted text-label mb-1">Context from outgoing supervisor</div>
+    <div className="font-body text-ink2 text-body leading-relaxed">{item.ownerContext}</div>
    </div>
    <div>
-    <div className="font-body text-ghost text-[12px] mb-1">Recommended action for incoming shift</div>
-    <div className="font-body text-ink text-[14px] leading-relaxed">{item.recommendedAction}</div>
+    <div className="font-body text-muted text-label mb-1">Recommended action for incoming shift</div>
+    <div className="font-body text-ink text-body leading-relaxed">{item.recommendedAction}</div>
    </div>
    {item.resolvedInShift && (
     <div className="flex items-center gap-2 p-3 bg-ok/10 border border-ok/20">
      <Check size={12} strokeWidth={2} className="text-ok flex-shrink-0" />
-     <span className="font-body text-ok text-[13px]">
+     <span className="font-body text-ok text-label">
       Actioned this shift — verify completion and confirm before accepting handoff
      </span>
     </div>
@@ -54,17 +54,17 @@ function ForecastRow({ row }) {
  })
  return (
   <div className={`flex border-b border-rule2 last:border-b-0 min-h-[46px] ${hasConflict ? 'bg-danger/[0.03]' : ''}`}>
-   <div className="w-[72px] flex-shrink-0 px-3 py-2.5 border-r border-rule2 font-body text-ghost text-[12px] leading-relaxed whitespace-pre-line">{row.time}</div>
+   <div className="w-[72px] flex-shrink-0 px-3 py-2.5 border-r border-rule2 font-body text-muted text-label leading-relaxed whitespace-pre-line">{row.time}</div>
    <div className={`w-10 flex-shrink-0 px-2 pt-2.5 display-num text-lg ${scoreColor}`}>{row.score}</div>
    <div className="flex-1 px-3 py-2.5">
-    <div className="font-body font-medium text-ink text-[14px] mb-1">{row.name}</div>
+    <div className="font-body font-medium text-ink text-body mb-1">{row.name}</div>
     <div className="flex gap-1.5 flex-wrap mb-1">
      {signals.map((s, i) => {
       const cls = s.tone === 'ok' ? 'text-ok bg-ok/10' : (s.tone === 'bad' || s.tone === 'danger') ? 'text-danger bg-danger/[0.04]' : 'text-warn bg-warn/10'
-      return <span key={i} className={`font-body text-[12px] px-1.5 py-px rounded-btn ${cls}`}>{s.label}</span>
+      return <span key={i} className={`font-body text-label px-1.5 py-px rounded-btn ${cls}`}>{s.label}</span>
      })}
     </div>
-    {row.action && <p className={`font-body text-[12px] ${hasConflict ? 'text-warn' : 'text-ghost'}`}>{row.action}</p>}
+    {row.action && <p className={`font-body text-label ${hasConflict ? 'text-warn' : 'text-muted'}`}>{row.action}</p>}
    </div>
   </div>
  )
@@ -109,7 +109,7 @@ function LayoutGrid({ d, signed, setSigned, currentPlant, carryForwardItems, ack
        <button
         type="button"
         onClick={() => setSigned(true)}
-        className="font-body font-medium text-[14px] px-4 py-2.5 min-h-[40px] inline-flex items-center gap-2 border border-warn/40 bg-warn/10 text-warn hover:bg-warn/20 transition-colors rounded-btn"
+        className="font-body font-medium text-body px-4 py-2.5 min-h-[40px] inline-flex items-center gap-2 border border-warn/40 bg-warn/10 text-warn hover:bg-warn/20 transition-colors rounded-btn"
        >
         Acknowledge data gaps and sign
        </button>
@@ -123,14 +123,14 @@ function LayoutGrid({ d, signed, setSigned, currentPlant, carryForwardItems, ack
     <div className="flex items-center gap-3 px-5 py-4 bg-ok/[0.08] border-b-2 border-b-ok flex-shrink-0">
      <Check size={16} strokeWidth={2.5} className="text-ok flex-shrink-0" />
      <div>
-      <div className="font-body font-semibold text-ok text-[15px]">Shift accepted by M. Santos</div>
-      <div className="font-body text-ok/70 text-[13px] mt-0.5">Handoff complete · Line 4 · April 16, 14:02 · HO-2604161</div>
+      <div className="font-body font-semibold text-ok text-base">Shift accepted by M. Santos</div>
+      <div className="font-body text-ok/70 text-label mt-0.5">Handoff complete · Line 4 · April 16, 14:02 · HO-2604161</div>
      </div>
     </div>
    ) : signed && allAcknowledged ? (
     <div className="flex items-center gap-3 px-4 py-3 bg-ok/10 border-b border-ok/20 flex-shrink-0">
      <Check size={12} strokeWidth={2} className="text-ok flex-shrink-0" />
-     <span className="font-body text-ok text-[14px]">Ready to accept · All carry-forward items acknowledged</span>
+     <span className="font-body text-ok text-body">Ready to accept · All carry-forward items acknowledged</span>
     </div>
    ) : null}
 
@@ -148,12 +148,12 @@ function LayoutGrid({ d, signed, setSigned, currentPlant, carryForwardItems, ack
     {/* Left: carry-forward queue */}
     <div className="w-[55%] border-r border-rule2 flex flex-col">
      <div className="px-4 py-2.5 bg-stone2 border-b border-rule2 flex-shrink-0">
-      <div className="font-body font-medium text-ink text-[14px]">
+      <div className="font-body font-medium text-ink text-body">
        Carry-forward items ({acknowledgedCount}/{carryForwardCount} acknowledged)
       </div>
       <div className="flex items-center gap-1.5 mt-0.5">
-       <Brain size={9} strokeWidth={1.75} className="text-ghost flex-shrink-0" />
-       <span className="font-body text-ghost text-[12px]">
+       <Brain size={9} strokeWidth={1.75} className="text-muted flex-shrink-0" />
+       <span className="font-body text-muted text-label">
         <span className="text-muted font-medium">91%</span>
         {' '}overall synthesis confidence · urgency from shift findings and cert records
        </span>
@@ -161,7 +161,7 @@ function LayoutGrid({ d, signed, setSigned, currentPlant, carryForwardItems, ack
      </div>
      {/* Stale data warning — per source */}
      <div className="px-4 py-2 bg-warn/[0.05] border-b border-rule2 flex-shrink-0">
-      <div className="font-body text-ghost text-[12px] tracking-normal mb-1.5">Data freshness — verify stale items before signing</div>
+      <div className="font-body text-muted text-label tracking-normal mb-1.5">Data freshness — verify stale items before signing</div>
       {[
        { source: 'Sensor A-7', age: '8 min', tone: 'ok' },
        { source: 'CAPA-2604-001', age: '22 min', tone: 'ok' },
@@ -170,13 +170,13 @@ function LayoutGrid({ d, signed, setSigned, currentPlant, carryForwardItems, ack
       ].map(s => (
        <div key={s.source} className="flex items-center gap-2 mb-1">
         <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${s.tone === 'ok' ? 'bg-ok' : 'bg-warn'}`} />
-        <span className="font-body text-muted text-[12px] flex-1">{s.source}</span>
-        <span className={`font-body text-[12px] ${s.stale ? 'text-warn font-medium' : 'text-ghost'}`}>
+        <span className="font-body text-muted text-label flex-1">{s.source}</span>
+        <span className={`font-body text-label ${s.stale ? 'text-warn font-medium' : 'text-muted'}`}>
          {s.age}{s.stale ? ' ⚠' : ''}
         </span>
        </div>
       ))}
-      <p className="font-body text-warn text-[12px] mt-1">
+      <p className="font-body text-warn text-label mt-1">
        Lindqvist cert status is stale — verify manually before signing.
       </p>
      </div>
@@ -190,7 +190,7 @@ function LayoutGrid({ d, signed, setSigned, currentPlant, carryForwardItems, ack
         onView={() => setViewingItem(item)}
        />
       )) : (
-       <div className="px-4 py-8 text-center font-body text-ghost text-[13px]">
+       <div className="px-4 py-8 text-center font-body text-muted text-label">
         No carry-forward items · shift handed off cleanly
        </div>
       )}
@@ -201,58 +201,58 @@ function LayoutGrid({ d, signed, setSigned, currentPlant, carryForwardItems, ack
     <div className="w-[45%] overflow-y-auto flex flex-col">
      {/* Shift notes */}
      <div className="border-b border-rule2">
-      <div className="px-4 py-2.5 border-b border-rule2 font-body font-medium text-ink text-[14px]">Shift notes</div>
+      <div className="px-4 py-2.5 border-b border-rule2 font-body font-medium text-ink text-body">Shift notes</div>
       <div className="px-4 pt-3 pb-1">
        <div className="flex items-center gap-2 mb-3">
         <PersonAvatar name={d.shiftNotes.author} size={20} />
         <div>
-         <span className="font-body font-medium text-ink text-[13px]">{d.shiftNotes.author}</span>
-         <span className="font-body text-ghost text-[12px] ml-1.5">{d.shiftNotes.time}</span>
+         <span className="font-body font-medium text-ink text-label">{d.shiftNotes.author}</span>
+         <span className="font-body text-muted text-label ml-1.5">{d.shiftNotes.time}</span>
         </div>
        </div>
        <ul className="space-y-2 pb-3">
         {d.shiftNotes.body.map((note, i) => (
          <li key={i} className="flex items-start gap-2">
-          <div className="w-1 h-1 rounded-full bg-ghost flex-shrink-0 mt-1.5" />
-          <span className="font-body text-ink2 text-[13px] leading-relaxed">{note}</span>
+          <div className="w-1 h-1 rounded-full bg-muted flex-shrink-0 mt-1.5" />
+          <span className="font-body text-ink2 text-label leading-relaxed">{note}</span>
          </li>
         ))}
        </ul>
       </div>
      </div>
      <div className="border-b border-rule2">
-      <div className="px-4 py-2.5 border-b border-rule2 font-body font-medium text-ink text-[14px]">Operator briefing</div>
+      <div className="px-4 py-2.5 border-b border-rule2 font-body font-medium text-ink text-body">Operator briefing</div>
       <div className="flex items-center gap-2.5 px-4 py-3 border-b border-rule2">
        <PersonAvatar name="M. Santos" size={26} />
        <div>
-        <div className="font-body font-medium text-ink text-[14px]">M. Santos — Incoming PM supervisor</div>
-        <div className="font-body text-ghost text-[12px]">Line 4 · 14:00–22:00</div>
+        <div className="font-body font-medium text-ink text-body">M. Santos — Incoming PM supervisor</div>
+        <div className="font-body text-muted text-label">Line 4 · 14:00–22:00</div>
        </div>
       </div>
       {haccpData.ccps.map((ccp, i) => (
        <div key={i} className="flex gap-3 px-4 py-2.5 border-b border-rule2 last:border-b-0">
         <AlertTriangle size={12} strokeWidth={2} className="text-warn flex-shrink-0 mt-0.5" />
         <div>
-         <div className="font-body font-medium text-ink text-[14px]">{ccp.station} · {ccp.ccp}</div>
-         <div className="font-body text-ghost text-[12px]">{ccp.limit}</div>
+         <div className="font-body font-medium text-ink text-body">{ccp.station} · {ccp.ccp}</div>
+         <div className="font-body text-muted text-label">{ccp.limit}</div>
         </div>
        </div>
       ))}
      </div>
      <div className="border-b border-rule2">
-      <div className="px-4 py-2.5 border-b border-rule2 font-body font-medium text-ink text-[14px]">Cert alerts</div>
+      <div className="px-4 py-2.5 border-b border-rule2 font-body font-medium text-ink text-body">Cert alerts</div>
       {certExpiry.filter(c => c.tone !== 'ok').map((c, i) => (
        <div key={i} className={`flex gap-3 px-4 py-2.5 border-b border-rule2 last:border-b-0 ${c.tone === 'danger' ? 'bg-danger/[0.03]' : ''}`}>
         <Clock size={12} strokeWidth={2} className={`flex-shrink-0 mt-0.5 ${c.tone === 'danger' ? 'text-danger' : 'text-warn'}`} />
         <div>
-         <div className={`font-body font-medium text-[14px] ${c.tone === 'danger' ? 'text-danger' : 'text-ink'}`}>{c.name} · {c.cert}</div>
-         <div className={`font-body text-[12px] ${c.tone === 'danger' ? 'text-danger/80' : 'text-ghost'}`}>{c.note}</div>
+         <div className={`font-body font-medium text-body ${c.tone === 'danger' ? 'text-danger' : 'text-ink'}`}>{c.name} · {c.cert}</div>
+         <div className={`font-body text-label ${c.tone === 'danger' ? 'text-danger/80' : 'text-muted'}`}>{c.note}</div>
         </div>
        </div>
       ))}
      </div>
      <div>
-      <div className="px-4 py-2.5 border-b border-rule2 font-body font-medium text-ink text-[14px]">Upcoming staffing</div>
+      <div className="px-4 py-2.5 border-b border-rule2 font-body font-medium text-ink text-body">Upcoming staffing</div>
       {d.forecast.map((row, i) => <ForecastRow key={i} row={row} />)}
      </div>
     </div>
@@ -286,10 +286,10 @@ function MachineStateHandoff() {
 
    {/* ── Header: eyebrow + title ─────────────────────────────────── */}
    <div className="flex-shrink-0 px-6 py-4 border-b border-rule2 bg-stone" style={{ borderLeft: '6px solid var(--color-ochre)' }}>
-    <div className="font-body font-semibold text-ghost text-[12px] tracking-normal mb-1.5">
+    <div className="font-body font-semibold text-muted text-label tracking-normal mb-1.5">
      Machine State Handoff · Robotic workforce · Wichita Plant
     </div>
-    <div className="font-display font-bold text-[36px] text-ink leading-none">
+    <div className="font-display font-bold text-page text-ink leading-none">
      Shift boundary <span className="font-light text-ochre">14:00</span>
     </div>
    </div>
@@ -297,18 +297,18 @@ function MachineStateHandoff() {
    {/* ── Stats strip — SupplierIQ pattern ───────────────────────── */}
    <div className="flex-shrink-0 flex items-center divide-x divide-rule2 border-b border-rule2 bg-stone">
     <div className="flex items-center gap-2.5 px-5 py-2.5">
-     <span className="font-body text-ghost text-[12px] tracking-normal">Online units</span>
-     <span className="display-num text-[28px] font-bold leading-none text-ok">{onlineCount}/{units.length}</span>
+     <span className="font-body text-muted text-label tracking-normal">Online units</span>
+     <span className="display-num text-metric font-bold leading-none text-ok">{onlineCount}/{units.length}</span>
     </div>
     <div className="flex items-center gap-2.5 px-5 py-2.5">
-     <span className="font-body text-ghost text-[12px] tracking-normal">Active faults</span>
-     <span className={`display-num text-[28px] font-bold leading-none ${faultCount > 0 ? 'text-danger' : 'text-ghost'}`}>{faultCount}</span>
-     {faultCount > 0 && <span className="font-body text-danger text-[12px]">blocking handoff</span>}
+     <span className="font-body text-muted text-label tracking-normal">Active faults</span>
+     <span className={`display-num text-metric font-bold leading-none ${faultCount > 0 ? 'text-danger' : 'text-muted'}`}>{faultCount}</span>
+     {faultCount > 0 && <span className="font-body text-danger text-label">blocking handoff</span>}
     </div>
     <div className="flex items-center gap-2.5 px-5 py-2.5">
-     <span className="font-body text-ghost text-[12px] tracking-normal">Pending maintenance</span>
-     <span className={`display-num text-[28px] font-bold leading-none ${pmCount > 0 ? 'text-warn' : 'text-ghost'}`}>{pmCount}</span>
-     {pmCount > 0 && <span className="font-body text-warn text-[12px]">≤ 24h window</span>}
+     <span className="font-body text-muted text-label tracking-normal">Pending maintenance</span>
+     <span className={`display-num text-metric font-bold leading-none ${pmCount > 0 ? 'text-warn' : 'text-muted'}`}>{pmCount}</span>
+     {pmCount > 0 && <span className="font-body text-warn text-label">≤ 24h window</span>}
     </div>
    </div>
 
@@ -316,10 +316,10 @@ function MachineStateHandoff() {
    <div className="flex-shrink-0 flex items-center gap-3 px-5 py-3 border-b border-rule2 bg-ochre/[0.06] border-b-2 border-b-ochre/30">
     <Cpu size={13} className="text-ochre flex-shrink-0" strokeWidth={1.75} />
     <div className="flex-1">
-     <span className="font-body font-semibold text-ink text-[14px]">Handoff Synthesis Agent — pre-populated from live fleet data</span>
-     <div className="font-body text-muted text-[12px] mt-0.5">4 items synthesized · 1 requires director review · Generated 13:15</div>
+     <span className="font-body font-semibold text-ink text-body">Handoff Synthesis Agent — pre-populated from live fleet data</span>
+     <div className="font-body text-muted text-label mt-0.5">4 items synthesized · 1 requires director review · Generated 13:15</div>
     </div>
-    <span className="font-body text-ochre text-[12px] px-2 py-0.5 bg-ochre/10 border border-ochre/30">Review &amp; validate</span>
+    <span className="font-body text-ochre text-label px-2 py-0.5 bg-ochre/10 border border-ochre/30">Review &amp; validate</span>
    </div>
 
    {/* ── Two-column body ─────────────────────────────────────────── */}
@@ -328,8 +328,8 @@ function MachineStateHandoff() {
     {/* Left: action items — faults + maintenance backlog */}
     <div className="w-[55%] border-r border-rule2 flex flex-col overflow-hidden">
      <div className="flex-shrink-0 px-5 py-2.5 border-b border-rule2 bg-stone2">
-      <span className="font-body font-bold text-ink text-[14px]">Action required</span>
-      {faultCount > 0 && <span className="ml-2 font-body text-danger text-[12px]">{faultCount} fault{faultCount > 1 ? 's' : ''} blocking handoff</span>}
+      <span className="font-body font-bold text-ink text-body">Action required</span>
+      {faultCount > 0 && <span className="ml-2 font-body text-danger text-label">{faultCount} fault{faultCount > 1 ? 's' : ''} blocking handoff</span>}
      </div>
      <div className="flex-1 overflow-y-auto">
       {faults.length > 0 && (
@@ -338,23 +338,23 @@ function MachineStateHandoff() {
          <div key={i} className={`flex items-start gap-4 px-5 py-3.5 border-b border-rule2 last:border-0 border-l-4 ${f.severity === 'danger' ? 'border-l-danger bg-danger/[0.03]' : 'border-l-warn bg-warn/[0.02]'}`}>
           <AlertTriangle size={13} className={`mt-0.5 flex-shrink-0 ${f.severity === 'danger' ? 'text-danger' : 'text-warn'}`} strokeWidth={1.75} />
           <div className="flex-1">
-           <div className={`font-body font-medium text-[14px] ${f.severity === 'danger' ? 'text-danger' : 'text-ink'}`}>{f.unit} — {f.fault}</div>
-           {f.techAssigned && <div className="font-body text-ghost text-[12px] mt-0.5">Tech: {f.techAssigned}{f.eta ? ` · ETA ${f.eta}` : ''}</div>}
+           <div className={`font-body font-medium text-body ${f.severity === 'danger' ? 'text-danger' : 'text-ink'}`}>{f.unit} — {f.fault}</div>
+           {f.techAssigned && <div className="font-body text-muted text-label mt-0.5">Tech: {f.techAssigned}{f.eta ? ` · ETA ${f.eta}` : ''}</div>}
           </div>
          </div>
         ))}
        </div>
       )}
       <div className="flex-shrink-0 px-5 py-2 border-b border-rule2 bg-stone2">
-       <span className="font-body text-ghost text-[12px] tracking-normal">Maintenance carry-forward</span>
+       <span className="font-body text-muted text-label tracking-normal">Maintenance carry-forward</span>
       </div>
       {BACKLOG.map((item, i) => {
        const borderCls  = item.urgency === 'danger' ? 'border-l-danger bg-danger/[0.02]' : item.urgency === 'warn' ? 'border-l-warn bg-warn/[0.015]' : 'border-l-rule2'
        const labelTone  = item.urgency === 'danger' ? 'text-danger' : item.urgency === 'warn' ? 'text-ink' : 'text-muted'
        return (
         <div key={i} className={`flex items-center gap-4 px-5 py-3.5 border-b border-rule2 border-l-2 ${borderCls}`}>
-         <span className="font-body text-[12px] w-10 flex-shrink-0 tabular-nums text-ghost">{item.unit}</span>
-         <span className={`font-body font-medium text-[14px] flex-1 ${labelTone}`}>{item.item}</span>
+         <span className="font-body text-label w-10 flex-shrink-0 tabular-nums text-muted">{item.unit}</span>
+         <span className={`font-body font-medium text-body flex-1 ${labelTone}`}>{item.item}</span>
          <StatusPill tone={item.urgency === 'danger' ? 'danger' : item.urgency === 'warn' ? 'warn' : 'muted'}>
           {item.urgency === 'danger' ? 'Critical' : item.urgency === 'warn' ? 'Attention' : 'Info'}
          </StatusPill>
@@ -367,25 +367,25 @@ function MachineStateHandoff() {
     {/* Right: fleet calibration & program state */}
     <div className="w-[45%] flex flex-col overflow-hidden">
      <div className="flex-shrink-0 px-5 py-2.5 border-b border-rule2 bg-stone2">
-      <span className="font-body font-bold text-ink text-[14px]">Fleet state</span>
+      <span className="font-body font-bold text-ink text-body">Fleet state</span>
      </div>
      <div className="flex-1 overflow-y-auto">
       {units.filter(u => u.status !== 'fault').map((u) => {
        const pmH   = u.maintenanceSchedule.remainingHours
-       const pmTone = pmH <= 8 ? 'text-danger' : pmH <= 24 ? 'text-warn' : 'text-ghost'
+       const pmTone = pmH <= 8 ? 'text-danger' : pmH <= 24 ? 'text-warn' : 'text-muted'
        return (
         <div key={u.id} className="flex items-center gap-4 px-5 py-3 border-b border-rule2 hover:bg-stone2 transition-colors">
          <div className="relative flex h-1.5 w-1.5 flex-shrink-0">
           {u.status === 'online' && <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-ok opacity-40" />}
           <span className={`relative inline-flex rounded-full h-1.5 w-1.5 ${u.status === 'online' ? 'bg-ok' : 'bg-warn'}`} />
          </div>
-         <span className="font-body font-medium text-muted text-[12px] w-10 flex-shrink-0 tabular-nums">{u.id}</span>
-         <span className="font-body font-medium text-ink text-[14px] flex-1">{u.name}</span>
-         <span className="font-body text-ghost text-[12px]">{u.programVersion}</span>
+         <span className="font-body font-medium text-muted text-label w-10 flex-shrink-0 tabular-nums">{u.id}</span>
+         <span className="font-body font-medium text-ink text-body flex-1">{u.name}</span>
+         <span className="font-body text-muted text-label">{u.programVersion}</span>
          <StatusPill tone={u.calibrationStatus === 'expired' ? 'danger' : 'ok'}>
           {u.calibrationStatus === 'expired' ? 'Cal expired' : 'Cal valid'}
          </StatusPill>
-         <span className={`font-body font-medium text-[13px] tabular-nums ${pmTone}`}>{pmH}h to PM</span>
+         <span className={`font-body font-medium text-label tabular-nums ${pmTone}`}>{pmH}h to PM</span>
         </div>
        )
       })}
@@ -402,13 +402,13 @@ function MachineStateHandoff() {
    }`}>
     {systemValidated
      ? <CheckCircle size={13} className="text-ok flex-shrink-0" strokeWidth={2} />
-     : <Cpu size={13} className="text-ghost flex-shrink-0" strokeWidth={1.75} />
+     : <Cpu size={13} className="text-muted flex-shrink-0" strokeWidth={1.75} />
     }
     <div className="flex-1">
-     <span className={`font-body font-semibold text-[14px] ${systemValidated ? 'text-ok' : 'text-ink'}`}>
+     <span className={`font-body font-semibold text-body ${systemValidated ? 'text-ok' : 'text-ink'}`}>
       System validation gate{systemValidated ? ' — complete' : ''}
      </span>
-     <div className="font-body text-muted text-[12px] mt-0.5">
+     <div className="font-body text-muted text-label mt-0.5">
       {systemValidated
        ? 'All 10 online units calibrated · 2 units in maintenance hold · Fault log reviewed · Handoff ready'
        : 'Automated check: all critical systems in documented state. No supervisor signature required in robotic mode.'
@@ -416,9 +416,9 @@ function MachineStateHandoff() {
      </div>
     </div>
     {systemValidated
-     ? <span className="font-body text-ok text-[12px] px-2 py-0.5 bg-ok/10 border border-ok/30 flex-shrink-0">Validated</span>
+     ? <span className="font-body text-ok text-label px-2 py-0.5 bg-ok/10 border border-ok/30 flex-shrink-0">Validated</span>
      : <button type="button" onClick={() => setSystemValidated(true)}
-        className="font-body font-medium text-[14px] px-4 py-2.5 min-h-[40px] bg-ink text-stone hover:bg-ink/90 transition-colors flex-shrink-0">
+        className="font-body font-medium text-body px-4 py-2.5 min-h-[40px] bg-ink text-stone hover:bg-ink/90 transition-colors flex-shrink-0">
         Run validation
        </button>
     }

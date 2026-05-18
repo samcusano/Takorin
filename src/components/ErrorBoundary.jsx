@@ -15,12 +15,12 @@ export default class ErrorBoundary extends Component {
  if (this.state.error) return (
  <div className="flex flex-col items-center justify-center h-full p-8 text-center">
  <div className="font-display font-bold text-danger text-lg mb-2">Something went wrong</div>
- <div className="font-body text-ghost text-[14px] mb-4 max-w-sm leading-relaxed">
+ <div className="font-body text-muted text-body mb-4 max-w-sm leading-relaxed">
  {this.state.error.message}
  </div>
  <button
  onClick={() => this.setState({ error: null })}
- className="font-body text-[13px] px-3 py-1.5 bg-stone3 text-muted"
+ className="font-body text-label px-3 py-1.5 bg-stone3 text-muted"
  >
  Try again
  </button>

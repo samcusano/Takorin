@@ -23,11 +23,23 @@ export function StatusPill({ tone, level, variant, status, children, dot = true,
  )
 }
 
-export function SectionHeader({ tone = 'muted', label, sub, badge, className = '' }) {
+export function SectionHeader({ tone = 'muted', label, sub, title, icon: Icon, accent, badge, className = '' }) {
+ if (title) {
+  return (
+   <div className={`flex items-center gap-3 px-5 py-3 border-b border-rule2 ${className}`}>
+    <div className="flex items-center gap-1.5 flex-shrink-0">
+     {label && <StatusPill tone={tone}>{label}</StatusPill>}
+     {Icon && <Icon size={12} strokeWidth={2} style={accent ? { color: accent } : undefined} />}
+    </div>
+    <div className="flex-1 font-body font-semibold text-ink text-base tracking-tight">{title}</div>
+    {badge}
+   </div>
+  )
+ }
  return (
   <div className={`flex items-center gap-2 border-b border-rule2 bg-stone2 px-4 py-2 ${className}`}>
    {label && <StatusPill tone={tone}>{label}</StatusPill>}
-   {sub && <span className="font-body text-ghost text-label">{sub}</span>}
+   {sub && <span className="font-body text-muted text-label">{sub}</span>}
    {badge && <div className="ml-auto">{badge}</div>}
   </div>
  )
@@ -36,15 +48,15 @@ export function SectionHeader({ tone = 'muted', label, sub, badge, className = '
 // ── Stat bar cell
 export function StatCell({ label, value, sub, fill, tone = 'ok', badge }) {
  const toneColor = toneStyle(tone, 'dot')
- const toneBorder = { ok:'border-t-ok', warn:'border-t-warn', danger:'border-t-danger', brass:'border-t-brass' }[tone] || 'border-t-ok'
+ const toneBorder = { ok:'border-t-ok', warn:'border-t-warn', danger:'border-t-danger', ochre:'border-t-ochre' }[tone] || 'border-t-ok'
  return (
  <div className={`px-5 py-4 border-r border-rule2 last:border-r-0 border-t-2 ${toneBorder}`}>
- <div className="font-body text-ghost text-label tracking-normal mb-2">{label}</div>
+ <div className="font-body text-muted text-label tracking-normal mb-2">{label}</div>
  <div className="flex items-center gap-2">
  <div className="font-body font-bold text-metric text-ink tracking-tight">{value}</div>
  {badge && <StatusPill tone="muted" dot={false}>{badge}</StatusPill>}
  </div>
- {sub && <div className="font-body text-ghost text-label mt-1">{sub}</div>}
+ {sub && <div className="font-body text-muted text-label mt-1">{sub}</div>}
  {fill !== undefined && (
  <div className="h-[2px] bg-rule mt-3">
  <div className={`h-full ${toneColor} transition-[width] duration-500 ease-enter`} style={{ width: `${fill}%` }} />
@@ -54,26 +66,13 @@ export function StatCell({ label, value, sub, fill, tone = 'ok', badge }) {
  )
 }
 
-// ── Section header
-export function SecHd({ tag, title, badge, icon: Icon, accent }) {
- return (
- <div className="flex items-center gap-3 px-5 py-3 border-b border-rule2">
- <div className="flex items-center gap-1.5 flex-shrink-0">
- {tag && <StatusPill tone="muted">{tag}</StatusPill>}
- {Icon && <Icon size={12} strokeWidth={2} style={accent ? { color: accent } : undefined} />}
- </div>
- <div className="flex-1 font-body font-semibold text-ink text-section tracking-tight">{title}</div>
- {badge}
- </div>
- )
-}
 
 // ── Case/finding card
 export function CaseCard({ urgency = 'warn', num, children }) {
  const topBar = { danger:'bg-danger', warn:'bg-warn', ok:'bg-ok', muted:'bg-rule2' }[urgency]
  const numColor = { danger:'text-danger', warn:'text-warn', ok:'text-ok', muted:'text-muted' }[urgency]
  return (
- <div className="bg-stone border border-rule rounded-lg mb-2.5 overflow-hidden" style={{ boxShadow: '0 1px 3px rgba(16,24,40,0.06)' }}>
+ <div className="bg-stone border border-rule rounded-lg mb-2.5 overflow-hidden shadow-card">
   <div className={`h-[3px] w-full ${topBar}`} />
   <div className="grid grid-cols-[28px_1fr] gap-0">
    <div className={`pt-4 pl-3 font-body font-bold text-sm ${numColor}`}>{num}</div>
@@ -88,8 +87,8 @@ export function SP({ title, sub, children }) {
  return (
  <div className="border-b border-rule2 last:border-b-0">
  <div className="px-5 py-3 border-b border-rule2 flex items-baseline justify-between">
- <span className="font-body font-bold text-ink text-[15px]">{title}</span>
- {sub && <span className="font-body text-ghost text-[12px]">{sub}</span>}
+ <span className="font-body font-bold text-ink text-base">{title}</span>
+ {sub && <span className="font-body text-muted text-label">{sub}</span>}
  </div>
  <div>{children}</div>
  </div>
@@ -101,10 +100,10 @@ export function SPRow({ label, sub, value, valueColor = 'text-ink' }) {
  return (
  <div className="flex items-center justify-between px-5 py-3 border-b border-rule2 last:border-b-0">
  <div>
- <div className="font-body text-ink text-[14px] font-medium">{label}</div>
- {sub && <div className="font-body text-ghost text-[12px] mt-0.5">{sub}</div>}
+ <div className="font-body text-ink text-body font-medium">{label}</div>
+ {sub && <div className="font-body text-muted text-label mt-0.5">{sub}</div>}
  </div>
- <div className={`font-body font-bold text-[18px] leading-none tracking-tight ${valueColor}`}>{value}</div>
+ <div className={`font-body font-bold text-head leading-none tracking-tight ${valueColor}`}>{value}</div>
  </div>
  )
 }
@@ -118,7 +117,7 @@ export function ActionBanner({ tone = 'warn', headline, body, children, footer }
  <div className={`flex-shrink-0 ${s}`}>
  <div className="px-5 py-4 flex items-start gap-4">
  <div className="flex-1">
- <div className="font-body font-semibold text-ink text-section leading-tight">{headline}</div>
+ <div className="font-body font-semibold text-ink text-base leading-tight">{headline}</div>
  {body && <div className="font-body text-muted text-body mt-1 leading-relaxed">{body}</div>}
  </div>
  {children && <div className="flex gap-2 flex-shrink-0 items-start">{children}</div>}
@@ -130,7 +129,7 @@ export function ActionBanner({ tone = 'warn', headline, body, children, footer }
 
 // ── Button variants
 export function Btn({ variant = 'primary', icon: Icon, onClick, disabled, children, className = '', style }) {
- const base = 'font-body font-medium text-[14px] px-4 py-2.5 min-h-[40px] inline-flex items-center justify-center gap-2 transition-[background-color,box-shadow,opacity,transform] duration-100 ease-standard active:scale-[0.97] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed rounded-btn'
+ const base = 'font-body font-medium text-body px-4 py-2.5 min-h-[40px] inline-flex items-center justify-center gap-2 transition-[background-color,box-shadow,opacity,transform] duration-100 ease-standard active:scale-[0.97] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed rounded-btn'
  const IconComp = Icon
  const cls = {
  primary:   'bg-ochre text-stone border-0 hover:bg-ochre-dark hover:shadow-raise',
@@ -184,8 +183,8 @@ export function ScoreRing({ pct = 0, size = 32, color }) {
 export function PageHead({ over, title, accent = 'var(--color-ochre)', meta = [], children }) {
  return (
  <div className="px-6 py-6 border-b border-rule2 bg-stone" style={{ borderLeft: `4px solid ${accent}` }}>
- <div className="font-body text-ghost text-[12px] tracking-normal mb-2">{over}</div>
- <div className="font-body font-bold text-[32px] text-ink leading-tight tracking-tight">
+ <div className="font-body text-muted text-label tracking-normal mb-2">{over}</div>
+ <div className="font-body font-bold text-page text-ink leading-tight tracking-tight">
  {title}
  {children && <span className="font-body font-normal text-ochre"> {children}</span>}
  </div>
@@ -193,8 +192,8 @@ export function PageHead({ over, title, accent = 'var(--color-ochre)', meta = []
  <div className="flex flex-wrap gap-x-6 gap-y-1 mt-3">
  {meta.map(({ role, val }, i) => (
  <div key={i} className="flex gap-1.5 items-baseline">
- <span className="font-body text-ghost text-[12px]">{role}</span>
- <span className="font-body text-ink text-[14px] font-medium">{val}</span>
+ <span className="font-body text-muted text-label">{role}</span>
+ <span className="font-body text-ink text-body font-medium">{val}</span>
  </div>
  ))}
  </div>
@@ -259,8 +258,8 @@ export function MetricCard({ title, value, valueColor = 'text-ink', waveformData
  return (
  <div className="px-4 pt-4 pb-3 border-b border-rule2">
  <div className="flex items-baseline justify-between gap-2 mb-3">
- <span className="font-body font-medium text-ghost text-[12px] leading-snug flex-1 tracking-normal">{title}</span>
- <span className={`font-body font-bold text-[26px] leading-none tracking-tight flex-shrink-0 ${valueColor}`}>{value}</span>
+ <span className="font-body font-medium text-muted text-label leading-snug flex-1 tracking-normal">{title}</span>
+ <span className={`font-body font-bold text-metric leading-none tracking-tight flex-shrink-0 ${valueColor}`}>{value}</span>
  </div>
  {waveformData && (
  <div className="mb-2.5">
@@ -269,8 +268,8 @@ export function MetricCard({ title, value, valueColor = 'text-ink', waveformData
  )}
  {meta && (
  <div className="flex items-baseline gap-1.5 mt-2.5 pt-2 border-t border-rule2">
- <span className="font-body font-medium text-ghost text-[12px] tracking-normal flex-shrink-0">{meta.label}</span>
- <span className="font-body text-muted text-[12px]">{meta.value}</span>
+ <span className="font-body font-medium text-muted text-label tracking-normal flex-shrink-0">{meta.label}</span>
+ <span className="font-body text-muted text-label">{meta.value}</span>
  </div>
  )}
  </div>
@@ -302,7 +301,7 @@ export function Modal({ onClose, title, children }) {
    role="dialog"
    aria-modal="true"
    aria-labelledby={title ? titleId : undefined}
-   className="fixed inset-0 z-[60] flex items-center justify-center"
+   className="fixed inset-0 z-modal flex items-center justify-center"
   >
    <div className="absolute inset-0 bg-ink/40" onClick={handleClose} />
    <div
@@ -321,7 +320,7 @@ export function Modal({ onClose, title, children }) {
 export function ConsequenceNotice({ show, children }) {
  if (!show) return null
  return (
- <div role="status" aria-live="polite" className="flex items-center gap-2 px-4 py-2 bg-ok/10 border-t border-ok/20 font-body text-ok text-[13px] slide-in">
+ <div role="status" aria-live="polite" className="flex items-center gap-2 px-4 py-2 bg-ok/10 border-t border-ok/20 font-body text-ok text-label slide-in">
  <svg className="w-3 h-3 stroke-current flex-shrink-0" fill="none" strokeWidth={2} viewBox="0 0 24 24">
  <polyline points="20 6 9 17 4 12" />
  </svg>
@@ -379,7 +378,7 @@ export function VaulDrawer({ open, onClose, title, badge, children, maxHeight = 
  const handleClose = () => exit(onClose)
 
  return (
-  <div className="fixed inset-0 z-[60] flex flex-col justify-end">
+  <div className="fixed inset-0 z-modal flex flex-col justify-end">
    <div className="absolute inset-0 bg-transparent" onClick={handleClose} />
    <div
     ref={contentRef}
@@ -393,10 +392,10 @@ export function VaulDrawer({ open, onClose, title, badge, children, maxHeight = 
     {title && (
      <div className="flex items-center justify-between px-4 py-2.5 border-b border-rule2 flex-shrink-0">
       <div className="flex items-center gap-2">
-       <span className="font-body font-medium text-ink text-[15px]">{title}</span>
+       <span className="font-body font-medium text-ink text-base">{title}</span>
        {badge}
       </div>
-      <button type="button" onClick={handleClose} className="text-ghost hover:text-ink transition-colors duration-100 ease-standard p-1 -mr-1" aria-label={`Close ${title}`}>
+      <button type="button" onClick={handleClose} className="text-muted hover:text-ink transition-colors duration-100 ease-standard p-1 -mr-1" aria-label={`Close ${title}`}>
        <X size={16} strokeWidth={2} aria-hidden="true" />
       </button>
      </div>
@@ -487,7 +486,7 @@ export function HoldButton({ label, holdLabel, doneLabel, duration = 1500, onCon
    onKeyUp={stopHoldKB}
    disabled={done || disabled}
    style={{ touchAction: 'none', userSelect: 'none' }}
-   className={`relative overflow-hidden font-body font-medium text-[14px] px-4 py-3 w-full text-left cursor-pointer border transition-colors ${done ? t.done : 'border-rule2 bg-stone hover:bg-stone2'} ${disabled ? 'opacity-50 cursor-not-allowed' : ''} ${className}`}
+   className={`relative overflow-hidden font-body font-medium text-body px-4 py-3 w-full text-left cursor-pointer border transition-colors ${done ? t.done : 'border-rule2 bg-stone hover:bg-stone2'} ${disabled ? 'opacity-50 cursor-not-allowed' : ''} ${className}`}
   >
    {/* Fill sweep — no transition while holding (rAF-driven), spring back on release */}
    <div
@@ -520,10 +519,10 @@ export function AcceptanceGate({ incomingSupervisor, shiftTime, carryForwardCoun
   <div className={`sticky top-0 z-40 flex items-center justify-between gap-4 px-4 py-3 border-b-2 ${bannerColor} flex-shrink-0`}>
    <div className="flex-1">
     <div className="flex items-baseline gap-2 mb-0.5">
-     <span className="font-body font-medium text-ink text-[14px]">{incomingSupervisor}</span>
-     <span className="font-body text-ghost text-[12px]">{shiftTime}</span>
+     <span className="font-body font-medium text-ink text-body">{incomingSupervisor}</span>
+     <span className="font-body text-muted text-label">{shiftTime}</span>
     </div>
-    <div className={`font-body text-[12px] ${carryForwardCount > 0 && !allAcknowledged ? 'text-warn' : 'text-muted'}`}>
+    <div className={`font-body text-label ${carryForwardCount > 0 && !allAcknowledged ? 'text-warn' : 'text-muted'}`}>
      {carryForwardCount > 0 ? `${carryForwardCount} item${carryForwardCount !== 1 ? 's' : ''} require acknowledgment` : 'No carry-forward items'}
     </div>
    </div>
@@ -557,19 +556,19 @@ export function CarryForwardItem({ item, acknowledged, onAcknowledge, onView }) 
    {acknowledged && !item.resolvedInShift && <span className="flash-success" aria-hidden="true" />}
    <div className="flex-1 min-w-0">
     <div className="flex items-center gap-2 mb-1 flex-wrap">
-     <span className={`font-body font-medium text-[14px] leading-snug ${item.resolvedInShift ? 'text-muted line-through' : 'text-ink'}`}>{item.title}</span>
+     <span className={`font-body font-medium text-body leading-snug ${item.resolvedInShift ? 'text-muted line-through' : 'text-ink'}`}>{item.title}</span>
      {item.resolvedInShift && (
-      <span className="font-body text-ok text-[12px] font-medium flex items-center gap-0.5 flex-shrink-0">
+      <span className="font-body text-ok text-label font-medium flex items-center gap-0.5 flex-shrink-0">
        <Check size={10} strokeWidth={2.5} />
        Resolved in ShiftIQ
       </span>
      )}
     </div>
-    <div className="font-body text-muted text-[12px] leading-snug mb-1">{item.operationalImpact}</div>
-    <div className="font-body text-ghost text-[12px] leading-snug mb-2">{item.ownerContext}</div>
-    {!item.resolvedInShift && <span className={`font-body font-medium text-[12px] ${actionColor}`}>{item.recommendedAction}</span>}
+    <div className="font-body text-muted text-label leading-snug mb-1">{item.operationalImpact}</div>
+    <div className="font-body text-muted text-label leading-snug mb-2">{item.ownerContext}</div>
+    {!item.resolvedInShift && <span className={`font-body font-medium text-label ${actionColor}`}>{item.recommendedAction}</span>}
     {onView && !item.resolvedInShift && (
-     <button type="button" onClick={onView} className="font-body text-int text-[12px] mt-1.5 flex items-center gap-1 hover:text-ink transition-colors">
+     <button type="button" onClick={onView} className="font-body text-ochre text-label mt-1.5 flex items-center gap-1 hover:text-ink transition-colors">
       <ArrowRight size={9} />View in ShiftIQ
      </button>
     )}
@@ -583,7 +582,7 @@ export function CarryForwardItem({ item, acknowledged, onAcknowledge, onView }) 
      <button
       type="button"
       onClick={() => onAcknowledge(item.id)}
-      className="flex items-center justify-center w-10 h-10 rounded-full border-2 border-rule2 bg-stone3 hover:border-ghost transition-colors cursor-pointer"
+      className="flex items-center justify-center w-10 h-10 rounded-full border-2 border-rule2 bg-stone3 hover:border-muted transition-colors cursor-pointer"
       aria-label={`Acknowledge: ${item.title}`}
      >
       <Check size={18} strokeWidth={2} className="text-ink" />
@@ -608,11 +607,11 @@ export function MetadataRow({ icon: Icon, label, value, tone = 'muted', sub, det
   <div className={`flex items-start gap-2.5 px-3 py-2 border-b border-rule2 ${bgTone}`}>
    {Icon && <Icon size={12} strokeWidth={2} className={`flex-shrink-0 mt-0.5 ${textColorClass}`} aria-hidden="true" />}
    <div className="flex-1 min-w-0">
-    <div className="font-body font-medium text-ink text-caption">{label}</div>
-    <div className={`font-body text-caption ${textColorClass}`}>{value}</div>
-    {sub && <div className="font-body text-ghost text-label mt-0.5">{sub}</div>}
+    <div className="font-body font-medium text-ink text-label">{label}</div>
+    <div className={`font-body text-label ${textColorClass}`}>{value}</div>
+    {sub && <div className="font-body text-muted text-label mt-0.5">{sub}</div>}
    </div>
-   {details && <div className="font-body text-ghost text-label flex-shrink-0 text-right">{details}</div>}
+   {details && <div className="font-body text-muted text-label flex-shrink-0 text-right">{details}</div>}
   </div>
  )
 }
@@ -631,13 +630,13 @@ export function ExpandableMetadata({ title, defaultOpen = false, children, icon:
     className={`w-full flex items-center justify-between px-3 py-2 ${bgTone} hover:opacity-75 transition-opacity`}
    >
     <div className="flex items-center gap-2 flex-1">
-     {Icon && <Icon size={11} strokeWidth={2} className="text-ghost flex-shrink-0" />}
-     <span className="font-body font-medium text-ink text-caption">{title}</span>
+     {Icon && <Icon size={11} strokeWidth={2} className="text-muted flex-shrink-0" />}
+     <span className="font-body font-medium text-ink text-label">{title}</span>
     </div>
     <ChevronRight
      size={14}
      strokeWidth={2}
-     className={`text-ghost transition-transform duration-200 flex-shrink-0 ${open ? 'rotate-90' : ''}`}
+     className={`text-muted transition-transform duration-200 flex-shrink-0 ${open ? 'rotate-90' : ''}`}
     />
    </button>
    {open && <div className="px-3 py-2 bg-stone">{children}</div>}
@@ -649,7 +648,7 @@ export function ExpandableMetadata({ title, defaultOpen = false, children, icon:
 // Groups content by urgency with clear actions, status tracking, and prominence
 export function SurfaceCard({ tone = 'muted', children, className = '' }) {
  return (
-  <div className={`border-l-2 ${toneStyle(tone, 'borderLeft')} bg-stone border border-rule rounded-lg mb-2.5 overflow-hidden ${className}`} style={{ boxShadow: '0 1px 3px rgba(16,24,40,0.06)' }}>
+  <div className={`border-l-2 ${toneStyle(tone, 'borderLeft')} bg-stone border border-rule rounded-lg mb-2.5 overflow-hidden shadow-card ${className}`}>
    {children}
   </div>
  )
@@ -661,11 +660,11 @@ export function ActionCard({ tone = 'danger', title, subtitle, metadata, actions
    <div className="px-4 py-3 flex items-start justify-between gap-3">
     <div className="flex-1 min-w-0">
      <div className="font-body font-medium text-ink text-body mb-1">{title}</div>
-     {subtitle && <div className="font-body text-muted text-caption mb-2">{subtitle}</div>}
+     {subtitle && <div className="font-body text-muted text-label mb-2">{subtitle}</div>}
      {metadata && (
       <div className="flex items-center gap-2 mb-2 flex-wrap">
        {metadata.map((m, i) => (
-        <span key={i} className="font-body text-ghost text-label px-2 py-1 bg-stone2 rounded-sm">
+        <span key={i} className="font-body text-muted text-label px-2 py-1 bg-stone2 rounded-sm">
          {m}
         </span>
        ))}
@@ -675,7 +674,7 @@ export function ActionCard({ tone = 'danger', title, subtitle, metadata, actions
     </div>
     {(CardIcon || status) && (
      <div className="flex flex-col items-end gap-2 flex-shrink-0">
-      {CardIcon && <CardIcon size={22} strokeWidth={1.5} className="text-ghost opacity-50" aria-hidden="true" />}
+      {CardIcon && <CardIcon size={22} strokeWidth={1.5} className="text-muted opacity-50" aria-hidden="true" />}
       {status && <div className="text-right">{status}</div>}
      </div>
     )}
@@ -706,7 +705,7 @@ export function FilterDropdown({ label, options, value, onChange }) {
  return (
   <div ref={ref} className="relative">
    <button type="button" onClick={() => setOpen(o => !o)}
-    className={`inline-flex items-center gap-1.5 px-3 py-1.5 border font-body font-medium text-[13px] transition-colors ${
+    className={`inline-flex items-center gap-1.5 px-3 py-1.5 border font-body font-medium text-label transition-colors ${
      isActive ? 'bg-ink text-stone border-ink' : 'bg-stone border-rule2 text-ink hover:border-ink/30'
     }`}>
     {isActive ? `${label}: ${current?.label}` : label}
@@ -717,7 +716,7 @@ export function FilterDropdown({ label, options, value, onChange }) {
      {options.map(opt => (
       <button key={opt.value} type="button"
        onClick={() => { onChange(opt.value); setOpen(false) }}
-       className={`w-full text-left flex items-center gap-2.5 px-4 py-2.5 font-body text-[13px] transition-colors ${
+       className={`w-full text-left flex items-center gap-2.5 px-4 py-2.5 font-body text-label transition-colors ${
         value === opt.value ? 'bg-stone2 text-ink font-medium' : 'text-muted hover:bg-stone2 hover:text-ink'
        }`}>
        <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 transition-colors ${value === opt.value ? 'bg-ink' : 'bg-rule2'}`} />
@@ -749,7 +748,7 @@ export function MultiFilterDropdown({ label, options, values, onChange }) {
  return (
   <div ref={ref} className="relative">
    <button type="button" onClick={() => setOpen(o => !o)}
-    className={`inline-flex items-center gap-1.5 px-3 py-1.5 border font-body font-medium text-[13px] transition-colors ${
+    className={`inline-flex items-center gap-1.5 px-3 py-1.5 border font-body font-medium text-label transition-colors ${
      count > 0 ? 'bg-ink text-stone border-ink' : 'bg-stone border-rule2 text-ink hover:border-ink/30'
     }`}>
     {count > 0 ? `${label} (${count})` : label}
@@ -761,7 +760,7 @@ export function MultiFilterDropdown({ label, options, values, onChange }) {
       const checked = values.includes(opt.value)
       return (
        <button key={opt.value} type="button" onClick={() => toggle(opt.value)}
-        className="w-full text-left flex items-center gap-2.5 px-4 py-2.5 font-body text-[13px] transition-colors hover:bg-stone2">
+        className="w-full text-left flex items-center gap-2.5 px-4 py-2.5 font-body text-label transition-colors hover:bg-stone2">
         <span className={`w-3.5 h-3.5 border flex-shrink-0 flex items-center justify-center flex-shrink-0 transition-colors ${checked ? 'bg-ink border-ink' : 'border-rule2'}`}>
          {checked && <svg width={8} height={8} viewBox="0 0 12 12" fill="none" stroke="white" strokeWidth={2.5}><polyline points="2 6 5 9 10 3" /></svg>}
         </span>
@@ -772,7 +771,7 @@ export function MultiFilterDropdown({ label, options, values, onChange }) {
      {count > 0 && (
       <div className="px-4 pt-1.5 pb-2 border-t border-rule2 mt-1">
        <button type="button" onClick={() => onChange([])}
-        className="font-body text-[12px] text-ghost hover:text-ink transition-colors">
+        className="font-body text-label text-muted hover:text-ink transition-colors">
         Clear
        </button>
       </div>
@@ -794,11 +793,11 @@ export function ExpandableSection({ title, children, defaultOpen = false }) {
     onClick={() => setOpen(!open)}
     className="w-full flex items-center justify-between px-4 py-2.5 bg-stone2 hover:bg-stone3 transition-colors"
    >
-    <span className="font-body font-medium text-ink text-[14px]">{title}</span>
+    <span className="font-body font-medium text-ink text-body">{title}</span>
     <ChevronRight
      size={14}
      strokeWidth={2}
-     className={`text-ghost transition-transform duration-200 ${open ? 'rotate-90' : ''}`}
+     className={`text-muted transition-transform duration-200 ${open ? 'rotate-90' : ''}`}
     />
    </button>
    {open && <div>{children}</div>}
@@ -824,12 +823,12 @@ export function SlidePanel({ title, subtitle, icon: Icon, accentColor, ariaLabel
      <div className="flex items-center gap-3 min-w-0">
       {Icon && <Icon size={26} strokeWidth={1.5} className="text-ochre flex-shrink-0" aria-hidden="true" />}
       <div className="min-w-0">
-       {subtitle && <div className="font-body text-ghost text-[12px] mb-1">{subtitle}</div>}
+       {subtitle && <div className="font-body text-muted text-label mb-1">{subtitle}</div>}
        <div className="font-display font-bold text-ink text-base leading-snug">{title}</div>
       </div>
      </div>
      <button type="button" onClick={handleClose} aria-label="Close panel"
-      className="p-1 text-ghost hover:text-ink transition-colors duration-100 flex-shrink-0 ml-2">
+      className="p-1 text-muted hover:text-ink transition-colors duration-100 flex-shrink-0 ml-2">
       <X size={14} strokeWidth={2} />
      </button>
     </div>

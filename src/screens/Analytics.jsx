@@ -188,12 +188,12 @@ function WaterfallChart({ attr }) {
           <text x={padL - 4} y={yOf(v) + 3} fontSize="8" fill="#A8A098" textAnchor="end">{v}</text>
         </g>
       ))}
-      <line x1={padL} x2={svgW - padR + 6} y1={yOf(attr.target)} y2={yOf(attr.target)} stroke="#C4920A" strokeWidth="0.75" strokeDasharray="4,3" opacity="0.72" />
-      <text x={svgW - padR + 8} y={yOf(attr.target) + 3} fontSize="7.5" fill="#C4920A" opacity="0.8">Target</text>
+      <line x1={padL} x2={svgW - padR + 6} y1={yOf(attr.target)} y2={yOf(attr.target)} stroke="var(--color-warn)" strokeWidth="0.75" strokeDasharray="4,3" opacity="0.72" />
+      <text x={svgW - padR + 8} y={yOf(attr.target) + 3} fontSize="7.5" fill="var(--color-warn)" opacity="0.8">Target</text>
       {steps.map((step, i) => {
         if (i === 0) return null
         const prev = steps[i - 1]
-        return <line key={`c${i}`} x1={xOf(i - 1) + barW} x2={xOf(i)} y1={yOf(prev.value)} y2={yOf(prev.value)} stroke="#B8B0A4" strokeWidth="0.75" strokeDasharray="2,2" />
+        return <line key={`c${i}`} x1={xOf(i - 1) + barW} x2={xOf(i)} y1={yOf(prev.value)} y2={yOf(prev.value)} stroke="var(--color-dim)" strokeWidth="0.75" strokeDasharray="2,2" />
       })}
       {steps.map((step, i) => {
         const x    = xOf(i)
@@ -205,7 +205,7 @@ function WaterfallChart({ attr }) {
         if (isBase || isTotal) { barY = yOf(step.value); barH = yOf(minV) - barY }
         else if (isNeg)        { barY = yOf(prev.value); barH = yOf(step.value) - yOf(prev.value) }
         else                   { barY = yOf(step.value); barH = yOf(prev.value) - yOf(step.value) }
-        const color   = isBase ? '#686058' : isTotal ? '#0A0906' : isNeg ? '#C43820' : '#3A8A5A'
+        const color   = isBase ? 'var(--color-muted)' : isTotal ? 'var(--color-ink)' : isNeg ? 'var(--color-danger)' : 'var(--color-ok)'
         const opacity = isBase ? 0.22 : isTotal ? 0.85 : 0.7
         return (
           <g key={step.id}>
@@ -218,7 +218,7 @@ function WaterfallChart({ attr }) {
             {isTotal && (
               <text x={x + barW / 2} y={barY - 11} fontSize="9.5" fill={color} textAnchor="middle" fontWeight="700">{step.value}%</text>
             )}
-            <text x={x + barW / 2} y={svgH - 5} fontSize="7" fill="#686058" textAnchor="middle">
+            <text x={x + barW / 2} y={svgH - 5} fontSize="7" fill="var(--color-muted)" textAnchor="middle">
               {step.short || step.label}
             </text>
           </g>
@@ -235,10 +235,10 @@ function BenchmarkBlock({ b }) {
     <div className="border border-rule2 bg-stone flex items-center gap-6 px-5 py-4">
       {/* Metric + score */}
       <div className="w-44 flex-shrink-0">
-        <div className="font-body text-ghost text-[12px] tracking-normal mb-1">{b.metric}</div>
+        <div className="font-body text-muted text-label tracking-normal mb-1">{b.metric}</div>
         <div className="flex items-baseline gap-2">
-          <span className="display-num text-[28px] font-bold text-ink leading-none">{b.score}</span>
-          <span className={`font-body text-[13px] font-medium ${b.deltaDir === 'up' ? 'text-ok' : 'text-danger'}`}>
+          <span className="display-num text-metric font-bold text-ink leading-none">{b.score}</span>
+          <span className={`font-body text-label font-medium ${b.deltaDir === 'up' ? 'text-ok' : 'text-danger'}`}>
             {b.deltaDir === 'up' ? '↑' : '↓'} {b.delta}
           </span>
         </div>
@@ -249,22 +249,22 @@ function BenchmarkBlock({ b }) {
           <div className="absolute inset-y-0 left-0 rounded-full bg-ink/15" style={{ width: `${b.percentile}%` }} />
           <div className="absolute inset-y-0 w-0.5 bg-ochre" style={{ left: `${b.percentile}%` }} />
         </div>
-        <div className="font-body text-ghost text-[12px]">{b.percentile}th percentile · {b.total} plants</div>
+        <div className="font-body text-muted text-label">{b.percentile}th percentile · {b.total} plants</div>
       </div>
       {/* Peers */}
       {b.peers?.length > 0 && (
         <div className="flex-shrink-0 space-y-0.5 w-36">
           {b.peers.map((p, i) => (
             <div key={i} className="flex items-center justify-between gap-2">
-              <span className="font-body text-ghost text-[12px] truncate">{p.name}</span>
-              <span className="font-body font-medium text-ink text-[12px] tabular-nums">{p.value}</span>
+              <span className="font-body text-muted text-label truncate">{p.name}</span>
+              <span className="font-body font-medium text-ink text-label tabular-nums">{p.value}</span>
             </div>
           ))}
         </div>
       )}
       {/* Insight */}
       {b.insight && (
-        <div className="font-body text-ok text-[12px] flex-shrink-0 w-40 leading-snug">{b.insight}</div>
+        <div className="font-body text-ok text-label flex-shrink-0 w-40 leading-snug">{b.insight}</div>
       )}
     </div>
   )
@@ -279,16 +279,16 @@ function Module({ title, badge, children, defaultOpen = false }) {
       <button type="button" onClick={() => setOpen(v => !v)}
         className="w-full flex items-center justify-between px-5 py-3.5 hover:bg-stone2 transition-colors text-left">
         <div className="flex items-center gap-3 min-w-0">
-          <span className="font-body font-medium text-ink text-[14px]">{title}</span>
+          <span className="font-body font-medium text-ink text-body">{title}</span>
           {badge && (
-            <span className="font-body text-ghost text-[12px] px-2 py-0.5 bg-stone2 border border-rule2 rounded-btn flex-shrink-0">
+            <span className="font-body text-muted text-label px-2 py-0.5 bg-stone2 border border-rule2 rounded-btn flex-shrink-0">
               {badge}
             </span>
           )}
         </div>
         {open
-          ? <ChevronUp size={11} className="text-ghost flex-shrink-0 ml-3" />
-          : <ChevronDown size={11} className="text-ghost flex-shrink-0 ml-3" />}
+          ? <ChevronUp size={11} className="text-muted flex-shrink-0 ml-3" />
+          : <ChevronDown size={11} className="text-muted flex-shrink-0 ml-3" />}
       </button>
       {open && <div className="border-t border-rule2">{children}</div>}
     </div>
@@ -357,9 +357,9 @@ export default function Analytics() {
           onChange={setCompare}
         />
         <div className="ml-auto flex items-center gap-3">
-          <span className="font-body text-ghost text-[12px]">{facility.name} · Apr 16, 2026</span>
+          <span className="font-body text-muted text-label">{facility.name} · Apr 16, 2026</span>
           <button type="button" onClick={handleExport} disabled={exportState === 'loading'}
-            className="flex items-center gap-1.5 font-body text-[13px] text-ghost px-3 py-1.5 border border-rule2 hover:border-ink/30 hover:text-muted transition-colors disabled:opacity-50">
+            className="flex items-center gap-1.5 font-body text-label text-muted px-3 py-1.5 border border-rule2 hover:border-ink/30 hover:text-muted transition-colors disabled:opacity-50">
             {exportState === 'done'
               ? <><Check size={11} strokeWidth={2} className="text-ok" />Exported</>
               : <><Download size={11} strokeWidth={2} />{exportState === 'loading' ? 'Preparing…' : 'Export'}</>}
@@ -375,19 +375,19 @@ export default function Analytics() {
           const dimmed   = !isActive && !compare.includes(p.id)
           return (
             <button key={p.id} type="button" onClick={() => setScopePlant(p.id)}
-              className={`flex-1 flex items-center justify-between px-5 py-2.5 border-r border-rule2 last:border-r-0 border-b-2 transition-all text-left ${
+              className={`flex-1 flex items-center justify-between px-5 py-2.5 border-r border-rule2 last:border-r-0 border-b-2 transition-colors text-left ${
                 isActive ? 'border-b-ochre bg-stone' : 'border-b-transparent hover:bg-stone3'
               } ${dimmed ? 'opacity-45' : ''}`}>
               <div>
-                <div className="font-body text-ghost text-[12px] mb-0.5">{p.code} · {p.name}</div>
+                <div className="font-body text-muted text-label mb-0.5">{p.code} · {p.name}</div>
                 <div className="flex items-baseline gap-2">
-                  <span className={`display-num text-[22px] font-bold leading-none ${atTgt ? 'text-ok' : 'text-warn'}`}>{p.oee}%</span>
-                  <span className={`font-body text-[12px] font-medium ${p.delta >= 0 ? 'text-ok' : 'text-danger'}`}>
+                  <span className={`display-num text-title font-bold leading-none ${atTgt ? 'text-ok' : 'text-warn'}`}>{p.oee}%</span>
+                  <span className={`font-body text-label font-medium ${p.delta >= 0 ? 'text-ok' : 'text-danger'}`}>
                     {p.delta >= 0 ? '+' : ''}{p.delta}pp
                   </span>
                 </div>
               </div>
-              <div className={`font-body text-[12px] ${atTgt ? 'text-ok' : 'text-warn'}`}>
+              <div className={`font-body text-label ${atTgt ? 'text-ok' : 'text-warn'}`}>
                 {atTgt ? 'At target' : `${+(p.target - p.oee).toFixed(1)}pp below ${p.target}%`}
               </div>
             </button>
@@ -401,22 +401,22 @@ export default function Analytics() {
 
           {/* ── Attribution hero ─────────────────────────────────────────── */}
           <section className="mb-8">
-            <div className="font-body text-ghost text-[12px] tracking-normal mb-5">
+            <div className="font-body text-muted text-label tracking-normal mb-5">
               {attr.line} · OEE Attribution · {GRAINS.find(g => g.id === timeGrain)?.label}
             </div>
 
             <div className="flex items-start gap-8 mb-5">
               <div>
-                <div className="display-num text-[64px] font-bold text-ink leading-none">{attr.actual}%</div>
-                <div className="font-body text-ghost text-[13px] mt-1">Actual OEE</div>
+                <div className="display-num text-hero font-bold text-ink leading-none">{attr.actual}%</div>
+                <div className="font-body text-muted text-label mt-1">Actual OEE</div>
               </div>
               <div className="pt-2">
                 <div className="flex items-baseline gap-3 mb-2">
-                  <span className={`display-num text-[24px] font-bold leading-none ${totalDelta >= 0 ? 'text-ok' : 'text-danger'}`}>
+                  <span className={`display-num text-2xl font-bold leading-none ${totalDelta >= 0 ? 'text-ok' : 'text-danger'}`}>
                     {totalDelta >= 0 ? '+' : ''}{totalDelta}pp
                   </span>
-                  <span className="font-body text-ghost text-[14px]">above {attr.baseline}% baseline</span>
-                  <span className={`font-body text-[13px] font-medium px-2.5 py-0.5 rounded-btn flex items-center gap-1.5 ${
+                  <span className="font-body text-muted text-body">above {attr.baseline}% baseline</span>
+                  <span className={`font-body text-label font-medium px-2.5 py-0.5 rounded-btn flex items-center gap-1.5 ${
                     atTarget ? 'bg-ok/10 text-ok' : 'bg-warn/10 text-warn'
                   }`}>
                     {atTarget
@@ -424,16 +424,16 @@ export default function Analytics() {
                       : `${+(attr.target - attr.actual).toFixed(1)}pp below ${attr.target}% target`}
                   </span>
                 </div>
-                <div className="font-body text-ink2 text-[15px] leading-snug">
+                <div className="font-body text-ink2 text-base leading-snug">
                   {attr.plant} {attr.line} {attr.narrative}
                 </div>
               </div>
             </div>
 
             <div className="flex items-center gap-2 flex-wrap mb-6">
-              <span className="font-body text-ghost text-[12px] mr-1">Biggest drivers:</span>
+              <span className="font-body text-muted text-label mr-1">Biggest drivers:</span>
               {topDrivers.map(d => (
-                <span key={d.id} className={`font-body text-[13px] font-medium px-2.5 py-0.5 rounded-btn ${
+                <span key={d.id} className={`font-body text-label font-medium px-2.5 py-0.5 rounded-btn ${
                   d.delta >= 0 ? 'bg-ok/10 text-ok' : 'bg-danger/[0.04] text-danger'
                 }`}>
                   {d.delta >= 0 ? '+' : ''}{d.delta}pp {d.label}
@@ -448,25 +448,25 @@ export default function Analytics() {
 
           {/* ── Recovery table ───────────────────────────────────────────── */}
           <section className="mb-10">
-            <div className="font-body text-ghost text-[12px] tracking-normal mb-3">Recovery actions</div>
+            <div className="font-body text-muted text-label tracking-normal mb-3">Recovery actions</div>
             <div className="border border-rule2 bg-stone divide-y divide-rule2">
               <div className="grid px-5 py-2 bg-stone2" style={{ gridTemplateColumns: '1.1fr 1fr 116px' }}>
-                <span className="font-body text-ghost text-[12px]">Driver</span>
-                <span className="font-body text-ghost text-[12px] pl-5">Recommended action</span>
-                <span className="font-body text-ghost text-[12px] text-right">Module</span>
+                <span className="font-body text-muted text-label">Driver</span>
+                <span className="font-body text-muted text-label pl-5">Recommended action</span>
+                <span className="font-body text-muted text-label text-right">Module</span>
               </div>
               {attr.drivers.map(d => (
                 <div key={d.id}
                   className={`grid items-start px-5 py-3.5 border-l-2 ${d.delta >= 0 ? 'border-l-ok/30' : 'border-l-danger/40'}`}
                   style={{ gridTemplateColumns: '1.1fr 1fr 116px' }}>
                   <div>
-                    <div className="font-body font-medium text-ink text-[14px]">{d.label}</div>
-                    <div className="font-body text-ghost text-[12px] mt-0.5">{d.note}</div>
+                    <div className="font-body font-medium text-ink text-body">{d.label}</div>
+                    <div className="font-body text-muted text-label mt-0.5">{d.note}</div>
                   </div>
-                  <div className="font-body text-ink2 text-[13px] pl-5 leading-snug pt-0.5">{d.action}</div>
+                  <div className="font-body text-ink2 text-label pl-5 leading-snug pt-0.5">{d.action}</div>
                   <div className="flex justify-end self-start pt-1">
                     <Link to={d.route}
-                      className="flex items-center gap-1 font-body text-muted text-[12px] hover:text-ink transition-colors">
+                      className="flex items-center gap-1 font-body text-muted text-label hover:text-ink transition-colors">
                       {d.module} <ArrowRight size={9} />
                     </Link>
                   </div>
@@ -478,16 +478,16 @@ export default function Analytics() {
           <div className="h-px bg-rule2 mb-8" />
 
           {/* ── Supporting intelligence ───────────────────────────────────── */}
-          <div className="font-body text-ghost text-[12px] tracking-normal mb-3">Supporting intelligence</div>
+          <div className="font-body text-muted text-label tracking-normal mb-3">Supporting intelligence</div>
           <div className="space-y-px">
 
             <Module title="Impact" badge="$312K protected · 47 interventions · Q2 2026" defaultOpen>
               <div className="bg-ok/[0.02] border-b border-rule2 px-5 py-4 flex items-baseline gap-6">
                 <div>
-                  <div className="font-body text-ghost text-[12px] tracking-[0.1em] mb-1">Value protected · Q2 2026</div>
+                  <div className="font-body text-muted text-label tracking-[0.1em] mb-1">Value protected · Q2 2026</div>
                   <div className="flex items-baseline gap-2">
-                    <span className="display-num text-[40px] leading-none text-ok">$312K</span>
-                    <span className="font-body text-ok text-[13px]">+$47K vs Q1</span>
+                    <span className="display-num text-display leading-none text-ok">$312K</span>
+                    <span className="font-body text-ok text-label">+$47K vs Q1</span>
                   </div>
                 </div>
                 <div className="flex-1 border-l border-rule2 pl-6 grid grid-cols-3 gap-6">
@@ -499,9 +499,9 @@ export default function Analytics() {
                     const c = m.tone === 'ok' ? 'var(--color-ok)' : 'var(--color-warn)'
                     return (
                       <div key={m.label}>
-                        <div className="font-body text-ghost text-[12px] tracking-[0.08em] mb-1">{m.label}</div>
-                        <div className="display-num text-[20px] leading-none mb-0.5" style={{ color: c }}>{m.value}</div>
-                        <div className="font-body text-ghost text-[12px] mb-1.5">{m.sub}</div>
+                        <div className="font-body text-muted text-label tracking-[0.08em] mb-1">{m.label}</div>
+                        <div className="display-num text-subhead leading-none mb-0.5" style={{ color: c }}>{m.value}</div>
+                        <div className="font-body text-muted text-label mb-1.5">{m.sub}</div>
                         <div className="h-[3px] bg-rule2">
                           <div className="h-full" style={{ width: `${m.bar * 100}%`, background: c, opacity: 0.7 }} />
                         </div>
@@ -535,32 +535,32 @@ export default function Analytics() {
                         { label: 'Quick approvals', val: String(lowDwellCount), tone: lowDwellCount > 0 ? 'text-danger' : 'text-ok' },
                       ].map(({ label, val, tone }) => (
                         <div key={label} className="bg-stone px-5 py-3.5">
-                          <div className="font-body text-ghost text-[12px] tracking-normal mb-1">{label}</div>
-                          <div className={`display-num text-[24px] leading-none ${tone}`}>{val}</div>
+                          <div className="font-body text-muted text-label tracking-normal mb-1">{label}</div>
+                          <div className={`display-num text-2xl leading-none ${tone}`}>{val}</div>
                         </div>
                       ))}
                     </div>
                     {/* Decision distribution by consequence */}
                     <div className="px-5 py-4 border-b border-rule2">
-                      <div className="font-body text-ghost text-[12px] tracking-normal mb-3">Decision distribution by consequence</div>
+                      <div className="font-body text-muted text-label tracking-normal mb-3">Decision distribution by consequence</div>
                       <div className="space-y-2">
                         {decisionBars.map(d => {
                           const total = d.approved + d.overridden + d.deferred
                           return (
                             <div key={d.label} className="flex items-center gap-3">
-                              <span className="font-body text-ghost text-[12px] w-14 flex-shrink-0">{d.label}</span>
+                              <span className="font-body text-muted text-label w-14 flex-shrink-0">{d.label}</span>
                               <div className="flex-1 h-3 bg-rule2 flex overflow-hidden">
                                 {d.approved > 0 && <div className="h-full bg-ok/60" style={{ width: `${(d.approved/total)*100}%` }} />}
-                                {d.overridden > 0 && <div className="h-full bg-ghost/40" style={{ width: `${(d.overridden/total)*100}%` }} />}
+                                {d.overridden > 0 && <div className="h-full bg-muted/40" style={{ width: `${(d.overridden/total)*100}%` }} />}
                                 {d.deferred > 0 && <div className="h-full bg-stone3" style={{ width: `${(d.deferred/total)*100}%` }} />}
                               </div>
-                              <span className="font-body text-ghost text-[12px] w-4 text-right">{total}</span>
+                              <span className="font-body text-muted text-label w-4 text-right">{total}</span>
                             </div>
                           )
                         })}
                         <div className="flex items-center gap-4 mt-2">
-                          {[{ label: 'Approved', color: 'bg-ok/60' }, { label: 'Overridden', color: 'bg-ghost/40' }, { label: 'Deferred', color: 'bg-stone3' }].map(l => (
-                            <span key={l.label} className="flex items-center gap-1.5 font-body text-ghost text-[12px]">
+                          {[{ label: 'Approved', color: 'bg-ok/60' }, { label: 'Overridden', color: 'bg-muted/40' }, { label: 'Deferred', color: 'bg-stone3' }].map(l => (
+                            <span key={l.label} className="flex items-center gap-1.5 font-body text-muted text-label">
                               <span className={`w-2 h-2 ${l.color} flex-shrink-0`} />{l.label}
                             </span>
                           ))}
@@ -568,8 +568,8 @@ export default function Analytics() {
                       </div>
                     </div>
                     <div className="px-5 py-3 flex items-center justify-between">
-                      <span className="font-body text-ghost text-[12px]">Approval rate 62% · Override rate 25% · Deferred 13%</span>
-                      <Link to="/agents" className="flex items-center gap-1 font-body text-ghost text-[12px] hover:text-ink transition-colors">
+                      <span className="font-body text-muted text-label">Approval rate 62% · Override rate 25% · Deferred 13%</span>
+                      <Link to="/agents" className="flex items-center gap-1 font-body text-muted text-label hover:text-ink transition-colors">
                         <ArrowRight size={10} />View Agent Control
                       </Link>
                     </div>
@@ -595,18 +595,18 @@ export default function Analytics() {
                         { label: 'Avg confidence', val: `${avgConf}%`, tone: avgConf >= 70 ? 'text-ok' : avgConf >= 50 ? 'text-warn' : 'text-danger' },
                         { label: 'Operator confirmed', val: `${confirmRate}%`, tone: confirmRate >= 60 ? 'text-ok' : 'text-warn' },
                         { label: 'Auto-run', val: String(interventionSummary.autoExecuted), tone: 'text-ochre' },
-                        { label: 'Reversed', val: String(interventionSummary.reversed), tone: interventionSummary.reversed > 0 ? 'text-warn' : 'text-ghost' },
+                        { label: 'Reversed', val: String(interventionSummary.reversed), tone: interventionSummary.reversed > 0 ? 'text-warn' : 'text-muted' },
                         { label: 'Quick approvals', val: String(interventionSummary.lowDwellDecisions), tone: interventionSummary.lowDwellDecisions > 0 ? 'text-danger' : 'text-ok' },
                       ].map(({ label, val, tone }) => (
                         <div key={label} className="bg-stone px-5 py-3.5">
-                          <div className="font-body text-ghost text-[12px] tracking-normal mb-1">{label}</div>
-                          <div className={`display-num text-[24px] leading-none ${tone}`}>{val}</div>
+                          <div className="font-body text-muted text-label tracking-normal mb-1">{label}</div>
+                          <div className={`display-num text-2xl leading-none ${tone}`}>{val}</div>
                         </div>
                       ))}
                     </div>
                     {/* Outcome distribution bar */}
                     <div className="px-5 py-4 border-b border-rule2">
-                      <div className="font-body text-ghost text-[12px] tracking-normal mb-3">Outcome distribution</div>
+                      <div className="font-body text-muted text-label tracking-normal mb-3">Outcome distribution</div>
                       <div className="h-4 bg-rule2 flex overflow-hidden mb-2">
                         {positiveCount > 0 && <div className="h-full bg-ok/70" style={{ width: `${(positiveCount/interventionSummary.total)*100}%` }} />}
                         {unclearCount > 0  && <div className="h-full bg-ochre/60" style={{ width: `${(unclearCount/interventionSummary.total)*100}%` }} />}
@@ -618,15 +618,15 @@ export default function Analytics() {
                           { label: `Unclear (${unclearCount})`,   color: 'bg-ochre/60'  },
                           { label: `Negative (${negativeCount})`, color: 'bg-danger/60' },
                         ].map(l => (
-                          <span key={l.label} className="flex items-center gap-1.5 font-body text-ghost text-[12px]">
+                          <span key={l.label} className="flex items-center gap-1.5 font-body text-muted text-label">
                             <span className={`w-2 h-2 ${l.color} flex-shrink-0`} />{l.label}
                           </span>
                         ))}
                       </div>
                     </div>
                     <div className="px-5 py-3 flex items-center justify-between">
-                      <span className="font-body text-ghost text-[12px]">Confidence reflects how certain we are the action caused the outcome. Below 60% means the cause isn't clear.</span>
-                      <Link to="/impact" className="flex items-center gap-1 font-body text-ghost text-[12px] hover:text-ink transition-colors">
+                      <span className="font-body text-muted text-label">Confidence reflects how certain we are the action caused the outcome. Below 60% means the cause isn't clear.</span>
+                      <Link to="/impact" className="flex items-center gap-1 font-body text-muted text-label hover:text-ink transition-colors">
                         <ArrowRight size={10} />View ImpactLoop
                       </Link>
                     </div>
@@ -648,7 +648,7 @@ export default function Analytics() {
                   return (
                     <div key={label} className={`grid items-center px-5 py-3 border-l-2 ${bg} ${borderL}`}
                       style={{ gridTemplateColumns: '140px 1fr 56px 180px' }}>
-                      <div className="font-body text-[13px] font-medium text-ink">{label}</div>
+                      <div className="font-body text-label font-medium text-ink">{label}</div>
                       <div className="pr-6">
                         <div className="h-[3px] bg-rule2 relative">
                           {label === 'Closure rate' && (
@@ -657,8 +657,8 @@ export default function Analytics() {
                           <div className="h-full" style={{ width: `${Math.min(bar, 1) * 100}%`, background: c, opacity: 0.75 }} />
                         </div>
                       </div>
-                      <div className="display-num text-[18px] leading-none tabular-nums" style={{ color: c }}>{val}</div>
-                      <div className="font-body text-ghost text-[12px] text-right">{sub}</div>
+                      <div className="display-num text-head leading-none tabular-nums" style={{ color: c }}>{val}</div>
+                      <div className="font-body text-muted text-label text-right">{sub}</div>
                     </div>
                   )
                 })}
@@ -673,13 +673,13 @@ export default function Analytics() {
                   return (
                     <div key={g.id} className={`px-5 py-4 ${!onTrack ? 'bg-warn/[0.02]' : 'bg-stone'}`}>
                       <div className="flex items-start justify-between mb-1">
-                        <div className="font-body text-ghost text-[12px] tracking-[0.08em]">{g.label}</div>
-                        <span className="font-mono text-[12px] text-ghost tabular-nums">T−46d</span>
+                        <div className="font-body text-muted text-label tracking-[0.08em]">{g.label}</div>
+                        <span className="font-mono text-label text-muted tabular-nums">T−46d</span>
                       </div>
-                      <div className="display-num text-[32px] font-bold leading-none mb-0.5" style={{ color: toneColor }}>
+                      <div className="display-num text-page font-bold leading-none mb-0.5" style={{ color: toneColor }}>
                         {g.current}{g.unit}
                       </div>
-                      <div className="font-body text-ghost text-[12px] mb-2">
+                      <div className="font-body text-muted text-label mb-2">
                         Target {g.target}{g.unit} · {onTrack ? 'On track' : 'Behind'}
                       </div>
                       {/* Bullet chart — 6px, calibrated */}
@@ -707,7 +707,7 @@ export default function Analytics() {
               <div className="grid px-5 py-2 bg-stone2 border-b border-rule2"
                 style={{ gridTemplateColumns: '1fr 1fr 56px 56px 160px' }}>
                 {['Metric', 'Percentile position (0–100)', 'Score', 'Rank', 'Delta'].map(h => (
-                  <div key={h} className="font-body text-ghost text-[12px] tracking-[0.08em]">{h}</div>
+                  <div key={h} className="font-body text-muted text-label tracking-[0.08em]">{h}</div>
                 ))}
               </div>
               {/* Shared percentile registry — all metrics on the same 0-100 axis */}
@@ -718,11 +718,11 @@ export default function Analytics() {
                 return (
                   <div key={i} className={`grid items-center px-5 py-3 border-b border-rule2/50 border-l-2 ${bg} ${borderL}`}
                     style={{ gridTemplateColumns: '1fr 1fr 56px 56px 160px' }}>
-                    <div className="font-body text-ink text-[13px] font-medium pr-4 leading-snug">{b.metric}</div>
+                    <div className="font-body text-ink text-label font-medium pr-4 leading-snug">{b.metric}</div>
                     <div className="pr-6">
                       <div className="relative h-[4px] bg-rule2">
                         {/* Median reference at 50th */}
-                        <div className="absolute top-1/2 -translate-y-1/2 w-px h-[10px] bg-ghost/30" style={{ left: '50%' }} />
+                        <div className="absolute top-1/2 -translate-y-1/2 w-px h-[10px] bg-muted/30" style={{ left: '50%' }} />
                         {/* Your position */}
                         <div className="absolute inset-y-0 left-0" style={{ width: `${b.percentile}%`, background: toneColor, opacity: 0.75 }} />
                         {/* Percentile dot */}
@@ -730,15 +730,15 @@ export default function Analytics() {
                           style={{ left: `${b.percentile}%`, transform: 'translate(-50%, -50%)', background: toneColor }} />
                       </div>
                     </div>
-                    <div className="display-num text-[16px] tabular-nums leading-none" style={{ color: toneColor }}>{b.score}</div>
-                    <div className="font-mono text-[13px] text-ghost tabular-nums">{b.percentile}th</div>
-                    <div className="font-body text-[12px] text-ghost">{b.delta}</div>
+                    <div className="display-num text-base tabular-nums leading-none" style={{ color: toneColor }}>{b.score}</div>
+                    <div className="font-mono text-label text-muted tabular-nums">{b.percentile}th</div>
+                    <div className="font-body text-label text-muted">{b.delta}</div>
                   </div>
                 )
               })}
               <div className="px-5 py-2 bg-stone2 border-t border-rule2 flex items-center gap-2">
-                <div className="w-px h-[8px] bg-ghost/30 flex-shrink-0" />
-                <span className="font-body text-ghost text-[12px]">Median reference · 50th percentile</span>
+                <div className="w-px h-[8px] bg-muted/30 flex-shrink-0" />
+                <span className="font-body text-muted text-label">Median reference · 50th percentile</span>
               </div>
             </Module>
 
@@ -747,7 +747,7 @@ export default function Analytics() {
               <div className="grid px-5 py-2 bg-stone2 border-b border-rule2"
                 style={{ gridTemplateColumns: '1fr 120px 80px 80px' }}>
                 {['Signal', 'Plants', 'Confidence', 'Status'].map(h => (
-                  <div key={h} className="font-body text-ghost text-[12px] tracking-[0.08em]">{h}</div>
+                  <div key={h} className="font-body text-muted text-label tracking-[0.08em]">{h}</div>
                 ))}
               </div>
               {/* Active signals */}
@@ -765,26 +765,26 @@ export default function Analytics() {
                     style={{ gridTemplateColumns: '1fr 120px 80px 80px' }}>
                     <div>
                       <div className="flex items-center gap-2">
-                        {s.locked && <Lock size={9} strokeWidth={2} className="text-ghost flex-shrink-0" />}
-                        <div className="font-body text-[13px] font-medium text-ink">{s.label}</div>
+                        {s.locked && <Lock size={9} strokeWidth={2} className="text-muted flex-shrink-0" />}
+                        <div className="font-body text-label font-medium text-ink">{s.label}</div>
                       </div>
-                      <div className="font-body text-ghost text-[12px]">{s.note}</div>
+                      <div className="font-body text-muted text-label">{s.note}</div>
                     </div>
-                    <div className="font-mono text-[12px] text-ghost">{s.plants}</div>
+                    <div className="font-mono text-label text-muted">{s.plants}</div>
                     <div>
                       {!s.locked && (
                         <div className="h-[3px] bg-rule2">
                           <div className="h-full" style={{ width: `${s.conf}%`, background: toneColor, opacity: 0.75 }} />
                         </div>
                       )}
-                      {!s.locked && <div className="font-mono text-[12px] tabular-nums mt-0.5" style={{ color: toneColor }}>{s.conf}%</div>}
+                      {!s.locked && <div className="font-mono text-label tabular-nums mt-0.5" style={{ color: toneColor }}>{s.conf}%</div>}
                     </div>
-                    <div className="font-body text-[12px]" style={{ color: toneColor }}>{s.status}</div>
+                    <div className="font-body text-label" style={{ color: toneColor }}>{s.status}</div>
                   </div>
                 )
               })}
               <div className="px-5 py-2 bg-stone2 border-t border-rule2">
-                <span className="font-body text-ghost text-[12px]">Locked signals activate at 3 connected plants · Topeka Plant (KS-02) not yet onboarded</span>
+                <span className="font-body text-muted text-label">Locked signals activate at 3 connected plants · Topeka Plant (KS-02) not yet onboarded</span>
               </div>
             </Module>
 
@@ -797,12 +797,12 @@ export default function Analytics() {
                     { label: 'Last retrained',   value: 'Apr 2 · 14 shifts ago'               },
                   ].map(({ label, value, color }) => (
                     <div key={label}>
-                      <div className="font-body text-ghost text-[12px] mb-0.5">{label}</div>
-                      <div className={`font-body font-medium text-[14px] ${color || 'text-ink'}`}>{value}</div>
+                      <div className="font-body text-muted text-label mb-0.5">{label}</div>
+                      <div className={`font-body font-medium text-body ${color || 'text-ink'}`}>{value}</div>
                     </div>
                   ))}
                 </div>
-                <p className="font-body text-ghost text-[12px] leading-relaxed">
+                <p className="font-body text-muted text-label leading-relaxed">
                   Every actioned finding and dismissed pattern contributes to the model. At 300 shifts, Line 4 accuracy is expected to reach 88–91%. Cross-plant intelligence activates at 3 connected plants.
                 </p>
               </div>
@@ -811,8 +811,8 @@ export default function Analytics() {
           </div>
 
           <footer className="mt-10 pt-5 border-t border-rule2 flex items-center justify-between">
-            <span className="font-body text-ghost text-[12px]">Takorin Total Intelligence · {facility.name}</span>
-            <span className="font-body text-ghost text-[12px]">Data through Apr 16, 2026 · 06:42</span>
+            <span className="font-body text-muted text-label">Takorin Total Intelligence · {facility.name}</span>
+            <span className="font-body text-muted text-label">Data through Apr 16, 2026 · 06:42</span>
           </footer>
 
         </div>
