@@ -3,40 +3,48 @@ import { useRef, useEffect, useMemo, useId, useState, useCallback } from 'react'
 import { X, ArrowRight, ChevronRight, ChevronDown, Check } from 'lucide-react'
 import BoringAvatar from 'boring-avatars'
 import { useFocusTrap, useExitAnimation } from '../lib/utils'
+import { toneStyle } from '../lib/styles'
 const AVATAR_PALETTE = ['#0052CC', '#344054', '#027A48', '#B54708', '#667085']
 
 export function PersonAvatar({ name, size = 28 }) {
  return <BoringAvatar size={size} name={name} variant="beam" colors={AVATAR_PALETTE} />
 }
 
-// ── Urgency pill (unified across all modules)
-export function Urg({ level = 'info', children }) {
- const cls = {
- critical: 'text-danger bg-danger/[0.04]',
- warn: 'text-warn bg-warn/10',
- ok: 'text-ok bg-ok/10',
- info: 'text-muted bg-stone3',
- }[level]
+// ── Status pill (unified across all modules)
+export function StatusPill({ tone, level, variant, status, children, dot = true, icon, className = '' }) {
+ const resolvedTone = tone || level || variant || (status === 'complete' ? 'ok' : status === 'error' ? 'danger' : status === 'pending' ? 'warn' : 'info')
+ const Icon = icon || (status === 'complete' ? Check : status === 'error' ? X : null)
+ const label = children || (status ? status.charAt(0).toUpperCase() + status.slice(1) : null)
  return (
- <span className={`inline-flex items-center gap-1 text-[12px] font-medium px-2 py-0.5 font-body rounded-btn ${cls}`}>
- <span className="w-1 h-1 rounded-full bg-current flex-shrink-0" />
- {children}
+ <span className={`inline-flex items-center gap-1 text-label font-medium px-2 py-0.5 font-body rounded-btn ${toneStyle(resolvedTone, 'pill')} ${className}`}>
+ {Icon ? <Icon size={10} strokeWidth={2} className="flex-shrink-0" /> : dot ? <span className="w-1 h-1 rounded-full bg-current flex-shrink-0" /> : null}
+ {label}
  </span>
+ )
+}
+
+export function SectionHeader({ tone = 'muted', label, sub, badge, className = '' }) {
+ return (
+  <div className={`flex items-center gap-2 border-b border-rule2 bg-stone2 px-4 py-2 ${className}`}>
+   {label && <StatusPill tone={tone}>{label}</StatusPill>}
+   {sub && <span className="font-body text-ghost text-label">{sub}</span>}
+   {badge && <div className="ml-auto">{badge}</div>}
+  </div>
  )
 }
 
 // ── Stat bar cell
 export function StatCell({ label, value, sub, fill, tone = 'ok', badge }) {
- const toneColor = { ok:'bg-ok', warn:'bg-warn', danger:'bg-danger', brass:'bg-brass' }[tone]
- const toneBorder = { ok:'border-t-ok', warn:'border-t-warn', danger:'border-t-danger', brass:'border-t-brass' }[tone]
+ const toneColor = toneStyle(tone, 'dot')
+ const toneBorder = { ok:'border-t-ok', warn:'border-t-warn', danger:'border-t-danger', brass:'border-t-brass' }[tone] || 'border-t-ok'
  return (
  <div className={`px-5 py-4 border-r border-rule2 last:border-r-0 border-t-2 ${toneBorder}`}>
- <div className="font-body text-ghost text-[12px] tracking-normal mb-2">{label}</div>
+ <div className="font-body text-ghost text-label tracking-normal mb-2">{label}</div>
  <div className="flex items-center gap-2">
- <div className="font-body font-bold text-[28px] text-ink leading-none tracking-tight">{value}</div>
- {badge && <span className="font-body text-[12px] px-1.5 py-0.5 bg-stone3 text-muted">{badge}</span>}
+ <div className="font-body font-bold text-metric text-ink tracking-tight">{value}</div>
+ {badge && <StatusPill tone="muted" dot={false}>{badge}</StatusPill>}
  </div>
- {sub && <div className="font-body text-ghost text-[12px] mt-1">{sub}</div>}
+ {sub && <div className="font-body text-ghost text-label mt-1">{sub}</div>}
  {fill !== undefined && (
  <div className="h-[2px] bg-rule mt-3">
  <div className={`h-full ${toneColor} transition-[width] duration-500 ease-enter`} style={{ width: `${fill}%` }} />
@@ -51,10 +59,10 @@ export function SecHd({ tag, title, badge, icon: Icon, accent }) {
  return (
  <div className="flex items-center gap-3 px-5 py-3 border-b border-rule2">
  <div className="flex items-center gap-1.5 flex-shrink-0">
- {tag && <Urg level="muted">{tag}</Urg>}
+ {tag && <StatusPill tone="muted">{tag}</StatusPill>}
  {Icon && <Icon size={12} strokeWidth={2} style={accent ? { color: accent } : undefined} />}
  </div>
- <div className="flex-1 font-body font-semibold text-ink text-[15px] tracking-tight">{title}</div>
+ <div className="flex-1 font-body font-semibold text-ink text-section tracking-tight">{title}</div>
  {badge}
  </div>
  )
@@ -103,18 +111,15 @@ export function SPRow({ label, sub, value, valueColor = 'text-ink' }) {
 
 // ── Action banner — muted tonal style
 export function ActionBanner({ tone = 'warn', headline, body, children, footer }) {
- const s = {
- danger: 'bg-danger/[0.04] border-b-2 border-b-danger',
- warn:   'bg-warn/[0.08] border-b-2 border-b-warn',
- ok:     'bg-ok/[0.08] border-b-2 border-b-ok',
- muted:  'bg-stone3 border-b border-rule2',
- }[tone] || 'bg-warn/[0.08] border-b-2 border-b-warn'
+ const s = tone === 'muted'
+  ? 'bg-stone3 border-b border-rule2'
+  : `${toneStyle(tone, 'bg')} border-b-2 ${toneStyle(tone, 'borderBottom')}`
  return (
  <div className={`flex-shrink-0 ${s}`}>
  <div className="px-5 py-4 flex items-start gap-4">
  <div className="flex-1">
- <div className="font-body font-semibold text-ink text-[15px] leading-tight">{headline}</div>
- {body && <div className="font-body text-muted text-[14px] mt-1 leading-relaxed">{body}</div>}
+ <div className="font-body font-semibold text-ink text-section leading-tight">{headline}</div>
+ {body && <div className="font-body text-muted text-body mt-1 leading-relaxed">{body}</div>}
  </div>
  {children && <div className="flex gap-2 flex-shrink-0 items-start">{children}</div>}
  </div>
@@ -136,23 +141,6 @@ export function Btn({ variant = 'primary', icon: Icon, onClick, disabled, childr
   {IconComp && <IconComp size={12} className="flex-shrink-0" aria-hidden="true" />}
   <span>{children}</span>
  </button>
- )
-}
-
-// ── Chip
-export function Chip({ tone = 'ok', children }) {
- const cls = {
- ok: 'text-ok bg-ok/10',
- warn: 'text-warn bg-warn/10',
- danger: 'text-danger bg-danger/[0.04]',
- muted: 'text-muted bg-stone3',
- int: 'text-int bg-int/10',
- }[tone]
- return (
- <span className={`inline-flex items-center gap-1 font-body font-medium text-[12px] px-2 py-0.5 rounded-btn ${cls}`}>
- <span className="w-1 h-1 rounded-full bg-current" />
- {children}
- </span>
  )
 }
 
@@ -613,30 +601,18 @@ export function CarryForwardItem({ item, acknowledged, onAcknowledge, onView }) 
 // ── MetadataRow — Structured metadata with icon for visual hierarchy (Approach 1: Visual Hierarchy)
 // Breaks dense single-line metadata into scannable rows with icons and color coding
 export function MetadataRow({ icon: Icon, label, value, tone = 'muted', sub, details }) {
- const textColorClass = {
-  danger: 'text-danger',
-  warn: 'text-warn',
-  ok: 'text-ok',
-  muted: 'text-muted',
-  ink: 'text-ink',
- }[tone] || 'text-muted'
-
- const bgTone = {
-  danger: 'bg-danger/[0.03]',
-  warn: 'bg-warn/[0.03]',
-  ok: 'bg-ok/[0.03]',
-  muted: 'bg-stone2',
- }[tone] || 'bg-stone'
+ const textColorClass = tone === 'ink' ? 'text-ink' : toneStyle(tone, 'text')
+ const bgTone = toneStyle(tone, 'bgSubtle')
 
  return (
   <div className={`flex items-start gap-2.5 px-3 py-2 border-b border-rule2 ${bgTone}`}>
    {Icon && <Icon size={12} strokeWidth={2} className={`flex-shrink-0 mt-0.5 ${textColorClass}`} aria-hidden="true" />}
    <div className="flex-1 min-w-0">
-    <div className="font-body font-medium text-ink text-[13px]">{label}</div>
-    <div className={`font-body text-[13px] ${textColorClass}`}>{value}</div>
-    {sub && <div className="font-body text-ghost text-[12px] mt-0.5">{sub}</div>}
+    <div className="font-body font-medium text-ink text-caption">{label}</div>
+    <div className={`font-body text-caption ${textColorClass}`}>{value}</div>
+    {sub && <div className="font-body text-ghost text-label mt-0.5">{sub}</div>}
    </div>
-   {details && <div className="font-body text-ghost text-[12px] flex-shrink-0 text-right">{details}</div>}
+   {details && <div className="font-body text-ghost text-label flex-shrink-0 text-right">{details}</div>}
   </div>
  )
 }
@@ -645,12 +621,7 @@ export function MetadataRow({ icon: Icon, label, value, tone = 'muted', sub, det
 // Shows essential info upfront, expandable for COA specs, audit history, etc.
 export function ExpandableMetadata({ title, defaultOpen = false, children, icon: Icon, tone = 'muted' }) {
  const [open, setOpen] = useState(defaultOpen)
- const bgTone = {
-  danger: 'bg-danger/[0.03]',
-  warn: 'bg-warn/[0.03]',
-  ok: 'bg-ok/[0.03]',
-  muted: 'bg-stone2',
- }[tone] || 'bg-stone2'
+ const bgTone = toneStyle(tone, 'bgSubtle')
 
  return (
   <div className="border-b border-rule2">
@@ -661,7 +632,7 @@ export function ExpandableMetadata({ title, defaultOpen = false, children, icon:
    >
     <div className="flex items-center gap-2 flex-1">
      {Icon && <Icon size={11} strokeWidth={2} className="text-ghost flex-shrink-0" />}
-     <span className="font-body font-medium text-ink text-[13px]">{title}</span>
+     <span className="font-body font-medium text-ink text-caption">{title}</span>
     </div>
     <ChevronRight
      size={14}
@@ -676,31 +647,25 @@ export function ExpandableMetadata({ title, defaultOpen = false, children, icon:
 
 // ── ActionCard — Action-oriented layout for supplier issues (Approach 3: Action-Oriented Layout)
 // Groups content by urgency with clear actions, status tracking, and prominence
-export function ActionCard({ tone = 'danger', title, subtitle, metadata, actions, status, children, icon: CardIcon }) {
- const bgColor = {
-  danger: 'bg-danger/[0.03]',
-  warn: 'bg-warn/[0.03]',
-  ok: 'bg-ok/[0.03]',
-  muted: 'bg-stone',
- }[tone] || 'bg-stone'
-
- const borderColor = {
-  danger: 'border-l-danger',
-  warn: 'border-l-warn',
-  ok: 'border-l-ok',
-  muted: 'border-l-rule2',
- }[tone] || 'border-l-rule2'
-
+export function SurfaceCard({ tone = 'muted', children, className = '' }) {
  return (
-  <div className={`border-l-2 ${borderColor} bg-stone border border-rule rounded-lg mb-2.5 overflow-hidden`} style={{ boxShadow: '0 1px 3px rgba(16,24,40,0.06)' }}>
+  <div className={`border-l-2 ${toneStyle(tone, 'borderLeft')} bg-stone border border-rule rounded-lg mb-2.5 overflow-hidden ${className}`} style={{ boxShadow: '0 1px 3px rgba(16,24,40,0.06)' }}>
+   {children}
+  </div>
+ )
+}
+
+export function ActionCard({ tone = 'danger', title, subtitle, metadata, actions, status, children, icon: CardIcon }) {
+ return (
+  <SurfaceCard tone={tone}>
    <div className="px-4 py-3 flex items-start justify-between gap-3">
     <div className="flex-1 min-w-0">
-     <div className="font-body font-medium text-ink text-[14px] mb-1">{title}</div>
-     {subtitle && <div className="font-body text-muted text-[13px] mb-2">{subtitle}</div>}
+     <div className="font-body font-medium text-ink text-body mb-1">{title}</div>
+     {subtitle && <div className="font-body text-muted text-caption mb-2">{subtitle}</div>}
      {metadata && (
       <div className="flex items-center gap-2 mb-2 flex-wrap">
        {metadata.map((m, i) => (
-        <span key={i} className="font-body text-ghost text-[12px] px-2 py-1 bg-stone2 rounded-sm">
+        <span key={i} className="font-body text-ghost text-label px-2 py-1 bg-stone2 rounded-sm">
          {m}
         </span>
        ))}
@@ -716,39 +681,11 @@ export function ActionCard({ tone = 'danger', title, subtitle, metadata, actions
     )}
    </div>
    {actions && (
-    <div className="px-4 pb-3 flex gap-2 flex-wrap">
+   <div className="px-4 pb-3 flex gap-2 flex-wrap">
      {actions}
     </div>
    )}
-  </div>
- )
-}
-
-// ── StatusIndicator — Visual status representation
-export function StatusIndicator({ status, tone = 'muted' }) {
- const baseClass = 'inline-flex items-center gap-1.5 font-body text-[12px] font-medium'
- const toneClass = {
-  ok: 'text-ok',
-  warn: 'text-warn',
-  danger: 'text-danger',
-  muted: 'text-muted',
- }[tone] || 'text-muted'
-
- const icon = status === 'pending' ? (
-  <div className="w-1.5 h-1.5 rounded-full bg-current" />
- ) : status === 'complete' ? (
-  <Check size={10} strokeWidth={2} />
- ) : status === 'error' ? (
-  <X size={10} strokeWidth={2} />
- ) : (
-  <div className="w-1.5 h-1.5 rounded-full bg-current" />
- )
-
- return (
-  <div className={`${baseClass} ${toneClass}`}>
-   {icon}
-   {status.charAt(0).toUpperCase() + status.slice(1)}
-  </div>
+  </SurfaceCard>
  )
 }
 

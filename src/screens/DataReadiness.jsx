@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import { readinessData } from '../data'
 import { useAppState } from '../context/AppState'
-import { HoldButton, Btn } from '../components/UI'
+import { HoldButton, Btn, SectionHeader } from '../components/UI'
 import { Check, AlertTriangle, ChevronDown, ChevronUp, Zap } from 'lucide-react'
 
 // ── Resolution queue data ─────────────────────────────────────────────────────
@@ -496,12 +496,6 @@ function ResolutionFeedback({ feedback, onDismiss }) {
   )
 }
 
-function SectionLabel({ children }) {
-  return (
-    <div className="font-body text-ghost text-[12px] tracking-normal mb-2">{children}</div>
-  )
-}
-
 function WorkspacePanel({ item, isCluster, resolved, onResolve, onResolveCluster }) {
   const [confirming, setConfirming] = useState(false)
   const [autoConfirming, setAutoConfirming] = useState(false)
@@ -574,7 +568,7 @@ function WorkspacePanel({ item, isCluster, resolved, onResolve, onResolveCluster
         {/* AI Assessment */}
         {item.aiAssessment && (
           <div>
-            <SectionLabel>AI Assessment</SectionLabel>
+            <SectionHeader tone="muted" label="AI Assessment" className="mb-2 border border-rule2 rounded-btn" />
             <div className="border border-rule2 bg-stone2 px-4 py-3.5 rounded-btn">
               <div className="flex items-start justify-between gap-3 mb-2">
                 <div className="font-body text-ink text-[14px] leading-relaxed flex-1">{item.aiAssessment.text}</div>
@@ -589,7 +583,7 @@ function WorkspacePanel({ item, isCluster, resolved, onResolve, onResolveCluster
         {/* Fix Sequencing */}
         {item.fixSequence?.length > 0 && (
           <div>
-            <SectionLabel>Recommended resolution order</SectionLabel>
+            <SectionHeader tone="muted" label="Recommended resolution order" className="mb-2 border border-rule2 rounded-btn" />
             <div className="border border-rule2 bg-stone divide-y divide-rule2 rounded-btn">
               {item.fixSequence.map((step, i) => (
                 <div key={i} className="flex items-center gap-4 px-4 py-3">
@@ -611,7 +605,7 @@ function WorkspacePanel({ item, isCluster, resolved, onResolve, onResolveCluster
         {/* Auto-remediation */}
         {item.autoEligible && !isResolved && (
           <div>
-            <SectionLabel>Automatic remediation</SectionLabel>
+            <SectionHeader tone="muted" label="Automatic remediation" className="mb-2 border border-rule2 rounded-btn" />
             <div className="border border-rule2 bg-stone px-4 py-4 rounded-btn">
               <div className="flex items-center gap-2 mb-3">
                 <Zap size={12} strokeWidth={2} className="text-ochre flex-shrink-0" />
@@ -648,7 +642,7 @@ function WorkspacePanel({ item, isCluster, resolved, onResolve, onResolveCluster
         {/* Risk Forecast */}
         {item.riskForecast?.length > 0 && !isResolved && (
           <div>
-            <SectionLabel>Projected risk if unresolved</SectionLabel>
+            <SectionHeader tone="muted" label="Projected risk if unresolved" className="mb-2 border border-rule2 rounded-btn" />
             <div className="space-y-2">
               {item.riskForecast.map(r => (
                 <div key={r.hours} className="flex items-start gap-4 px-4 py-3 border border-rule2 bg-stone rounded-btn">

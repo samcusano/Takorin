@@ -3,7 +3,7 @@ import { Flag, ShieldCheck, Check, Lock, AlertTriangle, Activity, CheckCircle2, 
 import { operatorContextData, fatigueData } from '../data'
 import { integrationSummary, connectors } from '../data/integrations'
 import { useAppState } from '../context/AppState'
-import { SecHd, Urg, PersonAvatar, Btn, Modal } from '../components/UI'
+import { SecHd, StatusPill, PersonAvatar, Btn, Modal } from '../components/UI'
 
 // ── Static operator data ──────────────────────────────────────────────────────
 
@@ -327,7 +327,7 @@ function TaskSection({ selected, station, tasks, linkedTasks, flags, nearMisses,
  return (
   <>
    <SecHd tag="Today's tasks" title={`${station || selected.split(' ')[1] || selected} · April 16`}
-    badge={allTasks.length > 0 ? <Urg level={pendingCount > 0 ? 'warn' : 'ok'}>{pendingCount} pending</Urg> : null} />
+    badge={allTasks.length > 0 ? <StatusPill tone={pendingCount > 0 ? 'warn' : 'ok'}>{pendingCount} pending</StatusPill> : null} />
    {allTasks.length === 0 ? (
     <div className="px-5 py-4 font-body text-ghost text-[14px]">No tasks yet — tasks assigned by your supervisor appear here.</div>
    ) : allTasks.map((t, i) => (
@@ -362,7 +362,7 @@ function TaskSection({ selected, station, tasks, linkedTasks, flags, nearMisses,
 
    {flags.length > 0 && (
     <div className="border-t border-rule2">
-     <SecHd tag="Flagged items" title="Items you could not complete" badge={<Urg level="warn">{flags.length} flagged</Urg>} />
+     <SecHd tag="Flagged items" title="Items you could not complete" badge={<StatusPill tone="warn">{flags.length} flagged</StatusPill>} />
      {flags.map((f, i) => (
       <div key={i} className="flex items-start gap-2.5 px-5 py-3.5 border-b border-rule2 last:border-b-0 bg-warn/[0.02]">
        <Flag size={12} strokeWidth={2} className="text-warn flex-shrink-0 mt-0.5" />
@@ -377,7 +377,7 @@ function TaskSection({ selected, station, tasks, linkedTasks, flags, nearMisses,
 
    {nearMisses.length > 0 && (
     <div className="border-t border-rule2">
-     <SecHd tag="Near-miss reports" title="Submitted this shift" badge={<Urg level="ok">{nearMisses.length} logged</Urg>} />
+     <SecHd tag="Near-miss reports" title="Submitted this shift" badge={<StatusPill tone="ok">{nearMisses.length} logged</StatusPill>} />
      {nearMisses.map((n, i) => (
       <div key={i} className="px-5 py-3.5 border-b border-rule2 last:border-b-0">
        <div className="font-body font-medium text-ink text-[14px]">{n.station}</div>

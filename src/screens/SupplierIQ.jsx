@@ -6,7 +6,7 @@ import NetworkView from './NetworkView'
 import { useNavigate, Link } from 'react-router-dom'
 import { supplierData, supplierAudits, empResultsHistory } from '../data'
 import { useAppState } from '../context/AppState'
-import { Urg, SP, SecHd, Btn, Chip, Layout, ActionBanner, ScoreRing, Spinner, AnimatedCheck, MetadataRow, ExpandableMetadata, ActionCard, StatusIndicator, SlidePanel } from '../components/UI'
+import { StatusPill, SectionHeader, SP, SecHd, Btn, Layout, ActionBanner, ScoreRing, Spinner, AnimatedCheck, MetadataRow, ExpandableMetadata, ActionCard, SlidePanel } from '../components/UI'
 import StatBar from '../components/StatBar.jsx'
 
 // ── CoaPanel ──────────────────────────────────────────────────────────────────
@@ -164,22 +164,6 @@ function AlertChip({ count, tone, label }) {
   )
 }
 
-// ── SectionLabel ──────────────────────────────────────────────────────────────
-
-function SectionLabel({ tone, label, sub }) {
-  const cls = {
-    danger: 'bg-danger/[0.04] border-b-2 border-b-danger/20 text-danger',
-    warn:   'bg-warn/[0.04] border-b border-rule2 text-warn',
-    muted:  'bg-stone2 border-b border-rule2 text-muted',
-  }[tone]
-  return (
-    <div className={`flex items-baseline gap-2 px-4 py-2 ${cls}`}>
-      <span className="font-body font-medium text-[12px] tracking-normal">{label}</span>
-      {sub && <span className="font-body text-[12px] opacity-60">{sub}</span>}
-    </div>
-  )
-}
-
 // ── Main screen ───────────────────────────────────────────────────────────────
 
 export default function SupplierIQ() {
@@ -268,8 +252,8 @@ export default function SupplierIQ() {
         {/* ── Resolve now ── */}
         {resolveCount > 0 && (
           <>
-            <SectionLabel
-              tone="danger"
+            <SectionHeader
+              tone="critical"
               label="Resolve now"
               sub={`${resolveCount} item${resolveCount > 1 ? 's' : ''} blocking production`}
             />
@@ -289,7 +273,7 @@ export default function SupplierIQ() {
                   ]}
                   status={
                     coaRequested ? (
-                      <StatusIndicator status="complete" tone="ok" />
+                      <StatusPill status="complete" tone="ok" />
                     ) : null
                   }
                   actions={
@@ -358,7 +342,7 @@ export default function SupplierIQ() {
         {/* ── Monitoring ── */}
         {monitoringLots.length > 0 && (
           <>
-            <SectionLabel
+            <SectionHeader
               tone="warn"
               label="Monitoring"
               sub={`${monitoringLots.length} at risk · ${d.stats[5]?.value} alerts`}
@@ -377,7 +361,7 @@ export default function SupplierIQ() {
                     `Arrived ${lot.deliveryTime}`,
                     lot.coa
                   ]}
-                  status={<StatusIndicator status={lot.coaTone === 'ok' ? 'complete' : 'pending'} tone={lot.coaTone === 'ok' ? 'ok' : 'warn'} />}
+                  status={<StatusPill status={lot.coaTone === 'ok' ? 'complete' : 'pending'} tone={lot.coaTone === 'ok' ? 'ok' : 'warn'} />}
                   actions={
                     <>
                       <button type="button" onClick={() => setCoaViewLot(lot)}
@@ -423,7 +407,7 @@ export default function SupplierIQ() {
                 'ConAgra renewal May 12',
                 'Canola oil +8%'
               ]}
-              status={rfqSent ? <StatusIndicator status="complete" tone="ok" /> : null}
+              status={rfqSent ? <StatusPill status="complete" tone="ok" /> : null}
               actions={
                 rfqSent
                   ? <span className="font-body text-ok text-[12px] flex items-center gap-1"><Check size={10} strokeWidth={2} /> RFQ sent</span>
@@ -434,7 +418,7 @@ export default function SupplierIQ() {
         )}
 
         {/* ── Supplier standings ── */}
-        <SectionLabel tone="muted" label="Supplier standings" sub="5 active · sorted by score" />
+        <SectionHeader tone="muted" label="Supplier standings" sub="5 active · sorted by score" />
 
         {sortedSuppliers.map(s => {
           const audit = supplierAudits[s.name]

@@ -28,6 +28,12 @@ export default {
         '10': '12px',
         '11': '13px',
         '13': '15px',
+        label: ['12px', { lineHeight: '1.2' }],
+        caption: ['13px', { lineHeight: '1.35' }],
+        body: ['14px', { lineHeight: '1.45' }],
+        section: ['15px', { lineHeight: '1.3' }],
+        metric: ['28px', { lineHeight: '1' }],
+        page: ['32px', { lineHeight: '1.1' }],
       },
       transitionDuration: {
         '50':  '50ms',

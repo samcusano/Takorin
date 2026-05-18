@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { handoffData, certExpiry, haccpData, robotFleetData } from '../data'
-import { Btn, ActionBanner, PersonAvatar, AcceptanceGate, CarryForwardItem, SlidePanel, SecHd, Chip } from '../components/UI'
+import { Btn, ActionBanner, PersonAvatar, AcceptanceGate, CarryForwardItem, SlidePanel, SecHd, StatusPill } from '../components/UI'
 import StatBar from '../components/StatBar.jsx'
 import { Check, AlertTriangle, Clock, Brain, Bot, CheckCircle, Cpu } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
@@ -355,9 +355,9 @@ function MachineStateHandoff() {
         <div key={i} className={`flex items-center gap-4 px-5 py-3.5 border-b border-rule2 border-l-2 ${borderCls}`}>
          <span className="font-body text-[12px] w-10 flex-shrink-0 tabular-nums text-ghost">{item.unit}</span>
          <span className={`font-body font-medium text-[14px] flex-1 ${labelTone}`}>{item.item}</span>
-         <Chip tone={item.urgency === 'danger' ? 'danger' : item.urgency === 'warn' ? 'warn' : 'muted'}>
+         <StatusPill tone={item.urgency === 'danger' ? 'danger' : item.urgency === 'warn' ? 'warn' : 'muted'}>
           {item.urgency === 'danger' ? 'Critical' : item.urgency === 'warn' ? 'Attention' : 'Info'}
-         </Chip>
+         </StatusPill>
         </div>
        )
       })}
@@ -382,9 +382,9 @@ function MachineStateHandoff() {
          <span className="font-body font-medium text-muted text-[12px] w-10 flex-shrink-0 tabular-nums">{u.id}</span>
          <span className="font-body font-medium text-ink text-[14px] flex-1">{u.name}</span>
          <span className="font-body text-ghost text-[12px]">{u.programVersion}</span>
-         <Chip tone={u.calibrationStatus === 'expired' ? 'danger' : 'ok'}>
+         <StatusPill tone={u.calibrationStatus === 'expired' ? 'danger' : 'ok'}>
           {u.calibrationStatus === 'expired' ? 'Cal expired' : 'Cal valid'}
-         </Chip>
+         </StatusPill>
          <span className={`font-body font-medium text-[13px] tabular-nums ${pmTone}`}>{pmH}h to PM</span>
         </div>
        )

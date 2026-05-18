@@ -9,7 +9,7 @@ import {
   AlertTriangle, ChevronDown, ChevronRight, Database, Activity,
   Truck, ClipboardCheck, RotateCcw, TrendingDown, Shield, Zap, Waves,
 } from 'lucide-react'
-import { Chip, SlidePanel } from '../components/UI'
+import { StatusPill, SlidePanel } from '../components/UI'
 
 // ── Operational Memory Domains ───────────────────────────────────────────────
 
@@ -380,9 +380,9 @@ function OperationalMemoryVault() {
                               <div className="flex items-start justify-between gap-3 mb-2">
                                 <div className="flex items-center gap-1.5 flex-wrap">
                                   {risk && (
-                                    <Chip tone={riskKey === 'HIGH' ? 'danger' : riskKey === 'MEDIUM' ? 'warn' : 'ok'}>
+                                    <StatusPill tone={riskKey === 'HIGH' ? 'danger' : riskKey === 'MEDIUM' ? 'warn' : 'ok'}>
                                       {risk.label}
-                                    </Chip>
+                                    </StatusPill>
                                   )}
                                   <span className={`inline-flex items-center gap-1 font-body text-[12px] px-1.5 py-0.5 rounded-btn ${recallC.chip}`}>
                                     <span className={`w-1 h-1 rounded-full ${recallC.dot}`} />

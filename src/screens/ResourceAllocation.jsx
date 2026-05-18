@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { AlertTriangle, CheckCircle, ShieldAlert, RotateCcw, Bot, User, ArrowRight } from 'lucide-react'
-import { PageHead, SecHd, Chip, Urg, ActionBanner, Btn } from '../components/UI'
+import { PageHead, SecHd, StatusPill, ActionBanner, Btn } from '../components/UI'
 import { taskAllocationData } from '../data'
 import { useAppState } from '../context/AppState'
 
@@ -121,7 +121,7 @@ function TaskRow({ task, reallocated, onPreviewReallocate }) {
       </div>
       <div className="flex-shrink-0">
         {reallocated ? (
-          <Urg level="ok">Reallocated</Urg>
+          <StatusPill tone="ok">Reallocated</StatusPill>
         ) : (
           <button
             type="button"
@@ -148,7 +148,7 @@ function SafetyZoneRow({ zone }) {
 
   return (
     <div className="flex items-start gap-4 px-5 py-3 border-b border-rule2 last:border-0">
-      <Chip tone={t.chip}>{t.label}</Chip>
+      <StatusPill tone={t.chip}>{t.label}</StatusPill>
       <div className="flex-1">
         <div className="font-body font-medium text-ink text-[14px]">{zone.label}</div>
         <div className="font-body text-ghost text-[12px] mt-0.5 leading-relaxed">
@@ -329,9 +329,9 @@ export default function ResourceAllocation() {
                     : <AlertTriangle size={14} className="text-danger" />}
                 </div>
                 <div className="flex justify-center items-center">
-                  <Chip tone={row.status === 'ok' ? 'ok' : 'danger'}>
+                  <StatusPill tone={row.status === 'ok' ? 'ok' : 'danger'}>
                     {row.status === 'ok' ? 'Covered' : 'Gap'}
-                  </Chip>
+                  </StatusPill>
                 </div>
               </div>
             ))}

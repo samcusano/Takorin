@@ -71,6 +71,17 @@
 @layer utilities {
   .tabular-nums { font-variant-numeric: tabular-nums; }
 
+  .bg-rule2 {
+    background-color: var(--color-stone);
+    background-image: repeating-linear-gradient(
+      135deg,
+      var(--color-stone) 0,
+      var(--color-stone) 8px,
+      rgba(226, 229, 234, 0.38) 8px,
+      rgba(226, 229, 234, 0.38) 14px
+    );
+  }
+
   /* Display type — hero numbers only (score, large KPIs) */
   .display-num {
     font-family: "Inter", "Helvetica Neue", system-ui, sans-serif;

@@ -4,7 +4,7 @@ import { useFocusTrap, useExitAnimation } from '../lib/utils'
 import { FileText, BarChart2, ShieldCheck, Clock, Brain, Search } from 'lucide-react'
 import StatBar from '../components/StatBar.jsx'
 import { Check, X, AlertTriangle, ArrowRight, TrendingUp, ChevronRight } from 'lucide-react'
-import { Urg, SecHd, SP, ActionBanner, Btn, Chip, HoldButton } from '../components/UI'
+import { StatusPill, SecHd, SP, ActionBanner, Btn, HoldButton } from '../components/UI'
 import { openCases, patternRows, benchmarks } from '../data/capa.js'
 import { haccpData, goalsData } from '../data'
 import { useAppState } from '../context/AppState'
@@ -65,19 +65,19 @@ function CaseDetailPanel({ caseData, onClose }) {
  <div className="px-4 py-3 border-b border-rule2">
  <div className="font-body text-[12px] text-muted mb-2">Root cause</div>
  <div className="flex gap-1.5 flex-wrap">
- {caseData.rootCauseTags.map(t=><Chip key={t} tone="warn">{t}</Chip>)}
+ {caseData.rootCauseTags.map(t=><StatusPill key={t} tone="warn">{t}</StatusPill>)}
  </div>
  </div>
  <div className="px-4 py-3 border-b border-rule2">
  <div className="font-body text-[12px] text-muted mb-2">Regulatory mapping</div>
  <div className="flex gap-1.5 flex-wrap">
- {caseData.regulatory.map(r=><Chip key={r} tone="int">{r}</Chip>)}
+ {caseData.regulatory.map(r=><StatusPill key={r} tone="int">{r}</StatusPill>)}
  </div>
  </div>
  <div className="px-4 py-3 border-b border-rule2">
  <div className="flex items-center justify-between mb-2">
  <div className="font-body text-[12px] text-muted">Evidence files</div>
- <Urg level={allFiles.length > 0 ? 'ok' : 'critical'}>{allFiles.length > 0 ? `${allFiles.length} attached` : '0 of 1 required'}</Urg>
+ <StatusPill tone={allFiles.length > 0 ? 'ok' : 'critical'}>{allFiles.length > 0 ? `${allFiles.length} attached` : '0 of 1 required'}</StatusPill>
  </div>
  <input ref={fileInputRef} type="file" className="hidden" onChange={e => { const f=e.target.files[0]; if(f) setLocalFiles(p=>[...p,f.name]); e.target.value='' }} />
  {allFiles.length > 0 ? (
@@ -176,9 +176,9 @@ function PriorityQueueRow({ c, isSelected, onSelect, isEscalated, isResolved }) 
  <div className="flex items-start gap-3 px-4 py-3">
  <div className="flex-1 min-w-0">
   <div className="flex items-center gap-1.5 mb-0.5 flex-wrap">
-  <Chip tone={isEscalated ? 'muted' : isResolved ? 'ok' : c.badgeColor === 'text-danger' ? 'danger' : c.badgeColor === 'text-ok' ? 'ok' : 'warn'}>
+  <StatusPill tone={isEscalated ? 'muted' : isResolved ? 'ok' : c.badgeColor === 'text-danger' ? 'danger' : c.badgeColor === 'text-ok' ? 'ok' : 'warn'}>
    {isEscalated ? 'Delegated' : isResolved ? 'Resolved' : c.badge}
-  </Chip>
+  </StatusPill>
   {/* Directed ownership indicator */}
   {c.directorTurn && !isResolved && !isEscalated && (
    <span className="font-body text-[12px] bg-ochre/10 text-ochre px-1.5 py-0.5 font-medium">Your turn</span>
@@ -246,7 +246,7 @@ function ClosureRecord({ record }) {
    </div>
    <div className="flex gap-1.5 flex-wrap pt-1 border-t border-rule2">
     <span className="font-body text-ghost text-[12px] w-24 flex-shrink-0 pt-0.5">Regulatory</span>
-    <div className="flex gap-1 flex-wrap">{record.regulatory.map(r => <Chip key={r} tone="int">{r}</Chip>)}</div>
+    <div className="flex gap-1 flex-wrap">{record.regulatory.map(r => <StatusPill key={r} tone="int">{r}</StatusPill>)}</div>
    </div>
   </div>
  </div>
@@ -317,7 +317,7 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
  <div className="px-4 py-4 border-b border-rule2 bg-stone2 flex-shrink-0">
  <div className="flex items-center gap-2 mb-1">
  <span className="font-body text-muted text-[12px]">{c.capaId}</span>
- <Chip tone={c.badgeColor === 'text-danger' ? 'danger' : c.badgeColor === 'text-ok' ? 'ok' : 'warn'}>{c.badge}</Chip>
+ <StatusPill tone={c.badgeColor === 'text-danger' ? 'danger' : c.badgeColor === 'text-ok' ? 'ok' : 'warn'}>{c.badge}</StatusPill>
  </div>
  <div className="font-display text-lg font-black text-ink leading-tight">{c.title}</div>
  <div className="font-body text-muted text-[13px] mt-0.5">
@@ -513,13 +513,13 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
   <div>
   <div className="font-body text-ghost text-[12px] mb-1.5">Regulatory</div>
   <div className="flex gap-1.5 flex-wrap">
-   {(c.regulatory||[]).map(r => <Chip key={r} tone="int">{r}</Chip>)}
+   {(c.regulatory||[]).map(r => <StatusPill key={r} tone="int">{r}</StatusPill>)}
   </div>
   </div>
   <div>
   <div className="font-body text-ghost text-[12px] mb-1.5">Root cause tags</div>
   <div className="flex gap-1.5 flex-wrap">
-   {(c.rootCauseTags||[]).map(t => <Chip key={t} tone="warn">{t}</Chip>)}
+   {(c.rootCauseTags||[]).map(t => <StatusPill key={t} tone="warn">{t}</StatusPill>)}
   </div>
   </div>
  </div>
@@ -530,9 +530,9 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
  <div className="px-4 py-4 border-b border-rule2">
   <div className="flex items-center justify-between mb-2">
    <div className="font-body text-ghost text-[12px]">Evidence files</div>
-   <Urg level={allFiles.length > 0 ? 'ok' : c.type === 'ca' ? 'warn' : 'info'}>
+   <StatusPill tone={allFiles.length > 0 ? 'ok' : c.type === 'ca' ? 'warn' : 'info'}>
    {allFiles.length > 0 ? `${allFiles.length} filed` : 'None attached'}
-   </Urg>
+   </StatusPill>
   </div>
   {allFiles.length > 0 ? allFiles.map(f => (
    <div key={f} className="flex items-center gap-2 py-1.5 border-b border-rule2 last:border-0">

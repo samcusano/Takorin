@@ -12,7 +12,7 @@ import {
 } from 'lucide-react'
 import { useAppState, PLANTS } from '../context/AppState'
 import { commandData, agentConfigData } from '../data'
-import { PersonAvatar } from './UI'
+import { PersonAvatar, StatusPill } from './UI'
 import NotificationCenter from '../screens/NotificationCenter'
 
 const modules = [
@@ -22,21 +22,12 @@ const modules = [
  { id:'analytics',label:'Analytics', path:'/analytics',icon:BarChart2,     badge:null },
 ]
 
-function Badge({ badge, badgeType }) {
+function NavBadge({ badge, badgeType }) {
  if (!badge) return null
  if (badgeType === 'live') return (
  <span className="ml-auto w-1.5 h-1.5 rounded-full bg-ok beat" />
  )
- if (badgeType === 'score') return (
- <span className="ml-auto text-[12px] font-semibold px-1.5 py-0.5 bg-danger text-white font-body rounded-btn">
- {badge}
- </span>
- )
- return (
- <span className="ml-auto text-[12px] font-semibold px-1.5 py-0.5 bg-danger text-white rounded-btn">
- {badge}
- </span>
- )
+ return <StatusPill tone="alert" dot={false} className="ml-auto">{badge}</StatusPill>
 }
 
 function SideItem({ to, icon: Icon, label, badge, badgeType, disabled, id, onDisabledClick }) {
@@ -66,7 +57,7 @@ function SideItem({ to, icon: Icon, label, badge, badgeType, disabled, id, onDis
  className="flex-shrink-0"
  />
  <span className="font-body">{label}</span>
- <Badge badge={badge} badgeType={badgeType} />
+ <NavBadge badge={badge} badgeType={badgeType} />
  </>)}
  </NavLink>
  )
@@ -160,29 +151,8 @@ function PlantDropdown({ triggerRef, onClose, complianceState, currentPlant, set
    <div className="w-[240px] bg-sidebar border border-sidebar-border rounded-2xl shadow-raise overflow-hidden">
     <div className="plant-drop-in-content">
 
-     {/* Header */}
-     <div className="flex flex-col items-center text-center px-5 pt-5 pb-4">
-      <div className="w-14 h-14 rounded-2xl bg-sidebar-3 border border-sidebar-border flex items-center justify-center mb-3 flex-shrink-0">
-       <Building2 size={24} strokeWidth={1.5} className="text-ochre" />
-      </div>
-      <h2 className="font-display font-bold text-white text-[15px] leading-snug">{currentPlant.name}</h2>
-      <p className="font-body text-white/50 text-[13px] mt-0.5">{currentPlant.code}</p>
-      <div className="flex items-center gap-1 mt-1.5 font-body text-white/50 text-[12px]">
-       <MapPin size={9} strokeWidth={2} />
-       <span>{currentPlant.region} · AM shift</span>
-      </div>
-      <div className={`flex items-center gap-1 mt-2 px-2 py-0.5 rounded font-body text-[12px] font-medium ${complianceTone.cls}`}>
-       <complianceTone.icon size={9} strokeWidth={2.5} />
-       {complianceTone.label}
-      </div>
-     </div>
-
-     {/* Divider */}
-     <div className="mx-5 h-px bg-sidebar-border" />
-
      {/* Network plants */}
      <div className="px-5 pt-3 pb-4">
-      <p className="font-body text-white/50 text-[12px] tracking-normal mb-2">Network plants</p>
       {AVAILABLE_PLANTS.map(p => {
        const isActive = currentPlant.id === p.id
        const modeColor = p.workerMode === 'robot' ? 'text-ochre' : p.workerMode === 'hybrid' ? 'text-warn' : 'text-ok'
@@ -200,13 +170,9 @@ function PlantDropdown({ triggerRef, onClose, complianceState, currentPlant, set
           </div>
           <div className="text-left">
            <span className={`font-body text-[13px] block leading-tight ${isActive ? 'text-white font-medium' : 'text-white/50'}`}>{p.name}</span>
-           <span className={`font-body text-[12px] ${modeColor}`}>{modeLabel}</span>
+           <span className={`font-body text-white/50 text-[12px]`}>{modeLabel}</span>
           </div>
          </div>
-         {isActive
-          ? <span className="font-body text-ochre text-[12px]">Active</span>
-          : <span className="font-body text-white/50 text-[12px]">Switch →</span>
-         }
         </button>
        )
       })}
@@ -244,10 +210,6 @@ function PlantDropdown({ triggerRef, onClose, complianceState, currentPlant, set
            <span className={`font-body text-[12px] ${sectorColor}`}>{sectorLabel}</span>
           </div>
          </div>
-         {isActive
-          ? <span className="font-body text-ochre text-[12px]">Active</span>
-          : <span className="font-body text-white/50 text-[12px]">Switch →</span>
-         }
         </button>
        )
       })}
@@ -307,21 +269,8 @@ function UserDropdown({ triggerRef, onClose, viewingRole, setViewingRole }) {
   >
    <div className="w-[240px] bg-sidebar border border-sidebar-border rounded-2xl shadow-raise overflow-hidden" style={{ maxHeight: 'calc(100vh - 24px)' }}>
     <div className="plant-drop-in-content">
-
-     {/* Header */}
-     <div className="flex flex-col items-center text-center px-5 pt-5 pb-4">
-      <PersonAvatar name="J. Crocker" size={48} />
-      <h2 className="font-display font-bold text-white text-[15px] leading-snug mt-3">J. Crocker</h2>
-      <p className="font-body text-white/50 text-[13px] mt-0.5">Plant Director</p>
-      <p className="font-body text-white/35 text-[12px] mt-0.5">Salina Campus · SL-04</p>
-     </div>
-
-     {/* Divider */}
-     <div className="mx-5 h-px bg-sidebar-border" />
-
      {/* Viewing as */}
      <div className="px-5 pt-3 pb-4">
-      <p className="font-body text-white/50 text-[12px] tracking-normal mb-2">Viewing as</p>
       {roles.map(r => (
        <button key={r.id} type="button"
         aria-pressed={viewingRole === r.id}
@@ -334,7 +283,6 @@ function UserDropdown({ triggerRef, onClose, viewingRole, setViewingRole }) {
          <div className={`font-body text-[13px] font-medium truncate transition-colors ${viewingRole === r.id ? 'text-white' : 'text-white/50 group-hover:text-white/70'}`}>{r.name}</div>
          <div className="font-body text-white/50 text-[12px]">{r.role}</div>
         </div>
-        {viewingRole === r.id && <span className="font-body text-ochre text-[12px] flex-shrink-0">Active</span>}
        </button>
       ))}
      </div>
@@ -358,11 +306,7 @@ function AgentItem({ count }) {
    }>
    <Cpu size={15} strokeWidth={1.75} className="flex-shrink-0" />
    <span className="font-body text-[15px]">Agents</span>
-   {count > 0 && (
-    <span className="ml-auto text-[12px] font-semibold px-1.5 py-0.5 bg-danger text-white rounded-btn">
-     {count}
-    </span>
-   )}
+   {count > 0 && <StatusPill tone="alert" dot={false} className="ml-auto">{count}</StatusPill>}
   </NavLink>
  )
 }
@@ -465,7 +409,7 @@ export default function Sidebar() {
     className="flex items-center gap-3 px-4 py-2.5 w-full text-left transition-colors hover:bg-sidebar2 text-white/70">
     <Bell size={15} strokeWidth={1.75} className="flex-shrink-0" />
     <span className="font-body text-[15px]">Notifications</span>
-    <span className="ml-auto text-[12px] font-semibold px-1.5 py-0.5 bg-danger text-white rounded-btn">4</span>
+    <StatusPill tone="alert" dot={false} className="ml-auto">4</StatusPill>
    </button>
    {notifOpen && <NotificationCenter onClose={() => setNotifOpen(false)} />}
   </>
@@ -508,7 +452,7 @@ export default function Sidebar() {
     className="flex items-center gap-3 px-4 py-2.5 w-full text-left transition-colors hover:bg-sidebar2 text-white/70">
     <Bell size={15} strokeWidth={1.75} className="flex-shrink-0" />
     <span className="font-body text-[15px]">Notifications</span>
-    <span className="ml-auto text-[12px] font-semibold px-1.5 py-0.5 bg-danger text-white rounded-btn">4</span>
+    <StatusPill tone="alert" dot={false} className="ml-auto">4</StatusPill>
    </button>
    {notifOpen && <NotificationCenter onClose={() => setNotifOpen(false)} />}
   </>

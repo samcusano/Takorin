@@ -6,9 +6,9 @@ import ResourceAllocation from './ResourceAllocation'
 import { useFocusTrap, useExitAnimation, riskColorClass, riskLabel, riskBgColor } from '../lib/utils'
 import { shiftData, line6Data, wichitaData, denverData, haccpData, productionRate, crewHoursData } from '../data'
 import {
- Urg, StatCell, SecHd, CaseCard, Layout,
+ StatusPill, StatCell, SecHd, CaseCard, Layout,
  Btn, ConsequenceNotice, PageHead, ActionBanner, MetricCard,
- PersonAvatar, Modal, WaveformSparkline, Chip, AnimatedCheck, Spinner,
+ PersonAvatar, Modal, WaveformSparkline, AnimatedCheck, Spinner,
  VaulDrawer, HoldButton
 } from '../components/UI'
 import { Flag, ChevronRight, ChevronDown, AlertTriangle, Check, X, TrendingDown, RotateCcw, Wrench, Package, HelpCircle, ListChecks, Brain, Shield, RefreshCw, ChevronUp, BarChart2, ArrowRight, Moon, Activity } from 'lucide-react'
@@ -451,7 +451,7 @@ function Finding({ f, onAct, onDismiss, dismissed }) {
         <div className="flex items-center justify-between px-4 pt-3 pb-1.5">
          <span className={`font-body font-medium text-[12px] px-1.5 py-px rounded-btn ${urgencyChipCls}`}>{urgencyLabel}</span>
          <div className="flex items-center gap-1.5">
-          {f.source && <Chip tone="muted">{f.source}</Chip>}
+          {f.source && <StatusPill tone="muted">{f.source}</StatusPill>}
           {f.capaId && (
            <Link to="/capa" className="font-body text-warn text-[12px] flex items-center gap-1 hover:text-ink transition-colors">
             <ArrowRight size={9} />{f.capaId}
@@ -1019,7 +1019,7 @@ export default function ShiftIQ() {
  )}
 
  <div className="flex items-baseline gap-3 px-4 py-2 border-b border-rule2">
- <Urg level="critical">3 pending · 27 min</Urg>
+ <StatusPill tone="critical">3 pending · 27 min</StatusPill>
  </div>
  <div className="px-3 py-3 space-y-2.5">
   {d.findings
