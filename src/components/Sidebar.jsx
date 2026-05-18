@@ -165,7 +165,7 @@ function PlantDropdown({ triggerRef, onClose, complianceState, currentPlant, set
       <div className="w-14 h-14 rounded-2xl bg-sidebar-3 border border-sidebar-border flex items-center justify-center mb-3 flex-shrink-0">
        <Building2 size={24} strokeWidth={1.5} className="text-ochre" />
       </div>
-      <h2 className="font-display font-bold text-whitetext-[15px] leading-snug">{currentPlant.name}</h2>
+      <h2 className="font-display font-bold text-white text-[15px] leading-snug">{currentPlant.name}</h2>
       <p className="font-body text-white/50 text-[13px] mt-0.5">{currentPlant.code}</p>
       <div className="flex items-center gap-1 mt-1.5 font-body text-white/50 text-[12px]">
        <MapPin size={9} strokeWidth={2} />
@@ -311,7 +311,7 @@ function UserDropdown({ triggerRef, onClose, viewingRole, setViewingRole }) {
      {/* Header */}
      <div className="flex flex-col items-center text-center px-5 pt-5 pb-4">
       <PersonAvatar name="J. Crocker" size={48} />
-      <h2 className="font-display font-bold text-whitetext-[15px] leading-snug mt-3">J. Crocker</h2>
+      <h2 className="font-display font-bold text-white text-[15px] leading-snug mt-3">J. Crocker</h2>
       <p className="font-body text-white/50 text-[13px] mt-0.5">Plant Director</p>
       <p className="font-body text-white/35 text-[12px] mt-0.5">Salina Campus · SL-04</p>
      </div>
@@ -404,7 +404,7 @@ export default function Sidebar() {
  <path d="M8 13 L14 13 L14 7 Z" fill="#C17D2A"/>
  </svg>
  <div>
- <div className="font-display font-bold text-whitetext-base tracking-tight leading-none">
+ <div className="font-display font-bold text-white text-base tracking-tight leading-none">
  takorin
  </div>
  <div className="font-body text-white/50 text-[12px] mt-0.5">
@@ -424,7 +424,7 @@ export default function Sidebar() {
   <Building2 size={15} className="text-white/50" strokeWidth={1.75} />
   </div>
   <div className="flex-1 min-w-0">
-  <div className="font-body text-whitetext-[15px] font-medium truncate">{currentPlant?.name || 'Salina Campus'}</div>
+  <div className="font-body text-white text-[15px] font-medium truncate">{currentPlant?.name || 'Salina Campus'}</div>
   <div className="font-body text-white/50 text-[12px]">Plant ID {currentPlant?.code || 'SL-04'}</div>
   </div>
   <ChevronDown
@@ -546,7 +546,7 @@ export default function Sidebar() {
  >
   <PersonAvatar name="J. Crocker" size={28} />
   <div className="flex-1 min-w-0">
-  <div className="font-body text-whitetext-[14px] font-medium">J. Crocker</div>
+  <div className="font-body text-white text-[14px] font-medium">J. Crocker</div>
   <div className="font-body text-white/50 text-[12px]">
    {viewingRole === 'supervisor' ? <span className="text-ochre">Viewing as Kowalski</span> : viewingRole === 'operator-reyes' ? <span className="text-ochre">Viewing as C. Reyes</span> : viewingRole === 'operator-okonkwo' ? <span className="text-ochre">Viewing as P. Okonkwo</span> : 'Plant Director'}
   </div>
