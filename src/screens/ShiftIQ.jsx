@@ -7,11 +7,11 @@ import { useFocusTrap, useExitAnimation, riskColorClass, riskLabel, riskBgColor 
 import { shiftData, line6Data, wichitaData, denverData, haccpData, productionRate, crewHoursData } from '../data'
 import {
  Urg, StatCell, SecHd, CaseCard, Layout,
- Btn, ConsequenceNotice, PageHead, ActionBanner, MetricCard, ScoreRing,
+ Btn, ConsequenceNotice, PageHead, ActionBanner, MetricCard,
  PersonAvatar, Modal, WaveformSparkline, Chip, AnimatedCheck, Spinner,
  VaulDrawer, HoldButton
 } from '../components/UI'
-import { Flag, ChevronRight, ChevronDown, AlertTriangle, Check, X, TrendingDown, RotateCcw, Wrench, Package, HelpCircle, ListChecks, Brain, Shield, RefreshCw, ChevronUp, BarChart2, ArrowRight, Moon } from 'lucide-react'
+import { Flag, ChevronRight, ChevronDown, AlertTriangle, Check, X, TrendingDown, RotateCcw, Wrench, Package, HelpCircle, ListChecks, Brain, Shield, RefreshCw, ChevronUp, BarChart2, ArrowRight, Moon, Activity } from 'lucide-react'
 import { useAppState } from '../context/AppState'
 
 const CHECKLIST_ITEMS = [
@@ -180,20 +180,35 @@ function ScoreExplainer({ score, open, onToggle }) {
  )
 }
 
-const TONE_HEX = { danger: '#C43820', warn: '#C4920A', ok: '#3A8A5A' }
 function SignalCard({ sig }) {
- const c = TONE_HEX[sig.tone] ?? '#3A8A5A'
+ const stale = sig.tone === 'danger'
  return (
- <div className="flex items-center gap-3 px-4 py-2.5 border-b border-rule2 last:border-b-0">
- <ScoreRing pct={sig.score} size={36} color={c} />
- <div className="flex-1 min-w-0">
- <div className={`font-body text-[14px] font-medium truncate ${sig.tone === 'danger' ? 'text-danger' : 'text-ink'}`}>{sig.name}</div>
- <div className="font-body text-ghost text-[12px]">{sig.sub}</div>
- </div>
- <span className={`font-body font-medium text-[12px] px-2 py-0.5 flex-shrink-0 rounded-btn ${
- sig.tone === 'ok' ? 'bg-ok/10 text-ok' : sig.tone === 'danger' ? 'bg-danger/[0.04] text-danger' : 'bg-warn/10 text-warn'
- }`}>{sig.status}</span>
- </div>
+  <div className="flex min-h-[64px] items-center gap-5 border-b border-rule last:border-b-0 bg-stone px-6 py-4">
+   <div className={`flex h-[48px] w-[48px] flex-shrink-0 items-center justify-center rounded-[14px] ${
+    stale ? 'bg-danger/[0.055]' : 'bg-ok/[0.09]'
+   }`}>
+    <Activity size={16} strokeWidth={2.2} className={stale ? 'text-danger' : 'text-ok'} aria-hidden="true" />
+   </div>
+   <div className="min-w-0 flex-1">
+    <div className="truncate font-body text-[14px] font-semibold leading-[1.15] text-ink tracking-normal">{sig.name}</div>
+    <div className="mt-1 truncate font-body text-[12px] leading-[1.15] text-ghost tracking-normal">{sig.sub}</div>
+   </div>
+   <span className={`flex-shrink-0 rounded-full border px-4 py-2 font-body text-[12px] font-semibold leading-none ${
+    stale
+     ? 'border-danger/20 bg-danger/[0.035] text-danger'
+     : 'border-ok/20 bg-ok/[0.08] text-ok'
+   }`}>
+    {sig.status}
+   </span>
+  </div>
+ )
+}
+
+function SignalHealthPanel({ signals }) {
+ return (
+  <div className="border-t border-rule2 bg-stone">
+   {signals.map((sig, i) => <SignalCard key={`${sig.name}-${i}`} sig={sig} />)}
+  </div>
  )
 }
 
@@ -675,7 +690,6 @@ export default function ShiftIQ() {
  const [viewingOperator, setViewingOperator] = useState(null)
  const [lineDropOpen, setLineDropOpen] = useState(false)
  const [checklistDrawerOpen, setChecklistDrawerOpen] = useState(false)
- const [signalHealthOpen, setSignalHealthOpen] = useState(false)
  const [pendingDismiss, setPendingDismiss] = useState(new Map())
  const [permanentDismiss, setPermanentDismiss] = useState(new Set())
 
@@ -1321,31 +1335,13 @@ export default function ShiftIQ() {
  </div>
 
  {/* Right rail — flex sibling of COL 1 */}
- <div className="hidden lg:flex flex-col w-[300px] flex-shrink-0 border-l border-rule2 overflow-y-auto bg-stone2">
+ <div className="hidden lg:flex flex-col w-[420px] xl:w-[520px] flex-shrink-0 border-l border-rule2 overflow-y-auto bg-stone2">
 
   {/* Agent timeline */}
   {hasLiveData && <AgentTimeline timeline={lineD.agentTimeline} sparkline={lineD.sparkline} score={lineScore} />}
 
-  {/* Signal health — collapsible */}
-  {hasLiveData && (
-  <div className="border-t border-rule2">
-   <button type="button" onClick={() => setSignalHealthOpen(o => !o)}
-    className="flex items-center justify-between w-full px-4 py-2.5 bg-stone2 border-b border-rule2 hover:bg-stone3 transition-colors">
-    <span className="font-body text-ghost text-[12px] tracking-normal">Signal health</span>
-    <div className="flex items-center gap-2">
-     <span className={`font-body text-[12px] ${lineD.signals.some(s => s.tone === 'danger') ? 'text-danger' : lineD.signals.some(s => s.tone === 'warn') ? 'text-warn' : 'text-ok'}`}>
-      {lineD.signals.filter(s => s.tone !== 'ok').length > 0 ? `${lineD.signals.filter(s => s.tone !== 'ok').length} flagged` : 'All clear'}
-     </span>
-     {signalHealthOpen ? <ChevronUp size={11} className="text-ghost" /> : <ChevronDown size={11} className="text-ghost" />}
-    </div>
-   </button>
-   {signalHealthOpen && (
-    <div className="slide-in">
-     {lineD.signals.map((sig, i) => <SignalCard key={i} sig={sig} />)}
-    </div>
-   )}
-  </div>
-  )}
+  {/* Signal health */}
+  {hasLiveData && <SignalHealthPanel signals={lineD.signals} />}
 
   {/* Pilot validation */}
   {activeLine === 'l4' && (
