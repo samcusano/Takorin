@@ -711,6 +711,57 @@ function LineDropdown({ lines, activeLine, onSelect, triggerRef, onClose }) {
  )
 }
 
+// ── PrepareView — pre-shift staffing preparation ─────────────────────────────
+function PrepareView({ forecast = [] }) {
+ const [confirmed, setConfirmed] = useState({})
+ const actionRows = forecast.filter(r => r.action)
+ return (
+  <div className="flex flex-col flex-1 overflow-hidden content-reveal">
+   {/* Gantt — upcoming shift forecast */}
+   <div className="flex-shrink-0 px-5 py-4 border-b border-rule2">
+    <div className="font-body text-micro text-muted tracking-widest mb-3">Upcoming shift forecast</div>
+    <GanttChart forecast={forecast} />
+   </div>
+   {/* Action items — supervisory prep tasks */}
+   <div className="flex-1 overflow-y-auto">
+    <div className="px-5 py-3 bg-stone2 border-b border-rule2">
+     <div className="font-body font-medium text-ink text-body">Pre-shift actions</div>
+     <div className="font-body text-muted text-label mt-0.5">
+      {actionRows.filter(r => !confirmed[r.name]).length} items outstanding · confirm each before shift start
+     </div>
+    </div>
+    {actionRows.map((row, i) => {
+     const done = !!confirmed[row.name + i]
+     return (
+      <div key={i} className={`flex items-start gap-3 px-5 py-4 border-b border-rule2 transition-opacity ${done ? 'opacity-50' : ''} ${row.critical ? 'bg-danger/[0.02]' : ''}`}>
+       <button type="button"
+        disabled={done}
+        onClick={() => setConfirmed(p => ({...p, [row.name + i]: true}))}
+        className={`w-5 h-5 rounded-full flex-shrink-0 flex items-center justify-center mt-0.5 transition-colors ${
+         done ? 'bg-ok' : row.critical ? 'border-2 border-danger hover:border-ok hover:bg-ok/10 cursor-pointer' : 'border-2 border-rule2 hover:border-ochre cursor-pointer'
+        }`}>
+        {done && <Check size={11} strokeWidth={2.5} className="text-stone" />}
+       </button>
+       <div className="flex-1">
+        <div className={`font-body font-medium text-body leading-snug ${done ? 'line-through text-muted' : row.critical ? 'text-danger' : 'text-ink'}`}>
+         {row.action}
+        </div>
+        <div className="font-body text-muted text-label mt-0.5">{row.name} · {row.time.replace('\n', ' ')}</div>
+       </div>
+       {row.critical && !done && (
+        <span className="font-body text-label text-danger bg-danger/[0.08] px-1.5 py-px flex-shrink-0">Critical</span>
+       )}
+      </div>
+     )
+    })}
+    {actionRows.length === 0 && (
+     <div className="px-5 py-10 text-center font-body text-muted text-body">No pre-shift actions — staffing looks clean.</div>
+    )}
+   </div>
+  </div>
+ )
+}
+
 export default function ShiftIQ() {
  const [searchParams] = useSearchParams()
  const initialLine = searchParams.get('line') || 'l4'
@@ -819,16 +870,18 @@ export default function ShiftIQ() {
  <div className="flex-shrink-0 flex items-center border-b border-rule2 bg-stone2">
   <div className="flex flex-1">
   {[
-   { id: 'shift',      label: 'Shift',      show: true },
-   { id: 'handoff',    label: 'Handoff',    show: true },
+   { id: 'shift',      label: 'Shift',       show: true },
+   { id: 'prepare',    label: 'Prepare',     show: true, urgent: shiftData.forecast?.some(r => r.critical) },
+   { id: 'handoff',    label: 'Handoff',     show: true },
    { id: 'fleet',      label: 'Robot Fleet', show: workerMode === 'robot' || workerMode === 'hybrid' || currentPlant?.id === 'ks' },
    { id: 'allocation', label: 'Allocation',  show: workerMode === 'hybrid' },
   ].filter(t => t.show).map(t => (
    <button key={t.id} type="button" onClick={() => setActiveTab(t.id)}
-    className={`px-5 py-2.5 font-body text-label border-b-2 transition-colors ${
+    className={`flex items-center gap-1.5 px-5 py-2.5 font-body text-label border-b-2 transition-colors ${
      activeTab === t.id ? 'border-b-ochre text-ink' : 'border-b-transparent text-muted hover:text-muted'
     }`}>
     {t.label}
+    {t.urgent && activeTab !== t.id && <span className="w-1.5 h-1.5 rounded-full bg-danger flex-shrink-0" />}
    </button>
   ))}
   </div>
@@ -848,6 +901,7 @@ export default function ShiftIQ() {
  {activeTab === 'handoff'    ? <HandoffIQ />
   : activeTab === 'fleet'      ? <RobotFleet />
   : activeTab === 'allocation' ? <ResourceAllocation />
+  : activeTab === 'prepare'    ? <PrepareView forecast={shiftData.forecast} />
   : <>
  {/* Quiet period banner — triggered by Moon icon in tab bar */}
  {currentQuiet ? (

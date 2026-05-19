@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { handoffData, certExpiry, haccpData, robotFleetData } from '../data'
 import { Btn, ActionBanner, PersonAvatar, AcceptanceGate, CarryForwardItem, SlidePanel, StatusPill } from '../components/UI'
-import StatBar from '../components/StatBar.jsx'
 import { Check, AlertTriangle, Clock, Brain, Bot, CheckCircle, Cpu } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useAppState } from '../context/AppState'
@@ -74,6 +73,7 @@ function ForecastRow({ row }) {
 function LayoutGrid({ d, signed, setSigned, currentPlant, carryForwardItems, acknowledgedCount, carryForwardCount, allAcknowledged, carryForwardAcknowledged, handleAcknowledgeCarryForward, handleAcceptShift, handoffAccepted }) {
  const navigate = useNavigate()
  const [viewingItem, setViewingItem] = useState(null)
+ const criticalCount = carryForwardItems.filter(i => i.urgency === 'danger').length
  return (
   <>
   <CarryForwardDetailPanel item={viewingItem} onClose={() => setViewingItem(null)} />
@@ -134,51 +134,86 @@ function LayoutGrid({ d, signed, setSigned, currentPlant, carryForwardItems, ack
     </div>
    ) : null}
 
-   {/* ── StatBar ──────────────────────────────────────────────────── */}
-   <StatBar cells={[
-    { label: 'COA verified',           value: '4/5',  sub: '1 missing',           pct: 80,  type: 'sw' },
-    { label: 'Delivery on track',      value: '4/5',  sub: '1 delayed 6h',         pct: 80,  type: 'sw' },
-    { label: 'Expiring within 14 days',value: '2',    sub: 'Tomato · Canola lots', pct: 40,  type: 'sw' },
-    { label: 'Price alerts',           value: '2',    sub: 'Tomato +14% · Oil +8%',pct: 40,  type: 'sw' },
-    { label: 'Audit readiness',        value: '91%',  sub: 'FSMA 204',             pct: 91,  type: 'so' },
-   ]} />
+   {/* ── Handoff summary stats ────────────────────────────────────── */}
+   <div className="flex-shrink-0 flex divide-x divide-rule2 border-b border-rule2 bg-stone">
+    <div className="px-5 py-3 min-w-0">
+     <div className="font-body text-micro text-muted tracking-widest mb-1">Carry-forward</div>
+     <div className="flex items-baseline gap-2">
+      <span className={`display-num text-metric leading-none ${criticalCount > 0 ? 'text-danger' : carryForwardCount > 0 ? 'text-warn' : 'text-ok'}`}>{carryForwardCount}</span>
+      {criticalCount > 0 && <span className="font-body text-danger text-label">{criticalCount} critical</span>}
+      {criticalCount === 0 && carryForwardCount > 0 && <span className="font-body text-warn text-label">watch</span>}
+      {carryForwardCount === 0 && <span className="font-body text-ok text-label">all clear</span>}
+     </div>
+    </div>
+    <div className="px-5 py-3 min-w-0">
+     <div className="font-body text-micro text-muted tracking-widest mb-1">Acknowledged</div>
+     <div className="flex items-baseline gap-2">
+      <span className={`display-num text-metric leading-none ${allAcknowledged ? 'text-ok' : 'text-muted'}`}>{acknowledgedCount}<span className="text-muted">/{carryForwardCount}</span></span>
+      {allAcknowledged && <span className="font-body text-ok text-label">ready</span>}
+     </div>
+    </div>
+    <div className="px-5 py-3 min-w-0">
+     <div className="font-body text-micro text-muted tracking-widest mb-1">Synthesis confidence</div>
+     <div className="flex items-baseline gap-2">
+      <span className="display-num text-metric leading-none text-ok">91%</span>
+      <span className="font-body text-muted text-label">4 of 5 sources fresh</span>
+     </div>
+    </div>
+    <div className="px-5 py-3 min-w-0">
+     <div className="font-body text-micro text-muted tracking-widest mb-1">Cert coverage</div>
+     <div className="flex items-baseline gap-2">
+      <span className="display-num text-metric leading-none text-warn">1 gap</span>
+      <span className="font-body text-muted text-label">Sauce Dosing L2</span>
+     </div>
+    </div>
+    <div className="px-5 py-3 min-w-0 flex-1">
+     <div className="font-body text-micro text-muted tracking-widest mb-1">Risk at handoff</div>
+     <div className="flex items-baseline gap-2">
+      <span className="display-num text-metric leading-none text-danger">78</span>
+      <span className="font-body text-danger text-label">at risk</span>
+     </div>
+    </div>
+   </div>
 
    <div className="flex flex-1 overflow-hidden">
 
     {/* Left: carry-forward queue */}
     <div className="w-[55%] border-r border-rule2 flex flex-col">
-     <div className="px-4 py-2.5 bg-stone2 border-b border-rule2 flex-shrink-0">
-      <div className="font-body font-medium text-ink text-body">
-       Carry-forward items ({acknowledgedCount}/{carryForwardCount} acknowledged)
+     <div className="px-4 py-3 bg-stone2 border-b border-rule2 flex-shrink-0">
+      <div className="flex items-baseline justify-between gap-3 mb-1.5">
+       <div className="font-body font-medium text-ink text-body">
+        Carry-forward · {carryForwardCount} item{carryForwardCount !== 1 ? 's' : ''}
+       </div>
+       <span className="font-body text-muted text-label flex-shrink-0">{acknowledgedCount}/{carryForwardCount} acknowledged</span>
       </div>
-      <div className="flex items-center gap-1.5 mt-0.5">
+      {criticalCount > 0 && (
+       <div className="flex items-center gap-1.5 mb-1.5">
+        <div className="w-1.5 h-1.5 rounded-full bg-danger flex-shrink-0" />
+        <span className="font-body text-danger text-label">{criticalCount} critical — action required in the first 20 minutes</span>
+       </div>
+      )}
+      <div className="flex items-center gap-1.5">
        <Brain size={9} strokeWidth={1.75} className="text-muted flex-shrink-0" />
-       <span className="font-body text-muted text-label">
-        <span className="text-muted font-medium">91%</span>
-        {' '}overall synthesis confidence · urgency from shift findings and cert records
-       </span>
+       <span className="font-body text-muted text-label">91% synthesis confidence · urgency from shift findings and cert records</span>
       </div>
      </div>
      {/* Stale data warning — per source */}
-     <div className="px-4 py-2 bg-warn/[0.05] border-b border-rule2 flex-shrink-0">
-      <div className="font-body text-muted text-label mb-1.5">Data freshness — verify stale items before signing</div>
+     <div className="px-4 py-3 bg-stone2 border-b border-rule2 flex-shrink-0">
+      <div className="font-body text-muted text-label mb-2">Data freshness</div>
       {[
-       { source: 'Sensor A-7', age: '8 min', tone: 'ok' },
-       { source: 'CAPA-2604-001', age: '22 min', tone: 'ok' },
-       { source: 'Lindqvist cert status', age: '4h 12min', tone: 'warn', stale: true },
-       { source: 'R-03 telemetry', age: '4 min', tone: 'ok' },
+       { source: 'Sensor A-7', age: '8 min', stale: false },
+       { source: 'CAPA-2604-001', age: '22 min', stale: false },
+       { source: 'Lindqvist cert status', age: '4h 12min', stale: true },
+       { source: 'R-03 telemetry', age: '4 min', stale: false },
       ].map(s => (
-       <div key={s.source} className="flex items-center gap-2 mb-1">
-        <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${s.tone === 'ok' ? 'bg-ok' : 'bg-warn'}`} />
-        <span className="font-body text-muted text-label flex-1">{s.source}</span>
-        <span className={`font-body text-label ${s.stale ? 'text-warn font-medium' : 'text-muted'}`}>
-         {s.age}{s.stale ? ' ⚠' : ''}
+       <div key={s.source} className={`flex items-center gap-2 py-1.5 px-2 -mx-2 mb-px last:mb-0 ${s.stale ? 'bg-warn/[0.10] border-l-2 border-l-warn' : ''}`}>
+        <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${s.stale ? 'bg-warn' : 'bg-ok'}`} />
+        <span className={`font-body text-label flex-1 ${s.stale ? 'text-ink font-medium' : 'text-muted'}`}>{s.source}</span>
+        <span className={`font-body text-label tabular-nums ${s.stale ? 'text-warn font-medium' : 'text-muted'}`}>
+         {s.age}{s.stale ? ' · verify before signing' : ''}
         </span>
        </div>
       ))}
-      <p className="font-body text-warn text-label mt-1">
-       Lindqvist cert status is stale — verify manually before signing.
-      </p>
      </div>
      <div className="overflow-y-auto flex-1">
       {carryForwardCount > 0 ? carryForwardItems.map(item => (
@@ -199,9 +234,11 @@ function LayoutGrid({ d, signed, setSigned, currentPlant, carryForwardItems, ack
 
     {/* Right: context cards */}
     <div className="w-[45%] overflow-y-auto flex flex-col">
-     {/* Shift notes */}
+     {/* Shift notes — primary narrative, heavier treatment */}
      <div className="border-b border-rule2">
-      <div className="px-4 py-2.5 border-b border-rule2 font-body font-medium text-ink text-body">Shift notes</div>
+      <div className="px-4 py-3 border-b border-rule2 bg-stone2">
+       <div className="font-display font-semibold text-ink text-base">Shift notes</div>
+      </div>
       <div className="px-4 pt-3 pb-1">
        <div className="flex items-center gap-2 mb-3">
         <PersonAvatar name={d.shiftNotes.author} size={20} />
@@ -214,14 +251,16 @@ function LayoutGrid({ d, signed, setSigned, currentPlant, carryForwardItems, ack
         {d.shiftNotes.body.map((note, i) => (
          <li key={i} className="flex items-start gap-2">
           <div className="w-1 h-1 rounded-full bg-muted flex-shrink-0 mt-1.5" />
-          <span className="font-body text-ink2 text-label leading-relaxed">{note}</span>
+          <span className="font-display text-muted text-body leading-relaxed">{note}</span>
          </li>
         ))}
        </ul>
       </div>
      </div>
      <div className="border-b border-rule2">
-      <div className="px-4 py-2.5 border-b border-rule2 font-body font-medium text-ink text-body">Operator briefing</div>
+      <div className="px-4 py-2 border-b border-rule2">
+       <span className="font-body text-micro text-muted tracking-widest">Operator briefing</span>
+      </div>
       <div className="flex items-center gap-2.5 px-4 py-3 border-b border-rule2">
        <PersonAvatar name="M. Santos" size={26} />
        <div>
@@ -240,7 +279,9 @@ function LayoutGrid({ d, signed, setSigned, currentPlant, carryForwardItems, ack
       ))}
      </div>
      <div className="border-b border-rule2">
-      <div className="px-4 py-2.5 border-b border-rule2 font-body font-medium text-ink text-body">Cert alerts</div>
+      <div className="px-4 py-2 border-b border-rule2">
+       <span className="font-body text-micro text-muted tracking-widest">Cert alerts</span>
+      </div>
       {certExpiry.filter(c => c.tone !== 'ok').map((c, i) => (
        <div key={i} className={`flex gap-3 px-4 py-2.5 border-b border-rule2 last:border-b-0 ${c.tone === 'danger' ? 'bg-danger/[0.03]' : ''}`}>
         <Clock size={12} strokeWidth={2} className={`flex-shrink-0 mt-0.5 ${c.tone === 'danger' ? 'text-danger' : 'text-warn'}`} />
@@ -252,7 +293,9 @@ function LayoutGrid({ d, signed, setSigned, currentPlant, carryForwardItems, ack
       ))}
      </div>
      <div>
-      <div className="px-4 py-2.5 border-b border-rule2 font-body font-medium text-ink text-body">Upcoming staffing</div>
+      <div className="px-4 py-2 border-b border-rule2">
+       <span className="font-body text-micro text-muted tracking-widest">Upcoming staffing</span>
+      </div>
       {d.forecast.map((row, i) => <ForecastRow key={i} row={row} />)}
      </div>
     </div>

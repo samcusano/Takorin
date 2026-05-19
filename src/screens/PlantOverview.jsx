@@ -8,7 +8,7 @@ import {
   Activity, CircleDot, ChevronDown, ChevronUp, ExternalLink, X,
 } from 'lucide-react'
 import { interventionSummary, interventions } from '../data/interventions'
-import { FilterDropdown } from '../components/UI'
+import { FilterDropdown, SlidePanel, Btn } from '../components/UI'
 
 // ─── Domain assignments ───────────────────────────────────────────────────────
 // Maps line.id → { area, areaOrder }
@@ -137,7 +137,8 @@ function pressureClass(score) {
 
 export default function PlantOverview() {
   const navigate = useNavigate()
-  const { shiftActed, currentPlant } = useAppState()
+  const { shiftActed, setShiftActed, currentPlant } = useAppState()
+  const [selectedFinding, setSelectedFinding]   = useState(null)
   const [impactExpanded, setImpactExpanded]     = useState(false)
   const [mode, setMode]                         = useState('normal')
   const [whatIfScores, setWhatIfScores]         = useState({})
@@ -256,7 +257,7 @@ export default function PlantOverview() {
     gridTemplateColumns: 'repeat(auto-fill, minmax(max(180px, calc(25% - 12px)), 1fr))',
   }
 
-  return (
+  return (<>
     <div className="flex flex-col h-full overflow-hidden content-reveal">
 
       {/* ── Compact status bar — director scanning glance ───────────────── */}
@@ -722,7 +723,7 @@ export default function PlantOverview() {
           {allFindings.length > 0
             ? allFindings.map((f, i) => (
                 <button key={i} type="button"
-                  onClick={() => navigate(`/shift?line=${f.line.id}`)}
+                  onClick={() => setSelectedFinding(f)}
                   className={`w-full text-left flex items-start gap-4 px-5 py-3.5 border-b border-rule2 border-l-4 transition-colors hover:bg-stone2 ${
                     f.urgency === 'danger' ? 'border-l-danger bg-danger/[0.02] hover:bg-danger/[0.04]' : 'border-l-warn bg-warn/[0.01] hover:bg-warn/[0.03]'
                   }`}>
@@ -753,5 +754,59 @@ export default function PlantOverview() {
 
       </div>
     </div>
-  )
+
+    {/* ── Finding action drawer — stays in overview context ────────────── */}
+    {selectedFinding && (
+      <SlidePanel
+        title={selectedFinding.title}
+        subtitle={`${selectedFinding.line.name} · ${selectedFinding.meta.supervisor} · ${fmtMinutes(selectedFinding.meta.minutesRemaining)} remaining`}
+        accentColor={selectedFinding.urgency === 'danger' ? 'var(--color-danger)' : 'var(--color-warn)'}
+        onClose={() => setSelectedFinding(null)}
+        footer={
+          <div className="flex gap-2">
+            {!shiftActed[selectedFinding.id] ? (
+              <Btn variant="primary" onClick={() => {
+                setShiftActed(prev => ({ ...prev, [selectedFinding.id]: true }))
+                setSelectedFinding(null)
+              }}>
+                Acknowledge
+              </Btn>
+            ) : (
+              <span className="font-body text-ok text-label flex items-center gap-1.5 px-1">
+                <CheckCircle size={11} strokeWidth={2} />Acknowledged
+              </span>
+            )}
+            <Btn variant="secondary" onClick={() => { navigate(`/shift?line=${selectedFinding.line.id}`); setSelectedFinding(null) }}>
+              Open in ShiftIQ
+            </Btn>
+          </div>
+        }
+      >
+        <div className="space-y-4">
+          {selectedFinding.desc && (
+            <div>
+              <div className="font-body text-micro text-muted tracking-widest mb-1.5">Finding</div>
+              <p className="font-display text-body text-ink leading-relaxed">{selectedFinding.desc}</p>
+            </div>
+          )}
+          {selectedFinding.evidence && (
+            <div>
+              <div className="font-body text-micro text-muted tracking-widest mb-1.5">Evidence</div>
+              <div className="font-body text-label text-muted bg-stone2 px-3 py-2.5 border-l-2 border-l-rule">{selectedFinding.evidence}</div>
+            </div>
+          )}
+          <div>
+            <div className="font-body text-micro text-muted tracking-widest mb-1.5">Current owner</div>
+            <div className="font-body text-ink text-body">{selectedFinding.meta.supervisor}</div>
+          </div>
+          {selectedFinding.recommendedAction && (
+            <div>
+              <div className="font-body text-micro text-muted tracking-widest mb-1.5">Recommended action</div>
+              <p className="font-display text-body text-ink leading-relaxed">{selectedFinding.recommendedAction}</p>
+            </div>
+          )}
+        </div>
+      </SlidePanel>
+    )}
+  </>)
 }
