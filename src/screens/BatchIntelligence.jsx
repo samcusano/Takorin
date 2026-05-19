@@ -299,17 +299,17 @@ export default function BatchIntelligence() {
   const gradeColor = batch?.grade === 'Premium' ? 'text-ochre' : 'text-muted'
 
   return (
-    <div className="flex h-full overflow-hidden content-reveal">
+    <div className="flex flex-col h-full overflow-hidden content-reveal">
+
+      <div className="flex flex-1 min-h-0 overflow-hidden">
 
       {/* ── Left: batch list ────────────────────────────────────── */}
       <div className="w-[280px] flex-shrink-0 border-r border-rule2 flex flex-col bg-stone">
-        <div className="flex-shrink-0 px-5 py-4 border-b border-rule2 bg-stone2">
-          <div className="font-body text-muted text-label tracking-normal mb-0.5">Process Intelligence</div>
-          <div className="font-display font-bold text-ink text-head leading-none">Batch Lifecycle</div>
-          <div className="flex items-center gap-3 mt-2">
-            <span className="font-body text-muted text-label">{batchSummary.active} active</span>
-            <span className="font-body text-muted text-label">·</span>
-            <span className="font-body text-ok text-label">{batchSummary.complete} complete</span>
+        <div className="flex-shrink-0 px-4 py-3 border-b border-rule2 bg-stone2">
+          <div className="font-body text-micro text-muted tracking-widest mb-1">Batch queue</div>
+          <div className="flex items-center gap-3">
+            <span className="font-body text-label text-muted">{batchSummary.active} active</span>
+            <span className="font-body text-label text-ok">{batchSummary.complete} complete</span>
           </div>
         </div>
         <div className="flex-1 overflow-y-auto divide-y divide-rule2">
@@ -525,6 +525,7 @@ export default function BatchIntelligence() {
             </div>
           )}
         </div>}
+      </div>
       </div>
     </div>
   )

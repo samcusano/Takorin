@@ -787,7 +787,9 @@ export default function DataReadiness() {
   const isCluster = selectedItem?.type === 'cluster'
 
   return (
-    <div className="flex h-full overflow-hidden content-reveal">
+    <div className="flex flex-col h-full overflow-hidden content-reveal">
+
+      <div className="flex flex-1 min-h-0 overflow-hidden">
 
       {/* Left rail */}
       <div className="w-[280px] flex-shrink-0 border-r border-rule2 flex flex-col overflow-hidden bg-stone">
@@ -813,6 +815,7 @@ export default function DataReadiness() {
         )}
       </div>
 
+      </div>
     </div>
   )
 }

@@ -5,21 +5,11 @@ import ErrorBoundary from './components/ErrorBoundary'
 import TrustStrip from './components/TrustStrip'
 import { useAppState } from './context/AppState'
 
-function AmbientHealthBar() {
-  const { systemConfidence } = useAppState()
-  const conf  = systemConfidence ?? 79
-  const color = conf >= 85 ? 'var(--color-ok)' : conf >= 65 ? 'var(--color-warn)' : 'var(--color-danger)'
-  return (
-    <div
-      className="flex-shrink-0 w-full"
-      style={{ height: 3, background: color, transition: 'background-color 600ms var(--ease-inout)' }}
-      aria-hidden="true"
-    />
-  )
-}
+// Ambient health bar removed — the dark surface makes 3px signal strips invisible at a glance.
+// Risk state is communicated through the score badge and signal health panel per screen.
 
 const PlantOverview         = lazy(() => import('./screens/PlantOverview'))
-const ShiftIQ               = lazy(() => import('./screens/ShiftIQ'))
+const ShiftIQ               = lazy(() => import('./screens/ShiftIQV2'))
 const SupplierIQ            = lazy(() => import('./screens/SupplierIQ'))
 const CAPAEngine            = lazy(() => import('./screens/CapaEngine'))
 const DataReadiness         = lazy(() => import('./screens/DataReadiness'))
@@ -57,20 +47,19 @@ export default function App() {
  <div className="flex h-screen bg-stone overflow-hidden">
  <Sidebar />
  <main className="flex-1 flex flex-col overflow-hidden ml-[240px]">
- <AmbientHealthBar />
  <TrustStrip />
  {roleInfo && (
- <div className="flex items-center justify-between px-4 py-2 bg-sidebar border-b border-sidebar-border flex-shrink-0">
-  <span className="font-body text-muted text-label">
-   Viewing as <span className="text-ochre font-medium">{roleInfo.name}</span>
-   <span className="text-muted/60"> · {roleInfo.role}</span>
+ <div className="flex items-center justify-between px-4 py-2 bg-stone2 border-b border-rule flex-shrink-0">
+  <span className="font-body text-micro text-muted tracking-widest">
+   Viewing as <span className="text-ochre">{roleInfo.name}</span>
+   <span className="text-muted"> · {roleInfo.role}</span>
   </span>
   <button
    type="button"
    onClick={() => { setViewingRole('director') }}
-   className="font-body text-label text-muted hover:text-stone transition-colors px-2 py-1 border border-[#3A342E] hover:border-[#5A4A3E]"
+   className="font-body text-micro text-muted hover:text-ink transition-colors px-2 py-1 border border-rule hover:border-rule2 tracking-wider"
   >
-   Return to director view
+   Exit role view
   </button>
  </div>
  )}

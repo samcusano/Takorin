@@ -255,7 +255,7 @@ function MonitoringSurface({ ctx, entries, onLog }) {
      </span>
      {lastValue != null && (
       <span className={`font-body text-label px-2 py-0.5 rounded-btn ${ccpMet ? 'bg-ok/10 text-ok' : 'bg-danger/[0.04] text-danger'}`}>
-       {ccpMet ? 'Compliant' : 'BELOW LIMIT'}
+       {ccpMet ? 'Compliant' : 'Below limit'}
       </span>
      )}
     </div>

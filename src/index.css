@@ -2,51 +2,60 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ── Motion design tokens — Polaris-grounded durations and easings ────────── */
+/* ── Motion design tokens ─────────────────────────────────────────────────── */
 :root {
-  --dur-instant:   50ms;    /* micro: hover, press feedback */
-  --dur-fast:     100ms;    /* button, toggle, focus ring */
-  --dur-quick:    200ms;    /* inline reveals, tab fades, badge pulses */
-  --dur-standard: 300ms;    /* drawers, modals, banners */
-  --dur-data:     500ms;    /* score fills, progress bars */
-  --dur-live:    6000ms;    /* undo countdown */
+  --dur-instant:   50ms;
+  --dur-fast:     100ms;
+  --dur-quick:    200ms;
+  --dur-standard: 300ms;
+  --dur-data:     500ms;
+  --dur-live:    6000ms;
+  --dur-atmo:    9000ms;   /* atmospheric ambient — slow, background only */
 
-  --ease-linear:   cubic-bezier(0, 0, 1, 1);         /* spinners, countdowns */
-  --ease-standard: cubic-bezier(0.25, 0.1, 0.25, 1); /* default user interactions */
-  --ease-enter:    cubic-bezier(0.19, 0.91, 0.38, 1); /* decelerate-in entrances */
-  --ease-exit:     cubic-bezier(0.42, 0, 1, 1);       /* accelerate-out dismissals */
-  --ease-inout:    cubic-bezier(0.42, 0, 0.58, 1);    /* system-triggered transitions */
-  --ease-spring:   cubic-bezier(0.16, 1, 0.3, 1);     /* organic spring feel */
+  --ease-linear:   cubic-bezier(0, 0, 1, 1);
+  --ease-standard: cubic-bezier(0.25, 0.1, 0.25, 1);
+  --ease-enter:    cubic-bezier(0.19, 0.91, 0.38, 1);
+  --ease-exit:     cubic-bezier(0.42, 0, 1, 1);
+  --ease-inout:    cubic-bezier(0.42, 0, 0.58, 1);
+  --ease-spring:   cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @layer base {
   * { box-sizing: border-box; }
 
   :root {
-    --color-stone: #FFFFFF;
-    --color-stone-2: #F7F8FA;
-    --color-stone-3: #EDEEF1;
-    --color-stone-4: #E2E5EA;
-    --color-ink: #101828;
-    --color-ink-2: #344054;
-    --color-muted: #667085;
-    --color-ghost: #6B7280;
-    --color-rule: #E2E5EA;
-    --color-rule-2: #EDEEF1;
-    --color-ok: #027A48;
-    --color-warn: #B54708;
-    --color-danger: #D92D20;
-    --color-int: #0052CC;
-    --color-ochre: #0052CC;
-    --color-ochre-dark: #003580;
-    --color-dim: #98A2B3;     /* suppressed chart labels, deemphasized decorative text */
-    --color-sidebar: #000000;
-    --color-sidebar-border: #1F1F1F;
-    --radius-btn: 4px;
-    --radius-sm: 4px;
-    --radius-md: 10px;
-    --radius-lg: 16px;
-    --shadow-card: 0 4px 16px rgba(16, 24, 40, 0.12);
+    /* ── Surfaces ───────────────────────────────────────────────────────── */
+    --color-stone:   #0B0F18;
+    --color-stone-2: #131A26;
+    --color-stone-3: #1B2538;
+    --color-stone-4: #263042;
+    /* ── Text ─────────────────────────────────────────────────────────── */
+    --color-ink:     #EDE4CB;
+    --color-ink-2:   #8A7E62;
+    --color-muted:   #7A8EA8;
+    /* ── Borders ─────────────────────────────────────────────────────── */
+    --color-rule:    #263042;
+    --color-rule-2:  #1A2335;
+    /* ── Semantic ────────────────────────────────────────────────────── */
+    --color-ok:      #5FA877;
+    --color-warn:    #C98E2A;
+    --color-danger:  #D45438;
+    --color-ochre:   #4B9CE4;
+    --color-ochre-dark: #2A6AAD;
+    /* ── Narrative accent ────────────────────────────────────────────── */
+    --color-context: #C4844E;
+    --color-deep:    #7C86E8;
+    /* ── Dim (suppressed chart labels) ──────────────────────────────── */
+    --color-dim:     #4A5D74;
+    /* ── Sidebar ─────────────────────────────────────────────────────── */
+    --color-sidebar:  #080D16;
+    --color-sidebar-border: #1C2A40;
+    /* ── Geometry ────────────────────────────────────────────────────── */
+    --radius-btn:    2px;
+    --radius-sm:     2px;
+    --radius-md:     6px;
+    --radius-lg:     10px;
+    --shadow-card:   0 1px 4px rgba(0,0,0,0.30);
   }
 
   :focus-visible {
@@ -59,7 +68,7 @@
 
   body {
     margin: 0;
-    font-family: "Inter", "Helvetica Neue", system-ui, sans-serif;
+    font-family: 'SF Mono', 'JetBrains Mono', ui-monospace, 'Menlo', 'Consolas', monospace;
     background: var(--color-stone);
     color: var(--color-ink);
     -webkit-font-smoothing: antialiased;
@@ -67,134 +76,129 @@
   }
   button { cursor: pointer; }
   button:disabled { cursor: not-allowed; }
-  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
   ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: #D0D5DD; border-radius: 0; }
+  ::-webkit-scrollbar-thumb { background: var(--color-rule); border-radius: 0; }
 }
 
 @layer utilities {
   .tabular-nums { font-variant-numeric: tabular-nums; }
 
+  /* ── Hatch pattern — dark-mode version, subtle blue-tinted diagonal ─────── */
   .bg-rule2 {
     background-color: var(--color-stone);
     background-image: repeating-linear-gradient(
       135deg,
-      var(--color-stone) 0,
-      var(--color-stone) 8px,
-      rgba(226, 229, 234, 0.38) 8px,
-      rgba(226, 229, 234, 0.38) 14px
+      transparent 0,
+      transparent 8px,
+      rgba(100, 140, 200, 0.05) 8px,
+      rgba(100, 140, 200, 0.05) 14px
     );
   }
 
-  /* Display type — hero numbers only (score, large KPIs) */
+  /* ── Display type — large numeric values ───────────────────────────────── */
   .display-num {
-    font-family: "Inter", "Helvetica Neue", system-ui, sans-serif;
-    font-weight: 800;
+    font-family: 'SF Mono', 'JetBrains Mono', ui-monospace, monospace;
+    font-weight: 700;
     font-style: normal;
     letter-spacing: -0.03em;
     line-height: 1;
   }
-  /* Georgia reserved for score hero (set via inline style in ShiftIQ) */
 
-  /* ── Existing animations ──────────────────────────────────────────────── */
+  /* ── Typography scale classes ──────────────────────────────────────────── */
+  .type-label   { font-size: 11px; letter-spacing: 0.02em; color: var(--color-muted); }
+  .type-body    { font-size: 13px; color: var(--color-ink); }
+  .type-section { font-size: 10px; letter-spacing: 0.1em; text-transform:; color: var(--color-dim); }
 
-  /* Live dot — continuous pulse, reduced-motion safe */
+  /* ── Atmospheric glow — risk-toned, slow pulse ─────────────────────────── */
+  @keyframes atmoPulse {
+    0%, 100% { opacity: 0.04; }
+    50%       { opacity: 0.10; }
+  }
+  .atmo-glow-danger { animation: atmoPulse var(--dur-atmo) ease-in-out infinite; background: radial-gradient(ellipse 55% 100% at 10% 60%, #D4543822 0%, transparent 65%); }
+  .atmo-glow-warn   { animation: atmoPulse var(--dur-atmo) ease-in-out infinite; background: radial-gradient(ellipse 55% 100% at 10% 60%, #C98E2A22 0%, transparent 65%); }
+  .atmo-glow-ok     { animation: atmoPulse var(--dur-atmo) ease-in-out infinite; background: radial-gradient(ellipse 55% 100% at 10% 60%, #5FA87722 0%, transparent 65%); }
+
+  /* ── Live indicator — breathing dot ────────────────────────────────────── */
+  @keyframes liveDot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50%       { opacity: 0.4; transform: scale(0.7); }
+  }
+  .live-dot { animation: liveDot 2.4s ease-in-out infinite; }
+
+  /* ── Content entrances ─────────────────────────────────────────────────── */
   @keyframes beat {
     0%, 100% { opacity: 1; transform: scale(1); }
-    50%      { opacity: 0.4; transform: scale(0.75); }
+    50%       { opacity: 0.4; transform: scale(0.75); }
   }
   .beat { animation: beat 2.4s ease-in-out infinite; }
 
-  /* Element entering from above (notices, banners, inline reveals) */
   @keyframes slideIn {
     from { opacity: 0; transform: translateY(-4px); }
     to   { opacity: 1; transform: translateY(0); }
   }
-  .slide-in { animation: slideIn 0.28s var(--ease-spring) both; }
+  .slide-in { animation: slideIn 0.22s var(--ease-spring) both; }
 
-  /* Panel entering from right (drawers, detail panels) */
   @keyframes slideRight {
     from { opacity: 0; transform: translateX(16px); }
     to   { opacity: 1; transform: translateX(0); }
   }
   .slide-right { animation: slideRight 0.28s var(--ease-spring) both; }
 
-  /* Plant dropdown — springs out from the sidebar edge */
   @keyframes plantDropIn {
     0%   { opacity: 0; transform: scale(0.94) translateX(-8px); }
     65%  { transform: scale(1.015) translateX(1px); }
     82%  { transform: scale(0.997) translateX(0); }
     100% { opacity: 1; transform: scale(1) translateX(0); }
   }
-  .plant-drop-in {
-    animation: plantDropIn 0.32s var(--ease-spring) both;
-    transform-origin: left center;
-  }
+  .plant-drop-in { animation: plantDropIn 0.32s var(--ease-spring) both; transform-origin: left center; }
+
   @keyframes plantDropInContent {
     from { opacity: 0; }
     to   { opacity: 1; }
   }
-  .plant-drop-in-content {
-    animation: plantDropInContent 0.2s ease both;
-    animation-delay: 0.06s;
-  }
+  .plant-drop-in-content { animation: plantDropInContent 0.2s ease both; animation-delay: 0.06s; }
 
-  /* Waveform bars growing from baseline */
   @keyframes waveformReveal {
     from { opacity: 0; transform: scaleY(0.3); }
     to   { opacity: 1; transform: scaleY(1); }
   }
-  .waveform-reveal {
-    animation: waveformReveal 0.3s var(--ease-spring) both;
-    transform-origin: bottom;
-  }
+  .waveform-reveal { animation: waveformReveal 0.3s var(--ease-spring) both; transform-origin: bottom; }
 
-  /* Opacity-only fade for reduced-motion contexts */
   @keyframes fadeIn {
     from { opacity: 0; }
     to   { opacity: 1; }
   }
 
-  /* Undo toast countdown bar — shrinks left to right over the undo window */
   @keyframes undoCountdown {
     from { width: 100%; }
     to   { width: 0%; }
   }
   .undo-countdown { animation: undoCountdown var(--dur-live) var(--ease-linear) forwards; }
 
-  /* ── New animations ───────────────────────────────────────────────────── */
-
-  /* Modal entrance / exit — scale + fade (transforms composited) */
   @keyframes scaleIn {
     from { opacity: 0; transform: scale(0.96) translateY(6px); }
-    to   { opacity: 1; transform: scale(1)    translateY(0); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
   }
   @keyframes scaleOut {
-    from { opacity: 1; transform: scale(1)    translateY(0); }
+    from { opacity: 1; transform: scale(1) translateY(0); }
     to   { opacity: 0; transform: scale(0.96) translateY(6px); }
   }
   .modal-enter { animation: scaleIn  200ms var(--ease-spring) both; }
-  .modal-exit  { animation: scaleOut 150ms var(--ease-exit)   both; }
+  .modal-exit  { animation: scaleOut 150ms var(--ease-exit) both; }
 
-  /* Drawer closing — slides back to the right */
   @keyframes slideRightOut {
     from { opacity: 1; transform: translateX(0); }
     to   { opacity: 0; transform: translateX(20px); }
   }
   .slide-right-out { animation: slideRightOut 200ms var(--ease-exit) both; }
 
-  /* Checkmark draw — SVG stroke-dashoffset (composited) */
   @keyframes checkDraw {
     from { stroke-dashoffset: 20; opacity: 0; }
-    to   { stroke-dashoffset: 0;  opacity: 1; }
+    to   { stroke-dashoffset: 0; opacity: 1; }
   }
-  .check-draw {
-    stroke-dasharray: 20;
-    stroke-dashoffset: 20;
-    animation: checkDraw 150ms var(--ease-enter) both;
-  }
+  .check-draw { stroke-dasharray: 20; stroke-dashoffset: 20; animation: checkDraw 150ms var(--ease-enter) both; }
 
-  /* Success flash — green overlay fades through a container */
   @keyframes flashSuccess {
     0%   { opacity: 0; }
     25%  { opacity: 0.12; }
@@ -209,17 +213,15 @@
     z-index: 1;
   }
 
-  /* Error shake — horizontal micro-vibration (translateX composited) */
   @keyframes shakeError {
     0%, 100% { transform: translateX(0); }
-    20%      { transform: translateX(-3px); }
-    40%      { transform: translateX(3px); }
-    60%      { transform: translateX(-2px); }
-    80%      { transform: translateX(1px); }
+    20%       { transform: translateX(-3px); }
+    40%       { transform: translateX(3px); }
+    60%       { transform: translateX(-2px); }
+    80%       { transform: translateX(1px); }
   }
   .shake-error { animation: shakeError 300ms var(--ease-standard) both; }
 
-  /* Notification badge pulse — attention pop (transform composited) */
   @keyframes badgePulse {
     0%   { transform: scale(1); }
     45%  { transform: scale(1.35); }
@@ -228,7 +230,6 @@
   }
   .badge-pulse { animation: badgePulse 250ms var(--ease-spring) both; }
 
-  /* Loading spinner — continuous rotation (transform composited) */
   @keyframes spin {
     to { transform: rotate(360deg); }
   }
@@ -245,15 +246,13 @@
     flex-shrink: 0;
   }
 
-  /* Risk threshold alert pulse — box-shadow bloom (use once, not looped) */
   @keyframes dangerPulse {
-    0%   { box-shadow: 0 0 0 0 rgba(217, 79, 42, 0.25); }
-    60%  { box-shadow: 0 0 0 8px rgba(217, 79, 42, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(217, 79, 42, 0); }
+    0%   { box-shadow: 0 0 0 0 rgba(212, 84, 56, 0.30); }
+    60%  { box-shadow: 0 0 0 8px rgba(212, 84, 56, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(212, 84, 56, 0); }
   }
   .danger-pulse { animation: dangerPulse 600ms var(--ease-inout) both; }
 
-  /* Screen/content mount — lightweight loaded feel (3px lift + fade) */
   @keyframes contentReveal {
     from { opacity: 0; transform: translateY(3px); }
     to   { opacity: 1; transform: translateY(0); }
@@ -262,40 +261,30 @@
 
   @keyframes scoreTick {
     0%   { transform: scale(1.06); opacity: 0.7; }
-    100% { transform: scale(1);    opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
   }
   .score-tick { animation: scoreTick 350ms var(--ease-spring) both; }
 
-  /* Vaul-style bottom drawer — springs up, exits fast */
   @keyframes drawerIn {
     from { transform: translateY(100%); opacity: 0.8; }
-    to   { transform: translateY(0);    opacity: 1; }
+    to   { transform: translateY(0); opacity: 1; }
   }
   @keyframes drawerOut {
-    from { transform: translateY(0);    opacity: 1; }
+    from { transform: translateY(0); opacity: 1; }
     to   { transform: translateY(100%); opacity: 0; }
   }
   .drawer-in  { animation: drawerIn  320ms var(--ease-spring) both; }
-  .drawer-out { animation: drawerOut 220ms var(--ease-exit)   both; }
+  .drawer-out { animation: drawerOut 220ms var(--ease-exit) both; }
 
-  /* ── Reduced-motion overrides ─────────────────────────────────────────── */
-
+  /* ── Reduced-motion overrides ───────────────────────────────────────────── */
   @media (prefers-reduced-motion: reduce) {
-    /* Existing */
     .undo-countdown         { animation: none; width: 0%; }
-    .beat                   { animation: none; opacity: 0.65; }
-    .slide-in               { animation: fadeIn 0.15s ease both; }
-    .slide-right            { animation: fadeIn 0.15s ease both; }
+    .beat, .live-dot        { animation: none; opacity: 0.65; }
+    .slide-in, .slide-right { animation: fadeIn 0.15s ease both; }
     .waveform-reveal        { animation: none; opacity: 1; transform: scaleY(1); }
     .plant-drop-in          { animation: fadeIn 0.15s ease both; }
     .plant-drop-in-content  { animation: none; opacity: 1; }
-
-    /* New */
-    .modal-enter,
-    .modal-exit,
-    .content-reveal,
-    .drawer-in,
-    .drawer-out             { animation: fadeIn 0.1s ease both; }
+    .modal-enter, .modal-exit, .content-reveal, .drawer-in, .drawer-out { animation: fadeIn 0.1s ease both; }
     .slide-right-out        { animation: none; }
     .check-draw             { animation: none; stroke-dashoffset: 0; opacity: 1; }
     .score-tick             { animation: none; }
@@ -304,11 +293,6 @@
     .badge-pulse            { animation: none; }
     .danger-pulse           { animation: none; }
     .spinner                { animation-duration: 2000ms; }
+    .atmo-glow-danger, .atmo-glow-warn, .atmo-glow-ok { animation: none; opacity: 0.05; }
   }
-
-  /* ── Typography scale ──────────────────────────────────────────────────── */
-  .type-label { font-size: 12px; letter-spacing: 0; color: var(--color-ghost); }
-  .type-body  { font-size: 14px; color: var(--color-ink); }
-  .type-value { font-size: 16px; font-family: "Inter", system-ui; color: var(--color-ink); }
-  .type-head  { font-size: 18px; font-weight: 700; color: var(--color-ink); }
 }

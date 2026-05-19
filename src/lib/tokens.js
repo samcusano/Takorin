@@ -1,33 +1,40 @@
 // Design tokens — mirrors tailwind.config.js for use in inline styles and JS logic.
-// Keep in sync with tailwind.config.js colors section.
 export const color = {
-  // Surfaces
-  stone:  '#FFFFFF',
-  stone2: '#F7F8FA',
-  stone3: '#EDEEF1',
-  stone4: '#E2E5EA',
-  // Text
-  ink:    '#101828',
-  ink2:   '#344054',
-  muted:  '#667085',
+  // Surfaces — dark graphite
+  stone:   '#0B0F18',
+  stone2:  '#131A26',
+  stone3:  '#1B2538',
+  stone4:  '#263042',
+  // Text — warm bone
+  ink:     '#EDE4CB',
+  ink2:    '#8A7E62',
+  muted:   '#7A8EA8',
   // Borders
-  rule:   '#E2E5EA',
-  rule2:  '#EDEEF1',
+  rule:    '#263042',
+  rule2:   '#1A2335',
   // Semantic
-  ok:      '#027A48',
-  okDim:   '#ECFDF3',
-  warn:    '#B54708',
-  warnDim: '#FFFAEB',
-  danger:  '#D92D20',
-  dangerDim: '#FFF4F3',
-  // Primary accent (blue)
-  ochre:     '#0052CC',
-  ochreDim:  '#EFF4FF',
-  ochreDark: '#003580',
-  // Sidebar (stays dark)
-  sidebar:       '#000000',
-  sidebar2:      '#0D0D0D',
-  sidebar3:      '#1A1A1A',
-  sidebarBorder: '#1F1F1F',
-  sidebarGhost:  '#808080',
+  ok:      '#5FA877',
+  okDim:   '#0D2518',
+  warn:    '#C98E2A',
+  warnDim: '#2A1E08',
+  danger:  '#D45438',
+  dangerDim: '#2A100A',
+  // Primary accent — steel blue
+  ochre:     '#4B9CE4',
+  ochreDim:  '#0D1E38',
+  ochreDark: '#2A6AAD',
+  // Narrative accent — clay
+  context:    '#C4844E',
+  contextDim: '#2A1808',
+  // Predictive accent — indigo
+  deep:    '#7C86E8',
+  deepDim: '#141830',
+  // Dim (suppressed chart labels)
+  dim:     '#4A5D74',
+  // Sidebar
+  sidebar:       '#080D16',
+  sidebar2:      '#0E1520',
+  sidebar3:      '#152030',
+  sidebarBorder: '#1C2A40',
+  sidebarGhost:  '#4A6080',
 }

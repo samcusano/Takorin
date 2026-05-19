@@ -1,13 +1,193 @@
-// Shared primitive components — PostHog-influenced density, Takorin palette
+// Shared primitive components — V2 precision + narrative fusion palette
 import { useRef, useEffect, useMemo, useId, useState, useCallback } from 'react'
 import { X, ArrowRight, ChevronRight, ChevronDown, Check } from 'lucide-react'
 import BoringAvatar from 'boring-avatars'
 import { useFocusTrap, useExitAnimation } from '../lib/utils'
 import { toneStyle } from '../lib/styles'
-const AVATAR_PALETTE = ['#0052CC', '#344054', '#027A48', '#B54708', '#667085']
+const AVATAR_PALETTE = ['#4B9CE4', '#7C86E8', '#5FA877', '#C98E2A', '#C4844E']
 
 export function PersonAvatar({ name, size = 28 }) {
  return <BoringAvatar size={size} name={name} variant="beam" colors={AVATAR_PALETTE} />
+}
+
+// ── Tone → atmospheric glow CSS class ─────────────────────────────────────────
+const ATMO = { danger: 'atmo-glow-danger', warn: 'atmo-glow-warn', ok: 'atmo-glow-ok', muted: '' }
+function atmoClass(tone) { return ATMO[tone] || '' }
+
+// ── Tone → metric color CSS variable ──────────────────────────────────────────
+const TONE_COLOR = {
+ danger: 'var(--color-danger)',
+ warn:   'var(--color-warn)',
+ ok:     'var(--color-ok)',
+ ochre:  'var(--color-ochre)',
+ muted:  'var(--color-muted)',
+}
+export function toneColor(tone) { return TONE_COLOR[tone] || 'var(--color-ink)' }
+
+// ── SceneHeader — V2 hero section for every screen ────────────────────────────
+// Contains: module label · context · live dot · timestamp · large metric ·
+//           narrative statement · optional meta row · optional signal strip
+export function SceneHeader({
+ module,                 // module identifier e.g. "SHIFT" / "BATCH"
+ context,               // location/context string e.g. "Line 4 · AM Shift"
+ live = false,          // show animated live indicator
+ timestamp,             // time string e.g. "06:42"
+ metric,                // primary large value (number or string)
+ metricColor,           // CSS color for the metric — defaults to tone
+ metricLabel,           // label below the metric e.g. "Risk score"
+ statement,             // narrative sentence — the human voice
+ meta = [],            // [{label, value, color}] quick stats row
+ tone = 'muted',       // 'danger' | 'warn' | 'ok' | 'muted' — drives glow
+ children,             // signal strip or other footer content
+ className = '',
+}) {
+ const mc = metricColor || toneColor(tone)
+ return (
+  <header className={`flex-shrink-0 border-b border-rule relative overflow-hidden ${className}`}
+   style={{ background: 'linear-gradient(180deg, var(--color-stone-2) 0%, var(--color-stone) 100%)' }}>
+
+   {/* Atmospheric glow — risk-toned, 9s ambient pulse */}
+   {tone !== 'muted' && (
+    <div className={`absolute inset-0 pointer-events-none ${atmoClass(tone)}`} />
+   )}
+
+   {/* Module bar */}
+   <div className="flex items-center justify-between px-6 pt-4 pb-0 relative">
+    <div className="flex items-center gap-3">
+     <span className="font-body text-micro text-muted tracking-widest">{module}</span>
+     {context && <>
+      <div className="w-px h-3 bg-rule flex-shrink-0" />
+      <span className="font-body text-micro text-muted tracking-wider">{context}</span>
+     </>}
+    </div>
+    {(live || timestamp) && (
+     <div className="flex items-center gap-2">
+      {live && <div className="live-dot w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: 'var(--color-ochre)' }} />}
+      {timestamp && <span className="font-body text-micro text-muted">{timestamp}</span>}
+     </div>
+    )}
+   </div>
+
+   {/* Metric + statement */}
+   {(metric != null || statement) && (
+    <div className="flex items-center gap-8 px-6 py-5 relative">
+     {/* Metric block */}
+     {metric != null && (
+      <div className="flex-shrink-0">
+       <div className="font-body font-bold leading-none tabular-nums"
+        style={{ fontSize: 80, color: mc, letterSpacing: '-0.03em', lineHeight: 1 }}>
+        {metric}
+       </div>
+       {metricLabel && (
+        <div className="flex items-center gap-2 mt-2">
+         <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: mc }} />
+         <span className="font-body text-micro tracking-widest" style={{ color: mc }}>{metricLabel}</span>
+        </div>
+       )}
+      </div>
+     )}
+
+     {/* Narrative statement */}
+     {statement && (
+      <div className={`max-w-md flex-1 ${metric != null ? 'border-l border-rule pl-8' : ''}`}>
+       <p className="font-display text-ink text-base leading-relaxed">{statement}</p>
+       {meta.length > 0 && (
+        <div className="flex items-center gap-5 mt-3">
+         {meta.map(({ label, value, color: c }, i) => (
+          <div key={i} className="flex items-center gap-1.5">
+           <span className="font-body text-micro text-muted tracking-wider">{label}</span>
+           <span className="font-body text-micro" style={{ color: c || 'var(--color-ochre)' }}>{value}</span>
+          </div>
+         ))}
+        </div>
+       )}
+      </div>
+     )}
+    </div>
+   )}
+
+   {/* Signal strip — optional footer of the hero */}
+   {children && (
+    <div className="border-t border-rule2 px-6 py-2.5 relative flex items-center gap-6">
+     {children}
+    </div>
+   )}
+  </header>
+ )
+}
+
+// ── IntelCard — precision + narrative fused finding/recommendation card ────────
+// System voice (title) + narrative voice (description) + evidence + actions
+export function IntelCard({
+ ordinal,              // "I." / "II." — optional ranking
+ title,               // precise system voice title
+ description,         // narrative interpretation — the human voice
+ evidence,            // monospace system evidence string
+ tone = 'warn',      // 'danger' | 'warn' | 'ok' | 'muted'
+ done = false,        // actioned state
+ consequenceMessage,  // message shown after action
+ className = '',
+ children,            // action buttons slot
+}) {
+ const tc = toneColor(tone)
+ return (
+  <div className={`mb-3 overflow-hidden ${className}`}
+   style={{
+    background: 'var(--color-stone-2)',
+    border: '1px solid var(--color-rule)',
+    borderLeft: `3px solid ${tc}`,
+    opacity: done ? 0.45 : 1,
+    transition: 'opacity 400ms ease',
+   }}>
+
+   {/* Header */}
+   <div className="flex items-start gap-4 px-4 pt-4 pb-3">
+    {ordinal && (
+     <span className="font-body font-bold flex-shrink-0" style={{ fontSize: 18, color: tc, lineHeight: 1, marginTop: 2 }}>
+      {ordinal}
+     </span>
+    )}
+    <div className="flex-1 min-w-0">
+     {/* System voice — precise, bold */}
+     <div className="font-display font-semibold text-ink text-base leading-snug mb-2">{title}</div>
+     {/* Narrative voice — interpretive, warm */}
+     {description && (
+      <p className="font-display text-body leading-relaxed" style={{ color: 'var(--color-context)' }}>{description}</p>
+     )}
+    </div>
+   </div>
+
+   {/* Evidence — monospace system voice */}
+   {evidence && (
+    <div className="px-4 py-2 border-t border-b border-rule2">
+     <span className="font-body text-micro text-muted">{evidence}</span>
+    </div>
+   )}
+
+   {/* Actions / consequence */}
+   {done ? (
+    <div className="flex items-center gap-2 px-4 py-2.5">
+     <Check size={11} color="var(--color-ok)" />
+     <span className="font-body text-micro text-ok">{consequenceMessage}</span>
+    </div>
+   ) : children ? (
+    <div className="flex items-center gap-2 px-4 py-2.5">{children}</div>
+   ) : null}
+  </div>
+ )
+}
+
+// ── Signal chip — inline status dot in hero signal strip ──────────────────────
+export function SignalChip({ label, healthy = true, tone }) {
+ const color = tone ? toneColor(tone) : (healthy ? 'var(--color-ok)' : 'var(--color-warn)')
+ return (
+  <div className="flex items-center gap-1.5">
+   <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: color }} />
+   <span className="font-body text-micro" style={{ color: healthy && !tone ? 'var(--color-muted)' : color }}>
+    {label}
+   </span>
+  </div>
+ )
 }
 
 // ── Status pill (unified across all modules)
@@ -23,6 +203,15 @@ export function StatusPill({ tone, level, variant, status, children, dot = true,
  )
 }
 
+// ── Section label — monospace marker, V2 system voice
+export function SectionLabel({ children, className = '' }) {
+ return (
+  <div className={`font-body text-micro text-muted tracking-widest ${className}`}>
+   {children}
+  </div>
+ )
+}
+
 export function SectionHeader({ tone = 'muted', label, sub, title, icon: Icon, accent, badge, className = '' }) {
  if (title) {
   return (
@@ -31,7 +220,7 @@ export function SectionHeader({ tone = 'muted', label, sub, title, icon: Icon, a
      {label && <StatusPill tone={tone}>{label}</StatusPill>}
      {Icon && <Icon size={12} strokeWidth={2} style={accent ? { color: accent } : undefined} />}
     </div>
-    <div className="flex-1 font-body font-semibold text-ink text-base tracking-tight">{title}</div>
+    <div className="flex-1 font-display font-semibold text-ink text-section">{title}</div>
     {badge}
    </div>
   )
@@ -51,9 +240,9 @@ export function StatCell({ label, value, sub, fill, tone = 'ok', badge }) {
  const toneBorder = { ok:'border-t-ok', warn:'border-t-warn', danger:'border-t-danger', ochre:'border-t-ochre' }[tone] || 'border-t-ok'
  return (
  <div className={`px-5 py-4 border-r border-rule2 last:border-r-0 border-t-2 ${toneBorder}`}>
- <div className="font-body text-muted text-label tracking-normal mb-2">{label}</div>
+ <div className="font-body text-micro text-muted tracking-widest mb-2">{label}</div>
  <div className="flex items-center gap-2">
- <div className="font-body font-bold text-metric text-ink tracking-tight">{value}</div>
+ <div className="font-body font-bold text-metric text-ink tracking-tight tabular-nums">{value}</div>
  {badge && <StatusPill tone="muted" dot={false}>{badge}</StatusPill>}
  </div>
  {sub && <div className="font-body text-muted text-label mt-1">{sub}</div>}
@@ -87,7 +276,7 @@ export function SP({ title, sub, children }) {
  return (
  <div className="border-b border-rule2 last:border-b-0">
  <div className="px-5 py-3 border-b border-rule2 flex items-baseline justify-between">
- <span className="font-body font-bold text-ink text-base">{title}</span>
+ <span className="font-display font-semibold text-ink text-section">{title}</span>
  {sub && <span className="font-body text-muted text-label">{sub}</span>}
  </div>
  <div>{children}</div>
@@ -117,8 +306,8 @@ export function ActionBanner({ tone = 'warn', headline, body, children, footer }
  <div className={`flex-shrink-0 ${s}`}>
  <div className="px-5 py-4 flex items-start gap-4">
  <div className="flex-1">
- <div className="font-body font-semibold text-ink text-base leading-tight">{headline}</div>
- {body && <div className="font-body text-muted text-body mt-1 leading-relaxed">{body}</div>}
+ <div className="font-display font-semibold text-ink text-base leading-tight">{headline}</div>
+ {body && <div className="font-display text-muted text-body mt-1 leading-relaxed">{body}</div>}
  </div>
  {children && <div className="flex gap-2 flex-shrink-0 items-start">{children}</div>}
  </div>
@@ -129,12 +318,12 @@ export function ActionBanner({ tone = 'warn', headline, body, children, footer }
 
 // ── Button variants
 export function Btn({ variant = 'primary', icon: Icon, onClick, disabled, children, className = '', style }) {
- const base = 'font-body font-medium text-body px-4 py-2.5 min-h-[40px] inline-flex items-center justify-center gap-2 transition-[background-color,box-shadow,opacity,transform] duration-100 ease-standard active:scale-[0.97] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed rounded-btn'
+ const base = 'font-body font-medium text-body px-4 py-2.5 min-h-[40px] inline-flex items-center justify-center gap-2 transition-[background-color,box-shadow,opacity,transform] duration-100 ease-standard active:scale-[0.97] cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed rounded-btn'
  const IconComp = Icon
  const cls = {
  primary:   'bg-ochre text-stone border-0 hover:bg-ochre-dark hover:shadow-raise',
- secondary: 'border border-rule2 bg-stone text-ink hover:bg-stone2',
- }[variant] ?? 'bg-ink text-stone border-0 hover:bg-ink2'
+ secondary: 'border border-rule bg-stone2 text-ink hover:bg-stone3 hover:border-rule2',
+ }[variant] ?? 'bg-stone3 text-ink border border-rule hover:bg-stone4'
  return (
  <button type="button" className={`${base} ${cls} ${className}`} onClick={onClick} disabled={disabled} style={style}>
   {IconComp && <IconComp size={12} className="flex-shrink-0" aria-hidden="true" />}
@@ -182,18 +371,18 @@ export function ScoreRing({ pct = 0, size = 32, color }) {
 // ── Page header
 export function PageHead({ over, title, accent = 'var(--color-ochre)', meta = [], children }) {
  return (
- <div className="px-6 py-6 border-b border-rule2 bg-stone" style={{ borderLeft: `4px solid ${accent}` }}>
- <div className="font-body text-muted text-label tracking-normal mb-2">{over}</div>
- <div className="font-body font-bold text-page text-ink leading-tight tracking-tight">
+ <div className="px-6 py-5 border-b border-rule2 bg-stone2 relative overflow-hidden" style={{ borderLeft: `3px solid ${accent}` }}>
+ {over && <div className="font-body text-micro text-muted tracking-widest mb-2">{over}</div>}
+ <div className="font-display font-bold text-page text-ink leading-tight tracking-tight">
  {title}
- {children && <span className="font-body font-normal text-ochre"> {children}</span>}
+ {children && <span className="font-display font-normal" style={{ color: accent }}> {children}</span>}
  </div>
  {meta.length > 0 && (
  <div className="flex flex-wrap gap-x-6 gap-y-1 mt-3">
  {meta.map(({ role, val }, i) => (
  <div key={i} className="flex gap-1.5 items-baseline">
- <span className="font-body text-muted text-label">{role}</span>
- <span className="font-body text-ink text-body font-medium">{val}</span>
+ <span className="font-body text-micro text-muted tracking-wider">{role}</span>
+ <span className="font-display text-ink text-body font-medium">{val}</span>
  </div>
  ))}
  </div>
@@ -306,8 +495,8 @@ export function Modal({ onClose, title, children }) {
    <div className="absolute inset-0 bg-ink/40" onClick={handleClose} />
    <div
     ref={dialogRef}
-    className={`relative z-10 bg-stone border border-rule2 w-full max-w-[480px] mx-4 flex flex-col max-h-[90vh] overflow-hidden ${closing ? 'modal-exit' : 'modal-enter'}`}
-    style={{ borderTop: '3px solid var(--color-danger)' }}
+    className={`relative z-10 bg-stone3 border border-rule w-full max-w-[480px] mx-4 flex flex-col max-h-[90vh] overflow-hidden shadow-raise ${closing ? 'modal-exit' : 'modal-enter'}`}
+    style={{ borderTop: '2px solid var(--color-danger)' }}
    >
     {title && <span id={titleId} className="sr-only">{title}</span>}
     {children}
@@ -385,14 +574,14 @@ export function VaulDrawer({ open, onClose, title, badge, children, maxHeight = 
     role="dialog"
     aria-modal="true"
     aria-label={typeof title === 'string' ? title : undefined}
-    className={`relative z-10 bg-stone flex flex-col overflow-hidden rounded-t-2xl mx-auto w-full shadow-raise ${exiting ? 'drawer-out' : 'drawer-in'}`}
+    className={`relative z-10 bg-stone3 flex flex-col overflow-hidden rounded-t-xl mx-auto w-full shadow-raise ${exiting ? 'drawer-out' : 'drawer-in'}`}
     style={{ maxHeight, width: `min(100%, ${maxWidth})` }}
    >
     {/* Header — only if title provided */}
     {title && (
-     <div className="flex items-center justify-between px-4 py-2.5 border-b border-rule2 flex-shrink-0">
+     <div className="flex items-center justify-between px-4 py-2.5 border-b border-rule flex-shrink-0">
       <div className="flex items-center gap-2">
-       <span className="font-body font-medium text-ink text-base">{title}</span>
+       <span className="font-display font-medium text-ink text-base">{title}</span>
        {badge}
       </div>
       <button type="button" onClick={handleClose} className="text-muted hover:text-ink transition-colors duration-100 ease-standard p-1 -mr-1" aria-label={`Close ${title}`}>
@@ -659,7 +848,7 @@ export function ActionCard({ tone = 'danger', title, subtitle, metadata, actions
   <SurfaceCard tone={tone}>
    <div className="px-4 py-3 flex items-start justify-between gap-3">
     <div className="flex-1 min-w-0">
-     <div className="font-body font-medium text-ink text-body mb-1">{title}</div>
+     <div className="font-display font-medium text-ink text-section mb-1">{title}</div>
      {subtitle && <div className="font-body text-muted text-label mb-2">{subtitle}</div>}
      {metadata && (
       <div className="flex items-center gap-2 mb-2 flex-wrap">
@@ -814,16 +1003,16 @@ export function SlidePanel({ title, subtitle, icon: Icon, accentColor, ariaLabel
  const handleClose = () => exit(onClose)
  return (
   <>
-   <div className="fixed inset-0 bg-ink/20 z-40" onClick={handleClose} />
+   <div className="fixed inset-0 bg-stone/60 z-40" onClick={handleClose} />
    <aside ref={panelRef} role="dialog" aria-modal="true" aria-label={ariaLabel || title}
-    className={`fixed top-0 right-0 bottom-0 w-full bg-stone border-l border-rule2 z-50 flex flex-col ${exiting ? 'slide-right-out' : 'slide-right'}`}
+    className={`fixed top-0 right-0 bottom-0 w-full bg-stone2 border-l border-rule z-50 flex flex-col shadow-raise ${exiting ? 'slide-right-out' : 'slide-right'}`}
     style={{ maxWidth }}>
-    <div className="flex items-start justify-between px-5 py-4 border-b border-rule2 bg-stone2 flex-shrink-0"
-     style={accentColor ? { borderTop: `3px solid ${accentColor}` } : undefined}>
+    <div className="flex items-start justify-between px-5 py-4 border-b border-rule bg-stone3 flex-shrink-0"
+     style={accentColor ? { borderTop: `2px solid ${accentColor}` } : undefined}>
      <div className="flex items-center gap-3 min-w-0">
-      {Icon && <Icon size={26} strokeWidth={1.5} className="text-ochre flex-shrink-0" aria-hidden="true" />}
+      {Icon && <Icon size={22} strokeWidth={1.5} className="text-ochre flex-shrink-0" aria-hidden="true" />}
       <div className="min-w-0">
-       {subtitle && <div className="font-body text-muted text-label mb-1">{subtitle}</div>}
+       {subtitle && <div className="font-body text-micro text-muted tracking-widest mb-1">{subtitle}</div>}
        <div className="font-display font-bold text-ink text-base leading-snug">{title}</div>
       </div>
      </div>
@@ -834,7 +1023,7 @@ export function SlidePanel({ title, subtitle, icon: Icon, accentColor, ariaLabel
     </div>
     <div className="flex-1 overflow-y-auto p-5 space-y-4">{children}</div>
     {footer && (
-     <div className="px-5 py-3 border-t border-rule2 bg-stone2 flex-shrink-0">{footer}</div>
+     <div className="px-5 py-3 border-t border-rule bg-stone3 flex-shrink-0">{footer}</div>
     )}
    </aside>
   </>

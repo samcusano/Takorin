@@ -259,53 +259,41 @@ export default function PlantOverview() {
   return (
     <div className="flex flex-col h-full overflow-hidden content-reveal">
 
-      {/* ── Header ──────────────────────────────────────────────────────── */}
-      <div className={`flex-shrink-0 flex items-center justify-between px-6 py-3 border-b-2 ${
-        critCount > 0  ? 'bg-danger/[0.05] border-b-danger/30'
-        : watchCount > 0 ? 'bg-warn/[0.05] border-b-warn/20'
-        : 'bg-stone2 border-b-rule2'
-      }`}>
+      {/* ── Compact status bar — director scanning glance ───────────────── */}
+      <div className="flex-shrink-0 flex items-center gap-4 px-5 py-3 border-b border-rule2 bg-stone">
         <div className="flex items-center gap-2">
-          <Activity size={13} strokeWidth={1.75}
-            className={critCount > 0 ? 'text-danger' : watchCount > 0 ? 'text-warn' : 'text-ok'} />
+          <span className="live-dot w-1.5 h-1.5 rounded-full bg-ok flex-shrink-0" />
           <span className="font-display font-bold text-ink text-base">{plantName}</span>
-          <span className="font-body text-muted text-label">· April 16 · AM shift</span>
-          {mode === 'whatif' && (
-            <span className="font-body text-label text-ochre bg-ochre/[0.08] px-1.5 py-0.5 ml-1">What if mode</span>
-          )}
+          <span className="font-body text-muted text-label">· April 16 · 06:42</span>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4 ml-2">
           {critCount > 0 && (
-            <span className="font-body text-danger text-label flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-danger" />
+            <span className="font-body text-danger text-label font-medium flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-danger flex-shrink-0" />
               {critCount} at risk
-              {mode === 'whatif' && anyAdjusted && <span className="text-muted ml-0.5">(projected)</span>}
             </span>
           )}
           {watchCount > 0 && (
             <span className="font-body text-warn text-label flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-warn" />{watchCount} watch
+              <span className="w-1.5 h-1.5 rounded-full bg-warn flex-shrink-0" />
+              {watchCount} watch
             </span>
           )}
-          {clearCount > 0 && (
-            <span className="font-body text-ok text-label flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-ok" />{clearCount} clear
-            </span>
-          )}
-          <div className="flex items-center border-l border-rule2 pl-3 gap-px">
-            {[['normal', 'Live'], ['whatif', 'What if'], ['compare', 'Compare']].map(([m, label]) => (
-              <button key={m} type="button" onClick={() => switchMode(m)}
-                className={`font-body text-label px-2.5 py-1.5 transition-colors ${
-                  mode === m ? 'bg-ink text-stone' : 'text-muted hover:text-ink border border-transparent hover:border-rule2'
-                }`}>
-                {label}
-              </button>
-            ))}
-          </div>
-          <span className="font-body text-muted text-label flex items-center gap-1.5 border-l border-rule2 pl-3">
-            <Users size={11} strokeWidth={2} />
-            {rawLines.length} lines · {totalWorkers} workers
+          <span className="font-body text-ok text-label flex items-center gap-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-ok flex-shrink-0" />
+            {clearCount} clear
           </span>
+          <span className="font-body text-muted text-label">{rawLines.length} lines · {totalWorkers} workers</span>
+        </div>
+        <div className="ml-auto flex items-center gap-px">
+          {[['normal', 'Live'], ['whatif', 'What if'], ['compare', 'Compare']].map(([m, label]) => (
+            <button key={m} type="button" onClick={() => switchMode(m)}
+              className={`font-body text-micro px-2.5 py-1.5 transition-colors ${
+                mode === m ? 'bg-ink text-stone' : 'text-muted hover:text-ink border border-transparent hover:border-rule'
+              }`}>
+              {label}
+            </button>
+          ))}
         </div>
       </div>
 

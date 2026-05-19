@@ -401,44 +401,47 @@ export default function Analytics() {
 
           {/* ── Attribution hero ─────────────────────────────────────────── */}
           <section className="mb-8">
-            <div className="font-body text-muted text-label tracking-normal mb-5">
-              {attr.line} · OEE Attribution · {GRAINS.find(g => g.id === timeGrain)?.label}
+            <div className="font-body text-muted text-label tracking-normal mb-4">
+              {attr.line} · OEE attribution · {GRAINS.find(g => g.id === timeGrain)?.label}
             </div>
 
-            <div className="flex items-start gap-8 mb-5">
+            {/* Interpretation leads — narrative first, numbers confirm */}
+            <div className="font-display font-bold text-head text-ink leading-snug mb-5">
+              {attr.plant} {attr.line} {attr.narrative}.
+            </div>
+
+            {/* Supporting data strip */}
+            <div className="flex items-center gap-5 mb-5 pb-5 border-b border-rule2">
               <div>
                 <div className="display-num text-hero font-bold text-ink leading-none">{attr.actual}%</div>
                 <div className="font-body text-muted text-label mt-1">Actual OEE</div>
               </div>
-              <div className="pt-2">
-                <div className="flex items-baseline gap-3 mb-2">
-                  <span className={`display-num text-2xl font-bold leading-none ${totalDelta >= 0 ? 'text-ok' : 'text-danger'}`}>
-                    {totalDelta >= 0 ? '+' : ''}{totalDelta}pp
-                  </span>
-                  <span className="font-body text-muted text-body">above {attr.baseline}% baseline</span>
-                  <span className={`font-body text-label font-medium px-2.5 py-0.5 rounded-btn flex items-center gap-1.5 ${
-                    atTarget ? 'bg-ok/10 text-ok' : 'bg-warn/10 text-warn'
-                  }`}>
-                    {atTarget
-                      ? <><Check size={10} strokeWidth={2.5} />At target</>
-                      : `${+(attr.target - attr.actual).toFixed(1)}pp below ${attr.target}% target`}
-                  </span>
+              <div className="h-10 w-px bg-rule2" />
+              <div>
+                <div className={`display-num text-metric font-bold leading-none ${totalDelta >= 0 ? 'text-ok' : 'text-danger'}`}>
+                  {totalDelta >= 0 ? '+' : ''}{totalDelta}pp
                 </div>
-                <div className="font-body text-ink2 text-base leading-snug">
-                  {attr.plant} {attr.line} {attr.narrative}
-                </div>
+                <div className="font-body text-muted text-label mt-1">vs {attr.baseline}% baseline</div>
               </div>
-            </div>
-
-            <div className="flex items-center gap-2 flex-wrap mb-6">
-              <span className="font-body text-muted text-label mr-1">Biggest drivers:</span>
-              {topDrivers.map(d => (
-                <span key={d.id} className={`font-body text-label font-medium px-2.5 py-0.5 rounded-btn ${
-                  d.delta >= 0 ? 'bg-ok/10 text-ok' : 'bg-danger/[0.04] text-danger'
+              <div className="h-10 w-px bg-rule2" />
+              <div>
+                <span className={`font-body text-label font-medium px-2.5 py-1 flex items-center gap-1.5 ${
+                  atTarget ? 'bg-ok/10 text-ok' : 'bg-warn/10 text-warn'
                 }`}>
-                  {d.delta >= 0 ? '+' : ''}{d.delta}pp {d.label}
+                  {atTarget
+                    ? <><Check size={10} strokeWidth={2.5} />At target ({attr.target}%)</>
+                    : `${+(attr.target - attr.actual).toFixed(1)}pp below ${attr.target}% target`}
                 </span>
-              ))}
+              </div>
+              <div className="flex items-center gap-2 flex-wrap ml-auto">
+                {topDrivers.map(d => (
+                  <span key={d.id} className={`font-body text-label font-medium px-2 py-0.5 ${
+                    d.delta >= 0 ? 'bg-ok/10 text-ok' : 'bg-danger/[0.04] text-danger'
+                  }`}>
+                    {d.delta >= 0 ? '+' : ''}{d.delta}pp {d.short}
+                  </span>
+                ))}
+              </div>
             </div>
 
             <div className="border border-rule2 bg-stone px-4 pt-4 pb-2">

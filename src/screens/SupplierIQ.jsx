@@ -58,7 +58,7 @@ function CoaPanel({ lot, onClose }) {
 
       {/* ── Lot identity ─────────────────────────────────────────────── */}
       <div>
-        <div className="font-body text-muted text-label tracking-normal mb-3">Lot details</div>
+        <div className="font-body text-muted text-label tracking-widest mb-3">Lot details</div>
         <div className="space-y-3">
           {[
             { label: 'Ingredient',  value: lot.ing               },
@@ -78,8 +78,8 @@ function CoaPanel({ lot, onClose }) {
       {/* ── Shelf life bar ───────────────────────────────────────────── */}
       <div>
         <div className="flex items-baseline justify-between mb-2">
-          <span className="font-body text-muted text-label tracking-normal">Shelf life</span>
-          <span className={`display-num text-2xl font-bold leading-none ${shelfText}`}>{lot.shelf}<span className="font-body text-label font-normal text-muted ml-1">days</span></span>
+          <span className="font-body text-muted text-label tracking-widest">Shelf life</span>
+          <span className={`display-num text-head font-bold leading-none ${shelfText}`}>{lot.shelf}<span className="font-body text-label font-normal text-muted ml-1">days</span></span>
         </div>
         <div className="h-2 bg-rule2 rounded-full overflow-hidden mb-1">
           <div className={`h-full rounded-full ${shelfColor} transition-[width]`} style={{ width: `${shelfPct}%` }} />
@@ -89,7 +89,7 @@ function CoaPanel({ lot, onClose }) {
 
       {/* ── Lab results ──────────────────────────────────────────────── */}
       <div>
-        <div className="font-body text-muted text-label tracking-normal mb-3">
+        <div className="font-body text-muted text-label tracking-widest mb-3">
           Lab results{coaPass ? ' · Apr 12, 2026' : ' · Pending'}
         </div>
         {coaPass ? (
@@ -197,8 +197,8 @@ export default function SupplierIQ() {
             g.tone === 'block' ? 'border-l-danger bg-danger/[0.02]' : g.tone === 'warn' ? 'border-l-warn' : 'border-l-ok'
           }`}>
             <div className="flex justify-between items-start">
-              <div className="font-body font-medium text-ink text-body">{g.title}</div>
-              <span className={`font-body font-semibold text-label ml-2 flex-shrink-0 ${g.badgeColor}`}>{g.badge}</span>
+              <div className="font-display font-medium text-ink text-section">{g.title}</div>
+              <span className={`font-body text-label ml-2 flex-shrink-0 ${g.badgeColor}`}>{g.badge}</span>
             </div>
             <div className="font-body text-muted text-label mt-0.5">{g.sub}</div>
           </div>
@@ -430,7 +430,7 @@ export default function SupplierIQ() {
               <div className="px-4 py-3 flex items-center gap-4">
                 <ScoreRing pct={s.score} size={32} />
                 <div className="flex-1 min-w-0">
-                  <div className="font-body font-medium text-ink text-base">{s.name}</div>
+                  <div className="font-display font-medium text-ink text-section">{s.name}</div>
                   {audit?.reason && <div className="font-body text-warn text-label mt-0.5">{audit.reason}</div>}
                   {intel && (
                     <div className="flex items-center gap-1 mt-1">

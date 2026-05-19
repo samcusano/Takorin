@@ -343,18 +343,19 @@ export default function Sidebar() {
  ">
  {/* Brand */}
  <div className="flex items-center gap-3 px-4 py-3.5 border-b border-sidebar-border bg-sidebar2">
- <svg width="20" height="20" viewBox="0 0 22 22" aria-hidden="true">
- <path d="M11 2 L20 11 L11 20 L2 11 Z" fill="none" stroke="#C17D2A" strokeWidth="1.3"/>
- <path d="M8 13 L14 13 L14 7 Z" fill="#C17D2A"/>
+ <svg width="18" height="18" viewBox="0 0 22 22" aria-hidden="true">
+ <path d="M11 2 L20 11 L11 20 L2 11 Z" fill="none" stroke="var(--color-ochre)" strokeWidth="1.3"/>
+ <path d="M8 13 L14 13 L14 7 Z" fill="var(--color-ochre)"/>
  </svg>
- <div>
- <div className="font-display font-bold text-white text-base tracking-tight leading-none">
- takorin
+ <div className="flex-1 min-w-0">
+ <div className="font-body font-bold text-ink text-label tracking-widest leading-none">
+ Takorin
  </div>
- <div className="font-body text-white/50 text-label mt-0.5">
+ <div className="font-body text-sidebar-ghost text-micro mt-1 tracking-wider">
  Total intelligence
  </div>
  </div>
+ <div className="live-dot w-1.5 h-1.5 rounded-full bg-ok flex-shrink-0" />
  </div>
 
  {/* Facility */}
@@ -399,12 +400,12 @@ export default function Sidebar() {
  {/* ── Supervisor: 3 screens (ShiftIQ contains Handoff/Fleet/Allocation as tabs) */}
  {viewingRole === 'supervisor' && (
   <>
-   <div className="px-4 pt-3 pb-1 text-label tracking-normal text-white/50 font-body font-medium">Operational</div>
+   <div className="px-4 pt-4 pb-1 font-body text-micro text-sidebar-ghost tracking-widest">Operational</div>
    <SideItem to="/shift"  id="shift"  icon={Activity} label="ShiftIQ"      badge="3" badgeType="alert" />
    <AgentItem count={agentPendingCount} />
-   <div className="px-4 pt-4 pb-1 text-label tracking-normal text-white/50 font-body font-medium">Causality</div>
+   <div className="px-4 pt-4 pb-1 font-body text-micro text-sidebar-ghost tracking-widest">Causality</div>
    <SideItem to="/impact" id="impact" icon={CircleDot} label="Outcomes" badge={null} />
-   <div className="px-4 pt-4 pb-1 text-label tracking-normal text-white/50 font-body font-medium">Activity</div>
+   <div className="px-4 pt-4 pb-1 font-body text-micro text-sidebar-ghost tracking-widest">Activity</div>
    <button type="button" onClick={() => setNotifOpen(true)}
     className="flex items-center gap-3 px-4 py-2.5 w-full text-left transition-colors hover:bg-sidebar2 text-white/70">
     <Bell size={15} strokeWidth={1.75} className="flex-shrink-0" />
@@ -420,18 +421,18 @@ export default function Sidebar() {
   <>
    <PlantItem />
 
-   <div className="px-4 pt-3 pb-1 text-label tracking-normal text-white/50 font-body font-medium">Operations</div>
+   <div className="px-4 pt-4 pb-1 font-body text-micro text-sidebar-ghost tracking-widest">Operations</div>
    {modules.map(m => <SideItem key={m.id} to={m.path} id={m.id} {...m} />)}
    <AgentItem count={agentPendingCount} />
    <SideItem to="/impact" id="impact" icon={CircleDot} label="Outcomes" badge={null} />
 
-   <div className="px-4 pt-4 pb-1 text-label tracking-normal text-white/50 font-body font-medium">Platform</div>
+   <div className="px-4 pt-4 pb-1 font-body text-micro text-sidebar-ghost tracking-widest">Platform</div>
    <SideItem to="/batch"      id="batch"      icon={FlaskConical}    label="Batches"    badge={null} />
    <SideItem to="/compliance" id="compliance" icon={Scale}           label="Compliance" badge={null} />
    <SideItem to="/hierarchy"  id="hierarchy"  icon={LayoutDashboard} label="Site"       badge={null} />
    <SideItem to="/knowledge"  id="knowledge"  icon={BookOpen}        label="Knowledge"  badge={null} />
 
-   <div className="px-4 pt-4 pb-1 text-label tracking-normal text-white/50 font-body font-medium">Extended</div>
+   <div className="px-4 pt-4 pb-1 font-body text-micro text-sidebar-ghost tracking-widest">Extended</div>
    <SideItem to="/execution" id="execution" icon={Workflow} label="Execution" badge={null} />
    {currentPlant?.sector === 'pharma' && (
     <SideItem to="/records"  id="records"  icon={FileLock2}  label="Records"     badge={null} />
@@ -443,11 +444,11 @@ export default function Sidebar() {
     <SideItem to="/equipment" id="equipment" icon={ScanLine} label="Equipment" badge={null} />
    )}
 
-   <div className="px-4 pt-4 pb-1 text-label tracking-normal text-white/50 font-body font-medium">System</div>
+   <div className="px-4 pt-4 pb-1 font-body text-micro text-sidebar-ghost tracking-widest">System</div>
    <SideItem to="/integration" id="integration" icon={Network} label="Integrations" badge={null} />
    <SideItem to="/readiness"   id="readiness"   icon={Gauge}   label="Readiness"    badge={null} />
 
-   <div className="px-4 pt-4 pb-1 text-label tracking-normal text-white/50 font-body font-medium">Activity</div>
+   <div className="px-4 pt-4 pb-1 font-body text-micro text-sidebar-ghost tracking-widest">Activity</div>
    <button type="button" onClick={() => setNotifOpen(true)}
     className="flex items-center gap-3 px-4 py-2.5 w-full text-left transition-colors hover:bg-sidebar2 text-white/70">
     <Bell size={15} strokeWidth={1.75} className="flex-shrink-0" />

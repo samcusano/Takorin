@@ -744,7 +744,7 @@ export default function CapaEngine() {
  return (
  <div className="flex flex-col h-full overflow-hidden content-reveal">
 
- {/* Shared banner */}
+ {/* Overdue banner */}
  <ActionBanner
  tone="warn"
  headline="2 cases overdue — FDA inspection in 18 days"

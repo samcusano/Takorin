@@ -4,38 +4,52 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Takorin design tokens — Pulse palette
-        stone:    { DEFAULT: '#FFFFFF', 2: '#F7F8FA', 3: '#EDEEF1', 4: '#E2E5EA' },
-        ink:      { DEFAULT: '#101828', 2: '#344054' },
-        ochre:    { DEFAULT: '#0052CC', dim: '#EFF4FF', dark: '#003580', light: '#3572E3' },
-        muted:    '#667085',
-        rule:     '#E2E5EA',
-        rule2:    '#EDEEF1',
-        ok:       { DEFAULT: '#027A48', dim: '#ECFDF3' },
-        warn:     { DEFAULT: '#B54708', dim: '#FFFAEB' },
-        danger:   { DEFAULT: '#D92D20', dim: '#FFF4F3' },
-        // Sidebar — stays dark against the white content area
-        sidebar:  { DEFAULT: '#000000', 2: '#0D0D0D', 3: '#1A1A1A', border: '#1F1F1F', ghost: '#808080' },
+        // ── Surfaces — dark graphite scale (cool-neutral) ──────────────────
+        stone:   { DEFAULT: '#0B0F18', 2: '#131A26', 3: '#1B2538', 4: '#263042' },
+        // ── Text — warm bone scale ─────────────────────────────────────────
+        ink:     { DEFAULT: '#EDE4CB', 2: '#8A7E62' },
+        muted:   '#7A8EA8',   // secondary/muted text — cool blue-gray
+        // ── Borders ────────────────────────────────────────────────────────
+        rule:    '#263042',   // structural border
+        rule2:   '#1A2335',   // subtle border
+        // ── Semantic ───────────────────────────────────────────────────────
+        ok:      { DEFAULT: '#5FA877', dim: '#0D2518' },  // lighter green for dark bg
+        warn:    { DEFAULT: '#C98E2A', dim: '#2A1E08' },  // warm amber
+        danger:  { DEFAULT: '#D45438', dim: '#2A100A' },  // warm rust
+        // ── Primary accent — steel blue (interactive, structural) ──────────
+        ochre:   { DEFAULT: '#4B9CE4', dim: '#0D1E38', dark: '#2A6AAD', light: '#7BBDEE' },
+        // ── Narrative accent — clay (context, interpretation, insight) ─────
+        context: { DEFAULT: '#C4844E', dim: '#2A1808' },
+        // ── Predictive accent — indigo (historical, AI-derived) ───────────
+        deep:    { DEFAULT: '#7C86E8', dim: '#141830' },
+        // ── Sidebar — blue-black, distinct from content graphite ──────────
+        sidebar: { DEFAULT: '#080D16', 2: '#0E1520', 3: '#152030', border: '#1C2A40', ghost: '#4A6080' },
       },
       fontFamily: {
-        display: ['Inter', 'Helvetica Neue', 'system-ui', 'sans-serif'],
-        body:    ['Inter', 'Helvetica Neue', 'system-ui', 'sans-serif'],
+        // System / data voice — monospace for all structured information
+        body:    ["'SF Mono'", "'JetBrains Mono'", 'ui-monospace', "'Menlo'", "'Consolas'", 'monospace'],
+        // Narrative / context voice — humanist sans for interpretation and description
+        display: ["'Inter'", "'Helvetica Neue'", 'system-ui', 'sans-serif'],
+        // Explicit alias
+        mono:    ["'SF Mono'", "'JetBrains Mono'", 'ui-monospace', "'Menlo'", "'Consolas'", 'monospace'],
       },
       fontSize: {
-        // ── UI text scale ───────────────────────────────────────────────────
-        micro:   ['8px',  { lineHeight: '1.2' }],   // tiny badges, axis labels
-        label:   ['12px', { lineHeight: '1.2' }],   // labels, metadata, supporting copy
-        body:    ['14px', { lineHeight: '1.45' }],  // default body text
-        // ── Display / numeric scale ──────────────────────────────────────────
-        base:    ['15px', { lineHeight: '1.4' }],   // section titles, inline numbers, small headings
-        head:    ['18px', { lineHeight: '1.3' }],   // panel headings, card titles
-        subhead: ['20px', { lineHeight: '1.2' }],   // large card titles
-        title:   ['22px', { lineHeight: '1.2' }],   // confidence scores, key stats
-        metric:  ['28px', { lineHeight: '1' }],     // stat bar numbers
-        page:    ['32px', { lineHeight: '1.1' }],   // page headings
-        display: ['40px', { lineHeight: '1' }],     // hero scores (batch, quality)
-        score:   ['48px', { lineHeight: '1' }],     // large score displays
-        hero:    ['64px', { lineHeight: '1' }],     // primary score (ShiftIQ, DataReadiness)
+        // ── UI text scale ──────────────────────────────────────────────────
+        micro:   ['8px',  { lineHeight: '1.2' }],
+        label:   ['11px', { lineHeight: '1.2' }],   // mono labels read slightly larger
+        caption: ['12px', { lineHeight: '1.35' }],
+        body:    ['13px', { lineHeight: '1.45' }],
+        section: ['14px', { lineHeight: '1.3' }],
+        // ── Display / numeric scale ────────────────────────────────────────
+        base:    ['15px', { lineHeight: '1.4' }],
+        head:    ['18px', { lineHeight: '1.3' }],
+        subhead: ['20px', { lineHeight: '1.2' }],
+        title:   ['22px', { lineHeight: '1.2' }],
+        metric:  ['28px', { lineHeight: '1' }],
+        page:    ['32px', { lineHeight: '1.1' }],
+        display: ['40px', { lineHeight: '1' }],
+        score:   ['48px', { lineHeight: '1' }],
+        hero:    ['64px', { lineHeight: '1' }],
       },
       transitionDuration: {
         '50':  '50ms',
@@ -43,23 +57,23 @@ export default {
         '500': '500ms',
       },
       transitionTimingFunction: {
-        'enter':  'cubic-bezier(0.19, 0.91, 0.38, 1)',
-        'exit':   'cubic-bezier(0.42, 0, 1, 1)',
-        'spring': 'cubic-bezier(0.16, 1, 0.3, 1)',
-        'inout':  'cubic-bezier(0.42, 0, 0.58, 1)',
+        'enter':    'cubic-bezier(0.19, 0.91, 0.38, 1)',
+        'exit':     'cubic-bezier(0.42, 0, 1, 1)',
+        'spring':   'cubic-bezier(0.16, 1, 0.3, 1)',
+        'inout':    'cubic-bezier(0.42, 0, 0.58, 1)',
+        'standard': 'cubic-bezier(0.25, 0.1, 0.25, 1)',
       },
       borderRadius: {
-        'btn': '4px',
+        'btn': '2px',  // tight — precision system, not consumer app
       },
       boxShadow: {
-        'raise':      '0 4px 16px rgba(16,24,40,0.12)',
-        'card':       '0 1px 3px rgba(16,24,40,0.06)',
-        'card-alert': '0 1px 4px rgba(217,45,32,0.08)',
+        'raise':      '0 4px 20px rgba(0,0,0,0.45)',       // floating overlays on dark bg
+        'card':       '0 1px 4px rgba(0,0,0,0.30)',        // card lift
+        'card-alert': '0 1px 5px rgba(212,84,56,0.20)',    // danger card lift
       },
       zIndex: {
-        // ── Layer stack (extends Tailwind defaults 0–50) ──────────────────
-        modal: '60',   // modals, vaul drawers
-        toast: '70',   // toast notifications (always on top)
+        modal: '60',
+        toast: '70',
       },
     },
   },

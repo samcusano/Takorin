@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useSearchParams, Link } from 'react-router-dom'
+import ShiftIQV2 from './ShiftIQV2'
 import HandoffIQ from './HandoffIQ'
 import RobotFleet from './RobotFleet'
 import ResourceAllocation from './ResourceAllocation'
@@ -720,6 +721,7 @@ export default function ShiftIQ() {
  const signedCount = 7 + Object.keys(checklistSigned).length
  const startupPct = Math.round((signedCount / CHECKLIST_TOTAL) * 100)
  const [activeTab, setActiveTab] = useState('shift')
+ const [v2Mode, setV2Mode] = useState(false)
  const [countdown, setCountdown] = useState(d.countdown)
  const [escalatedShift, setEscalatedShift] = useState(false)
 
@@ -741,7 +743,8 @@ export default function ShiftIQ() {
  <div className="flex flex-col h-full overflow-hidden">
 
  {/* Tab bar — Shift | Handoff | Fleet (robot/hybrid) | Allocation (hybrid) */}
- <div className="flex-shrink-0 flex border-b border-rule2 bg-stone2">
+ <div className="flex-shrink-0 flex items-center border-b border-rule2 bg-stone2">
+  <div className="flex flex-1">
   {[
    { id: 'shift',      label: 'Shift',      show: true },
    { id: 'handoff',    label: 'Handoff',    show: true },
@@ -755,11 +758,28 @@ export default function ShiftIQ() {
     {t.label}
    </button>
   ))}
+  </div>
+  {/* Design comparison toggle — only visible on Shift tab */}
+  {activeTab === 'shift' && (
+   <button
+    type="button"
+    onClick={() => setV2Mode(m => !m)}
+    className={`mr-3 flex items-center gap-1.5 px-2.5 py-1 font-body text-label transition-colors border ${
+     v2Mode
+      ? 'text-ochre bg-ochre/10 border-ochre/30'
+      : 'text-muted border-rule2 bg-stone hover:border-muted hover:text-ink'
+    }`}
+    title={v2Mode ? 'Switch to standard layout' : 'Preview enhanced narrative view'}>
+    <span className={`w-1.5 h-1.5 rounded-full transition-colors ${v2Mode ? 'bg-ochre' : 'bg-rule'}`} />
+    {v2Mode ? 'Enhanced' : 'Enhanced view'}
+   </button>
+  )}
  </div>
 
  {activeTab === 'handoff'    ? <HandoffIQ />
   : activeTab === 'fleet'      ? <RobotFleet />
   : activeTab === 'allocation' ? <ResourceAllocation />
+  : v2Mode ? <ShiftIQV2 score={lineScore} lineLabel={`${activeLined?.name ?? 'Line 4'} · AM Shift`} supervisor={lineSupervisor} plant={currentPlant?.name ?? 'Salina KS'} />
   : <>
 
  {/* Quiet period banner + controls */}
