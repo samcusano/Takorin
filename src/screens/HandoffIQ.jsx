@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { handoffData, certExpiry, haccpData, robotFleetData } from '../data'
-import { Btn, ActionBanner, PersonAvatar, AcceptanceGate, CarryForwardItem, SlidePanel, StatusPill } from '../components/UI'
+import { Btn, PersonAvatar, CarryForwardItem, SlidePanel, StatusPill } from '../components/UI'
 import { Check, AlertTriangle, Clock, Brain, Bot, CheckCircle, Cpu } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useAppState } from '../context/AppState'
@@ -70,69 +70,14 @@ function ForecastRow({ row }) {
 }
 
 
-function LayoutGrid({ d, signed, setSigned, currentPlant, carryForwardItems, acknowledgedCount, carryForwardCount, allAcknowledged, carryForwardAcknowledged, handleAcknowledgeCarryForward, handleAcceptShift, handoffAccepted }) {
+function LayoutGrid({ d, currentPlant, carryForwardItems, acknowledgedCount, carryForwardCount, allAcknowledged, carryForwardAcknowledged, handleAcknowledgeCarryForward }) {
  const navigate = useNavigate()
  const [viewingItem, setViewingItem] = useState(null)
  const criticalCount = carryForwardItems.filter(i => i.urgency === 'danger').length
+ const pendingItems = carryForwardItems.filter(item => !carryForwardAcknowledged.has(item.id))
  return (
   <>
   <CarryForwardDetailPanel item={viewingItem} onClose={() => setViewingItem(null)} />
-  <div className="flex flex-col flex-1 overflow-hidden">
-   <AcceptanceGate
-    incomingSupervisor="M. Santos"
-    shiftTime="PM 14:00–22:00"
-    carryForwardCount={carryForwardCount}
-    acknowledgedCount={acknowledgedCount}
-    allAcknowledged={allAcknowledged}
-    onAccept={handleAcceptShift}
-    disabled={!signed}
-   />
-   {!signed && (() => {
-    // Document confidence: stale HR data (Lindqvist cert 4h stale) drops confidence
-    const docConfidence = 85 // 4 of 5 items fresh; 1 stale (HR/cert)
-    const isLowConfidence = docConfidence < 70
-    return (
-     <ActionBanner
-      tone={isLowConfidence ? 'warn' : 'ok'}
-      headline={
-       isLowConfidence
-        ? `Document confidence ${docConfidence}% — data gaps present. Review carefully before signing.`
-        : `Kowalski needs to sign before Santos can accept the shift`
-      }
-      body={
-       isLowConfidence
-        ? 'One or more synthesized items are based on stale data. Signing creates a legal record. Verify stale items manually first.'
-        : 'D. Kowalski signing off · Incoming: M. Santos · April 16, 14:02'
-      }
-     >
-      {isLowConfidence ? (
-       <button
-        type="button"
-        onClick={() => setSigned(true)}
-        className="font-body font-medium text-body px-4 py-2.5 min-h-[40px] inline-flex items-center gap-2 border border-warn/40 bg-warn/10 text-warn hover:bg-warn/20 transition-colors"
-       >
-        Acknowledge data gaps and sign
-       </button>
-      ) : (
-       <Btn variant="secondary" onClick={() => setSigned(true)}>Sign off — Kowalski</Btn>
-      )}
-     </ActionBanner>
-    )
-   })()}
-   {handoffAccepted ? (
-    <div className="flex items-center gap-3 px-5 py-4 bg-ok/[0.08] border-b-2 border-b-ok flex-shrink-0">
-     <Check size={16} strokeWidth={2.5} className="text-ok flex-shrink-0" />
-     <div>
-      <div className="font-body font-semibold text-ok text-base">Shift accepted by M. Santos</div>
-      <div className="font-body text-ok/70 text-label mt-0.5">Handoff complete · Line 4 · April 16, 14:02 · HO-2604161</div>
-     </div>
-    </div>
-   ) : signed && allAcknowledged ? (
-    <div className="flex items-center gap-3 px-4 py-3 bg-ok/10 border-b border-ok/20 flex-shrink-0">
-     <Check size={12} strokeWidth={2} className="text-ok flex-shrink-0" />
-     <span className="font-body text-ok text-body">Ready to accept · All carry-forward items acknowledged</span>
-    </div>
-   ) : null}
 
    {/* ── Handoff summary stats ────────────────────────────────────── */}
    <div className="flex-shrink-0 flex divide-x divide-rule2 border-b border-rule2 bg-stone">
@@ -216,17 +161,21 @@ function LayoutGrid({ d, signed, setSigned, currentPlant, carryForwardItems, ack
       ))}
      </div>
      <div className="overflow-y-auto flex-1">
-      {carryForwardCount > 0 ? carryForwardItems.map(item => (
+      {pendingItems.length > 0 ? pendingItems.map(item => (
        <CarryForwardItem
         key={item.id}
         item={item}
-        acknowledged={carryForwardAcknowledged.has(item.id)}
+        acknowledged={false}
         onAcknowledge={handleAcknowledgeCarryForward}
         onView={() => setViewingItem(item)}
        />
       )) : (
-       <div className="px-4 py-8 text-center font-body text-muted text-label">
-        No carry-forward items · shift handed off cleanly
+       <div className="px-4 py-10 text-center">
+        <Check size={20} strokeWidth={2} className="text-ok mx-auto mb-3" />
+        <div className="font-body text-ok text-body">
+         {carryForwardCount > 0 ? 'All items acknowledged' : 'No carry-forward items'}
+        </div>
+        <div className="font-body text-muted text-label mt-1">Shift handed off cleanly</div>
        </div>
       )}
      </div>
@@ -301,7 +250,6 @@ function LayoutGrid({ d, signed, setSigned, currentPlant, carryForwardItems, ack
     </div>
 
    </div>
-  </div>
   </>
  )
 }
@@ -475,31 +423,18 @@ function MachineStateHandoff() {
 
 export default function HandoffIQ() {
  const d = handoffData
- const navigate = useNavigate()
- const { handoffSigned: signed, setHandoffSigned: setSigned,
-  carryForwardAcknowledged, setCarryForwardAcknowledged,
-  logActivity,
-  currentPlant,
-  workerMode,
-  shiftActed,
-  handoffAccepted, setHandoffAccepted } = useAppState()
-
- const actedFindingIds = Object.keys(shiftActed || {}).filter(id => shiftActed[id])
+ const { carryForwardAcknowledged, setCarryForwardAcknowledged,
+  logActivity, currentPlant, workerMode, shiftActed } = useAppState()
 
  const actedCaseNums = new Set(
-  actedFindingIds.map(id => FINDING_TO_CASE[id]).filter(Boolean)
+  Object.keys(shiftActed || {}).filter(id => shiftActed[id]).map(id => FINDING_TO_CASE[id]).filter(Boolean)
  )
 
  const carryForwardItems = d.cases
   .filter(c => c.urgency === 'warn' || c.urgency === 'danger')
-  .sort((a, b) => {
-   const order = { danger: 0, warn: 1 }
-   return (order[a.urgency] ?? 2) - (order[b.urgency] ?? 2)
-  })
+  .sort((a, b) => ({ danger: 0, warn: 1 }[a.urgency] ?? 2) - ({ danger: 0, warn: 1 }[b.urgency] ?? 2))
   .map(c => ({
-   id: c.num,
-   urgency: c.urgency,
-   title: c.title,
+   id: c.num, urgency: c.urgency, title: c.title,
    operationalImpact: c.desc,
    ownerContext: c.evidence || 'Documented in shift record',
    recommendedAction: c.recommendedAction || c.events?.[0]?.val || '',
@@ -515,16 +450,9 @@ export default function HandoffIQ() {
   logActivity({ actor: 'M. Santos', action: 'Acknowledged carry-forward item', item: id, type: 'acknowledgment' })
  }
 
- const handleAcceptShift = () => {
-  setHandoffAccepted(true)
-  logActivity({ actor: 'M. Santos', action: 'Accepted shift handoff', item: `Line 4 · ${new Date().toLocaleDateString()}`, type: 'acknowledgment' })
- }
-
  const props = {
-  d, signed, setSigned, currentPlant,
-  carryForwardItems, acknowledgedCount, carryForwardCount, allAcknowledged,
-  carryForwardAcknowledged, handleAcknowledgeCarryForward, handleAcceptShift,
-  handoffAccepted,
+  d, currentPlant, carryForwardItems, acknowledgedCount, carryForwardCount,
+  allAcknowledged, carryForwardAcknowledged, handleAcknowledgeCarryForward,
  }
 
  if (workerMode === 'robot') {
