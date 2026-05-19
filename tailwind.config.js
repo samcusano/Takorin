@@ -28,17 +28,16 @@ export default {
       fontFamily: {
         // System / data voice — monospace for all structured information
         body:    ["'SF Mono'", "'JetBrains Mono'", 'ui-monospace', "'Menlo'", "'Consolas'", 'monospace'],
-        // Narrative / context voice — humanist sans for interpretation and description
-        display: ["'Inter'", "'Helvetica Neue'", 'system-ui', 'sans-serif'],
+        // Narrative / context voice — IBM Plex Sans (designed to pair with IBM Plex Mono)
+        display: ["'IBM Plex Sans'", "'Inter'", 'system-ui', 'sans-serif'],
         // Explicit alias
         mono:    ["'SF Mono'", "'JetBrains Mono'", 'ui-monospace', "'Menlo'", "'Consolas'", 'monospace'],
       },
       fontSize: {
         // ── UI text scale ──────────────────────────────────────────────────
-        micro:   ['8px',  { lineHeight: '1.2' }],
+        micro:   ['10px', { lineHeight: '1.2' }],
         label:   ['11px', { lineHeight: '1.2' }],
         body:    ['13px', { lineHeight: '1.45' }],
-        section: ['14px', { lineHeight: '1.3' }],
         // ── Display / numeric scale ────────────────────────────────────────
         base:    ['15px', { lineHeight: '1.4' }],
         head:    ['18px', { lineHeight: '1.3' }],

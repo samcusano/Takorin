@@ -335,7 +335,6 @@ export default function Analytics() {
 
   return (
     <div className="flex flex-col h-full overflow-hidden content-reveal">
-
       {/* ── Scope bar ──────────────────────────────────────────────────────── */}
       <div className="flex items-center gap-2 px-6 py-2.5 border-b border-rule2 bg-stone flex-shrink-0">
         <FilterDropdown
@@ -805,7 +804,7 @@ export default function Analytics() {
                     </div>
                   ))}
                 </div>
-                <p className="font-body text-muted text-label leading-relaxed">
+                <p className="font-display text-muted text-body leading-relaxed">
                   Every actioned finding and dismissed pattern contributes to the model. At 300 shifts, Line 4 accuracy is expected to reach 88–91%. Cross-plant intelligence activates at 3 connected plants.
                 </p>
               </div>

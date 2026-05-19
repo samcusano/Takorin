@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Flag, ShieldCheck, Check, Lock, AlertTriangle, Activity, CheckCircle2, WifiOff, Brain } from 'lucide-react'
+import { Flag, ShieldCheck, Check, Lock, AlertTriangle, Activity, CheckCircle2, WifiOff, Brain, BookOpen, ChevronDown, ChevronUp, Send } from 'lucide-react'
 import { operatorContextData, fatigueData } from '../data'
 import { integrationSummary, connectors } from '../data/integrations'
 import { useAppState } from '../context/AppState'
@@ -41,6 +41,186 @@ const LINKED_TASKS = {
   },
  ],
  'F. Adeyemi': [],
+}
+
+// ── Station briefing data — carry-forward from prior shift ─────────────────────
+
+const STATION_BRIEFING = {
+ 'C. Reyes': {
+  carryForward: [
+   { type: 'danger', label: 'Allergen changeover log', note: 'Unsigned at shift handoff. Must sign before GF-Flatbread run can start — production is blocked until cleared.' },
+   { type: 'ok',     label: 'CCP-1 Hold Point',        note: 'Last verified 06:18 at 188°F by Kowalski — within limit. Log next reading before 07:30.' },
+  ],
+  troubleshooting: {
+   trigger: 'cert-mismatch',
+   title: 'Covering above cert level — Sauce Dosing',
+   hint: 'For any process parameter you are unsure of, ask your supervisor before adjusting. Do not modify CCP settings without L2 sign-off.',
+   precedent: 'Same coverage gap occurred Apr 2 — Kowalski supervised CCP-1 directly. Contact Kowalski immediately if anything is unclear.',
+  },
+ },
+ 'P. Okonkwo': {
+  carryForward: [
+   { type: 'warn', label: 'Sensor A-7 micro-variance', note: 'Count 4 of 5 at last reading. Do not rely on SCADA — log oven readings manually until sensor is cleared.' },
+   { type: 'warn', label: 'Oven B SCADA stale',        note: 'No reading for 2h 14m. Log temperature manually every 30 minutes until feed restores.' },
+  ],
+  troubleshooting: {
+   trigger: 'sensor-variance',
+   title: 'Oven B manual monitoring protocol',
+   hint: 'When sensor shows micro-variance: reduce batch input rate by 20% until readings stabilize, or contact Kowalski if count reaches 5 of 5.',
+   precedent: 'Apr 2 — same micro-variance signature 3 shifts prior led to bearing inspection. Caught before failure. Kowalski handled escalation.',
+  },
+ },
+ 'F. Adeyemi': {
+  carryForward: [
+   { type: 'ok', label: 'QA checks current', note: 'All pre-shift QA checks signed by Kowalski. Standard inspection protocol in effect.' },
+  ],
+  troubleshooting: null,
+ },
+}
+
+const CERT_NEXT_STEPS = {
+ 'C. Reyes':   ['Complete 3 more supervised shifts at Sauce Dosing', 'Pass L2 Sauce Dosing practical assessment', 'Assessment window: May 22–30'],
+ 'P. Okonkwo': ['Complete 2 senior operator observations (2 remaining)', 'Submit L3 application via training coordinator', 'Assessment window: Jun 3–10'],
+ 'F. Adeyemi': ['Complete 5 more QA inspector shifts', 'Attend allergen changeover training (1 session remaining)', 'Assessment window: Jul 8–15'],
+}
+
+// ── Station Briefing — what's different since your last shift ─────────────────
+
+function StationBriefing({ operator }) {
+ const briefing = STATION_BRIEFING[operator]
+ if (!briefing) return null
+ return (
+  <div className="border-b border-rule2">
+   <div className="px-5 py-2 bg-stone2 border-b border-rule2 flex items-center gap-1.5">
+    <span className="font-body text-muted text-label">Since your last shift</span>
+   </div>
+   {briefing.carryForward.map((item, i) => {
+    const dotClass = item.type === 'danger' ? 'bg-danger' : item.type === 'warn' ? 'bg-warn' : 'bg-ok'
+    const noteClass = item.type === 'danger' ? 'text-danger' : item.type === 'warn' ? 'text-warn' : 'text-muted'
+    return (
+     <div key={i} className="flex items-start gap-3 px-5 py-3 border-b border-rule2 last:border-b-0">
+      <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 mt-1.5 ${dotClass}`} />
+      <div className="flex-1 min-w-0">
+       <div className="font-body font-medium text-ink text-body leading-snug">{item.label}</div>
+       <p className="font-display text-muted text-body leading-relaxed mt-0.5">{item.note}</p>
+      </div>
+     </div>
+    )
+   })}
+  </div>
+ )
+}
+
+// ── Contextual Troubleshooting — surface knowledge when anomaly is active ──────
+
+function TroubleshootingHint({ operator }) {
+ const briefing = STATION_BRIEFING[operator]
+ const [expanded, setExpanded] = useState(true)
+ if (!briefing?.troubleshooting) return null
+ const { title, hint, precedent } = briefing.troubleshooting
+ return (
+  <div className="border-b border-rule2 border-l-2 border-l-ochre bg-ochre/[0.02]">
+   <button type="button" onClick={() => setExpanded(e => !e)}
+    className="w-full flex items-center justify-between px-5 py-3 text-left">
+    <div className="flex items-center gap-2">
+     <BookOpen size={11} strokeWidth={2} className="text-ochre flex-shrink-0" />
+     <span className="font-body font-medium text-ink text-body">{title}</span>
+    </div>
+    {expanded ? <ChevronUp size={11} className="text-muted flex-shrink-0" /> : <ChevronDown size={11} className="text-muted flex-shrink-0" />}
+   </button>
+   {expanded && (
+    <div className="px-5 pb-4 slide-in">
+     <p className="font-display text-ink text-body leading-relaxed mb-3">{hint}</p>
+     <div className="flex items-start gap-2 bg-stone2 px-3 py-2.5">
+      <span className="font-body text-muted text-label flex-shrink-0 mt-px">Precedent ·</span>
+      <p className="font-display text-muted text-body leading-relaxed">{precedent}</p>
+     </div>
+    </div>
+   )}
+  </div>
+ )
+}
+
+// ── My Progress — cert level + what's next ────────────────────────────────────
+
+function MyProgress({ operator, op }) {
+ if (!op) return null
+ const steps = CERT_NEXT_STEPS[operator] || []
+ const certC = op.certPct >= 80 ? 'var(--color-ok)' : op.certPct >= 50 ? 'var(--color-warn)' : 'var(--color-muted)'
+ return (
+  <div className="border-t border-rule2">
+   <div className="px-5 py-2 bg-stone2 border-b border-rule2">
+    <span className="font-body text-muted text-label">My progress</span>
+   </div>
+   <div className="px-5 py-4 border-b border-rule2">
+    <div className="flex items-end justify-between mb-2">
+     <div className="font-body text-muted text-label">{op.certLabel}</div>
+     <span className="display-num text-title leading-none" style={{ color: certC }}>{op.certPct}%</span>
+    </div>
+    <div className="h-1.5 bg-rule2 mb-1">
+     <div className="h-full transition-all duration-500" style={{ width: `${op.certPct}%`, background: certC }} />
+    </div>
+   </div>
+   {steps.length > 0 && (
+    <div className="px-5 py-3">
+     <div className="font-body text-muted text-label mb-2.5">What's next</div>
+     <div className="space-y-2">
+      {steps.map((step, i) => (
+       <div key={i} className="flex items-start gap-2">
+        <div className="w-4 h-4 rounded-full border-2 border-rule2 flex-shrink-0 mt-0.5 flex items-center justify-center">
+         <span className="font-body text-muted text-micro leading-none">{i + 1}</span>
+        </div>
+        <span className="font-body text-ink text-label leading-snug">{step}</span>
+       </div>
+      ))}
+     </div>
+    </div>
+   )}
+  </div>
+ )
+}
+
+// ── Knowledge Capture — post-action contribution prompt ───────────────────────
+
+function KnowledgeCapturePrompt({ source, operator, onDismiss, onSubmit }) {
+ const [body, setBody] = useState('')
+ const [submitted, setSubmitted] = useState(false)
+ if (submitted) return (
+  <div className="mx-5 mb-4 px-4 py-3 bg-ok/[0.04] border-l-2 border-l-ok slide-in">
+   <div className="flex items-center gap-1.5">
+    <CheckCircle2 size={11} strokeWidth={2} className="text-ok flex-shrink-0" />
+    <span className="font-body text-ok text-label">Submitted for supervisor review — thank you.</span>
+   </div>
+  </div>
+ )
+ return (
+  <div className="mx-5 mb-4 border border-rule2 bg-stone2 slide-in">
+   <div className="flex items-center justify-between px-4 py-2.5 border-b border-rule2">
+    <div className="flex items-center gap-1.5">
+     <BookOpen size={10} strokeWidth={2} className="text-ochre flex-shrink-0" />
+     <span className="font-body font-medium text-ink text-label">Add to knowledge vault?</span>
+    </div>
+    <button type="button" onClick={onDismiss} className="font-body text-muted text-label hover:text-ink transition-colors px-1">Skip</button>
+   </div>
+   <div className="px-4 py-3">
+    <div className="font-body text-muted text-label mb-1.5">What you learned or did differently</div>
+    <p className="font-display text-muted text-body mb-2 leading-relaxed">Based on: {source}</p>
+    <textarea
+     rows={3}
+     value={body}
+     onChange={e => setBody(e.target.value)}
+     placeholder="Describe what happened and what worked…"
+     className="w-full font-display text-ink text-body bg-stone border border-rule2 px-3 py-2 placeholder:text-muted/60 focus:border-ochre focus:outline-none resize-none leading-relaxed"
+    />
+    <div className="flex items-center justify-between mt-2">
+     <span className="font-body text-muted text-label">Submitted by {operator} · pending supervisor review</span>
+     <Btn variant="primary" onClick={() => { if (body.trim()) { onSubmit(body); setSubmitted(true) } }}>
+      <Send size={10} strokeWidth={2} className="mr-1" />Submit
+     </Btn>
+    </div>
+   </div>
+  </div>
+ )
 }
 
 // ── Data commitment modal ─────────────────────────────────────────────────────
@@ -409,6 +589,16 @@ export default function OperatorView({ role }) {
   operatorAcknowledgments, setOperatorAcknowledgments, logActivity,
  } = useAppState()
 
+ const [opTab, setOpTab] = useState('today')
+ const [showCapture, setShowCapture] = useState(false)
+ const [captureSource, setCaptureSource] = useState('')
+
+ const triggerCapture = (source) => {
+  if (showCapture) return  // guard: don't stack prompts
+  setCaptureSource(source)
+  setShowCapture(true)
+ }
+
  const dataCommitted = !!operatorAcknowledgments?.['dataCommitment']
  const op    = OPERATORS.find(o => o.name === selected)
  const ctx   = operatorContextData[selected] || null
@@ -454,6 +644,7 @@ export default function OperatorView({ role }) {
  const handleRequestSignOff = () => {
   logActivity({ actor: selected, action: 'Requested supervisor sign-off', item: 'Allergen flush verification', type: 'escalation' })
   setSupervisorCalled(true)
+  triggerCapture('Completed allergen flush verification procedure')
  }
 
  const handleLinkedTaskConfirm = (task) => {
@@ -524,6 +715,9 @@ export default function OperatorView({ role }) {
    {/* ── Primary Directive ────────────────────────────────────── */}
    <PrimaryDirective ctx={ctx} />
 
+   {/* ── Station Briefing — carry-forward from prior shift ────── */}
+   <StationBriefing operator={selected} />
+
    {/* ── Main content ─────────────────────────────────────────── */}
    <div className="flex-1 overflow-y-auto">
 
@@ -544,30 +738,71 @@ export default function OperatorView({ role }) {
      />
     )}
 
-    {/* Tasks — always below dominant surface */}
-    <div className="border-t border-rule2">
-     <TaskSection
-      selected={selected}
-      station={ctx?.station || op?.station}
-      tasks={tasks}
-      linkedTasks={linkedTasks}
-      flags={flags}
-      nearMisses={nms}
-      onLinkedTaskConfirm={handleLinkedTaskConfirm}
-     />
+    {/* ── Tab strip ─────────────────────────────────────────────── */}
+    <div className="flex-shrink-0 flex border-b border-rule2 bg-stone2 sticky top-0 z-10">
+     {[
+      { id: 'today',    label: 'Today',    badge: tasks.filter(t => !t.done).length + linkedTasks.filter(t => !t.done).length },
+      { id: 'progress', label: 'Progress', badge: 0 },
+      { id: 'schedule', label: 'Schedule', badge: 0 },
+     ].map(tab => (
+      <button key={tab.id} type="button" onClick={() => setOpTab(tab.id)}
+       className={`flex items-center gap-1.5 px-4 py-2 font-body text-label font-medium border-b-2 transition-colors ${
+        opTab === tab.id ? 'border-b-ochre text-ink' : 'border-b-transparent text-muted hover:text-muted'
+       }`}>
+       {tab.label}
+       {tab.badge > 0 && opTab !== tab.id && (
+        <span className="font-body text-warn text-label">{tab.badge}</span>
+       )}
+      </button>
+     ))}
     </div>
 
-    {/* My scheduling data — operator only, transparent and bounded */}
-    {isOperatorRole && (() => {
+    {/* Today — tasks + troubleshooting */}
+    {opTab === 'today' && (
+     <>
+      <TroubleshootingHint operator={selected} />
+      <TaskSection
+       selected={selected}
+       station={ctx?.station || op?.station}
+       tasks={tasks}
+       linkedTasks={linkedTasks}
+       flags={flags}
+       nearMisses={nms}
+       onLinkedTaskConfirm={(task) => {
+        handleLinkedTaskConfirm(task)
+        triggerCapture(`Confirmed intervention: ${task.label}`)
+       }}
+      />
+      {showCapture && (
+       <div className="px-5 pt-3 pb-4">
+        <KnowledgeCapturePrompt
+         source={captureSource}
+         operator={selected}
+         onDismiss={() => setShowCapture(false)}
+         onSubmit={(body) => {
+          logActivity({ actor: selected, action: `Knowledge submitted: ${captureSource}`, item: 'Knowledge Vault', type: 'knowledge' })
+         }}
+        />
+       </div>
+      )}
+     </>
+    )}
+
+    {/* Progress — cert level + next steps */}
+    {opTab === 'progress' && <MyProgress operator={selected} op={op} />}
+
+    {/* Schedule — fatigue + hours */}
+    {opTab === 'schedule' && (() => {
      const myFatigue = fatigueData.operators.find(o =>
       o.name.includes(selected.split('.')[1]?.trim()) || selected.includes(o.name.split('.')[0])
      )
-     if (!myFatigue) return null
+     if (!myFatigue) return (
+      <div className="px-5 py-6 font-body text-muted text-body">No scheduling data available.</div>
+     )
      return (
-      <div className="border-t border-rule2 px-5 py-3">
-       <div className="font-body text-muted text-label mb-2">My scheduling data</div>
-       <p className="font-body text-muted text-label mb-2">Shift scheduling only — not your performance review.</p>
-       <div className="grid grid-cols-3 gap-2">
+      <div className="px-5 py-4">
+       <p className="font-body text-muted text-label mb-3">Shift scheduling only — not your performance review.</p>
+       <div className="grid grid-cols-3 gap-2 mb-3">
         {[
          { label: 'Hours this week', value: `${myFatigue.hoursThisWeek}h` },
          { label: 'Consecutive shifts', value: String(myFatigue.consecutiveShifts) },
@@ -579,7 +814,7 @@ export default function OperatorView({ role }) {
          </div>
         ))}
        </div>
-       {myFatigue.note && <p className="font-body text-warn text-label mt-2">{myFatigue.note}</p>}
+       {myFatigue.note && <p className="font-body text-warn text-label">{myFatigue.note}</p>}
       </div>
      )
     })()}

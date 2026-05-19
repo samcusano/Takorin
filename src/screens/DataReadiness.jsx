@@ -788,7 +788,6 @@ export default function DataReadiness() {
 
   return (
     <div className="flex flex-col h-full overflow-hidden content-reveal">
-
       <div className="flex flex-1 min-h-0 overflow-hidden">
 
       {/* Left rail */}

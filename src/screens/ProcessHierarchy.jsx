@@ -8,6 +8,7 @@ import { useState } from 'react'
 import { processHierarchy } from '../data/hierarchy'
 import { AlertTriangle, ChevronRight, ChevronDown, ArrowRight, ArrowDown, Activity, Zap, TrendingDown, Info } from 'lucide-react'
 import { SlidePanel } from '../components/UI'
+import ShiftHero from '../components/ShiftHero'
 
 const scoreColor  = (s) => s >= 90 ? 'text-ok'     : s >= 80 ? 'text-ochre'   : s >= 70 ? 'text-warn'   : 'text-danger'
 const scoreBg     = (s) => s >= 90 ? 'bg-ok'        : s >= 80 ? 'bg-ochre'     : s >= 70 ? 'bg-warn'     : 'bg-danger'
@@ -512,6 +513,13 @@ function StateFieldView({ site, ScreenHeader }) {
 
   return (
     <div className="flex flex-col h-full overflow-hidden content-reveal">
+      <ShiftHero
+        score={74}
+        domainLabel="Site integrity"
+        statement="Zone 3A operating near threshold. Temp excursion logged 06:31. Environmental swab result pending."
+        scanInterval="4 min"
+        trend="↑ +6 since 06:20"
+      />
       <ScreenHeader />
 
       {/* System pressure summary */}
@@ -688,6 +696,13 @@ export default function ProcessHierarchy() {
   // ── Variant B: Structural Explorer (audit / forensics) ────────────────────
   return (
     <div className="flex flex-col h-full overflow-hidden content-reveal">
+      <ShiftHero
+        score={74}
+        domainLabel="Site integrity"
+        statement="Zone 3A operating near threshold. Temp excursion logged 06:31. Environmental swab result pending."
+        scanInterval="4 min"
+        trend="↑ +6 since 06:20"
+      />
       <ScreenHeader />
       <div className="flex-shrink-0 px-5 py-2 border-b border-rule2 bg-danger/[0.03] flex items-center gap-2">
         <Info size={9} className="text-muted flex-shrink-0" strokeWidth={2} />

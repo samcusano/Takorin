@@ -217,7 +217,7 @@ function QualityTab() {
                     </div>
                     <span className={`font-body text-label px-1.5 py-0.5 flex-shrink-0 ${typeTone}`}>{typeLabel}</span>
                   </div>
-                  <p className="font-body text-ink text-label leading-relaxed mb-2">{a.observation}</p>
+                  <p className="font-display text-ink text-body leading-relaxed mb-2">{a.observation}</p>
                   {a.modelResponse && (
                     <div className="flex items-start gap-2 px-3 py-2 bg-stone2">
                       <span className="font-body text-muted text-label flex-shrink-0 mt-0.5">Model</span>
@@ -277,7 +277,7 @@ function QualityTab() {
                     </div>
                   ))}
                   <div className="pt-2 border-t border-rule2">
-                    <p className="font-body text-muted text-label leading-relaxed">{s.notes}</p>
+                    <p className="font-display text-muted text-body leading-relaxed">{s.notes}</p>
                   </div>
                 </div>
               </div>
@@ -330,7 +330,7 @@ export default function BatchIntelligence() {
                   </span>
                 )}
                 <div className="flex items-baseline justify-between gap-2 mb-1">
-                  <span className="font-display font-medium text-ink text-section leading-none truncate">{b.name}</span>
+                  <span className="font-display font-medium text-ink text-base leading-none truncate">{b.name}</span>
                   <span className={`font-body font-medium text-label tabular-nums flex-shrink-0 ${confColor}`}>{conf}%</span>
                 </div>
                 <div className="font-body text-muted text-label mb-2">{b.vessel} · {b.daysElapsed}/{b.totalDays}d</div>

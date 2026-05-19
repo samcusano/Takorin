@@ -507,7 +507,7 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
   {c.description && (
   <div>
    <div className="font-body text-muted text-label mb-0.5">Description</div>
-   <p className="font-body text-muted text-label leading-relaxed">{c.description}</p>
+   <p className="font-display text-muted text-body leading-relaxed">{c.description}</p>
   </div>
   )}
   <div>

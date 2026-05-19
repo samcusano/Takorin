@@ -234,7 +234,7 @@ function RecordDetail({ rec }) {
                 {rec.qpDisposition.notes && (
                   <div className="px-4 py-3 bg-stone2">
                     <div className="font-body text-muted text-label mb-1">QP notes</div>
-                    <p className="font-body text-ink text-label leading-relaxed">{rec.qpDisposition.notes}</p>
+                    <p className="font-display text-ink text-body leading-relaxed">{rec.qpDisposition.notes}</p>
                   </div>
                 )}
               </>

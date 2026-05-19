@@ -37,7 +37,7 @@ function SideItem({ to, icon: Icon, label, badge, badgeType, disabled, id, onDis
  className="flex items-center gap-3 px-4 py-2.5 text-label opacity-40 cursor-not-allowed select-none w-full text-left"
  >
  <Icon size={15} strokeWidth={1.75} className="flex-shrink-0" />
- <span className="font-body">{label}</span>
+ <span className="font-body text-base">{label}</span>
  </button>
  )
  return (
@@ -56,7 +56,7 @@ function SideItem({ to, icon: Icon, label, badge, badgeType, disabled, id, onDis
  strokeWidth={1.75}
  className="flex-shrink-0"
  />
- <span className="font-body">{label}</span>
+ <span className="font-body text-base">{label}</span>
  <NavBadge badge={badge} badgeType={badgeType} />
  </>)}
  </NavLink>
@@ -76,7 +76,7 @@ function PlantItem() {
   <NavLink
    to="/plant"
    className={({ isActive }) =>
-    `flex items-center gap-3 px-4 py-2.5 text-sm transition-colors duration-100 border-l-2 ` +
+    `flex items-center gap-3 px-4 py-2.5 transition-colors duration-100 border-l-2 ` +
     (isActive
      ? `border-ochre bg-ochre/10 text-white font-medium`
      : `border-transparent text-white/50 hover:bg-sidebar-2 hover:text-white`)
@@ -148,7 +148,7 @@ function PlantDropdown({ triggerRef, onClose, complianceState, currentPlant, set
    style={{ left: 0, top: Math.max(8, pos.top) }}
   >
    {/* Card */}
-   <div className="w-[240px] bg-sidebar border border-sidebar-border rounded-2xl shadow-raise overflow-hidden">
+   <div className="w-[240px] bg-sidebar border border-sidebar-border shadow-raise overflow-hidden">
     <div className="plant-drop-in-content">
 
      {/* Network plants */}
@@ -267,7 +267,7 @@ function UserDropdown({ triggerRef, onClose, viewingRole, setViewingRole }) {
    className="fixed z-50 plant-drop-in"
    style={{ left: 0, top: Math.max(8, pos.top) }}
   >
-   <div className="w-[240px] bg-sidebar border border-sidebar-border rounded-2xl shadow-raise overflow-hidden" style={{ maxHeight: 'calc(100vh - 24px)' }}>
+   <div className="w-[240px] bg-sidebar border border-sidebar-border shadow-raise overflow-hidden" style={{ maxHeight: 'calc(100vh - 24px)' }}>
     <div className="plant-drop-in-content">
      {/* Viewing as */}
      <div className="px-5 pt-3 pb-4">
@@ -317,6 +317,7 @@ export default function Sidebar() {
  const [userOpen, setUserOpen] = useState(false)
  const userTriggerRef = useRef(null)
  const [notifOpen, setNotifOpen] = useState(false)
+ const [platformExpanded, setPlatformExpanded] = useState(true)
  const [toast, setToast] = useState(null)
  const { blockingEvidenceUploaded, allergenOverride, checklistSigned, nearMisses, maintenanceTickets, viewingRole, setViewingRole, currentPlant, setCurrentPlant, workerMode, agentDecidedKeys } = useAppState() || {}
  const agentPendingCount = Math.max(0, STATIC_AGENT_TOTAL - (agentDecidedKeys?.size ?? 0))
@@ -426,27 +427,31 @@ export default function Sidebar() {
    <AgentItem count={agentPendingCount} />
    <SideItem to="/impact" id="impact" icon={CircleDot} label="Outcomes" badge={null} />
 
-   <div className="px-4 pt-4 pb-1 font-body text-micro text-sidebar-ghost tracking-widest">Platform</div>
-   <SideItem to="/batch"      id="batch"      icon={FlaskConical}    label="Batches"    badge={null} />
-   <SideItem to="/compliance" id="compliance" icon={Scale}           label="Compliance" badge={null} />
-   <SideItem to="/hierarchy"  id="hierarchy"  icon={LayoutDashboard} label="Site"       badge={null} />
-   <SideItem to="/knowledge"  id="knowledge"  icon={BookOpen}        label="Knowledge"  badge={null} />
-
-   <div className="px-4 pt-4 pb-1 font-body text-micro text-sidebar-ghost tracking-widest">Extended</div>
-   <SideItem to="/execution" id="execution" icon={Workflow} label="Execution" badge={null} />
-   {currentPlant?.sector === 'pharma' && (
-    <SideItem to="/records"  id="records"  icon={FileLock2}  label="Records"     badge={null} />
+   <button type="button" onClick={() => setPlatformExpanded(p => !p)}
+    className="flex items-center justify-between w-full px-4 pt-4 pb-1 font-body text-micro text-sidebar-ghost tracking-widest hover:text-white/50 transition-colors">
+    <span>Platform</span>
+    <ChevronDown size={10} className={`transition-transform duration-200 ${platformExpanded ? 'rotate-180' : ''}`} />
+   </button>
+   {platformExpanded && (
+    <>
+     <SideItem to="/batch"       id="batch"       icon={FlaskConical}    label="Batches"      badge={null} />
+     <SideItem to="/compliance"  id="compliance"  icon={Scale}           label="Compliance"   badge={null} />
+     <SideItem to="/hierarchy"   id="hierarchy"   icon={LayoutDashboard} label="Site"         badge={null} />
+     <SideItem to="/knowledge"   id="knowledge"   icon={BookOpen}        label="Knowledge"    badge={null} />
+     <SideItem to="/execution"   id="execution"   icon={Workflow}        label="Execution"    badge={null} />
+     {currentPlant?.sector === 'pharma' && (
+      <SideItem to="/records"   id="records"    icon={FileLock2}  label="Records"     badge={null} />
+     )}
+     {(currentPlant?.sector === 'electronics' || currentPlant?.sector === 'semiconductor') && (
+      <SideItem to="/delivery"  id="delivery"   icon={TrendingUp} label="Value Chain" badge={null} />
+     )}
+     {currentPlant?.sector !== 'pharma' && (
+      <SideItem to="/equipment" id="equipment"  icon={ScanLine}   label="Equipment"   badge={null} />
+     )}
+     <SideItem to="/integration" id="integration" icon={Network} label="Integrations" badge={null} />
+     <SideItem to="/readiness"   id="readiness"   icon={Gauge}   label="Readiness"    badge={null} />
+    </>
    )}
-   {(currentPlant?.sector === 'electronics' || currentPlant?.sector === 'semiconductor') && (
-    <SideItem to="/delivery" id="delivery" icon={TrendingUp} label="Value Chain" badge={null} />
-   )}
-   {currentPlant?.sector !== 'pharma' && (
-    <SideItem to="/equipment" id="equipment" icon={ScanLine} label="Equipment" badge={null} />
-   )}
-
-   <div className="px-4 pt-4 pb-1 font-body text-micro text-sidebar-ghost tracking-widest">System</div>
-   <SideItem to="/integration" id="integration" icon={Network} label="Integrations" badge={null} />
-   <SideItem to="/readiness"   id="readiness"   icon={Gauge}   label="Readiness"    badge={null} />
 
    <div className="px-4 pt-4 pb-1 font-body text-micro text-sidebar-ghost tracking-widest">Activity</div>
    <button type="button" onClick={() => setNotifOpen(true)}

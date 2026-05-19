@@ -197,7 +197,7 @@ export default function SupplierIQ() {
             g.tone === 'block' ? 'border-l-danger bg-danger/[0.02]' : g.tone === 'warn' ? 'border-l-warn' : 'border-l-ok'
           }`}>
             <div className="flex justify-between items-start">
-              <div className="font-display font-medium text-ink text-section">{g.title}</div>
+              <div className="font-display font-medium text-ink text-base">{g.title}</div>
               <span className={`font-body text-label ml-2 flex-shrink-0 ${g.badgeColor}`}>{g.badge}</span>
             </div>
             <div className="font-body text-muted text-label mt-0.5">{g.sub}</div>
@@ -430,7 +430,7 @@ export default function SupplierIQ() {
               <div className="px-4 py-3 flex items-center gap-4">
                 <ScoreRing pct={s.score} size={32} />
                 <div className="flex-1 min-w-0">
-                  <div className="font-display font-medium text-ink text-section">{s.name}</div>
+                  <div className="font-display font-medium text-ink text-base">{s.name}</div>
                   {audit?.reason && <div className="font-body text-warn text-label mt-0.5">{audit.reason}</div>}
                   {intel && (
                     <div className="flex items-center gap-1 mt-1">

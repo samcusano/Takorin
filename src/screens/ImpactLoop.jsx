@@ -108,7 +108,7 @@ function InterventionCard({ entry, selected, onClick }) {
       <div className="flex items-start gap-2 mb-2">
         <div className="flex-1 min-w-0">
           <span className={`inline-flex items-center font-body text-label px-1.5 py-0.5 mb-1.5 ${oc.badge}`}>{oc.label}</span>
-          <div className="font-display font-medium text-ink text-section leading-snug mb-0.5">{entry.action}</div>
+          <div className="font-display font-medium text-ink text-base leading-snug mb-0.5">{entry.action}</div>
           <div className="font-body text-muted text-label">{entry.recommendedLabel}</div>
         </div>
       </div>
@@ -167,7 +167,7 @@ function InterventionDetail({ entry }) {
 
       <div className="px-4 py-3 bg-stone2 border-l-4 border-l-ochre">
         <div className="font-body text-muted text-label mb-1">AI rationale</div>
-        <p className="font-body text-ink text-label leading-relaxed">{entry.rationaleText}</p>
+        <p className="font-display text-ink text-body leading-relaxed">{entry.rationaleText}</p>
       </div>
 
       <div>
@@ -268,7 +268,7 @@ function InterventionDetail({ entry }) {
 
       <div className="px-4 py-3 bg-stone2">
         <div className="font-body text-muted text-label mb-1">Outcome narrative</div>
-        <p className="font-body text-ink text-label leading-relaxed">{entry.outcomeNotes}</p>
+        <p className="font-display text-ink text-body leading-relaxed">{entry.outcomeNotes}</p>
       </div>
 
       {entry.wasReversed && (
@@ -306,13 +306,6 @@ export default function ImpactLoop() {
 
       {/* ── Left: list + filters ──────────────────────────────────────── */}
       <div className="w-[360px] flex-shrink-0 border-r border-rule2 flex flex-col bg-stone">
-
-        {/* Header */}
-        <div className="flex-shrink-0 px-5 py-4 border-b border-rule2 bg-stone2">
-          <div className="font-body text-muted text-label mb-0.5">Causality Layer</div>
-          <div className="font-display font-bold text-ink text-subhead leading-none">Impact Loop</div>
-          <div className="font-body text-muted text-label mt-1">AI observation → decision → consequence</div>
-        </div>
 
         {/* Summary stats — 2×2 grid */}
         <div className="flex-shrink-0 grid grid-cols-2 gap-px bg-rule2 border-b border-rule2">

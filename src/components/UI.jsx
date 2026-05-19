@@ -220,7 +220,7 @@ export function SectionHeader({ tone = 'muted', label, sub, title, icon: Icon, a
      {label && <StatusPill tone={tone}>{label}</StatusPill>}
      {Icon && <Icon size={12} strokeWidth={2} style={accent ? { color: accent } : undefined} />}
     </div>
-    <div className="flex-1 font-display font-semibold text-ink text-section">{title}</div>
+    <div className="flex-1 font-display font-semibold text-ink text-base">{title}</div>
     {badge}
    </div>
   )
@@ -276,7 +276,7 @@ export function SP({ title, sub, children }) {
  return (
  <div className="border-b border-rule2 last:border-b-0">
  <div className="px-5 py-3 border-b border-rule2 flex items-baseline justify-between">
- <span className="font-display font-semibold text-ink text-section">{title}</span>
+ <span className="font-display font-semibold text-ink text-base">{title}</span>
  {sub && <span className="font-body text-muted text-label">{sub}</span>}
  </div>
  <div>{children}</div>
@@ -863,7 +863,7 @@ export function ActionCard({ tone = 'danger', title, subtitle, metadata, actions
        {badge}
       </span>
      )}
-     <div className="font-display font-medium text-ink text-section mb-1">{title}</div>
+     <div className="font-display font-medium text-ink text-base mb-1">{title}</div>
      {subtitle && <div className="font-body text-muted text-label mb-2">{subtitle}</div>}
      {metadata && (
       <div className="flex items-center gap-2 mb-2 flex-wrap">
@@ -1015,7 +1015,12 @@ export function SlidePanel({ title, subtitle, icon: Icon, accentColor, ariaLabel
  const panelRef = useRef(null)
  const { exiting, exit } = useExitAnimation(200)
  useFocusTrap(panelRef, true)
- const handleClose = () => exit(onClose)
+ const handleClose = useCallback(() => exit(onClose), [exit, onClose])
+ useEffect(() => {
+  const handler = (e) => { if (e.key === 'Escape') handleClose() }
+  document.addEventListener('keydown', handler)
+  return () => document.removeEventListener('keydown', handler)
+ }, [handleClose])
  return (
   <>
    <div className="fixed inset-0 bg-stone/60 z-40" onClick={handleClose} />

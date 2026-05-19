@@ -35,6 +35,8 @@ export const shiftData = {
       evidence:'Precedent: Line 4 · Apr 2 — same 3-signal pattern → 61% OEE final outcome',
       actions:['Assign to Kowalski','Log only'],
       consequence:'Assigned to Kowalski · Checklist signal flagged for re-evaluation · Risk score will update in 4 min',
+      recurring: { count: 4, window: 6 },
+      delegateTo: ['A. Martinez', 'P. Okonkwo'],
     },
     {
       id:'sf2', num:'II.', urgency:'warn',
@@ -44,6 +46,7 @@ export const shiftData = {
       evidence:'Precedent: Skill mismatch at Sauce Dosing in 3 of last 8 substandard shifts on Line 4',
       actions:['Confirm reassignment'],
       consequence:'Martinez reassigned to Sauce Dosing · Qualified staffing updating: 72% → 83% · Risk score updates in 4 min',
+      delegateTo: ['A. Martinez', 'C. Reyes'],
     },
     {
       id:'sf3', num:'III.', urgency:'warn',
@@ -54,6 +57,8 @@ export const shiftData = {
       evidence:'Pattern matches Apr 2 bearing failure — same micro-variance signature 3 shifts prior',
       actions:['Create inspection task','Alert at count 5'],
       consequence:'Inspection task created · Ticket MT-001 open · Alert fires at count 5',
+      recurring: { count: 3, window: 5 },
+      delegateTo: ['A. Martinez'],
     },
     {
       id:'sf4', num:'IV.', urgency:'warn',
@@ -63,6 +68,7 @@ export const shiftData = {
       evidence:'Lindqvist cert expires 22:00 tonight. No backup cross-trained. Tomorrow AM risk score: 54.',
       actions:['Schedule backup cert','Flag for HR'],
       consequence:'HR flagged · Backup cert scheduled · Tomorrow AM risk score will update',
+      delegateTo: ['P. Okonkwo', 'F. Adeyemi'],
     },
   ],
   crew: [

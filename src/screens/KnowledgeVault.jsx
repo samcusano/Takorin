@@ -240,12 +240,6 @@ function OperationalMemoryVault() {
 
       {/* Left: domain sidebar */}
       <div className="w-[200px] flex-shrink-0 border-r border-rule2 flex flex-col bg-stone overflow-hidden">
-        {/* Header */}
-        <div className="flex-shrink-0 px-4 py-3 border-b border-rule2 bg-stone2">
-          <div className="font-body text-muted text-label mb-0.5">Platform Architecture</div>
-          <div className="font-display font-bold text-ink text-base leading-none">Knowledge Vault</div>
-        </div>
-
         {/* Memory domains */}
         <div className="flex-1 overflow-y-auto divide-y divide-rule2">
           {DOMAINS.map(d => {
@@ -478,10 +472,6 @@ function ResearchMode({ variant, setVariant }) {
     <div className="flex flex-col h-full overflow-hidden content-reveal">
       {/* Header */}
       <div className="flex-shrink-0 flex items-center justify-between px-5 py-3 border-b border-rule2 bg-stone2">
-        <div>
-          <div className="font-body text-muted text-label mb-0.5">Platform Architecture</div>
-          <div className="font-display font-bold text-ink text-head leading-none">Knowledge Vault</div>
-        </div>
         <div className="flex items-stretch overflow-hidden">
           {['A', 'B', 'C'].map(v => (
             <button key={v} type="button" onClick={() => setVariant(v)}
@@ -528,7 +518,7 @@ function ResearchMode({ variant, setVariant }) {
                     {domain && <span className={`font-body text-micro px-1.5 py-0.5 ${domain.badge}`}>{domain.label}</span>}
                     {riskBadgeCls && <span className={`inline-flex items-center font-body text-label px-1.5 py-0.5 ${riskBadgeCls}`}>{riskKey === 'HIGH' ? 'High risk' : 'Medium risk'}</span>}
                   </div>
-                  <div className="font-display font-medium text-ink text-section leading-snug mb-1">{e.title}</div>
+                  <div className="font-display font-medium text-ink text-base leading-snug mb-1">{e.title}</div>
                   <div className="font-body text-muted text-label line-clamp-2">{e.body?.slice(0, 100)}…</div>
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0">
@@ -565,7 +555,6 @@ function DeepReference({ variant, setVariant }) {
       {/* Left: domain nav */}
       <div className="w-[200px] flex-shrink-0 border-r border-rule2 flex flex-col bg-stone">
         <div className="flex-shrink-0 flex items-center justify-between px-4 py-3 border-b border-rule2 bg-stone2">
-          <div className="font-display font-bold text-ink text-base leading-none">Knowledge Vault</div>
           <div className="flex items-stretch overflow-hidden">
             {['A', 'B', 'C'].map(v => (
               <button key={v} type="button" onClick={() => setVariant(v)}

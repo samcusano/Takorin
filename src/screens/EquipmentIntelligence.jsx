@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { equipment, recipes, spcData, runHistory } from '../data/equipment'
 import { AlertTriangle, CheckCircle2, Wrench, Activity, Clock } from 'lucide-react'
+import ShiftHero from '../components/ShiftHero'
+import { useAppState } from '../context/AppState'
 
 const STATUS_CFG = {
   active:      { label: 'Active',       dot: 'bg-ok',     badge: 'bg-ok/10 text-ok' },
@@ -39,7 +41,7 @@ function EquipmentCard({ eq, selected, onClick }) {
       }`}>
       <div className="flex items-start justify-between gap-2 mb-1">
         <div>
-          <div className="font-display font-medium text-ink text-section leading-snug">{eq.name}</div>
+          <div className="font-display font-medium text-ink text-base leading-snug">{eq.name}</div>
           <div className="font-body text-muted text-label">{eq.type} · {eq.zone}</div>
         </div>
         <span className={`font-body text-label px-1.5 py-0.5 flex-shrink-0 ${cfg.badge}`}>{cfg.label}</span>
@@ -206,6 +208,9 @@ function RunHistory({ eqId }) {
 }
 
 function EquipmentDetail({ eq }) {
+  const { maintenanceTickets, setMaintenanceTickets } = useAppState()
+  const [pmRequested, setPmRequested] = useState(false)
+
   if (!eq) return (
     <div className="flex items-center justify-center h-full font-body text-muted text-label">
       Select equipment
@@ -214,17 +219,51 @@ function EquipmentDetail({ eq }) {
   const cfg = STATUS_CFG[eq.status] ?? STATUS_CFG.idle
   const spcCfg = eq.spcStatus ? SPC_CFG[eq.spcStatus] : null
 
+  const existingTicket = maintenanceTickets.find(t => t.equipment?.includes(eq.name) && t.status === 'open')
+
+  const handleRequestPM = () => {
+    const urgency = eq.healthScore < 75 || spcCfg?.label === 'Out of control' ? 'danger' : 'warn'
+    setMaintenanceTickets(p => [...p, {
+      id: `MT-${Date.now()}`,
+      equipment: `${eq.name} · ${eq.zone}`,
+      issue: `PM window requested · Health ${eq.healthScore ?? '—'} · Next scheduled ${eq.nextPM}`,
+      urgency,
+      status: 'open',
+      requestedBy: 'D. Kowalski',
+      createdAt: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+    }])
+    setPmRequested(true)
+  }
+
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
       {/* Header */}
       <div className="flex-shrink-0 px-6 py-4 border-b border-rule2">
-        <div className="flex items-center gap-2 mb-2">
-          <span className={`font-body text-label px-1.5 py-0.5 ${cfg.badge}`}>{cfg.label}</span>
-          {spcCfg && (
-            <span className={`flex items-center gap-1 font-body text-label ${spcCfg.tone}`}>
-              <span className={`w-1.5 h-1.5 rounded-full ${spcCfg.dot}`} />
-              SPC {spcCfg.label}
-            </span>
+        <div className="flex items-start justify-between gap-3 mb-2">
+          <div className="flex items-center gap-2">
+            <span className={`font-body text-label px-1.5 py-0.5 ${cfg.badge}`}>{cfg.label}</span>
+            {spcCfg && (
+              <span className={`flex items-center gap-1 font-body text-label ${spcCfg.tone}`}>
+                <span className={`w-1.5 h-1.5 rounded-full ${spcCfg.dot}`} />
+                SPC {spcCfg.label}
+              </span>
+            )}
+          </div>
+          {eq.status !== 'maintenance' && (
+            existingTicket ? (
+              <span className="font-body text-label text-warn flex items-center gap-1 flex-shrink-0">
+                <Wrench size={10} strokeWidth={2} />PM requested
+              </span>
+            ) : pmRequested ? (
+              <span className="font-body text-label text-ok flex items-center gap-1 flex-shrink-0">
+                <CheckCircle2 size={10} strokeWidth={2} />PM ticket created
+              </span>
+            ) : (
+              <button type="button" onClick={handleRequestPM}
+                className="flex items-center gap-1.5 font-body text-label text-muted hover:text-ink px-2.5 py-1 border border-rule2 hover:border-ochre/50 transition-colors flex-shrink-0">
+                <Wrench size={10} strokeWidth={2} />Request PM
+              </button>
+            )
           )}
         </div>
         <div className="font-display font-bold text-ink text-subhead leading-none mb-0.5">{eq.name}</div>
@@ -275,12 +314,19 @@ export default function EquipmentIntelligence() {
   const maintenance = equipment.filter(e => e.status === 'maintenance')
 
   return (
-    <div className="flex h-full overflow-hidden content-reveal">
+    <div className="flex flex-col h-full overflow-hidden content-reveal">
+      <ShiftHero
+        score={71}
+        domainLabel="Equipment health"
+        statement="Sensor A-7 at count 4 of 5 threshold. Oven B calibration stale 2h 14m. 2 assets nearing maintenance window."
+        scanInterval="5 min"
+        trend="↑ +2 since 06:10"
+      />
+      <div className="flex flex-1 overflow-hidden">
 
       {/* Left: equipment list */}
       <div className="w-[260px] flex-shrink-0 border-r border-rule2 flex flex-col bg-stone">
         <div className="flex-shrink-0 px-5 py-4 border-b border-rule2 bg-stone2">
-          <div className="font-body text-muted text-label mb-0.5">Frontier Layer</div>
           <div className="font-display font-bold text-ink text-head leading-none">Equipment Intelligence</div>
           <div className="font-body text-muted text-label mt-1">Tool → Recipe → Run</div>
           <div className="flex items-center gap-3 mt-2">
@@ -312,6 +358,7 @@ export default function EquipmentIntelligence() {
           <span className="font-body text-muted text-label">Equipment detail</span>
         </div>
         <EquipmentDetail eq={selectedEq} />
+      </div>
       </div>
     </div>
   )

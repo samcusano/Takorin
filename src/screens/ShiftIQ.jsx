@@ -395,13 +395,43 @@ function CrewRow({ m, onView }) {
  )
 }
 
-function Finding({ f, onAct, onDismiss, dismissed }) {
+function PrepareAction({ action, onConfirm }) {
+ const [confirmed, setConfirmed] = useState(false)
+ return (
+  <div className={`flex items-start gap-3 px-4 py-3 border-b border-rule2 transition-opacity ${confirmed ? 'opacity-50' : ''}`}>
+   <button type="button"
+    onClick={() => { setConfirmed(true); onConfirm({ actor: 'D. Kowalski', action: `Confirmed: ${action.label}`, item: action.key, type: 'intervention' }) }}
+    className={`w-5 h-5 rounded-full flex-shrink-0 flex items-center justify-center mt-0.5 transition-colors ${
+     confirmed ? 'bg-ok' : 'border-2 border-rule2 hover:border-ok hover:bg-ok/10 cursor-pointer'
+    }`}>
+    {confirmed && <Check size={10} strokeWidth={2.5} className="text-stone" />}
+   </button>
+   <div className="flex-1">
+    <div className={`font-body font-medium text-body leading-snug ${confirmed ? 'line-through text-muted' : 'text-ink'}`}>{action.label}</div>
+    <div className="font-body text-muted text-label mt-0.5">{action.consequence}</div>
+   </div>
+  </div>
+ )
+}
+
+function Finding({ f, onAct, onDismiss, onDelegate, dismissed }) {
  const [acked, setAcked] = useState(false)
  const [removing, setRemoving] = useState(false)
  const [showDismiss, setShowDismiss] = useState(false)
  const [dismissPos, setDismissPos] = useState({ top: 0, left: 0 })
  const [showed, setShowed] = useState(false)
+ const [showDelegate, setShowDelegate] = useState(false)
+ const [delegateOp, setDelegateOp] = useState('')
+ const [delegateDue, setDelegateDue] = useState('End of shift')
+ const [delegated, setDelegated] = useState(false)
  const dismissBtnRef = useRef(null)
+
+ const handleDelegate = () => {
+  if (!delegateOp) return
+  onDelegate(delegateOp, f.title, delegateDue)
+  setDelegated(true)
+  setShowDelegate(false)
+ }
 
  const handleAct = () => {
   onAct(f.id)
@@ -449,7 +479,14 @@ function Finding({ f, onAct, onDismiss, dismissed }) {
        <>
         {/* Header: urgency chip + source */}
         <div className="flex items-center justify-between px-4 pt-3 pb-1.5">
-         <span className={`font-body font-medium text-label px-1.5 py-px ${urgencyChipCls}`}>{urgencyLabel}</span>
+         <div className="flex items-center gap-1.5">
+          <span className={`font-body font-medium text-label px-1.5 py-px ${urgencyChipCls}`}>{urgencyLabel}</span>
+          {f.recurring && (
+           <Link to={`/capa?finding=${f.id}`} className="font-body text-warn text-label flex items-center gap-1 hover:text-ink transition-colors" title="Open root cause investigation in CAPA">
+            <RefreshCw size={9} strokeWidth={2} />Recurring · {f.recurring.count} of {f.recurring.window} shifts
+           </Link>
+          )}
+         </div>
          <div className="flex items-center gap-1.5">
           {f.source && <StatusPill tone="muted">{f.source}</StatusPill>}
           {f.capaId && (
@@ -488,7 +525,7 @@ function Finding({ f, onAct, onDismiss, dismissed }) {
          })()}
         </div>
         {/* Footer: action buttons */}
-        <div className="flex gap-2 px-4 pb-3 pt-2 border-t border-rule2/60">
+        <div className="flex gap-2 px-4 pb-3 pt-2 border-t border-rule2/60 flex-wrap">
          {f.actions.map((a, i) => (
           <Btn key={i} variant={i === 0 ? 'primary' : 'secondary'} onClick={handleAct}>
            {a}
@@ -497,7 +534,41 @@ function Finding({ f, onAct, onDismiss, dismissed }) {
          <div ref={dismissBtnRef}>
           <Btn variant="secondary" onClick={showDismiss ? () => setShowDismiss(false) : openDismiss}>Dismiss</Btn>
          </div>
+         {f.delegateTo?.length > 0 && !delegated && (
+          <Btn variant="secondary" onClick={() => setShowDelegate(d => !d)}>
+           {showDelegate ? 'Cancel' : 'Delegate'}
+          </Btn>
+         )}
+         {delegated && (
+          <span className="flex items-center gap-1 font-body text-ok text-label px-2">
+           <Check size={10} strokeWidth={2.5} />Delegated to {delegateOp}
+          </span>
+         )}
         </div>
+        {showDelegate && (
+         <div className="px-4 pb-3 border-t border-rule2 bg-stone2 slide-in">
+          <div className="pt-2.5 pb-1 font-body text-muted text-label mb-2">Assign to operator</div>
+          <div className="flex flex-wrap gap-1.5 mb-2.5">
+           {f.delegateTo.map(op => (
+            <button key={op} type="button" onClick={() => setDelegateOp(op)}
+             className={`font-body text-label px-2.5 py-1 transition-colors ${delegateOp === op ? 'bg-ink text-stone' : 'bg-stone3 text-muted hover:text-ink'}`}>
+             {op}
+            </button>
+           ))}
+          </div>
+          <div className="flex items-center gap-2 mb-2.5">
+           <span className="font-body text-muted text-label flex-shrink-0">Due</span>
+           <select value={delegateDue} onChange={e => setDelegateDue(e.target.value)}
+            className="flex-1 font-body text-ink text-label bg-stone border border-rule2 px-2 py-1 focus:border-ochre focus:outline-none">
+            <option>End of shift</option>
+            <option>Next 30 min</option>
+            <option>Next 2 hours</option>
+            <option>Before handoff</option>
+           </select>
+          </div>
+          <Btn variant="primary" onClick={handleDelegate} disabled={!delegateOp}>Assign task</Btn>
+         </div>
+        )}
        </>
       )}
      </article>
@@ -718,6 +789,7 @@ export default function ShiftIQ() {
  const skuContextReady = readinessResolved?.['ctx-0'] && (readinessScore ?? 64) >= 75
  const allergenSigned = !!checklistSigned['allergen'] || !!allergenOverride
  const pendingTaskCount = Object.values(taskAssignments).flat().filter(t => !t.done).length
+ const prepareUrgent = d.forecast?.some(f => f.urgent || f.score >= 75 || f.signals?.some(s => s.endsWith(':danger')))
  const signedCount = 7 + Object.keys(checklistSigned).length
  const startupPct = Math.round((signedCount / CHECKLIST_TOTAL) * 100)
  const [activeTab, setActiveTab] = useState('shift')
@@ -950,13 +1022,17 @@ export default function ShiftIQ() {
   {[
    { id: 'orders', label: 'Orders' },
    { id: 'tasks', label: pendingTaskCount > 0 ? `Tasks \u00b7 ${pendingTaskCount}` : 'Tasks' },
+   { id: 'prepare', label: 'Prepare', urgent: prepareUrgent },
   ].map(tab => (
    <button type="button" key={tab.id} type="button"
    onClick={() => setCol1Tab(tab.id)}
-   className={`px-4 py-2 font-body text-label font-medium border-b-2 transition-colors cursor-pointer ${
+   className={`flex items-center gap-1.5 px-4 py-2 font-body text-label font-medium border-b-2 transition-colors cursor-pointer ${
     col1Tab === tab.id ? 'border-b-ochre text-ink' : 'border-b-transparent text-muted hover:text-muted'
    }`}>
    {tab.label}
+   {tab.urgent && col1Tab !== tab.id && (
+    <span className="w-1.5 h-1.5 rounded-full bg-danger flex-shrink-0" />
+   )}
    </button>
   ))}
   </div>
@@ -1047,6 +1123,10 @@ export default function ShiftIQ() {
   <Finding key={f.id} f={f}
    dismissed={pendingDismiss.has(f.id)}
    onDismiss={handleDismiss}
+   onDelegate={(op, label, dueTime) => {
+    setTaskAssignments(p => ({ ...p, [op]: [...(p[op] || []), { label, dueTime, done: false, fromFinding: f.id }] }))
+    logActivity({ actor: 'D. Kowalski', action: `Delegated task to ${op}: ${label}`, item: f.id, type: 'intervention' })
+   }}
    onAct={(id) => {
     setActed(p => ({ ...p, [id]: true }))
     if (id === 'sf3') {
@@ -1156,6 +1236,84 @@ export default function ShiftIQ() {
     ))}
     </div>
    </>
+  )}
+
+  {/* ── Prepare tab ──────────────────────────────────────────────────── */}
+  {col1Tab === 'prepare' && (
+  <div className="space-y-0">
+   {/* Next shifts at risk */}
+   <div className="px-5 py-2.5 border-b border-rule2 bg-stone2 flex-shrink-0">
+    <span className="font-body text-muted text-label">Upcoming shift risk</span>
+   </div>
+   {d.forecast.map((shift, i) => {
+    const signals = shift.signals?.map(s => {
+     const [label, tone] = s.split(':')
+     return { label, tone }
+    }) ?? []
+    const toneClass = shift.score >= 75 ? 'text-danger' : shift.score >= 55 ? 'text-warn' : 'text-ok'
+    const dotClass = shift.score >= 75 ? 'bg-danger' : shift.score >= 55 ? 'bg-warn' : 'bg-ok'
+    return (
+     <div key={i} className={`px-4 py-3 border-b border-rule2 ${shift.urgent ? 'bg-danger/[0.02]' : ''}`}>
+      <div className="flex items-start justify-between gap-3 mb-1.5">
+       <div className="min-w-0">
+        <div className="font-body font-medium text-ink text-body leading-snug">{shift.name}</div>
+        <div className="font-body text-muted text-label">{shift.time.replace('\n', ' · ')}</div>
+       </div>
+       <div className="flex items-center gap-1.5 flex-shrink-0">
+        <span className={`display-num text-title leading-none ${toneClass}`}>{shift.score}</span>
+        <div className={`w-1.5 h-1.5 rounded-full ${dotClass}`} />
+       </div>
+      </div>
+      <div className="flex flex-wrap gap-1 mb-2">
+       {signals.map(({ label, tone }) => {
+        const chipClass = tone === 'ok' ? 'text-ok bg-ok/10' : tone === 'warn' ? 'text-warn bg-warn/[0.08]' : 'text-danger bg-danger/[0.06]'
+        return <span key={label} className={`font-body text-label px-1.5 py-0.5 ${chipClass}`}>{label}</span>
+       })}
+      </div>
+      {shift.action && (
+       <p className="font-display text-muted text-body leading-relaxed">{shift.action}</p>
+      )}
+     </div>
+    )
+   })}
+
+   {/* Cert gaps */}
+   <div className="px-5 py-2.5 border-b border-rule2 bg-stone2 flex-shrink-0">
+    <span className="font-body text-muted text-label">Cert gaps — act before handoff</span>
+   </div>
+   {[
+    { operator: 'C. Reyes',   station: 'Sauce Dosing',    issue: 'L1 assigned to L2 station — coverage mismatch active now',  urgency: 'danger' },
+    { operator: 'B. Lindqvist', station: 'Oven Station B', issue: 'L3 cert expires tonight 22:00 — tomorrow AM uncovered',  urgency: 'danger' },
+    { operator: 'F. Adeyemi', station: 'QA Inspector',     issue: 'L2 cert expires in 35 days — schedule renewal before gap',   urgency: 'warn' },
+   ].map((gap, i) => {
+    const dotClass = gap.urgency === 'danger' ? 'bg-danger' : 'bg-warn'
+    const textClass = gap.urgency === 'danger' ? 'text-danger' : 'text-warn'
+    return (
+     <div key={i} className="flex items-start gap-3 px-4 py-3 border-b border-rule2">
+      <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 mt-1.5 ${dotClass}`} />
+      <div className="flex-1 min-w-0">
+       <div className="flex items-baseline justify-between gap-2">
+        <span className="font-body font-medium text-ink text-body">{gap.operator}</span>
+        <span className="font-body text-muted text-label flex-shrink-0">{gap.station}</span>
+       </div>
+       <p className={`font-body text-label mt-0.5 ${textClass}`}>{gap.issue}</p>
+      </div>
+     </div>
+    )
+   })}
+
+   {/* Proposed staffing actions */}
+   <div className="px-5 py-2.5 border-b border-rule2 bg-stone2 flex-shrink-0">
+    <span className="font-body text-muted text-label">Proposed actions</span>
+   </div>
+   {[
+    { label: 'Reassign Martinez (L3) → Sauce Dosing before shift start', consequence: 'Raises qualified staffing 72% → 83%', key: 'prep-1' },
+    { label: 'Enroll Lindqvist in L3 recertification — contact HR tonight', consequence: 'Prevents tomorrow AM coverage gap', key: 'prep-2' },
+    { label: 'Schedule Adeyemi L2 renewal — 35-day runway', consequence: 'Avoids cert expiry cascading into gap', key: 'prep-3' },
+   ].map(action => (
+    <PrepareAction key={action.key} action={action} onConfirm={logActivity} />
+   ))}
+  </div>
   )}
 
   {/* ── Near-miss reporting ───────────────────────────────────────────── */}

@@ -207,7 +207,7 @@ function BaselinesTab() {
                 </div>
               ))}
               <div className="pt-2 border-t border-rule2">
-                <p className="font-body text-muted text-label leading-relaxed">{s.notes}</p>
+                <p className="font-display text-muted text-body leading-relaxed">{s.notes}</p>
               </div>
             </div>
           </div>

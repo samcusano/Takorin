@@ -52,7 +52,7 @@ function LogRow({ entry, selected, onClick }) {
       }`}>
       <div className="mb-1">
         <span className={`inline-flex items-center font-body text-label px-1.5 py-0.5 mb-1.5 ${out.cls}`}>{out.label}</span>
-        <p className="font-display font-medium text-ink text-section leading-snug mb-0.5">{entry.action}</p>
+        <p className="font-display font-medium text-ink text-base leading-snug mb-0.5">{entry.action}</p>
         <div className="flex items-center gap-2">
           <span className="font-body text-muted text-label">{entry.agent}</span>
           <span className="font-body text-muted text-label opacity-50">·</span>
@@ -94,7 +94,7 @@ function ActionDetail({ entry }) {
       {/* Rationale */}
       <div className="px-4 py-3 bg-stone2 border-l-4 border-l-ochre">
         <div className="font-body text-muted text-label mb-1">Agent rationale</div>
-        <p className="font-body text-ink text-label leading-relaxed">{entry.rationale}</p>
+        <p className="font-display text-ink text-body leading-relaxed">{entry.rationale}</p>
       </div>
 
       {/* Metrics grid */}
@@ -169,7 +169,6 @@ export default function ExecutionAuthority() {
       {/* Left: tier panel */}
       <div className="w-[260px] flex-shrink-0 border-r border-rule2 flex flex-col bg-stone">
         <div className="flex-shrink-0 px-5 py-4 border-b border-rule2 bg-stone2">
-          <div className="font-body text-muted text-label mb-0.5">Frontier Layer</div>
           <div className="font-display font-bold text-ink text-head leading-none">Execution Authority</div>
           <div className="flex items-center gap-2 mt-2">
             <span className={`display-num text-title text-ok`}>{executionSummary.totalActions}</span>

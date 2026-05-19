@@ -336,7 +336,7 @@ function LedgerRow({ pa, agent, onInvestigate, onApprove, onOverrideRequest, sel
           {pa.rationale && (
             <div>
               <div className="font-body text-muted text-label mb-1">AI rationale</div>
-              <p className="font-body text-ink text-label leading-relaxed">{pa.rationale}</p>
+              <p className="font-display text-ink text-body leading-relaxed">{pa.rationale}</p>
             </div>
           )}
 
@@ -1424,7 +1424,7 @@ export default function AgentControl() {
                       {pa.evidence?.riskForecast && (
                         <div>
                           <div className="font-body text-muted text-label mb-2">Risk if deferred</div>
-                          <p className="font-body text-muted text-label leading-relaxed px-4 py-3 bg-stone2">{pa.evidence.riskForecast}</p>
+                          <p className="font-display text-muted text-body leading-relaxed px-4 py-3 bg-stone2">{pa.evidence.riskForecast}</p>
                         </div>
                       )}
                       </div>
@@ -1488,7 +1488,7 @@ export default function AgentControl() {
                         </div>
                         <EmergencyChip overrideWindowMin={pa.overrideWindowMin} />
                       </div>
-                      {pa.rationale && <p className="font-body text-muted text-label leading-relaxed mb-3">{pa.rationale}</p>}
+                      {pa.rationale && <p className="font-display text-muted text-body leading-relaxed mb-3">{pa.rationale}</p>}
                       <button type="button" onClick={() => setOverrideModal({ pa, agent })}
                         className="inline-flex items-center gap-2 px-4 py-2 border border-danger/40 text-danger font-body text-label hover:bg-danger/[0.04] transition-colors">
                         <Flag size={11} strokeWidth={2} />Override before window closes

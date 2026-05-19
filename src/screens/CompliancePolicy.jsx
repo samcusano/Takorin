@@ -73,14 +73,6 @@ export default function CompliancePolicy() {
 
       {/* ── Left: policy list ───────────────────────────────────── */}
       <div className="w-[280px] flex-shrink-0 border-r border-rule2 flex flex-col bg-stone">
-        <div className="flex-shrink-0 px-5 py-4 border-b border-rule2 bg-stone2">
-          <div className="font-body text-muted text-label mb-0.5">Platform Architecture</div>
-          <div className="font-display font-bold text-ink text-head leading-none">Compliance Engine</div>
-          <div className="font-body text-muted text-label mt-1.5 leading-relaxed">
-            Policy is configurable. Swap regulatory frameworks without rebuilding the product.
-          </div>
-        </div>
-
         {/* Multi-regulatory coverage */}
         <div className="flex-shrink-0 px-5 py-3 border-b border-rule2 bg-warn/[0.04]">
           <div className="flex items-start gap-2">
@@ -102,7 +94,7 @@ export default function CompliancePolicy() {
                 <StatusPill tone={STATUS_TONE[p.status] ?? 'muted'}>{STATUS_LABEL[p.status] ?? p.status}</StatusPill>
               </div>
               <div className="flex items-start justify-between gap-2 mb-1">
-                <span className="font-display font-medium text-ink text-section leading-snug">{p.name}</span>
+                <span className="font-display font-medium text-ink text-base leading-snug">{p.name}</span>
               </div>
               <div className="font-body text-muted text-label mb-2">{p.jurisdiction}</div>
               <div className="flex items-center gap-2">
