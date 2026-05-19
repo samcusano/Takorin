@@ -21,7 +21,7 @@ export const autonomyTiers = [
   {
     id: 'execute',
     label: 'Execute',
-    description: 'Agents act autonomously on pre-approved action classes. Outcomes monitored. Rollback available where reversible.',
+    description: 'Agents act autonomously within pre-approved boundaries. Outcomes monitored. Rollback available where reversible.',
     agentCount: 5,
     actionCount: 47,
     rollbackRate: 0.04,

@@ -38,7 +38,7 @@ const SCORE_FACTORS = [
   { label: 'Startup checklists',      contribution:  9, tone: 'warn',   state: '7 of 13 signed · 4 overdue',           confidence: 'HIGH',   source: 'Checklist system · direct' },
   { label: 'Sensor A-7 variance',     contribution:  6, tone: 'warn',   state: 'Micro-variance 4/5 · bearing suspect',  confidence: 'MEDIUM', source: 'SCADA · 3-hr rolling' },
   { label: 'CCP-1 & CCP-3',          contribution:  0, tone: 'ok',     state: 'Both within limits',                   confidence: 'HIGH',   source: 'Sensor verified · direct' },
-  { label: 'SCADA · Oven B',          contribution:  0, tone: 'warn',   state: 'Stale — confidence penalty applied',   confidence: 'LOW',    source: 'Last reading 2h 14m ago' },
+  { label: 'SCADA · Oven B',          contribution:  0, tone: 'warn',   state: 'Stale — model accuracy reduced',       confidence: 'LOW',    source: 'Last reading 2h 14m ago' },
 ]
 
 // ── CSS animations (injected as style tag — isolated to this design) ──────────

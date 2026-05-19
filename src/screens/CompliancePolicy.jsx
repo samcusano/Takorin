@@ -179,7 +179,7 @@ export default function CompliancePolicy() {
                   <div className="flex items-center gap-3 px-5 py-2 bg-stone2/50">
                     <span className="font-body text-muted text-label flex-1">Domain</span>
                     <span className="font-body text-muted text-label flex-1">Requirement</span>
-                    <span className="font-body text-muted text-label w-5">Req.</span>
+                    <span className="font-body text-muted text-label w-5">Req'd</span>
                   </div>
                   {policy.evidenceRequirements.map((e, i) => <EvidenceRow key={i} e={e} />)}
                 </div>
@@ -222,7 +222,7 @@ export default function CompliancePolicy() {
               <div className="mx-6 my-6 px-5 py-4 border-l-4 border-l-rule2 bg-stone2">
                 <div className="font-body font-semibold text-ink text-base mb-1">This policy is inactive</div>
                 <div className="font-body text-muted text-label leading-relaxed mb-3">
-                  Activating this policy will add all {policy.frameworks.length} frameworks to your compliance monitoring surface. Evidence requirements and escalation logic will be enforced immediately.
+                  Activating this policy will add all {policy.frameworks.length} frameworks to your compliance dashboard. Evidence requirements and escalation rules will be enforced immediately.
                 </div>
                 <button type="button"
                   className="font-body font-medium text-label px-3.5 py-2 bg-ink text-stone hover:bg-ink/90 transition-colors">

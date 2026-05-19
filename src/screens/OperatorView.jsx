@@ -132,7 +132,7 @@ function TroubleshootingHint({ operator }) {
     <div className="px-5 pb-4 slide-in">
      <p className="font-display text-ink text-body leading-relaxed mb-3">{hint}</p>
      <div className="flex items-start gap-2 bg-stone2 px-3 py-2.5">
-      <span className="font-body text-muted text-label flex-shrink-0 mt-px">Precedent ·</span>
+      <span className="font-body text-muted text-label flex-shrink-0 mt-px">Previous case:</span>
       <p className="font-display text-muted text-body leading-relaxed">{precedent}</p>
      </div>
     </div>
@@ -535,7 +535,7 @@ function TaskSection({ selected, station, tasks, linkedTasks, flags, nearMisses,
     </div>
    ))}
    <div className="px-5 py-3 border-t border-rule2 font-body text-muted text-label">
-    If you cannot complete a safety check, use the Flag button in ShiftIQ checklist — do not leave it unsigned without a reason.
+    Can't complete a safety check? Use the Flag button and give a reason — your supervisor will be notified.
    </div>
 
    {flags.length > 0 && (

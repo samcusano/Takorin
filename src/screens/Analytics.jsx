@@ -40,7 +40,7 @@ const ATTR = {
         { id: 'allergen', label: 'Allergen changeover',    short: 'Allergen',    delta: +1.5, note: 'Changeover log signed · production unblocked',           action: 'Standardize Line 4 changeover procedure across all shifts',    route: '/shift',     module: 'ShiftIQ'        },
         { id: 'check',    label: 'Checklist completion',   short: 'Checklists',  delta: +1.4, note: '4 overdue startup items cleared at T+42',               action: 'Enable automated startup reminders in ShiftIQ',                route: '/shift',     module: 'ShiftIQ'        },
         { id: 'sensor',   label: 'Sensor A-7 flagged',    short: 'Sensor A-7',  delta: +0.8, note: 'Bearing inspection scheduled · variance caught early',   action: 'Complete sensor calibration before next shift',                route: '/readiness', module: 'Data Readiness' },
-        { id: 'scada',    label: 'SCADA gap',              short: 'SCADA gap',   delta: -0.3, note: 'Oven B sensor stale · confidence penalty applied',      action: 'Restore Oven B sensor feed to unlock full confidence signal',  route: '/readiness', module: 'Data Readiness' },
+        { id: 'scada',    label: 'SCADA gap',              short: 'SCADA gap',   delta: -0.3, note: 'Oven B sensor stale · model accuracy reduced',             action: 'Restore Oven B sensor feed to recover full model accuracy',   route: '/readiness', module: 'Data Readiness' },
       ],
     },
     day: {
@@ -60,7 +60,7 @@ const ATTR = {
         { id: 'cert',     label: 'Cert gap closures',              short: 'Cert gaps',   delta: +4.2, note: '5 operators certified this week · L2 Sauce Dosing now fully staffed', action: 'Accelerate remaining 4 cert backlog cases into Q3 assessment window', route: '/operator',  module: 'Operator View'  },
         { id: 'allergen', label: 'Allergen program improvement',    short: 'Allergen',    delta: +2.8, note: 'Standardized checklist cut changeover time 22% week-over-week',     action: 'Extend standardized procedure to Lines 3 and 6 next week',         route: '/shift',     module: 'ShiftIQ'        },
         { id: 'check',    label: 'Checklist adherence up 18%',     short: 'Checklists',  delta: +2.1, note: 'Automated reminders reduced missed startup items from 6 to 1',      action: 'Confirm reminder cadence carries into next week schedule',          route: '/shift',     module: 'ShiftIQ'        },
-        { id: 'scada',    label: 'SCADA gap (Oven B, ongoing)',     short: 'SCADA gap',   delta: -1.6, note: 'Sensor stale since Apr 9 · confidence penalty accumulating weekly', action: 'Restore Oven B — highest-leverage action going into week 3',       route: '/readiness', module: 'Data Readiness' },
+        { id: 'scada',    label: 'SCADA gap (Oven B, ongoing)',     short: 'SCADA gap',   delta: -1.6, note: 'Sensor stale since Apr 9 · accuracy impact growing each week',      action: 'Restore Oven B — highest-leverage action going into week 3',       route: '/readiness', module: 'Data Readiness' },
       ],
     },
   },
@@ -480,7 +480,7 @@ export default function Analytics() {
           <div className="h-px bg-rule2 mb-8" />
 
           {/* ── Supporting intelligence ───────────────────────────────────── */}
-          <div className="font-body text-muted text-label mb-3">Supporting intelligence</div>
+          <div className="font-body text-muted text-label mb-3">Supporting context</div>
           <div className="space-y-px">
 
             <Module title="Impact" badge="$312K protected · 47 interventions · Q2 2026" defaultOpen>
@@ -676,7 +676,7 @@ export default function Analytics() {
                     <div key={g.id} className={`px-5 py-4 ${!onTrack ? 'bg-warn/[0.02]' : 'bg-stone'}`}>
                       <div className="flex items-start justify-between mb-1">
                         <div className="font-body text-muted text-label tracking-[0.08em]">{g.label}</div>
-                        <span className="font-mono text-label text-muted tabular-nums">T−46d</span>
+                        <span className="font-mono text-label text-muted tabular-nums">46d left</span>
                       </div>
                       <div className="display-num text-page font-bold leading-none mb-0.5" style={{ color: toneColor }}>
                         {g.current}{g.unit}
@@ -786,7 +786,7 @@ export default function Analytics() {
                 )
               })}
               <div className="px-5 py-2 bg-stone2 border-t border-rule2">
-                <span className="font-body text-muted text-label">Locked signals activate at 3 connected plants · Topeka Plant (KS-02) not yet onboarded</span>
+                <span className="font-body text-muted text-label">Network benchmarks available when 3+ plants are connected · Topeka (KS-02) not yet connected</span>
               </div>
             </Module>
 

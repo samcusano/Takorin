@@ -114,7 +114,7 @@ function OverrideModal({ agentName, actionLabel, onConfirm, onCancel }) {
               rows={3} placeholder="Why are you overriding? (min 20 characters)"
               className="w-full font-body text-body text-ink bg-stone2 border border-rule2 px-3 py-2 resize-none placeholder:text-muted/60 focus:border-ochre focus:outline-none" />
             <div className={`font-body text-label mt-1 ${tooShort ? 'text-danger' : 'text-ok'}`}>
-              {tooShort ? `${20 - rationale.trim().length} more characters required` : 'Rationale meets minimum length'}
+              {tooShort ? `${20 - rationale.trim().length} more characters needed` : 'Ready to submit'}
             </div>
           </div>
         </div>

@@ -337,7 +337,7 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
  {/* ── Not director's turn — ownership context ── */}
  {!c.directorTurn && c.currentOwner && !isClosed && !actionTaken && c.handoffNote && (
   <div className="px-4 py-2.5 border-b border-rule2 bg-stone2 flex items-center gap-2">
-   <span className="font-body text-muted text-label">Ball is with</span>
+   <span className="font-body text-muted text-label">Waiting on</span>
    <span className="font-body text-muted text-label font-medium">{c.currentOwner}</span>
    <span className="font-body text-muted text-label">·</span>
    <span className="font-body text-muted text-label">{c.handoffNote}</span>

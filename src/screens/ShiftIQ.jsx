@@ -105,7 +105,7 @@ const SCORE_FACTORS = [
  { label: 'Startup checklists', contribution: 9, tone: 'warn', state: '7 of 13 signed · 4 overdue at shift start', confidence: 'high', source: 'Checklist system · direct' },
  { label: 'Sensor A-7 variance', contribution: 6, tone: 'warn', state: 'Micro-variance count 4/5 · bearing suspect', confidence: 'medium', source: 'SCADA · 3-hr rolling' },
  { label: 'CCP-1 & CCP-3', contribution: 0, tone: 'ok', state: 'Both within limits · no contribution to score', confidence: 'high', source: 'Sensor verified · direct' },
- { label: 'SCADA — Oven B', contribution: 0, tone: 'warn', state: 'Sensor stale · confidence penalty applied', confidence: 'low', source: 'Last reading 2h 14m ago', tip: 'SCADA (Supervisory Control and Data Acquisition) — the sensor network feeding live oven readings. Stale data reduces model confidence.' },
+ { label: 'SCADA — Oven B', contribution: 0, tone: 'warn', state: 'Sensor stale · model accuracy reduced', confidence: 'low', source: 'Last reading 2h 14m ago', tip: 'SCADA (Supervisory Control and Data Acquisition) — the sensor network feeding live oven readings. Stale data reduces model accuracy.' },
 ]
 
 const CONF_DOT = { high: 'bg-ok', medium: 'bg-warn', low: 'bg-muted' }
@@ -171,7 +171,7 @@ function ScoreExplainer({ score, open, onToggle }) {
        <div>
         <div className="font-body font-medium text-ink text-label">Score adjusted {adjustedFrom} → {score}</div>
         <div className="font-body text-muted text-label mt-0.5 leading-snug">
-         Oven B sensor stale — confidence penalty applied. Restore SCADA feed to remove adjustment.
+         Oven B sensor data stale — model accuracy reduced. Restore sensor feed to recover full signal.
         </div>
        </div>
       </div>

@@ -193,7 +193,7 @@ export default function ExecutionAuthority() {
 
         {/* Tiers */}
         <div className="flex-shrink-0 px-4 py-2 border-b border-rule2 bg-stone2">
-          <div className="font-body text-muted text-label">Autonomy tiers</div>
+          <div className="font-body text-muted text-label">Authorization levels</div>
         </div>
         <div className="flex-1 overflow-y-auto">
           <button type="button" onClick={() => { setSelectedTier(null); setSelectedId(null) }}
@@ -234,8 +234,8 @@ export default function ExecutionAuthority() {
           <div className="flex items-start gap-2">
             <Shield size={10} className="text-ochre flex-shrink-0 mt-0.5" strokeWidth={2} />
             <div>
-              <div className="font-body font-medium text-ink text-label mb-0.5">Current authority ceiling: Execute</div>
-              <p className="font-body text-muted text-label leading-snug">Govern tier not yet active. 5 agents operate autonomously within pre-approved action classes.</p>
+              <div className="font-body font-medium text-ink text-label mb-0.5">Current authorization level: Execute</div>
+              <p className="font-body text-muted text-label leading-snug">Governance tier not yet active. 5 agents act autonomously within pre-approved boundaries.</p>
             </div>
           </div>
         </div>

@@ -106,7 +106,7 @@ const ISSUE_SCADA = {
   estimatedMinutes: null,
   autoEligible: false,
   riskForecast: [
-    { hours: 8,  consequence: 'Oven B confidence penalty increases from −4 to −8' },
+    { hours: 8,  consequence: 'Accuracy impact grows from −4 to −8 if unresolved' },
     { hours: 24, consequence: 'Extended downtime may trigger compliance flag in audit log' },
   ],
 }
@@ -426,7 +426,7 @@ function ResolutionQueue({ selected, onSelect, resolved }) {
   return (
     <div className="flex-1 overflow-y-auto">
       <div className="px-4 py-2 border-b border-rule2 bg-stone2 flex-shrink-0">
-        <span className="font-body text-muted text-label">AI Resolution Queue</span>
+        <span className="font-body text-muted text-label">Fixes queue</span>
       </div>
 
       {/* Cluster */}
@@ -536,7 +536,7 @@ function WorkspacePanel({ item, isCluster, resolved, onResolve, onResolveCluster
             )}
             {item.confidenceDrop > 0 && (
               <div>
-                <div className="font-body text-muted text-label mb-1">Confidence degradation</div>
+                <div className="font-body text-muted text-label mb-1">Accuracy impact</div>
                 <div className="display-num text-base font-bold text-danger">−{item.confidenceDrop}%</div>
               </div>
             )}
@@ -609,10 +609,10 @@ function WorkspacePanel({ item, isCluster, resolved, onResolve, onResolveCluster
             <div className="border border-rule2 bg-stone px-4 py-4">
               <div className="flex items-center gap-2 mb-3">
                 <Zap size={12} strokeWidth={2} className="text-ochre flex-shrink-0" />
-                <span className="font-body font-semibold text-ink text-body">Eligible for automatic remediation</span>
+                <span className="font-body font-semibold text-ink text-body">Can be fixed automatically</span>
               </div>
               <div className="space-y-1 mb-4">
-                <div className="font-body text-muted text-label mb-1.5">Safe to auto-resolve because:</div>
+                <div className="font-body text-muted text-label mb-1.5">Automatic fix is safe because:</div>
                 {item.autoSafeReason.map(r => (
                   <div key={r} className="flex items-center gap-2">
                     <Check size={9} strokeWidth={2.5} className="text-ok flex-shrink-0" />

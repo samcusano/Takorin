@@ -37,13 +37,13 @@ const SALINA_LINE_META = {
     supervisor: 'D. Kowalski', shiftLabel: 'AM · 06:00–14:00',
     minutesRemaining: 318, workerCount: 18,
     findings: shiftData.findings, sparkline: shiftData.sparkline,
-    modelConfidence: 87, modelSignal: 'Oven B SCADA stale — confidence penalty active',
+    modelConfidence: 87, modelSignal: 'Oven B sensor data stale — accuracy reduced',
   },
   l6: {
     supervisor: 'B. Petrov', shiftLabel: 'AM · 06:00–14:00',
     minutesRemaining: 318, workerCount: 18,
     findings: line6Data.findings, sparkline: line6Data.sparkline,
-    modelConfidence: 92, modelSignal: 'Staffing cert coverage optimal',
+    modelConfidence: 92, modelSignal: 'Staffing certifications fully covered',
   },
   l3: {
     supervisor: 'M. Chen', shiftLabel: 'AM · 06:00–14:00',
@@ -64,7 +64,7 @@ const WICHITA_LINE_META = {
     supervisor: 'R. Vasquez', shiftLabel: 'AM · 06:00–14:00',
     minutesRemaining: 27 * 60 + 48, workerCount: 18,
     findings: wichitaData.findings, sparkline: [62, 65, 68, 70, 69, 71],
-    modelConfidence: 74, modelSignal: 'Allergen changeover incomplete — confidence penalty active',
+    modelConfidence: 74, modelSignal: 'Allergen changeover incomplete — accuracy reduced',
   },
   w2: {
     supervisor: 'A. Tran', shiftLabel: 'AM · 06:00–14:00',
