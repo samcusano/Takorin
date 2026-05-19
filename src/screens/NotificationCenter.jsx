@@ -77,7 +77,7 @@ function NotifItem({ item, read, onRead, onNavigate }) {
 
   return (
     <div
-      className={`bg-stone border border-rule rounded-lg overflow-hidden transition-opacity duration-200 ${isRead ? 'opacity-40' : 'shadow-card'}`}
+      className={`bg-stone border border-rule overflow-hidden transition-opacity duration-200 ${isRead ? 'opacity-40' : ''}`}
     >
       {/* Urgency accent bar — article: visual hierarchy first */}
       <div className={`h-[3px] w-full ${barFill(s.bar)}`} />
@@ -222,7 +222,7 @@ export default function NotificationCenter({ onClose }) {
      <div className="px-3 py-3 space-y-2.5">
       {INTELLIGENCE_SIGNALS.map((sig, i) => (
        <div key={i}
-        className={`bg-stone border border-rule rounded-lg overflow-hidden shadow-card ${sig.tone === 'danger' ? 'border-l-[5px] border-l-danger' : 'border-l-[3px] border-l-warn'}`}>
+        className={`bg-stone border border-rule overflow-hidden ${sig.tone === 'danger' ? 'border-l-2 border-l-danger' : 'border-l-2 border-l-warn'}`}>
         {/* Body: confidence + label + detail */}
         <div className="px-4 py-3 flex items-start gap-3">
          <div className={`font-display font-bold text-title leading-none tabular-nums flex-shrink-0 pt-0.5 ${

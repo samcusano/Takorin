@@ -293,7 +293,7 @@ export default function SupplierIQ() {
                   }
                 >
                   {!namingResolved && (
-                    <div className="flex items-start gap-1.5 mt-2 p-2 bg-danger/5 border border-danger/20 rounded-sm">
+                    <div className="flex items-start gap-1.5 mt-2 p-2 bg-danger/5 border border-danger/20">
                       <AlertTriangle size={12} strokeWidth={2} className="text-danger flex-shrink-0 mt-0.5" />
                       <div className="flex-1">
                         <div className="font-body font-medium text-danger text-label">FSMA 204 blocker</div>
@@ -372,7 +372,7 @@ export default function SupplierIQ() {
                   }
                 >
                   {lot.useFirst && (
-                    <div className="flex items-center gap-2 mt-2 p-2 bg-warn/5 border border-warn/20 rounded-sm">
+                    <div className="flex items-center gap-2 mt-2 p-2 bg-warn/5 border border-warn/20">
                       <AlertCircle size={11} strokeWidth={2} className="text-warn flex-shrink-0" />
                       <span className="font-body text-warn text-label">Use-first priority — prioritize in stock rotation</span>
                     </div>
@@ -446,7 +446,7 @@ export default function SupplierIQ() {
                     </div>
                   )}
                 </div>
-                <span className={`font-body font-medium text-label px-2 py-1 rounded-sm flex-shrink-0 ${
+                <span className={`font-body font-medium text-label px-2 py-1 flex-shrink-0 ${
                   s.tierTone === 'ok' ? 'bg-ok/10 text-ok'
                   : s.tierTone === 'danger' ? 'bg-danger/[0.04] text-danger'
                   : 'bg-ochre/10 text-ochre'

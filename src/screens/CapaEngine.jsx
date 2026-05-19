@@ -307,8 +307,8 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
  }
 
  const score = c.priorityScore || 0
- const actionBtnCls = isBlocking ? 'bg-danger text-white'
- : c.type === 'ca' ? 'bg-ok text-white'
+ const actionBtnCls = isBlocking ? 'bg-danger text-stone'
+ : c.type === 'ca' ? 'bg-ok text-stone'
  : 'bg-ink text-stone'
 
  return (
@@ -413,7 +413,7 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
     onChange={e => setCorrectiveMeasure(e.target.value)}
     placeholder="Describe what was done to resolve this case and prevent recurrence…"
     rows={3}
-    className="w-full font-body text-ink text-label bg-stone px-3 py-2 resize-none focus:border-ink outline-none"
+    className="w-full font-body text-ink text-label bg-stone border border-rule2 px-3 py-2 resize-none placeholder:text-muted/60 focus:border-ochre focus:outline-none"
    />
   </div>
   {/* Evidence declaration checklist — required before close */}
@@ -636,7 +636,7 @@ function LayoutQueue({ visibleCases, blockingEvidenceUploaded, setBlockingEviden
 
  {/* Search */}
  <div className="px-3 py-2 border-b border-rule2 flex-shrink-0">
-  <div className="flex items-center gap-2 bg-stone2 px-2 py-1.5">
+  <div className="flex items-center gap-2 bg-stone2 border border-transparent px-2 py-1.5 focus-within:border-ochre/50 transition-colors">
    <Search size={11} strokeWidth={2} className="text-muted flex-shrink-0" />
    <input
     type="text"
@@ -755,7 +755,7 @@ export default function CapaEngine() {
  aria-label="Reassign overdue cases to"
  value={reassignTarget}
  onChange={e => setReassignTarget(e.target.value)}
- className="font-body text-ink text-label bg-stone px-2 py-1 flex-1 cursor-pointer"
+ className="font-body text-ink text-label bg-stone border border-rule2 px-2 py-1 flex-1 cursor-pointer focus:border-ochre focus:outline-none"
  >
  <option value="">Reassign overdue cases to…</option>
  <option>M. Santos · Line 4 PM</option>

@@ -199,7 +199,7 @@ function ProceduralSurface({ ctx, completions, onComplete, onRequestSignOff }) {
                   'border-2 border-rule2'
        }`}
       >
-       {done && <Check size={11} strokeWidth={2.5} className="text-white" />}
+       {done && <Check size={11} strokeWidth={2.5} className="text-stone" />}
       </button>
       <div className="flex-1">
        <div className={`font-body text-body leading-snug ${done ? 'text-muted line-through' : 'text-ink font-medium'}`}>
@@ -283,7 +283,7 @@ function MonitoringSurface({ ctx, entries, onLog }) {
         onChange={e => setInputVal(e.target.value)}
         placeholder="185"
         autoFocus
-        className="flex-1 font-body text-ink text-body px-3 py-2 bg-stone2 focus:outline-none focus:border-ochre"
+        className="flex-1 font-body text-ink text-body bg-stone2 border border-rule2 px-3 py-2 placeholder:text-muted/60 focus:border-ochre focus:outline-none"
        />
        <Btn variant="primary" onClick={() => {
         if (inputVal) { onLog(Number(inputVal)); setLogging(false); setInputVal('') }
@@ -336,7 +336,7 @@ function TaskSection({ selected, station, tasks, linkedTasks, flags, nearMisses,
       className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 transition-colors ${
        t.done ? 'bg-ok cursor-default' : t.interventionId ? 'border-2 border-ochre hover:bg-ochre/10 cursor-pointer' : 'border-2 border-rule2 cursor-default'
       }`}>
-      {t.done && <Check size={11} strokeWidth={2.5} className="text-white" />}
+      {t.done && <Check size={11} strokeWidth={2.5} className="text-stone" />}
      </button>
      <div className="flex-1 min-w-0">
       <div className={`font-body font-medium text-body leading-snug ${t.done ? 'line-through text-muted' : 'text-ink'}`}>{t.label}</div>
@@ -594,7 +594,7 @@ export default function OperatorView({ role }) {
      }
     }}
     className={`fixed bottom-6 right-6 z-20 flex items-center gap-2 px-4 py-2.5 min-h-[40px] font-body text-body font-medium transition-colors duration-100 shadow-raise ${
-     supervisorCalled ? 'bg-ok text-white' : 'bg-danger text-white hover:bg-danger/90'
+     supervisorCalled ? 'bg-ok text-stone' : 'bg-danger text-stone hover:bg-danger/90'
     }`}
     aria-label="Request supervisor assistance"
    >

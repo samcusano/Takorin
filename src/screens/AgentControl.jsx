@@ -112,7 +112,7 @@ function OverrideModal({ agentName, actionLabel, onConfirm, onCancel }) {
             <label className="font-body text-muted text-label block mb-1.5">Rationale</label>
             <textarea ref={ref} value={rationale} onChange={e => setRationale(e.target.value)}
               rows={3} placeholder="Why are you overriding? (min 20 characters)"
-              className="w-full font-body text-body text-ink bg-stone2 px-3 py-2 resize-none focus:outline-none focus:border-rule" />
+              className="w-full font-body text-body text-ink bg-stone2 border border-rule2 px-3 py-2 resize-none placeholder:text-muted/60 focus:border-ochre focus:outline-none" />
             <div className={`font-body text-label mt-1 ${tooShort ? 'text-danger' : 'text-ok'}`}>
               {tooShort ? `${20 - rationale.trim().length} more characters required` : 'Rationale meets minimum length'}
             </div>

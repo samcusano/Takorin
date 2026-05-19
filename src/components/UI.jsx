@@ -261,7 +261,7 @@ export function CaseCard({ urgency = 'warn', num, children }) {
  const topBar = { danger:'bg-danger', warn:'bg-warn', ok:'bg-ok', muted:'bg-rule2' }[urgency]
  const numColor = { danger:'text-danger', warn:'text-warn', ok:'text-ok', muted:'text-muted' }[urgency]
  return (
- <div className="bg-stone border border-rule rounded-lg mb-2.5 overflow-hidden shadow-card">
+ <div className="bg-stone border border-rule mb-2.5 overflow-hidden">
   <div className={`h-[3px] w-full ${topBar}`} />
   <div className="grid grid-cols-[28px_1fr] gap-0">
    <div className={`pt-4 pl-3 font-body font-bold text-base ${numColor}`}>{num}</div>

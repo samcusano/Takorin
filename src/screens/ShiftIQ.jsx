@@ -185,7 +185,7 @@ function SignalCard({ sig }) {
  const stale = sig.tone === 'danger'
  return (
   <div className="flex min-h-[64px] items-center gap-5 border-b border-rule last:border-b-0 bg-stone px-6 py-4">
-   <div className={`flex h-[48px] w-[48px] flex-shrink-0 items-center justify-center rounded-[14px] ${
+   <div className={`flex h-[48px] w-[48px] flex-shrink-0 items-center justify-center ${
     stale ? 'bg-danger/[0.055]' : 'bg-ok/[0.09]'
    }`}>
     <Activity size={16} strokeWidth={2.2} className={stale ? 'text-danger' : 'text-ok'} aria-hidden="true" />
@@ -436,7 +436,7 @@ function Finding({ f, onAct, onDismiss, dismissed }) {
    }}>
     <div className="overflow-hidden">
      <article
-      className={`bg-stone border border-rule rounded-lg overflow-hidden ${dismissed ? 'opacity-40 pointer-events-none' : ''} ${f.urgency === 'danger' ? 'shadow-card-alert' : 'shadow-card'}`}>
+      className={`bg-stone border border-rule overflow-hidden ${dismissed ? 'opacity-40 pointer-events-none' : ''}`}>
       {/* Top accent bar */}
       <div className={`h-[3px] w-full ${accentBar}`} />
       {acked ? (
@@ -804,14 +804,14 @@ export default function ShiftIQ() {
      value={quietForm.reason}
      onChange={e => setQuietForm(p => ({...p, reason: e.target.value}))}
      placeholder="Reason (e.g. Allergen changeover)"
-     className="font-body text-ink text-label bg-stone px-2 py-1 flex-1 focus:outline-none focus:border-rule"
+     className="font-body text-ink text-label bg-stone border border-rule2 px-2 py-1 flex-1 placeholder:text-muted/60 focus:border-ochre focus:outline-none"
     />
     <input
      type="text"
      value={quietForm.endTime}
      onChange={e => setQuietForm(p => ({...p, endTime: e.target.value}))}
      placeholder="Until (e.g. 10:30)"
-     className="font-body text-ink text-label bg-stone px-2 py-1 w-24 focus:outline-none focus:border-rule"
+     className="font-body text-ink text-label bg-stone border border-rule2 px-2 py-1 w-24 placeholder:text-muted/60 focus:border-ochre focus:outline-none"
     />
     <button type="button" onClick={handleSetQuietPeriod}
      className="font-body text-label px-3 py-1 bg-ink text-stone hover:bg-ink2 transition-colors">
@@ -988,7 +988,7 @@ export default function ShiftIQ() {
       type="text" placeholder="Override reason (required)…"
       value={overrideReason}
       onChange={e => { setOverrideReason(e.target.value); setOverrideShake(false) }}
-      className={`w-full font-body text-ink text-label bg-stone px-2 py-1.5 ${overrideShake ? 'shake-error' : ''}`}
+      className={`w-full font-body text-ink text-label bg-stone border border-rule2 px-2 py-1.5 placeholder:text-muted/60 focus:border-ochre focus:outline-none ${overrideShake ? 'shake-error' : ''}`}
       autoFocus
      />
      <div className="flex gap-2">
@@ -1080,7 +1080,7 @@ export default function ShiftIQ() {
   {Object.entries(taskAssignments).flatMap(([op, tasks]) =>
    tasks.map((t, i) => (
     <article key={op + i}
-     className={`bg-stone border border-rule rounded-lg overflow-hidden shadow-card transition-opacity ${t.done ? 'opacity-50' : ''}`}>
+     className={`bg-stone border border-rule overflow-hidden transition-opacity ${t.done ? 'opacity-50' : ''}`}>
      {/* Status accent bar */}
      <div className={`h-[3px] w-full ${t.done ? 'bg-ok' : 'bg-rule2'}`} />
      {/* Body: checkbox + task label */}
@@ -1090,7 +1090,7 @@ export default function ShiftIQ() {
        className={`w-5 h-5 rounded-full flex-shrink-0 flex items-center justify-center mt-0.5 transition-colors ${
         t.done ? 'bg-ok' : 'border-2 border-rule2 hover:border-ok hover:bg-ok/10 cursor-pointer'
        }`}>
-       {t.done && <Check size={10} strokeWidth={2.5} className="text-white" />}
+       {t.done && <Check size={10} strokeWidth={2.5} className="text-stone" />}
       </button>
       <div className={`font-body font-medium text-base leading-snug flex-1 ${t.done ? 'line-through text-muted' : 'text-ink'}`}>
        {t.label}
@@ -1121,7 +1121,7 @@ export default function ShiftIQ() {
     <div className="px-3 py-3 space-y-2.5">
     {maintenanceTickets.map((t, i) => (
      <article key={i}
-      className={`bg-stone border border-rule rounded-lg overflow-hidden ${t.status === 'closed' ? 'opacity-50' : ''} ${t.urgency === 'danger' && t.status !== 'closed' ? 'shadow-card-alert' : 'shadow-card'}`}>
+      className={`bg-stone border border-rule overflow-hidden ${t.status === 'closed' ? 'opacity-50' : ''}`}>
       {/* Urgency accent bar */}
       <div className={`h-[3px] w-full ${t.status === 'closed' ? 'bg-ok' : t.urgency === 'danger' ? 'bg-danger' : 'bg-warn'}`} />
       {/* Header: status chip + timestamp */}
@@ -1170,7 +1170,7 @@ export default function ShiftIQ() {
     <div className="slide-in space-y-2">
      <div className="font-body text-muted text-label">Near-miss report</div>
      <select aria-label="Station where near-miss occurred" value={nearMissForm.station} onChange={e => setNearMissForm(p => ({...p, station: e.target.value}))}
-      className="w-full font-body text-ink text-label bg-stone px-2 py-1 cursor-pointer">
+      className="w-full font-body text-ink text-label bg-stone border border-rule2 px-2 py-1 cursor-pointer focus:border-ochre focus:outline-none">
       <option value="">Station…</option>
       <option>Sauce Dosing</option>
       <option>Oven Station B</option>
@@ -1178,9 +1178,9 @@ export default function ShiftIQ() {
       <option>Topping Line</option>
      </select>
      <textarea aria-label="What happened" placeholder="What happened?" value={nearMissForm.what} onChange={e => setNearMissForm(p => ({...p, what: e.target.value}))}
-      className="w-full font-body text-ink text-label bg-stone px-2 py-1 h-16 resize-none" />
+      className="w-full font-body text-ink text-label bg-stone border border-rule2 px-2 py-1 h-16 resize-none placeholder:text-muted/60 focus:border-ochre focus:outline-none" />
      <input aria-label="Corrective step taken" placeholder="Corrective step taken" value={nearMissForm.action} onChange={e => setNearMissForm(p => ({...p, action: e.target.value}))}
-      className="w-full font-body text-ink text-label bg-stone px-2 py-1" />
+      className="w-full font-body text-ink text-label bg-stone border border-rule2 px-2 py-1 placeholder:text-muted/60 focus:border-ochre focus:outline-none" />
      <label className="flex items-center gap-2 font-body text-muted text-label cursor-pointer">
       <input type="checkbox" checked={nearMissForm.atRisk} onChange={e => setNearMissForm(p => ({...p, atRisk: e.target.checked}))} />
       Anyone at risk of injury?
@@ -1243,7 +1243,7 @@ export default function ShiftIQ() {
      <div className="font-body text-muted text-label mb-2">Task</div>
      <input aria-label="Task description" placeholder="Describe the task…"
       value={taskForm.label} onChange={e => setTaskForm(p => ({...p, label: e.target.value}))}
-      className="w-full font-body text-ink text-body bg-stone px-3 py-2.5 focus:outline-none focus:border-ochre" />
+      className="w-full font-body text-ink text-body bg-stone border border-rule2 px-3 py-2.5 placeholder:text-muted/60 focus:border-ochre focus:outline-none" />
     </div>
     <Btn variant="primary"
      disabled={!taskForm.assignee || !taskForm.label || !taskForm.dueTime}
@@ -1299,7 +1299,7 @@ export default function ShiftIQ() {
     <div className="flex gap-2">
      {['negative','positive'].map(r => (
      <button type="button" key={r} onClick={() => setEmpForm(p => ({...p, [item.key]: {...p[item.key], result: r}}))}
-      className={`font-body font-medium text-label px-2 py-1 transition-colors ${empForm[item.key]?.result === r ? (r === 'negative' ? 'bg-ok text-white' : 'bg-danger text-white') : 'bg-stone3 text-muted'}`}>
+      className={`font-body font-medium text-label px-2 py-1 transition-colors ${empForm[item.key]?.result === r ? (r === 'negative' ? 'bg-ok text-stone' : 'bg-danger text-stone') : 'bg-stone3 text-muted'}`}>
       {r.charAt(0).toUpperCase() + r.slice(1)}
      </button>
      ))}
@@ -1322,7 +1322,7 @@ export default function ShiftIQ() {
    {showFlagForm && !flag && (
     <div className="pb-2 px-1 space-y-1.5 slide-in">
     <select aria-label="Reason for flagging this item" value={flagForm[item.key]?.reason || ''} onChange={e => setFlagForm(p => ({...p, [item.key]: {...p[item.key], reason: e.target.value}}))}
-     className="w-full font-body text-ink text-label bg-stone px-2 py-1 cursor-pointer">
+     className="w-full font-body text-ink text-label bg-stone border border-rule2 px-2 py-1 cursor-pointer focus:border-ochre focus:outline-none">
      <option value="">Reason for flag…</option>
      <option>Equipment malfunction</option>
      <option>Kit or supplies missing</option>
@@ -1522,7 +1522,7 @@ export default function ShiftIQ() {
         value={dataOwner}
         onChange={e => setDataOwner(e.target.value)}
         placeholder="e.g. T. Osei · Data & Quality Manager"
-        className="w-full font-body text-ink text-label bg-stone px-3 py-2 focus:border-ink outline-none"
+        className="w-full font-body text-ink text-label bg-stone border border-rule2 px-3 py-2 placeholder:text-muted/60 focus:border-ochre focus:outline-none"
        />
        <div className="font-body text-muted text-label mt-1">This person is accountable for data quality on new lines during calibration.</div>
       </div>
@@ -1544,7 +1544,7 @@ export default function ShiftIQ() {
         disabled={!dataOwner.trim() || !directorAck}
         onClick={() => { setPilotExpanded(true); setShowExpansionGate(false); setExpansionStep(0); logActivity({ actor:'J. Crocker', action:'Expanded pilot to all lines', item:`Data owner: ${dataOwner}`, type:'system' }) }}
         className={`flex-1 font-body font-medium text-body px-4 py-2.5 transition-colors ${
-         dataOwner.trim() && directorAck ? 'bg-ok text-white hover:bg-ok/90' : 'bg-stone3 text-muted cursor-not-allowed'
+         dataOwner.trim() && directorAck ? 'bg-ok text-stone hover:bg-ok/90' : 'bg-stone3 text-muted cursor-not-allowed'
         }`}>
         Confirm expansion
        </button>
@@ -1568,7 +1568,7 @@ export default function ShiftIQ() {
     className="fixed bottom-6 right-6 z-20 flex items-center gap-2 px-4 py-2.5 min-h-[40px] bg-ink text-stone font-body text-body font-medium shadow-raise hover:bg-ink2 transition-[background-color,box-shadow] duration-100 ease-standard"
    >
     {remaining > 0
-     ? <><ListChecks size={14} /><span>Checklist</span><span className="w-4 h-4 flex items-center justify-center bg-warn text-white text-label font-bold rounded-sm flex-shrink-0">{remaining}</span></>
+     ? <><ListChecks size={14} /><span>Checklist</span><span className="w-4 h-4 flex items-center justify-center bg-warn text-stone text-label font-bold flex-shrink-0">{remaining}</span></>
      : <><ListChecks size={14} /><AnimatedCheck size={11} color="currentColor" />Checklist</>
     }
    </button>
@@ -1640,9 +1640,9 @@ export default function ShiftIQ() {
          {showFlagForm ? <X size={18} strokeWidth={2} className="text-ink" /> : <Flag size={18} strokeWidth={2} className="text-muted" />}
         </button>
         {showFlagForm && (
-         <div className="absolute top-0 right-0 flex items-center gap-1 bg-stone rounded-md px-2 py-1 shadow-raise z-10">
+         <div className="absolute top-0 right-0 flex items-center gap-1 bg-stone border border-rule2 px-2 py-1 shadow-raise z-10">
           <button type="button" onClick={() => setFlagForm(p => { const n = {...p}; delete n[item.key]; return n })} 
-           className="flex items-center justify-center w-6 h-6 rounded hover:bg-stone2 transition-colors"
+           className="flex items-center justify-center w-6 h-6 hover:bg-stone2 transition-colors"
            aria-label="Close flag selector">
            <X size={14} strokeWidth={2} className="text-ink" />
           </button>
@@ -1664,7 +1664,7 @@ export default function ShiftIQ() {
               }, 200)
              }}
              title={label}
-             className={`flex items-center justify-center w-8 h-8 rounded transition-transform ${active ? 'scale-110' : 'scale-100 hover:scale-110'} ${active ? 'bg-ok/10' : 'bg-stone2 hover:bg-stone3'}`}
+             className={`flex items-center justify-center w-8 h-8 transition-transform ${active ? 'scale-110' : 'scale-100 hover:scale-110'} ${active ? 'bg-ok/10' : 'bg-stone2 hover:bg-stone3'}`}
              aria-label={label}>
              <Icon size={16} strokeWidth={2} className={`${active ? 'text-ok' : 'text-ink'}`} aria-hidden="true" />
             </button>
@@ -1682,7 +1682,7 @@ export default function ShiftIQ() {
      <div className="flex gap-2">
       {['negative','positive'].map(r => (
       <button type="button" key={r} onClick={() => setEmpForm(p => ({...p, [item.key]: {...p[item.key], result: r}}))}
-       className={`font-body font-medium text-label px-2 py-1 transition-colors ${empForm[item.key]?.result === r ? (r === 'negative' ? 'bg-ok text-white' : 'bg-danger text-white') : 'bg-stone3 text-muted'}`}>
+       className={`font-body font-medium text-label px-2 py-1 transition-colors ${empForm[item.key]?.result === r ? (r === 'negative' ? 'bg-ok text-stone' : 'bg-danger text-stone') : 'bg-stone3 text-muted'}`}>
        {r.charAt(0).toUpperCase() + r.slice(1)}
       </button>
       ))}

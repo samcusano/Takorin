@@ -370,7 +370,7 @@ function OperationalMemoryVault() {
                         const recallC  = RECALL_COLOR[e._recallMode] ?? RECALL_COLOR.condition
                         return (
                           <article key={e.id}
-                            className="bg-stone border border-rule rounded-lg overflow-hidden shadow-card">
+                            className="bg-stone border border-rule overflow-hidden">
                             {/* Urgency accent bar */}
                             <div className={`h-[3px] w-full ${topBar}`} />
                             <button type="button" onClick={() => setSlideEntry(e)}

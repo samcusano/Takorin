@@ -60,19 +60,19 @@ export default function FindingCard({
  >
  <div className="grid grid-cols-[28px_1fr] gap-3 p-4">
  {/* Ordinal */}
- <div className="font-display text-base font-black text-takorin-ghost pt-0.5 select-none">
+ <div className="font-display text-base font-black text-muted pt-0.5 select-none">
  {ordinal}
  </div>
  {/* Body */}
  <div className="min-w-0">
- <h3 className="font-body text-base font-medium text-takorin-ink mb-1.5 leading-snug">
+ <h3 className="font-body text-base font-medium text-ink mb-1.5 leading-snug">
  {title}
  </h3>
- <p className="font-body text-label text-takorin-muted leading-relaxed mb-2">
+ <p className="font-body text-label text-muted leading-relaxed mb-2">
  {description}
  </p>
  {evidence && (
- <p className="font-body text-label text-takorin-ghost mb-3">
+ <p className="font-body text-label text-muted/70 mb-3">
  {evidence}
  </p>
  )}
@@ -102,8 +102,8 @@ export default function FindingCard({
 
  {/* Acknowledgment row */}
  {ackState !== 'dismissed' && (
- <div className="flex flex-wrap items-center gap-2 px-4 py-2 bg-takorin-stone-2 border-t border-takorin-rule">
- <span className="font-body text-label text-takorin-ghost flex-shrink-0">
+ <div className="flex flex-wrap items-center gap-2 px-4 py-2 bg-stone2 border-t border-rule2">
+ <span className="font-body text-label text-muted flex-shrink-0">
  Your response:
  </span>
  <div className="flex gap-1.5 flex-wrap">
@@ -112,7 +112,7 @@ export default function FindingCard({
  className={`flex items-center gap-1 px-2.5 py-1 text-label font-body font-medium transition-colors ${
  ackState === 'actioning'
  ? 'bg-ok/10 text-ok'
- : 'bg-takorin-stone-3 text-takorin-muted hover:bg-takorin-stone-4'
+ : 'bg-stone3 text-muted hover:bg-stone4'
  }`}
  >
  <UserCheck className="w-2.5 h-2.5" />
@@ -120,18 +120,18 @@ export default function FindingCard({
  </button>
  <button
  onClick={handleDismiss}
- className="flex items-center gap-1 px-2.5 py-1 text-label font-body font-medium bg-takorin-stone-3 text-takorin-muted hover:bg-takorin-stone-4 transition-colors"
+ className="flex items-center gap-1 px-2.5 py-1 text-label font-body font-medium bg-stone3 text-muted hover:bg-stone4 transition-colors"
  >
  <XCircle className="w-2.5 h-2.5" />
  Dismiss
  </button>
  </div>
  {showDismissForm && (
- <div className="flex gap-2 items-center w-full mt-2 pt-2 border-t border-takorin-rule">
+ <div className="flex gap-2 items-center w-full mt-2 pt-2 border-t border-rule2">
  <select
  value={dismissReason}
  onChange={e => setDismissReason(e.target.value)}
- className="flex-1 text-label font-body bg-takorin-stone text-takorin-muted px-2 py-1.5 border border-takorin-rule focus:outline-none focus:border-takorin-ochre"
+ className="flex-1 text-label font-body bg-stone text-muted px-2 py-1.5 border border-rule2 focus:outline-none focus:border-ochre placeholder:text-muted/60"
  >
  <option value="">Reason for dismissing…</option>
  {DISMISS_REASONS.map(r => <option key={r} value={r}>{r}</option>)}
@@ -144,7 +144,7 @@ export default function FindingCard({
  </div>
  )}
  {ackState === 'dismissed' && (
- <div className="px-4 py-2 bg-danger/5 border-t border-takorin-rule">
+ <div className="px-4 py-2 bg-danger/5 border-t border-rule2">
  <span className="font-body text-label text-danger">
  Dismissed{dismissReason ? `: ${dismissReason}` : ' — no reason logged'} · recorded
  </span>
