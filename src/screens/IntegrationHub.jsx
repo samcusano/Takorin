@@ -1,16 +1,20 @@
-// Shift 5: Integration architecture expansion
-// Manufacturing OS surface: 50+ sources, event streaming, semantic normalization,
-// confidence arbitration, temporal reconciliation.
-
 import { useState } from 'react'
 import { connectors, integrationSummary, semanticConflicts, integrationCategories } from '../data/integrations'
-import { AlertTriangle, CheckCircle, Zap, Radio } from 'lucide-react'
+import { AlertTriangle, CheckCircle, Zap, Radio, Search, X } from 'lucide-react'
+import { SlidePanel } from '../components/UI'
 
 const STATUS_CFG = {
-  active:    { label: 'Active',     dot: 'bg-ok',     text: 'text-ok',     badge: 'bg-ok/10 text-ok' },
-  available: { label: 'Available',  dot: 'bg-rule2',  text: 'text-muted',  badge: 'bg-stone3 text-muted' },
-  soon:      { label: 'Coming soon',dot: 'bg-ochre',  text: 'text-ochre',  badge: 'bg-ochre/10 text-ochre' },
+  active:    { label: 'Active',      dot: 'bg-ok',     text: 'text-ok',     badge: 'bg-ok/10 text-ok' },
+  available: { label: 'Available',   dot: 'bg-muted',  text: 'text-muted',  badge: 'bg-stone3 text-muted' },
+  soon:      { label: 'Coming soon', dot: 'bg-ochre',  text: 'text-ochre',  badge: 'bg-ochre/10 text-ochre' },
 }
+
+const STATUS_FILTERS = [
+  { key: 'all',       label: 'All' },
+  { key: 'active',    label: 'Active' },
+  { key: 'available', label: 'Available' },
+  { key: 'soon',      label: 'Soon' },
+]
 
 function ConnectorCard({ c, selected, onClick }) {
   const cfg = STATUS_CFG[c.status] ?? STATUS_CFG.available
@@ -21,7 +25,7 @@ function ConnectorCard({ c, selected, onClick }) {
       }`}>
       <div className="flex items-start justify-between gap-2 mb-1.5">
         <div className="flex items-center gap-1.5">
-          <div className={`relative flex h-1.5 w-1.5 flex-shrink-0 mt-0.5`}>
+          <div className="relative flex h-1.5 w-1.5 flex-shrink-0 mt-0.5">
             {c.status === 'active' && c.streaming && <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-ok opacity-40" />}
             <span className={`relative inline-flex rounded-full h-1.5 w-1.5 ${cfg.dot}`} />
           </div>
@@ -51,13 +55,12 @@ function ConnectorCard({ c, selected, onClick }) {
 }
 
 function ConnectorDetail({ c }) {
-  if (!c) return <div className="flex items-center justify-center h-full font-body text-muted text-label">Select a connector</div>
   const cfg = STATUS_CFG[c.status] ?? STATUS_CFG.available
   return (
-    <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
+    <div className="space-y-5">
       <div>
         <div className="flex items-center gap-2 mb-2">
-          <div className={`relative flex h-2 w-2 flex-shrink-0`}>
+          <div className="relative flex h-2 w-2 flex-shrink-0">
             {c.status === 'active' && c.streaming && <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-ok opacity-40" />}
             <span className={`relative inline-flex rounded-full h-2 w-2 ${cfg.dot}`} />
           </div>
@@ -71,12 +74,12 @@ function ConnectorDetail({ c }) {
       {c.status === 'active' && (
         <div className="grid grid-cols-3 gap-px bg-rule2">
           {[
-            { label: 'Data quality',  val: c.quality != null ? `${c.quality}%` : '—', tone: c.quality >= 95 ? 'text-ok' : c.quality >= 85 ? 'text-ochre' : 'text-warn' },
-            { label: 'Last sync',     val: c.lastSync ?? '—', tone: 'text-muted' },
-            { label: 'Active signals',val: c.signals != null ? c.signals.toLocaleString() : '—', tone: 'text-ink' },
-            { label: 'Latency',       val: c.latency ?? '—', tone: 'text-muted' },
-            { label: 'Streaming',     val: c.streaming ? 'Yes' : 'Polling', tone: c.streaming ? 'text-ok' : 'text-muted' },
-            { label: 'Conflicts',     val: c.conflicts > 0 ? String(c.conflicts) : 'None', tone: c.conflicts > 0 ? 'text-warn' : 'text-ok' },
+            { label: 'Data quality',   val: c.quality != null ? `${c.quality}%` : '—', tone: c.quality >= 95 ? 'text-ok' : c.quality >= 85 ? 'text-ochre' : 'text-warn' },
+            { label: 'Last sync',      val: c.lastSync ?? '—',                          tone: 'text-muted' },
+            { label: 'Active signals', val: c.signals != null ? c.signals.toLocaleString() : '—', tone: 'text-ink' },
+            { label: 'Latency',        val: c.latency ?? '—',                           tone: 'text-muted' },
+            { label: 'Streaming',      val: c.streaming ? 'Yes' : 'Polling',            tone: c.streaming ? 'text-ok' : 'text-muted' },
+            { label: 'Conflicts',      val: c.conflicts > 0 ? String(c.conflicts) : 'None', tone: c.conflicts > 0 ? 'text-warn' : 'text-ok' },
           ].map(({ label, val, tone }) => (
             <div key={label} className="bg-stone px-3 py-2.5">
               <div className="font-body text-muted text-label mb-0.5">{label}</div>
@@ -94,14 +97,14 @@ function ConnectorDetail({ c }) {
       )}
 
       {c.status === 'available' && (
-        <div className="px-4 py-4 border-l-4 border-l-ochre bg-stone2">
+        <div className="px-4 py-4 border-l-2 border-l-ochre bg-stone2">
           <div className="font-body font-semibold text-ink text-base mb-1">Available — not connected</div>
-          <div className="font-body text-muted text-label leading-relaxed mb-3">
-            This connector is supported by the integration framework. Configure credentials and field mappings to activate.
+          <div className="font-body text-muted text-label leading-relaxed mb-2">
+            This connector is supported by the integration framework. Configuration is managed in the admin panel.
           </div>
-          <button type="button" className="font-body font-medium text-label px-3.5 py-2 bg-ink text-stone hover:bg-ink/90 transition-colors">
-            Configure connector
-          </button>
+          <div className="font-body text-muted/60 text-label">
+            Admin panel → Integrations → {c.name}
+          </div>
         </div>
       )}
 
@@ -115,13 +118,108 @@ function ConnectorDetail({ c }) {
   )
 }
 
+function ConflictsPanel({ resolved, onResolve }) {
+  const unresolved = semanticConflicts.filter(sc => !resolved.has(sc.id))
+  const resolvedList = semanticConflicts.filter(sc => resolved.has(sc.id))
+
+  return (
+    <div className="flex-1 overflow-y-auto">
+      {unresolved.map(sc => (
+        <div key={sc.id} className="border-b border-rule2 border-l-2 border-l-warn">
+          <div className="px-4 py-3 space-y-2.5">
+            {/* Header */}
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <div className="font-body font-medium text-ink text-base leading-snug mb-0.5">{sc.field}</div>
+                <div className="font-body text-muted text-label">{sc.sources.join(' · ')}</div>
+              </div>
+              {sc.autoEligible && (
+                <button type="button" onClick={() => onResolve(sc.id)}
+                  className="font-body font-medium text-label px-2.5 py-1 bg-ok/10 text-ok hover:bg-ok/20 transition-colors flex-shrink-0">
+                  Auto-resolve
+                </button>
+              )}
+            </div>
+
+            {/* Values in conflict */}
+            <div className="space-y-1">
+              {sc.values.map(v => (
+                <div key={v.source} className="flex items-baseline gap-2">
+                  <span className="font-body text-muted text-label w-32 flex-shrink-0 truncate">{v.source}</span>
+                  <span className="font-body text-warn text-label">{v.value}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Impact */}
+            <div className="px-3 py-2 bg-warn/[0.04] border-l-2 border-l-warn/30">
+              <div className="font-body text-muted text-label mb-0.5">Impact</div>
+              <div className="font-body text-ink text-label leading-snug">{sc.impact}</div>
+            </div>
+
+            {/* Resolution */}
+            <div className="px-3 py-2 bg-stone2">
+              <div className="font-body text-muted text-label mb-0.5">Resolution</div>
+              <div className="font-body text-ink text-label leading-snug">{sc.resolution}</div>
+            </div>
+
+            {!sc.autoEligible && (
+              <div className="font-body text-muted/60 text-label">Manual resolution required — ERP admin access needed</div>
+            )}
+          </div>
+        </div>
+      ))}
+
+      {resolvedList.length > 0 && (
+        <>
+          <div className="px-4 py-2 border-b border-rule2 bg-stone2">
+            <span className="font-body text-muted text-label">Resolved this session</span>
+          </div>
+          {resolvedList.map(sc => (
+            <div key={sc.id} className="border-b border-rule2 border-l-2 border-l-ok/40 opacity-50 cursor-default">
+              <div className="px-4 py-3 flex items-center justify-between gap-3">
+                <div>
+                  <div className="font-body font-medium text-ink text-label">{sc.field}</div>
+                  <div className="font-body text-muted text-label">{sc.sources.join(' · ')}</div>
+                </div>
+                <span className="font-body text-ok text-label flex items-center gap-1 flex-shrink-0">
+                  <CheckCircle size={10} />Resolved
+                </span>
+              </div>
+            </div>
+          ))}
+        </>
+      )}
+
+      {unresolved.length === 0 && resolvedList.length === semanticConflicts.length && (
+        <div className="flex flex-col items-center justify-center h-32 gap-1.5">
+          <CheckCircle size={14} className="text-ok" />
+          <div className="font-body text-ok text-label">All conflicts resolved this session</div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function IntegrationHub() {
   const [selectedCategory, setSelectedCategory] = useState(null)
   const [selectedConnectorId, setSelectedConnectorId] = useState(null)
+  const [activeTab, setActiveTab] = useState('sources')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [statusFilter, setStatusFilter] = useState('all')
+  const [resolvedConflicts, setResolvedConflicts] = useState(new Set())
 
-  const filtered = selectedCategory
-    ? connectors.filter(c => c.category === selectedCategory)
-    : connectors
+  const resolveConflict = (id) => setResolvedConflicts(p => new Set([...p, id]))
+  const unresolvedCount = semanticConflicts.filter(sc => !resolvedConflicts.has(sc.id)).length
+
+  const filtered = connectors
+    .filter(c => !selectedCategory || c.category === selectedCategory)
+    .filter(c => statusFilter === 'all' || c.status === statusFilter)
+    .filter(c => {
+      if (!searchQuery) return true
+      const q = searchQuery.toLowerCase()
+      return c.name.toLowerCase().includes(q) || c.vendor.toLowerCase().includes(q)
+    })
 
   const selectedConnector = connectors.find(c => c.id === selectedConnectorId)
 
@@ -135,38 +233,54 @@ export default function IntegrationHub() {
   return (
     <div className="flex h-full overflow-hidden content-reveal">
 
-      {/* ── Left: categories + conflicts ────────────────────── */}
+      {/* ── Left: categories ─────────────────────────────── */}
       <div className="w-[240px] flex-shrink-0 border-r border-rule2 flex flex-col bg-stone">
+
+        {/* Header */}
         <div className="flex-shrink-0 px-5 py-4 border-b border-rule2 bg-stone2">
-          <div className="font-body text-muted text-label mb-0.5">Platform Architecture</div>
-          <div className="font-display font-bold text-ink text-head leading-none">Integration Hub</div>
-          <div className="flex items-center gap-2 mt-2">
-            <span className={`display-num text-title ${integrationSummary.active >= 30 ? 'text-ok' : 'text-warn'}`}>{integrationSummary.active}</span>
+          <div className="font-display font-bold text-ink text-head leading-none mb-2">Integration Hub</div>
+          <div className="flex items-center gap-2">
+            <span className={`display-num text-title ${integrationSummary.active >= 30 ? 'text-ok' : 'text-warn'}`}>
+              {integrationSummary.active}
+            </span>
             <span className="font-body text-muted text-label">of {integrationSummary.total} active</span>
           </div>
         </div>
 
-        {/* Conflicts callout */}
-        {integrationSummary.activeConflicts > 0 && (
-          <div className="flex-shrink-0 px-4 py-2.5 border-b border-rule2 bg-warn/[0.04]">
-            <div className="flex items-center gap-1.5">
-              <AlertTriangle size={10} className="text-warn" strokeWidth={2} />
-              <span className="font-body text-warn text-label font-medium">{integrationSummary.activeConflicts} semantic conflicts</span>
-            </div>
-          </div>
+        {/* Conflicts callout — clickable, switches to conflicts tab */}
+        {unresolvedCount > 0 && (
+          <button type="button" onClick={() => setActiveTab('conflicts')}
+            className={`flex-shrink-0 w-full text-left px-4 py-2.5 border-b border-rule2 flex items-center gap-2 transition-colors ${
+              activeTab === 'conflicts' ? 'bg-warn/[0.06]' : 'bg-warn/[0.03] hover:bg-warn/[0.07]'
+            }`}>
+            <AlertTriangle size={10} className="text-warn flex-shrink-0" strokeWidth={2} />
+            <span className="font-body text-warn text-label font-medium">
+              {unresolvedCount} semantic {unresolvedCount === 1 ? 'conflict' : 'conflicts'}
+            </span>
+            <span className="font-body text-warn/50 text-label ml-auto">→</span>
+          </button>
         )}
 
+        {/* Category list */}
         <div className="flex-1 overflow-y-auto">
-          {/* All category */}
-          <button type="button" onClick={() => { setSelectedCategory(null); setSelectedConnectorId(null) }}
-            className={`w-full text-left px-4 py-2.5 border-b border-rule2 flex items-center justify-between transition-colors ${!selectedCategory ? 'bg-stone2 border-l-4 border-l-ochre' : 'hover:bg-stone2/50 border-l-4 border-l-transparent'}`}>
+          <button type="button"
+            onClick={() => { setSelectedCategory(null); setSelectedConnectorId(null); setActiveTab('sources') }}
+            className={`w-full text-left px-4 py-2.5 border-b border-rule2 flex items-center justify-between transition-colors ${
+              !selectedCategory && activeTab === 'sources'
+                ? 'bg-stone2 border-l-2 border-l-ochre'
+                : 'hover:bg-stone2/50 border-l-2 border-l-transparent'
+            }`}>
             <span className="font-body font-medium text-ink text-label">All sources</span>
             <span className="font-body text-muted text-label">{integrationSummary.total}</span>
           </button>
           {categoryCounts.map(cat => (
             <button key={cat.name} type="button"
-              onClick={() => { setSelectedCategory(cat.name); setSelectedConnectorId(null) }}
-              className={`w-full text-left px-4 py-2.5 border-b border-rule2 flex items-center justify-between transition-colors ${selectedCategory === cat.name ? 'bg-stone2 border-l-4 border-l-ochre' : 'hover:bg-stone2/50 border-l-4 border-l-transparent'}`}>
+              onClick={() => { setSelectedCategory(cat.name); setSelectedConnectorId(null); setActiveTab('sources') }}
+              className={`w-full text-left px-4 py-2.5 border-b border-rule2 flex items-center justify-between transition-colors ${
+                selectedCategory === cat.name && activeTab === 'sources'
+                  ? 'bg-stone2 border-l-2 border-l-ochre'
+                  : 'hover:bg-stone2/50 border-l-2 border-l-transparent'
+              }`}>
               <div>
                 <div className="font-body text-ink text-label">{cat.name}</div>
                 <div className="font-body text-muted text-label">{cat.active}/{cat.total} active</div>
@@ -177,18 +291,6 @@ export default function IntegrationHub() {
               </div>
             </button>
           ))}
-
-          {/* Semantic conflicts */}
-          <div className="px-4 py-2.5 border-b border-rule2 bg-stone2 mt-2">
-            <div className="font-body text-muted text-label">Semantic conflicts</div>
-          </div>
-          {semanticConflicts.map(sc => (
-            <div key={sc.id} className="px-4 py-2.5 border-b border-rule2 border-l-4 border-l-warn bg-warn/[0.02]">
-              <div className="font-body font-medium text-warn text-label mb-0.5">{sc.field}</div>
-              <div className="font-body text-muted text-label leading-snug">{sc.sources.join(' · ')}</div>
-              {sc.autoEligible && <div className="font-body text-ok text-label mt-0.5">Auto-resolvable</div>}
-            </div>
-          ))}
         </div>
 
         {/* Footer stats */}
@@ -196,47 +298,105 @@ export default function IntegrationHub() {
           <div className="grid grid-cols-2 gap-2">
             {[
               { label: 'Total signals', val: integrationSummary.totalSignals.toLocaleString() },
-              { label: 'Streaming', val: String(integrationSummary.streamingSources) },
+              { label: 'Streaming',     val: String(integrationSummary.streamingSources) },
             ].map(({ label, val }) => (
               <div key={label}>
                 <div className="font-body text-muted text-label">{label}</div>
-                <div className="display-num text-base text-ink">{val}</div>
+                <div className="display-num text-head text-ink">{val}</div>
               </div>
             ))}
           </div>
         </div>
       </div>
 
-      {/* ── Center: connector grid ────────────────────────── */}
-      <div className="w-[380px] flex-shrink-0 border-r border-rule2 flex flex-col">
-        <div className="flex-shrink-0 px-4 py-2.5 border-b border-rule2 bg-stone2 flex items-center justify-between">
-          <span className="font-body text-muted text-label">
-            {selectedCategory ?? 'All sources'} · {filtered.length}
-          </span>
-          <div className="flex items-center gap-3">
-            <span className="flex items-center gap-1 font-body text-ok text-label"><span className="w-1.5 h-1.5 rounded-full bg-ok" />Active</span>
-            <span className="flex items-center gap-1 font-body text-muted text-label"><span className="w-1.5 h-1.5 rounded-full bg-rule2" />Available</span>
-            <span className="flex items-center gap-1 font-body text-ochre text-label"><span className="w-1.5 h-1.5 rounded-full bg-ochre" />Soon</span>
-          </div>
+      {/* ── Center: tabs + connector grid or conflicts ───── */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+
+        {/* Tab bar */}
+        <div className="flex-shrink-0 border-b border-rule2 bg-stone2 flex">
+          <button type="button" onClick={() => setActiveTab('sources')}
+            className={`px-4 py-2.5 font-body text-label font-medium transition-colors border-b-2 ${
+              activeTab === 'sources' ? 'text-ink border-ochre' : 'text-muted border-transparent hover:text-ink'
+            }`}>
+            Sources · {integrationSummary.total}
+          </button>
+          <button type="button" onClick={() => setActiveTab('conflicts')}
+            className={`px-4 py-2.5 font-body text-label font-medium transition-colors border-b-2 flex items-center gap-1.5 ${
+              activeTab === 'conflicts' ? 'text-ink border-ochre' : 'text-muted border-transparent hover:text-ink'
+            }`}>
+            Conflicts
+            {unresolvedCount > 0 && (
+              <span className={`font-body text-label px-1.5 py-px ${activeTab === 'conflicts' ? 'bg-warn/20 text-warn' : 'bg-warn/10 text-warn'}`}>
+                {unresolvedCount}
+              </span>
+            )}
+          </button>
         </div>
-        <div className="flex-1 overflow-y-auto">
-          <div className="grid grid-cols-2 gap-px bg-rule2 border-b border-rule2">
-            {filtered.map(c => (
-              <ConnectorCard key={c.id} c={c}
-                selected={selectedConnectorId === c.id}
-                onClick={() => setSelectedConnectorId(c.id)} />
-            ))}
-          </div>
-        </div>
+
+        {activeTab === 'sources' ? (
+          <>
+            {/* Search + status filter */}
+            <div className="flex-shrink-0 border-b border-rule2 bg-stone2 px-3 pt-2 pb-2 space-y-2">
+              <div className="flex items-center gap-2 bg-stone border border-transparent focus-within:border-ochre/50 px-2.5 py-1.5 transition-colors">
+                <Search size={11} strokeWidth={2} className="text-muted flex-shrink-0" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  placeholder="Search connectors or vendors…"
+                  className="flex-1 font-body text-label text-ink bg-transparent outline-none placeholder:text-muted/60"
+                />
+                {searchQuery && (
+                  <button type="button" onClick={() => setSearchQuery('')} aria-label="Clear search"
+                    className="text-muted hover:text-ink transition-colors">
+                    <X size={11} strokeWidth={2} />
+                  </button>
+                )}
+              </div>
+              <div className="flex gap-px">
+                {STATUS_FILTERS.map(f => (
+                  <button key={f.key} type="button" onClick={() => setStatusFilter(f.key)}
+                    className={`font-body text-label px-2.5 py-1 transition-colors ${
+                      statusFilter === f.key ? 'bg-ochre/10 text-ochre' : 'text-muted hover:text-ink'
+                    }`}>
+                    {f.label}
+                  </button>
+                ))}
+                <span className="ml-auto font-body text-muted text-label self-center tabular-nums">{filtered.length}</span>
+              </div>
+            </div>
+
+            <div className="flex-1 overflow-y-auto">
+              {filtered.length > 0 ? (
+                <div className="grid grid-cols-2 gap-px bg-rule2 border-b border-rule2">
+                  {filtered.map(c => (
+                    <ConnectorCard key={c.id} c={c}
+                      selected={selectedConnectorId === c.id}
+                      onClick={() => setSelectedConnectorId(c.id)} />
+                  ))}
+                </div>
+              ) : (
+                <div className="flex items-center justify-center h-24 font-body text-muted text-label">
+                  No connectors match "{searchQuery}"
+                </div>
+              )}
+            </div>
+          </>
+        ) : (
+          <ConflictsPanel resolved={resolvedConflicts} onResolve={resolveConflict} />
+        )}
       </div>
 
-      {/* ── Right: connector detail ───────────────────────── */}
-      <div className="flex-1 flex flex-col overflow-hidden bg-stone">
-        <div className="flex-shrink-0 px-5 py-2.5 border-b border-rule2 bg-stone2">
-          <span className="font-body text-muted text-label">Connector detail</span>
-        </div>
-        <ConnectorDetail c={selectedConnector} />
-      </div>
+      {selectedConnector && (
+        <SlidePanel
+          title={selectedConnector.name}
+          subtitle={`${STATUS_CFG[selectedConnector.status]?.label ?? 'Unknown'} · ${selectedConnector.vendor}`}
+          onClose={() => setSelectedConnectorId(null)}
+          maxWidth="480px"
+        >
+          <ConnectorDetail c={selectedConnector} />
+        </SlidePanel>
+      )}
     </div>
   )
 }

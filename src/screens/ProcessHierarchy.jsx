@@ -7,6 +7,7 @@
 import { useState } from 'react'
 import { processHierarchy } from '../data/hierarchy'
 import { AlertTriangle, ChevronRight, ChevronDown, ArrowRight, ArrowDown, Activity, Zap, TrendingDown, Info } from 'lucide-react'
+import { SlidePanel } from '../components/UI'
 
 const scoreColor  = (s) => s >= 90 ? 'text-ok'     : s >= 80 ? 'text-ochre'   : s >= 70 ? 'text-warn'   : 'text-danger'
 const scoreBg     = (s) => s >= 90 ? 'bg-ok'        : s >= 80 ? 'bg-ochre'     : s >= 70 ? 'bg-warn'     : 'bg-danger'
@@ -241,54 +242,39 @@ function Breadcrumb({ crumbs, onNavigate }) {
 // ── Variant A: Operational State Field ───────────────────────────────────────
 
 function CausalPanel({ zone, building }) {
-  if (!zone) return (
-    <div className="flex flex-col items-center justify-center h-full px-8 text-center gap-4">
-      <Activity size={24} className="text-muted/40" strokeWidth={1.5} />
-      <div>
-        <div className="font-body text-muted text-label leading-relaxed">Select a zone to see what's driving it</div>
-      </div>
-    </div>
-  )
-
   const causal = CAUSAL_MAP[zone.id] ?? DEFAULT_CAUSAL
   const allVessels = (zone.processes ?? []).flatMap(p => p.vessels ?? [])
-  const pressureZone = zone.score < 80
   const statusLabel = zone.score >= 90 ? 'Clear' : zone.score >= 80 ? 'Watch' : zone.score >= 70 ? 'At risk' : 'Critical'
   const statusColor = zone.score >= 90 ? 'text-ok' : zone.score >= 80 ? 'text-ochre' : zone.score >= 70 ? 'text-warn' : 'text-danger'
 
   return (
-    <div className="flex flex-col h-full overflow-hidden">
-      {/* Zone + building context header */}
-      <div className="flex-shrink-0 px-5 py-4 border-b border-rule2 bg-stone">
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex-1 min-w-0">
-            <div className="font-body text-muted text-label mb-0.5">{building.name} · {building.label}</div>
-            <div className="font-display font-bold text-ink text-head leading-none mb-1">{zone.label}</div>
-            <div className="font-body text-muted text-label">{zone.name} · {zone.vessels} vessels · {zone.activeBatches} active batches</div>
-          </div>
-          <div className="text-right flex-shrink-0">
-            <div className={`display-num text-page leading-none ${scoreColor(zone.score)}`}>{zone.score}</div>
-            <div className={`font-body font-bold text-label ${statusColor}`}>{statusLabel}</div>
-          </div>
-        </div>
-        {zone.alert && (
-          <div className="flex items-start gap-2 mt-3 px-3 py-2.5 bg-warn/[0.06] border-l-4 border-l-warn">
-            <AlertTriangle size={10} className="text-warn flex-shrink-0 mt-0.5" strokeWidth={2} />
-            <span className="font-body text-warn text-label leading-snug">{zone.alert.msg}</span>
-          </div>
-        )}
-        {causal.confidence != null && (
-          <div className="mt-2.5 flex items-center gap-2">
-            <span className="font-body text-muted text-label">Confidence</span>
-            <div className="flex-1 h-0.5 bg-rule2">
-              <div className={`h-full ${causal.confidence >= 70 ? 'bg-ok' : causal.confidence >= 50 ? 'bg-warn' : 'bg-danger'}`} style={{ width: `${causal.confidence}%` }} />
-            </div>
-            <span className={`font-body text-label tabular-nums ${causal.confidence >= 70 ? 'text-ok' : causal.confidence >= 50 ? 'text-warn' : 'text-danger'}`}>{causal.confidence}%</span>
-          </div>
-        )}
-      </div>
+    <div className="space-y-4">
 
-      <div className="flex-1 overflow-y-auto">
+      {/* Score + vessels + confidence */}
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <div className="font-body text-muted text-label">{zone.vessels} vessels · {zone.activeBatches} active batches</div>
+        </div>
+        <div className="text-right flex-shrink-0">
+          <div className={`display-num text-page leading-none ${scoreColor(zone.score)}`}>{zone.score}</div>
+          <div className={`font-body font-bold text-label ${statusColor}`}>{statusLabel}</div>
+        </div>
+      </div>
+      {zone.alert && (
+        <div className="flex items-start gap-2 px-3 py-2.5 bg-warn/[0.06] border-l-2 border-l-warn">
+          <AlertTriangle size={10} className="text-warn flex-shrink-0 mt-0.5" strokeWidth={2} />
+          <span className="font-body text-warn text-label leading-snug">{zone.alert.msg}</span>
+        </div>
+      )}
+      {causal.confidence != null && (
+        <div className="flex items-center gap-2">
+          <span className="font-body text-muted text-label">Confidence</span>
+          <div className="flex-1 h-0.5 bg-rule2">
+            <div className={`h-full ${causal.confidence >= 70 ? 'bg-ok' : causal.confidence >= 50 ? 'bg-warn' : 'bg-danger'}`} style={{ width: `${causal.confidence}%` }} />
+          </div>
+          <span className={`font-body text-label tabular-nums ${causal.confidence >= 70 ? 'text-ok' : causal.confidence >= 50 ? 'text-warn' : 'text-danger'}`}>{causal.confidence}%</span>
+        </div>
+      )}
 
         {/* Causal chain — upstream → current → downstream */}
         {(causal.upstream.length > 0 || causal.downstream.length > 0) && (
@@ -382,9 +368,8 @@ function CausalPanel({ zone, building }) {
         )}
 
         {allVessels.length === 0 && causal.upstream.length === 0 && causal.downstream.length === 0 && (
-          <div className="px-5 py-6 font-body text-muted text-label">No pressure detected in this zone.</div>
+          <div className="font-body text-muted text-label">No pressure detected in this zone.</div>
         )}
-      </div>
     </div>
   )
 }
@@ -408,34 +393,30 @@ function ReasoningPanel({ zone, building }) {
   const confBg = r.confidence != null ? (r.confidence >= 80 ? 'bg-ok' : r.confidence >= 65 ? 'bg-warn' : 'bg-danger') : 'bg-muted'
 
   return (
-    <div className="flex flex-col h-full overflow-hidden">
-      <div className="flex-shrink-0 px-5 py-4 border-b border-rule2 bg-stone">
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex-1 min-w-0">
-            <div className="font-body text-muted text-label mb-0.5">{building.name} · {building.label}</div>
-            <div className="font-display font-bold text-ink text-head leading-none mb-1">{zone.label}</div>
-            <div className="font-body text-muted text-label">{zone.name}</div>
-          </div>
-          <div className="text-right flex-shrink-0">
-            <div className={`display-num text-page leading-none ${scoreColor(zone.score)}`}>{zone.score}</div>
-            <div className={`font-body font-bold text-label ${statusColor}`}>{statusLabel}</div>
-          </div>
+    <div className="space-y-4">
+
+      {/* Score + confidence */}
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          {r.confidence != null && (
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="font-body text-muted text-label">Confidence</span>
+                <span className={`font-body text-label font-medium tabular-nums ${confColor}`}>{r.confidence}%</span>
+              </div>
+              <div className="h-1 bg-rule2 w-[120px]">
+                <div className={`h-full transition-[width] ${confBg}`} style={{ width: `${r.confidence}%` }} />
+              </div>
+              <div className="font-body text-muted/50 text-label mt-0.5">{r.confidenceModel}</div>
+            </div>
+          )}
         </div>
-        {r.confidence != null && (
-          <div className="mt-3">
-            <div className="flex items-center justify-between mb-1">
-              <span className="font-body text-muted text-label">Confidence</span>
-              <span className={`font-body text-label font-medium tabular-nums ${confColor}`}>{r.confidence}%</span>
-            </div>
-            <div className="h-1 bg-rule2 rounded-full overflow-hidden">
-              <div className={`h-full transition-[width] ${confBg}`} style={{ width: `${r.confidence}%` }} />
-            </div>
-            <div className="font-body text-muted/50 text-label mt-0.5">{r.confidenceModel}</div>
-          </div>
-        )}
+        <div className="text-right flex-shrink-0">
+          <div className={`display-num text-page leading-none ${scoreColor(zone.score)}`}>{zone.score}</div>
+          <div className={`font-body font-bold text-label ${statusColor}`}>{statusLabel}</div>
+        </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto">
         {r.recommendation && (
           <div className="px-5 py-4 border-b border-rule2">
             <div className="font-body text-muted text-label mb-2">Recommendation</div>
@@ -511,9 +492,8 @@ function ReasoningPanel({ zone, building }) {
         )}
 
         {!r.recommendation && r.primaryContributors.length === 0 && (
-          <div className="px-5 py-6 font-body text-muted text-label">No active reasoning for this zone — system stable.</div>
+          <div className="font-body text-muted text-label">No active reasoning for this zone — system stable.</div>
         )}
-      </div>
     </div>
   )
 }
@@ -616,32 +596,32 @@ function StateFieldView({ site, ScreenHeader }) {
           ))}
         </div>
 
-        {/* Right panel — Causal Context + Reasoning tabs */}
-        <div className="w-[400px] flex-shrink-0 border-l border-rule2 bg-stone overflow-hidden">
-          {selectedZone ? (
-            <div className="flex-shrink-0 flex items-stretch border-b border-rule2 bg-stone2">
-              {[{ id: 'context', label: 'Causal Context' }, { id: 'reasoning', label: 'Reasoning' }].map(t => (
-                <button key={t.id} type="button" onClick={() => setRightTab(t.id)}
-                  className={`font-body text-label px-4 py-2.5 border-b-2 transition-colors ${
-                    rightTab === t.id ? 'border-b-ochre text-ink' : 'border-b-transparent text-muted hover:text-muted'
-                  }`}>
-                  {t.label}
-                </button>
-              ))}
-            </div>
-          ) : (
-            <div className="flex-shrink-0 px-5 py-2.5 border-b border-rule2 bg-stone2">
-              <span className="font-body text-muted text-label">Select a zone</span>
-            </div>
-          )}
-          <div className="h-[calc(100%-36px)]">
-            {rightTab === 'reasoning' && selectedZone
-              ? <ReasoningPanel zone={selectedZone} building={selectedBuilding} />
-              : <CausalPanel zone={selectedZone} building={selectedBuilding} />
-            }
-          </div>
-        </div>
       </div>
+
+      {selectedZone && (
+        <SlidePanel
+          title={selectedZone.label}
+          subtitle={`${selectedBuilding.name} · ${selectedBuilding.label}`}
+          onClose={() => { setSelectedZone(null); setSelectedBuilding(null); setRightTab('context') }}
+          maxWidth="480px"
+        >
+          {/* Tab toggle */}
+          <div className="flex gap-1 border border-rule2 p-0.5 mb-1">
+            {[{ id: 'context', label: 'Causal context' }, { id: 'reasoning', label: 'Reasoning' }].map(t => (
+              <button key={t.id} type="button" onClick={() => setRightTab(t.id)}
+                className={`flex-1 font-body text-label py-1 transition-colors ${
+                  rightTab === t.id ? 'bg-stone3 text-ink' : 'text-muted hover:text-ink'
+                }`}>
+                {t.label}
+              </button>
+            ))}
+          </div>
+          {rightTab === 'reasoning'
+            ? <ReasoningPanel zone={selectedZone} building={selectedBuilding} />
+            : <CausalPanel zone={selectedZone} building={selectedBuilding} />
+          }
+        </SlidePanel>
+      )}
     </div>
   )
 }
