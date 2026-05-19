@@ -7,7 +7,7 @@ export default {
         // ── Surfaces — dark graphite scale (cool-neutral) ──────────────────
         stone:   { DEFAULT: '#0B0F18', 2: '#131A26', 3: '#1B2538', 4: '#263042' },
         // ── Text — warm bone scale ─────────────────────────────────────────
-        ink:     { DEFAULT: '#EDE4CB', 2: '#8A7E62' },
+        ink:     { DEFAULT: '#EDE4CB', 2: '#9B9070' },
         muted:   '#7A8EA8',   // secondary/muted text — cool blue-gray
         // ── Borders ────────────────────────────────────────────────────────
         rule:    '#263042',   // structural border
@@ -15,7 +15,7 @@ export default {
         // ── Semantic ───────────────────────────────────────────────────────
         ok:      { DEFAULT: '#5FA877', dim: '#0D2518' },  // lighter green for dark bg
         warn:    { DEFAULT: '#C98E2A', dim: '#2A1E08' },  // warm amber
-        danger:  { DEFAULT: '#D45438', dim: '#2A100A' },  // warm rust
+        danger:  { DEFAULT: '#DE6C4E', dim: '#2A100A' },  // warm rust
         // ── Primary accent — steel blue (interactive, structural) ──────────
         ochre:   { DEFAULT: '#4B9CE4', dim: '#0D1E38', dark: '#2A6AAD', light: '#7BBDEE' },
         // ── Narrative accent — clay (context, interpretation, insight) ─────
@@ -23,7 +23,7 @@ export default {
         // ── Predictive accent — indigo (historical, AI-derived) ───────────
         deep:    { DEFAULT: '#7C86E8', dim: '#141830' },
         // ── Sidebar — blue-black, distinct from content graphite ──────────
-        sidebar: { DEFAULT: '#080D16', 2: '#0E1520', 3: '#152030', border: '#1C2A40', ghost: '#4A6080' },
+        sidebar: { DEFAULT: '#080D16', 2: '#0E1520', 3: '#152030', border: '#1C2A40', ghost: '#6A88A8' },
       },
       fontFamily: {
         // System / data voice — monospace for all structured information
@@ -68,7 +68,7 @@ export default {
       boxShadow: {
         'raise':      '0 4px 20px rgba(0,0,0,0.45)',       // floating overlays on dark bg
         'card':       '0 1px 4px rgba(0,0,0,0.30)',        // card lift
-        'card-alert': '0 1px 5px rgba(212,84,56,0.20)',    // danger card lift
+        'card-alert': '0 1px 5px rgba(222,108,78,0.20)',    // danger card lift
       },
       zIndex: {
         modal: '60',

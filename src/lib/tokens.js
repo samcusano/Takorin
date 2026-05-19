@@ -7,7 +7,7 @@ export const color = {
   stone4:  '#263042',
   // Text — warm bone
   ink:     '#EDE4CB',
-  ink2:    '#8A7E62',
+  ink2:    '#9B9070',
   muted:   '#7A8EA8',
   // Borders
   rule:    '#263042',
@@ -17,7 +17,7 @@ export const color = {
   okDim:   '#0D2518',
   warn:    '#C98E2A',
   warnDim: '#2A1E08',
-  danger:  '#D45438',
+  danger:  '#DE6C4E',
   dangerDim: '#2A100A',
   // Primary accent — steel blue
   ochre:     '#4B9CE4',
@@ -36,5 +36,5 @@ export const color = {
   sidebar2:      '#0E1520',
   sidebar3:      '#152030',
   sidebarBorder: '#1C2A40',
-  sidebarGhost:  '#4A6080',
+  sidebarGhost:  '#6A88A8',
 }

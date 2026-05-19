@@ -13,7 +13,7 @@ const P = {
   border:   '#263042',   // rule
   border2:  '#1A2335',   // rule2
   bone:     '#EDE4CB',   // ink
-  cream:    '#8A7E62',   // ink2
+  cream:    '#9B9070',   // ink2
   dim:      '#4A5D74',   // color-dim (suppressed labels)
   blue:     '#4B9CE4',   // ochre (primary accent)
   cyan:     '#3BBFDA',   // ochre-light (live signal)
@@ -21,7 +21,7 @@ const P = {
   clay:     '#C4844E',   // context (narrative voice)
   amber:    '#C98E2A',   // warn
   sage:     '#5FA877',   // ok
-  rust:     '#D45438',   // danger
+  rust:     '#DE6C4E',   // danger
 }
 
 // Score → semantic color

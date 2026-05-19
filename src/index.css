@@ -31,7 +31,7 @@
     --color-stone-4: #263042;
     /* ── Text ─────────────────────────────────────────────────────────── */
     --color-ink:     #EDE4CB;
-    --color-ink-2:   #8A7E62;
+    --color-ink-2:   #9B9070;
     --color-muted:   #7A8EA8;
     /* ── Borders ─────────────────────────────────────────────────────── */
     --color-rule:    #263042;
@@ -39,7 +39,7 @@
     /* ── Semantic ────────────────────────────────────────────────────── */
     --color-ok:      #5FA877;
     --color-warn:    #C98E2A;
-    --color-danger:  #D45438;
+    --color-danger:  #DE6C4E;
     --color-ochre:   #4B9CE4;
     --color-ochre-dark: #2A6AAD;
     /* ── Narrative accent ────────────────────────────────────────────── */
@@ -115,7 +115,7 @@
     0%, 100% { opacity: 0.04; }
     50%       { opacity: 0.10; }
   }
-  .atmo-glow-danger { animation: atmoPulse var(--dur-atmo) ease-in-out infinite; background: radial-gradient(ellipse 55% 100% at 10% 60%, #D4543822 0%, transparent 65%); }
+  .atmo-glow-danger { animation: atmoPulse var(--dur-atmo) ease-in-out infinite; background: radial-gradient(ellipse 55% 100% at 10% 60%, #DE6C4E22 0%, transparent 65%); }
   .atmo-glow-warn   { animation: atmoPulse var(--dur-atmo) ease-in-out infinite; background: radial-gradient(ellipse 55% 100% at 10% 60%, #C98E2A22 0%, transparent 65%); }
   .atmo-glow-ok     { animation: atmoPulse var(--dur-atmo) ease-in-out infinite; background: radial-gradient(ellipse 55% 100% at 10% 60%, #5FA87722 0%, transparent 65%); }
 
@@ -247,9 +247,9 @@
   }
 
   @keyframes dangerPulse {
-    0%   { box-shadow: 0 0 0 0 rgba(212, 84, 56, 0.30); }
-    60%  { box-shadow: 0 0 0 8px rgba(212, 84, 56, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(212, 84, 56, 0); }
+    0%   { box-shadow: 0 0 0 0 rgba(222, 108, 78, 0.30); }
+    60%  { box-shadow: 0 0 0 8px rgba(222, 108, 78, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(222, 108, 78, 0); }
   }
   .danger-pulse { animation: dangerPulse 600ms var(--ease-inout) both; }
 
