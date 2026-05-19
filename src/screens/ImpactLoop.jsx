@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { interventions, interventionSummary, kpiTargets } from '../data/interventions'
 import { AlertTriangle, CheckCircle2, XCircle, ArrowRight, RotateCcw, AlertCircle, TrendingUp, TrendingDown } from 'lucide-react'
+import { SankeyDiagram } from '../components/Charts'
 
 const OUTCOME_CFG = {
   positive: { label: 'Positive',  dot: 'bg-ok',     badge: 'bg-ok/10 text-ok',             border: 'border-l-ok',     chip: 'bg-ok/10 text-ok'     },
@@ -294,6 +295,7 @@ const OUTCOME_FILTERS = [
 
 export default function ImpactLoop() {
   const [selectedId, setSelectedId] = useState(null)
+  const [rightView, setRightView] = useState('detail')
   const filtered = interventions
 
   const selectedEntry = interventions.find(e => e.id === selectedId)
@@ -362,12 +364,38 @@ export default function ImpactLoop() {
         </div>
       </div>
 
-      {/* ── Right: event chain detail ─────────────────────────────────── */}
+      {/* ── Right: detail / flow toggle ───────────────────────────────── */}
       <div className="flex-1 flex flex-col overflow-hidden bg-stone">
-        <div className="flex-shrink-0 px-5 py-2.5 border-b border-rule2 bg-stone2">
-          <span className="font-body text-muted text-label">Event chain detail</span>
+        <div className="flex-shrink-0 flex items-center justify-between px-5 py-2 border-b border-rule2 bg-stone2">
+          <span className="font-body text-muted text-label">
+            {rightView === 'flow' ? 'Intervention flow' : 'Event chain detail'}
+          </span>
+          <div className="flex items-stretch overflow-hidden">
+            {[{ id: 'detail', label: 'Detail' }, { id: 'flow', label: 'Flow' }].map(v => (
+              <button key={v.id} type="button" onClick={() => setRightView(v.id)}
+                className={`font-body text-label px-2.5 py-1 transition-colors ${rightView === v.id ? 'bg-ink text-stone' : 'text-muted hover:text-muted'}`}>
+                {v.label}
+              </button>
+            ))}
+          </div>
         </div>
-        <InterventionDetail entry={selectedEntry} />
+        {rightView === 'flow' ? (
+          <div className="flex-1 overflow-y-auto px-6 py-5">
+            <p className="font-display text-muted text-body leading-relaxed mb-5">
+              How interventions flow from agent recommendation through human decision to operational outcome. Width reflects count.
+            </p>
+            <SankeyDiagram interventions={interventions} />
+            <div className="mt-4 flex flex-wrap gap-3">
+              {[['positive', 'Positive', 'text-ok'], ['unclear', 'Unclear', 'text-ochre'], ['negative', 'Negative', 'text-danger']].map(([k, l, cls]) => (
+                <span key={k} className={`font-body text-label flex items-center gap-1 ${cls}`}>
+                  <span className="w-2 h-2 rounded-sm bg-current opacity-75" />{l}
+                </span>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <InterventionDetail entry={selectedEntry} />
+        )}
       </div>
     </div>
   )

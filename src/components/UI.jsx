@@ -1025,10 +1025,10 @@ export function SlidePanel({ title, subtitle, icon: Icon, accentColor, ariaLabel
   <>
    <div className="fixed inset-0 bg-stone/60 z-40" onClick={handleClose} />
    <aside ref={panelRef} role="dialog" aria-modal="true" aria-label={ariaLabel || title}
-    className={`fixed top-0 right-0 bottom-0 w-full bg-stone2 border-l border-rule z-50 flex flex-col shadow-raise ${exiting ? 'slide-right-out' : 'slide-right'}`}
-    style={{ maxWidth }}>
-    <div className="flex items-start justify-between px-5 py-4 border-b border-rule bg-stone3 flex-shrink-0"
-     style={accentColor ? { borderTop: `2px solid ${accentColor}` } : undefined}>
+    className={`fixed top-0 right-0 bottom-0 w-full border-l border-rule z-50 flex flex-col shadow-raise ${exiting ? 'slide-right-out' : 'slide-right'}`}
+    style={{ maxWidth, background: 'var(--color-stone-2)' }}>
+    <div className="flex items-start justify-between px-5 py-4 border-b border-rule flex-shrink-0"
+     style={{ background: 'var(--color-stone-3)', ...(accentColor ? { borderTop: `2px solid ${accentColor}` } : {}) }}>
      <div className="flex items-center gap-3 min-w-0">
       {Icon && <Icon size={22} strokeWidth={1.5} className="text-ochre flex-shrink-0" aria-hidden="true" />}
       <div className="min-w-0">
@@ -1043,7 +1043,7 @@ export function SlidePanel({ title, subtitle, icon: Icon, accentColor, ariaLabel
     </div>
     <div className="flex-1 overflow-y-auto p-5 space-y-4">{children}</div>
     {footer && (
-     <div className="px-5 py-3 border-t border-rule bg-stone3 flex-shrink-0">{footer}</div>
+     <div className="px-5 py-3 border-t border-rule flex-shrink-0" style={{ background: 'var(--color-stone-3)' }}>{footer}</div>
     )}
    </aside>
   </>

@@ -10,6 +10,7 @@ import {
   Truck, ClipboardCheck, RotateCcw, TrendingDown, Shield, Zap, Waves,
 } from 'lucide-react'
 import { StatusPill, SlidePanel } from '../components/UI'
+import { KnowledgeTreemap } from '../components/Charts'
 
 // ── Operational Memory Domains ───────────────────────────────────────────────
 
@@ -216,6 +217,7 @@ function OperationalMemoryVault() {
   const [showMemory, setShowMemory]     = useState(false)
   const [slideEntry, setSlideEntry]     = useState(null)
   const [expandedIds, setExpandedIds]   = useState(new Set())
+  const [showTreemap, setShowTreemap]   = useState(false)
 
   const domain = DOMAINS.find(d => d.id === activeDomain)
 
@@ -286,6 +288,37 @@ function OperationalMemoryVault() {
 
       {/* Center: entries */}
       <div className="flex-1 flex flex-col overflow-hidden">
+        {/* Treemap overview panel */}
+        {showTreemap && !showMemory && (
+          <div className="flex-shrink-0 border-b border-rule2 px-5 py-4 bg-stone">
+            <div className="flex items-center justify-between mb-3">
+              <span className="font-body text-muted text-label">Knowledge map — size by count · color by confidence</span>
+              <button type="button" onClick={() => setShowTreemap(false)}
+                className="font-body text-label text-muted hover:text-ink transition-colors">Close</button>
+            </div>
+            <KnowledgeTreemap domains={DOMAINS} enriched={ENRICHED} />
+            <div className="flex gap-4 mt-3">
+              {[['≥90% conf', 'text-ok'], ['80–89%', 'text-ochre'], ['<80%', 'text-warn']].map(([l, c]) => (
+                <span key={l} className={`font-body text-label flex items-center gap-1 ${c}`}>
+                  <span className="w-2 h-2 bg-current opacity-75" />{l}
+                </span>
+              ))}
+              <span className="font-body text-label flex items-center gap-1 text-danger ml-1">
+                <span className="w-1 h-3 bg-danger opacity-60 inline-block" /> Active batch
+              </span>
+            </div>
+          </div>
+        )}
+        {/* Toggle button */}
+        {!showMemory && (
+          <div className="flex-shrink-0 px-5 py-1.5 border-b border-rule2 bg-stone2 flex items-center justify-between">
+            <span className="font-body text-muted text-label">{ENRICHED.filter(e => e._domain === activeDomain).length} entries</span>
+            <button type="button" onClick={() => setShowTreemap(t => !t)}
+              className={`font-body text-label transition-colors ${showTreemap ? 'text-ochre' : 'text-muted hover:text-ink'}`}>
+              {showTreemap ? 'Map on' : 'Map'}
+            </button>
+          </div>
+        )}
         {showMemory ? (
           <>
             <div className="flex-shrink-0 px-5 py-2.5 border-b border-rule2 bg-stone2">

@@ -14,6 +14,7 @@ import {
 } from '../components/UI'
 import { Flag, ChevronRight, ChevronDown, AlertTriangle, Check, X, TrendingDown, RotateCcw, Wrench, Package, HelpCircle, ListChecks, Brain, Shield, RefreshCw, ChevronUp, BarChart2, ArrowRight, Moon, Activity } from 'lucide-react'
 import { useAppState } from '../context/AppState'
+import { GanttChart, CalendarHeatmap, RadarChart } from '../components/Charts'
 
 const CHECKLIST_ITEMS = [
  { key: 'topping', label: 'Topping weight verification', operator: 'Reyes', isAllergen: false },
@@ -763,6 +764,7 @@ export default function ShiftIQ() {
  const [checklistDrawerOpen, setChecklistDrawerOpen] = useState(false)
  const [pendingDismiss, setPendingDismiss] = useState(new Map())
  const [permanentDismiss, setPermanentDismiss] = useState(new Set())
+ const [crewView, setCrewView] = useState('list')
 
  const handleDismiss = (id, title, reason) => {
   const timeoutId = setTimeout(() => {
@@ -1241,9 +1243,17 @@ export default function ShiftIQ() {
   {/* ── Prepare tab ──────────────────────────────────────────────────── */}
   {col1Tab === 'prepare' && (
   <div className="space-y-0">
+   {/* Gantt schedule */}
+   <div className="px-5 py-2.5 border-b border-rule2 bg-stone2 flex-shrink-0">
+    <span className="font-body text-muted text-label">Shift schedule</span>
+   </div>
+   <div className="px-4 py-4 border-b border-rule2">
+    <GanttChart forecast={d.forecast} />
+   </div>
+
    {/* Next shifts at risk */}
    <div className="px-5 py-2.5 border-b border-rule2 bg-stone2 flex-shrink-0">
-    <span className="font-body text-muted text-label">Upcoming shift risk</span>
+    <span className="font-body text-muted text-label">Risk detail</span>
    </div>
    {d.forecast.map((shift, i) => {
     const signals = shift.signals?.map(s => {
@@ -1551,17 +1561,12 @@ export default function ShiftIQ() {
        <span>Apr 2</span><span>Today</span>
       </div>
      </div>
-     <div className="font-body text-muted text-label mb-1.5">Shift outcomes</div>
-     <div className="flex gap-0.5 flex-wrap">
-      {d.pilotLog.map((r, i) => (
-       <div key={i} title={r === 'ok' ? 'Correct' : r === 'miss' ? 'Missed' : 'Partial'}
-        className={`w-4 h-4 rounded-sm flex-shrink-0 ${r === 'ok' ? 'bg-ok' : r === 'miss' ? 'bg-danger' : 'bg-warn'}`} />
-      ))}
-     </div>
-     <div className="flex gap-3 mt-1.5">
+     <div className="font-body text-muted text-label mb-2">Shift outcomes — 4-week calendar</div>
+     <CalendarHeatmap log={d.pilotLog} />
+     <div className="flex gap-3 mt-2">
       {[['ok','Correct','bg-ok'],['part','Partial','bg-warn'],['miss','Missed','bg-danger']].map(([k,l,c]) => (
        <span key={k} className="flex items-center gap-1 font-body text-muted text-label">
-        <span className={`w-2 h-2 rounded-sm ${c}`} />{l}
+        <span className={`w-2 h-2 ${c}`} />{l}
        </span>
       ))}
      </div>
@@ -1614,8 +1619,29 @@ export default function ShiftIQ() {
   {/* Crew — shown when pilot panel is collapsed */}
   {!pilotExpanded && hasLiveData && (
   <div className="border-t border-rule2">
-   <div className="px-4 py-2.5 border-b border-rule2 font-body text-muted text-label">Crew</div>
-   {lineD.crew.map((m, i) => <CrewRow key={i} m={m} onView={setViewingOperator} />)}
+   <div className="px-4 py-2 border-b border-rule2 flex items-center justify-between">
+    <span className="font-body text-muted text-label">Crew</span>
+    <div className="flex items-stretch overflow-hidden">
+     {[{id:'list',label:'List'},{id:'radar',label:'Radar'}].map(v => (
+      <button key={v.id} type="button" onClick={() => setCrewView(v.id)}
+       className={`font-body text-label px-2 py-0.5 transition-colors ${crewView === v.id ? 'bg-ink text-stone' : 'text-muted hover:text-muted'}`}>
+       {v.label}
+      </button>
+     ))}
+    </div>
+   </div>
+   {crewView === 'radar' ? (
+    <div className="px-2 py-3">
+     <RadarChart crew={lineD.crew.map(m => ({
+      name: m.name,
+      dots: m.dots,
+      certPct: OP_META[m.name]?.certPct ?? 50,
+      flag: m.flag,
+     }))} />
+    </div>
+   ) : (
+    lineD.crew.map((m, i) => <CrewRow key={i} m={m} onView={setViewingOperator} />)
+   )}
   </div>
   )}
 
