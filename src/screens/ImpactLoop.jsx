@@ -3,10 +3,10 @@ import { interventions, interventionSummary, kpiTargets } from '../data/interven
 import { AlertTriangle, CheckCircle2, XCircle, ArrowRight, RotateCcw, AlertCircle, TrendingUp, TrendingDown } from 'lucide-react'
 
 const OUTCOME_CFG = {
-  positive: { label: 'Positive',  dot: 'bg-ok',     badge: 'bg-ok/10 text-ok border border-ok/30',             border: 'border-l-ok',     chip: 'bg-ok/10 text-ok'     },
-  negative: { label: 'Negative',  dot: 'bg-danger',  badge: 'bg-danger/[0.04] text-danger border border-danger/30', border: 'border-l-danger', chip: 'bg-danger/[0.04] text-danger' },
-  unclear:  { label: 'Unclear',   dot: 'bg-ochre',   badge: 'bg-ochre/10 text-ochre border border-ochre/30',    border: 'border-l-ochre',  chip: 'bg-ochre/10 text-ochre'   },
-  harmful:  { label: 'Harmful',   dot: 'bg-danger',  badge: 'bg-danger/[0.04] text-danger border border-danger/30', border: 'border-l-danger', chip: 'bg-danger/[0.04] text-danger' },
+  positive: { label: 'Positive',  dot: 'bg-ok',     badge: 'bg-ok/10 text-ok',             border: 'border-l-ok',     chip: 'bg-ok/10 text-ok'     },
+  negative: { label: 'Negative',  dot: 'bg-danger',  badge: 'bg-danger/[0.04] text-danger', border: 'border-l-danger', chip: 'bg-danger/[0.04] text-danger' },
+  unclear:  { label: 'Unclear',   dot: 'bg-ochre',   badge: 'bg-ochre/10 text-ochre',    border: 'border-l-ochre',  chip: 'bg-ochre/10 text-ochre'   },
+  harmful:  { label: 'Harmful',   dot: 'bg-danger',  badge: 'bg-danger/[0.04] text-danger', border: 'border-l-danger', chip: 'bg-danger/[0.04] text-danger' },
 }
 
 const DECISION_CFG = {
@@ -34,7 +34,7 @@ function FilterChip({ active, tone, dot, onClick, children }) {
   const activeClass = tone ?? 'bg-ochre/10 text-ochre'
   return (
     <button type="button" onClick={onClick}
-      className={`inline-flex items-center gap-1 font-body font-medium text-label px-2 py-0.5 rounded-btn transition-colors whitespace-nowrap ${
+      className={`inline-flex items-center gap-1 font-body font-medium text-label px-2 py-0.5 transition-colors whitespace-nowrap ${
         active ? activeClass : 'bg-stone3 text-muted hover:text-muted'
       }`}>
       <span className={`w-1 h-1 rounded-full flex-shrink-0 ${dot ?? 'bg-current'}`} />
@@ -62,7 +62,7 @@ function EventChain({ entry, compact = false }) {
 
   return (
     <div className="flex items-stretch gap-0">
-      <div className="flex-1 min-w-0 px-3 py-2.5 bg-stone2 border border-rule2">
+      <div className="flex-1 min-w-0 px-3 py-2.5 bg-stone2">
         <div className="font-body text-muted text-micro tracking-normal mb-0.5">AI observation</div>
         <div className="font-body text-ink text-label leading-snug truncate">{entry.agent}</div>
         <div className={`font-body text-label ${fc.cls}`}>{fc.label} signals</div>
@@ -71,7 +71,7 @@ function EventChain({ entry, compact = false }) {
       <div className="flex items-center px-1 text-rule2">
         <ArrowRight size={10} />
       </div>
-      <div className="flex-1 min-w-0 px-3 py-2.5 bg-stone2 border border-rule2">
+      <div className="flex-1 min-w-0 px-3 py-2.5 bg-stone2">
         <div className="font-body text-muted text-micro tracking-normal mb-0.5">Human decision</div>
         <div className={`font-body font-medium text-label ${dc.cls}`}>{dc.label}</div>
         <div className="font-body text-muted text-label">{entry.reviewedBy}</div>
@@ -80,7 +80,7 @@ function EventChain({ entry, compact = false }) {
       <div className="flex items-center px-1 text-rule2">
         <ArrowRight size={10} />
       </div>
-      <div className={`flex-1 min-w-0 px-3 py-2.5 border ${entry.outcomeClassification === 'positive' ? 'bg-ok/[0.04] border-ok/30' : entry.outcomeClassification === 'unclear' ? 'bg-ochre/[0.04] border-ochre/30' : 'bg-stone2 border-rule2'}`}>
+      <div className={`flex-1 min-w-0 px-3 py-2.5 border ${entry.outcomeClassification === 'positive' ? 'bg-ok/[0.04] ' : entry.outcomeClassification === 'unclear' ? 'bg-ochre/[0.04] border-ochre/30' : 'bg-stone2 border-rule2'}`}>
         <div className="font-body text-muted text-micro tracking-normal mb-0.5">Consequence</div>
         <div className="font-body font-medium text-label">
           <span className={`inline-flex items-center gap-1 ${entry.outcomeClassification === 'positive' ? 'text-ok' : entry.outcomeClassification === 'unclear' ? 'text-ochre' : 'text-muted'}`}>
@@ -102,15 +102,15 @@ function InterventionCard({ entry, selected, onClick }) {
   const dc = DECISION_CFG[entry.decision] ?? DECISION_CFG.approved
   return (
     <button type="button" onClick={onClick}
-      className={`w-full text-left px-4 py-3.5 border-b border-rule2 border-l-4 transition-colors ${
-        selected ? `${oc.border} bg-stone2` : `border-l-transparent hover:bg-stone2/50`
+      className={`w-full text-left px-4 py-3.5 border-b border-rule2 transition-colors ${
+        selected ? 'bg-stone2' : 'hover:bg-stone2/50'
       }`}>
       <div className="flex items-start gap-2 mb-2">
         <div className="flex-1 min-w-0">
-          <div className="font-body font-medium text-ink text-body leading-snug mb-0.5">{entry.action}</div>
+          <span className={`inline-flex items-center font-body text-label px-1.5 py-0.5 mb-1.5 ${oc.badge}`}>{oc.label}</span>
+          <div className="font-display font-medium text-ink text-section leading-snug mb-0.5">{entry.action}</div>
           <div className="font-body text-muted text-label">{entry.recommendedLabel}</div>
         </div>
-        <span className={`font-body text-micro px-1.5 py-0.5 border flex-shrink-0 ${oc.badge}`}>{oc.label}</span>
       </div>
       <EventChain entry={entry} compact />
       {entry.cautionNote && (
@@ -148,7 +148,7 @@ function InterventionDetail({ entry }) {
     <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
       <div>
         <div className="flex items-center gap-2 mb-2">
-          <span className={`font-body text-label px-1.5 py-0.5 border ${oc.badge}`}>{oc.label}</span>
+          <span className={`font-body text-label px-1.5 py-0.5 ${oc.badge}`}>{oc.label}</span>
           <span className="font-body text-muted text-label">{entry.agent} · {entry.agentTier} tier</span>
           {entry.wasReversed && (
             <span className="flex items-center gap-1 font-body text-muted text-label ml-auto">
@@ -165,7 +165,7 @@ function InterventionDetail({ entry }) {
         <EventChain entry={entry} compact={false} />
       </div>
 
-      <div className="px-4 py-3 bg-stone2 border border-rule2 border-l-4 border-l-ochre">
+      <div className="px-4 py-3 bg-stone2 border-l-4 border-l-ochre">
         <div className="font-body text-muted text-label tracking-normal mb-1">AI rationale</div>
         <p className="font-body text-ink text-label leading-relaxed">{entry.rationaleText}</p>
       </div>
@@ -196,7 +196,7 @@ function InterventionDetail({ entry }) {
         )}
       </div>
 
-      <div className="grid grid-cols-3 gap-px bg-rule2 border border-rule2">
+      <div className="grid grid-cols-3 gap-px bg-rule2">
         {[
           { label: 'Decision',       val: dc.label,                                                              tone: dc.cls },
           { label: 'Reviewed by',    val: entry.reviewedBy,                                                      tone: 'text-ink' },
@@ -215,7 +215,7 @@ function InterventionDetail({ entry }) {
       {entry.metricsAfter && (
         <div>
           <div className="font-body text-muted text-label tracking-normal mb-2">Before → After (from telemetry)</div>
-          <div className="grid grid-cols-2 gap-px bg-rule2 border border-rule2">
+          <div className="grid grid-cols-2 gap-px bg-rule2">
             <div className="bg-stone px-3 py-2">
               <div className="font-body text-muted text-label mb-1">Before</div>
               {Object.entries(entry.metricsBefore).map(([k, v]) => (
@@ -233,7 +233,7 @@ function InterventionDetail({ entry }) {
       )}
 
       {entry.kpiDelta && (
-        <div className={`px-4 py-3 border ${entry.kpiDelta.direction === 'improvement' ? 'border-ok/30 bg-ok/[0.04]' : entry.kpiDelta.direction === 'degradation' ? 'border-warn/30 bg-warn/[0.04]' : 'border-rule2 bg-stone2'}`}>
+        <div className={`px-4 py-3 border ${entry.kpiDelta.direction === 'improvement' ? 'bg-ok/[0.04]' : entry.kpiDelta.direction === 'degradation' ? 'bg-warn/[0.04]' : 'border-rule2 bg-stone2'}`}>
           <div className="font-body text-muted text-label tracking-normal mb-1">KPI impact · {entry.kpiDelta.metric}</div>
           <div className="flex items-center gap-3">
             <span className="font-body text-muted text-body">{entry.kpiDelta.before}</span>
@@ -250,7 +250,7 @@ function InterventionDetail({ entry }) {
       )}
 
       {entry.operatorConfirmation ? (
-        <div className="flex items-start gap-3 px-4 py-3 border border-ok/30 bg-ok/[0.04] border-l-4 border-l-ok">
+        <div className="flex items-start gap-3 px-4 py-3 bg-ok/[0.04] border-l-4 border-l-ok">
           <CheckCircle2 size={12} strokeWidth={2} className="text-ok flex-shrink-0 mt-0.5" />
           <div className="flex-1 min-w-0">
             <div className="font-body text-muted text-label tracking-normal mb-0.5">Confirmed by operator</div>
@@ -260,19 +260,19 @@ function InterventionDetail({ entry }) {
           </div>
         </div>
       ) : (
-        <div className="flex items-center gap-2 px-4 py-3 border border-rule2 bg-stone2">
+        <div className="flex items-center gap-2 px-4 py-3 bg-stone2">
           <div className="w-1.5 h-1.5 rounded-full bg-muted flex-shrink-0" />
           <span className="font-body text-muted text-label">No operator confirmation — outcome estimated from telemetry</span>
         </div>
       )}
 
-      <div className="px-4 py-3 border border-rule2 bg-stone2">
+      <div className="px-4 py-3 bg-stone2">
         <div className="font-body text-muted text-label tracking-normal mb-1">Outcome narrative</div>
         <p className="font-body text-ink text-label leading-relaxed">{entry.outcomeNotes}</p>
       </div>
 
       {entry.wasReversed && (
-        <div className="flex items-start gap-2 px-3 py-2.5 border border-rule2 bg-stone2">
+        <div className="flex items-start gap-2 px-3 py-2.5 bg-stone2">
           <RotateCcw size={10} className="text-muted flex-shrink-0 mt-0.5" strokeWidth={2} />
           <div>
             <div className="font-body font-medium text-ink text-label mb-0.5">Intervention reversed — {entry.reversedAt}</div>

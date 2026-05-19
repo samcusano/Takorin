@@ -3,10 +3,10 @@ import { batchRecords, deviations } from '../data/records'
 import { Lock, CheckCircle2, XCircle, Clock, FileCheck2, AlertTriangle, Shield } from 'lucide-react'
 
 const STATUS_CFG = {
-  'in-progress': { label: 'In progress', dot: 'bg-ochre', badge: 'bg-ochre/10 text-ochre border border-ochre/30' },
-  'pending-qp':  { label: 'Pending QP',  dot: 'bg-warn',  badge: 'bg-warn/10 text-warn border border-warn/30' },
-  'released':    { label: 'Released',    dot: 'bg-ok',    badge: 'bg-ok/10 text-ok border border-ok/30' },
-  'rejected':    { label: 'Rejected',    dot: 'bg-danger',badge: 'bg-danger/[0.04] text-danger border border-danger/30' },
+  'in-progress': { label: 'In progress', dot: 'bg-ochre', badge: 'bg-ochre/10 text-ochre' },
+  'pending-qp':  { label: 'Pending QP',  dot: 'bg-warn',  badge: 'bg-warn/10 text-warn' },
+  'released':    { label: 'Released',    dot: 'bg-ok',    badge: 'bg-ok/10 text-ok' },
+  'rejected':    { label: 'Rejected',    dot: 'bg-danger',badge: 'bg-danger/[0.04] text-danger' },
 }
 
 const HP_CFG = {
@@ -29,7 +29,7 @@ function RecordCard({ rec, selected, onClick }) {
           <div className="font-body font-medium text-ink text-label leading-snug">{rec.batchId}</div>
           <div className="font-body text-muted text-label mt-0.5">{rec.product}</div>
         </div>
-        <span className={`font-body text-label px-1.5 py-0.5 flex-shrink-0 border ${cfg.badge}`}>{cfg.label}</span>
+        <span className={`font-body text-label px-1.5 py-0.5 flex-shrink-0 ${cfg.badge}`}>{cfg.label}</span>
       </div>
       {/* Completeness bar */}
       <div className="flex items-center gap-2 mt-2">
@@ -126,9 +126,9 @@ function RecordDetail({ rec }) {
       {/* Header */}
       <div className="flex-shrink-0 px-6 py-4 border-b border-rule2">
         <div className="flex items-center gap-2 mb-2">
-          <span className={`font-body text-label px-1.5 py-0.5 border ${cfg.badge}`}>{cfg.label}</span>
+          <span className={`font-body text-label px-1.5 py-0.5 ${cfg.badge}`}>{cfg.label}</span>
           {rec.regulations.map(r => (
-            <span key={r} className="font-body text-label px-1.5 py-0.5 bg-stone3 text-muted border border-rule2">{r}</span>
+            <span key={r} className="font-body text-label px-1.5 py-0.5 bg-stone3 text-muted">{r}</span>
           ))}
           <div className="ml-auto flex items-center gap-1">
             <Shield size={9} strokeWidth={2} className="text-ok" />
@@ -219,7 +219,7 @@ function RecordDetail({ rec }) {
           <div className="px-6 py-5 space-y-4">
             {rec.qpDisposition ? (
               <>
-                <div className="grid grid-cols-3 gap-px bg-rule2 border border-rule2">
+                <div className="grid grid-cols-3 gap-px bg-rule2">
                   {[
                     { label: 'QP', val: rec.qpDisposition.qp },
                     { label: 'Status', val: rec.qpDisposition.status === 'released' ? 'Released' : rec.qpDisposition.status === 'under-review' ? 'Under review' : rec.qpDisposition.status },
@@ -232,14 +232,14 @@ function RecordDetail({ rec }) {
                   ))}
                 </div>
                 {rec.qpDisposition.notes && (
-                  <div className="px-4 py-3 border border-rule2 bg-stone2">
+                  <div className="px-4 py-3 bg-stone2">
                     <div className="font-body text-muted text-label tracking-normal mb-1">QP notes</div>
                     <p className="font-body text-ink text-label leading-relaxed">{rec.qpDisposition.notes}</p>
                   </div>
                 )}
               </>
             ) : (
-              <div className="px-4 py-6 text-center border border-rule2 bg-stone2">
+              <div className="px-4 py-6 text-center bg-stone2">
                 <Lock size={16} className="text-muted mx-auto mb-2" strokeWidth={1.5} />
                 <div className="font-body font-medium text-ink text-label mb-1">QP disposition not yet initiated</div>
                 <p className="font-body text-muted text-label">Hold points must be cleared before batch is submitted for QP release.</p>

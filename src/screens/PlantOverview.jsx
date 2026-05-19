@@ -334,7 +334,7 @@ export default function PlantOverview() {
         </button>
         {impactExpanded && (
           <div className="bg-stone px-6 py-3 border-t border-rule2">
-            <div className="space-y-0 divide-y divide-rule2 border border-rule2 mb-3">
+            <div className="space-y-0 divide-y divide-rule2 mb-3">
               {(interventions ?? []).slice(0, 4).map(iv => {
                 const outcome = iv.consequences?.[0]
                 const pos = outcome?.observed?.delta?.startsWith('+') || outcome?.observed?.label?.toLowerCase().includes('resolved')

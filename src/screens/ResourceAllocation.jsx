@@ -15,9 +15,9 @@ function AssigneeTag({ assignee }) {
   const Icon = noBackup ? AlertTriangle : isRobot ? Bot : User
 
   return (
-    <div className={`inline-flex items-center gap-1.5 font-body text-label px-2 py-0.5 border ${
+    <div className={`inline-flex items-center gap-1.5 font-body text-label px-2 py-0.5 ${
       noBackup   ? 'bg-danger/[0.04] border-danger/30 text-danger'
-      : certGap  ? 'bg-warn/10 border-warn/30 text-warn'
+      : certGap  ? 'bg-warn/10 text-warn'
       : isRobot  ? 'bg-ochre/10 border-ochre/30 text-ochre'
       : 'bg-stone3 border-rule2 text-muted'
     }`}>
@@ -52,7 +52,7 @@ function ImpactPreview({ task, onConfirm, onCancel }) {
 
   return (
     <div className="fixed inset-0 bg-ink/30 z-40 flex items-center justify-center p-6">
-      <div className="bg-stone border border-rule2 w-full max-w-md shadow-raise slide-in">
+      <div className="bg-stone w-full max-w-md shadow-raise slide-in">
         <div className="px-5 py-4 border-b border-rule2 bg-stone2">
           <div className="font-body text-muted text-label tracking-normal mb-1">Reallocation preview</div>
           <div className="font-display font-bold text-ink text-base">{task.label} — {task.line}</div>
@@ -126,7 +126,7 @@ function TaskRow({ task, reallocated, onPreviewReallocate }) {
           <button
             type="button"
             onClick={() => onPreviewReallocate(task)}
-            className="font-body text-label text-muted hover:text-ink border border-rule2 hover:border-rule px-2.5 py-1 transition-colors"
+            className="font-body text-label text-muted hover:text-ink hover:border-rule px-2.5 py-1 transition-colors"
           >
             Reallocate
           </button>
@@ -369,7 +369,7 @@ export default function ResourceAllocation() {
                     <div className="font-body text-ok text-label">{entry.outcome}</div>
                   </div>
                 </div>
-                <div className="font-body text-muted text-label italic">{entry.reason}</div>
+                <div className="font-body text-muted text-label">{entry.reason}</div>
               </div>
             ))}
           </div>

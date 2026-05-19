@@ -4,15 +4,10 @@
 import { useState } from 'react'
 import { compliancePolicies, multiRegulatoryCoverage } from '../data/compliance'
 import { CheckCircle, AlertTriangle, Clock, ChevronRight } from 'lucide-react'
+import { StatusPill } from '../components/UI'
 
-function StatusBadge({ status }) {
-  const cfg = {
-    active:     { label: 'Active',      cls: 'bg-ok/10 text-ok border border-ok/30' },
-    inactive:   { label: 'Inactive',    cls: 'bg-stone3 text-muted border border-rule2' },
-    monitoring: { label: 'Monitoring',  cls: 'bg-ochre/10 text-ochre border border-ochre/30' },
-  }[status] ?? { label: status, cls: 'bg-stone3 text-muted' }
-  return <span className={`font-body text-label tracking-normal px-1.5 py-0.5 ${cfg.cls}`}>{cfg.label}</span>
-}
+const STATUS_TONE = { active: 'ok', inactive: 'muted', monitoring: 'int' }
+const STATUS_LABEL = { active: 'Active', inactive: 'Inactive', monitoring: 'Monitoring' }
 
 function FrameworkRow({ f }) {
   const statusColor = f.status === 'active' ? 'text-ok' : f.status === 'monitoring' ? 'text-ochre' : 'text-muted'
@@ -41,7 +36,7 @@ function EvidenceRow({ e }) {
       <span className="font-body text-muted text-label flex-1">{e.requirement}</span>
       {e.required
         ? <CheckCircle size={11} className="text-ok flex-shrink-0" strokeWidth={2} />
-        : <div className="w-2.5 h-2.5 rounded-full border border-rule2 flex-shrink-0" />
+        : <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" />
       }
     </div>
   )
@@ -53,7 +48,7 @@ function EscalationFlow({ steps }) {
       {steps.map((s, i) => (
         <div key={i} className="flex items-start gap-3 px-5 py-2.5">
           <div className="flex flex-col items-center flex-shrink-0 mt-0.5">
-            <div className="w-5 h-5 rounded-full bg-stone3 border border-rule2 flex items-center justify-center">
+            <div className="w-5 h-5 rounded-full bg-stone3 flex items-center justify-center">
               <span className="font-body text-muted text-label">{i + 1}</span>
             </div>
             {i < steps.length - 1 && <div className="w-px h-4 bg-rule2 mt-1" />}
@@ -100,12 +95,14 @@ export default function CompliancePolicy() {
         <div className="flex-1 overflow-y-auto divide-y divide-rule2">
           {compliancePolicies.map(p => (
             <button key={p.id} type="button" onClick={() => setSelectedId(p.id)}
-              className={`w-full text-left px-4 py-3.5 transition-colors border-l-4 ${
-                selectedId === p.id ? `bg-stone2 ${p.border}` : 'border-l-transparent hover:bg-stone2/50'
+              className={`w-full text-left px-4 py-3.5 transition-colors ${
+                selectedId === p.id ? 'bg-stone2' : 'hover:bg-stone2/50'
               }`}>
+              <div className="mb-1.5">
+                <StatusPill tone={STATUS_TONE[p.status] ?? 'muted'}>{STATUS_LABEL[p.status] ?? p.status}</StatusPill>
+              </div>
               <div className="flex items-start justify-between gap-2 mb-1">
-                <span className={`font-display font-bold text-base leading-none ${selectedId === p.id ? 'text-ink' : 'text-ink2'}`}>{p.name}</span>
-                <StatusBadge status={p.status} />
+                <span className="font-display font-medium text-ink text-section leading-snug">{p.name}</span>
               </div>
               <div className="font-body text-muted text-label mb-2">{p.jurisdiction}</div>
               <div className="flex items-center gap-2">
@@ -123,7 +120,7 @@ export default function CompliancePolicy() {
           <div className="font-body text-muted text-label tracking-normal mb-1.5">Export markets</div>
           <div className="flex flex-wrap gap-1">
             {multiRegulatoryCoverage.currentExportMarkets.map(m => (
-              <span key={m} className="font-body text-muted text-label bg-stone3 px-1.5 py-0.5 border border-rule2">{m}</span>
+              <span key={m} className="font-body text-muted text-label bg-stone3 px-1.5 py-0.5">{m}</span>
             ))}
           </div>
         </div>
@@ -134,11 +131,11 @@ export default function CompliancePolicy() {
         <div className="flex-1 flex flex-col overflow-hidden">
 
           {/* Policy header */}
-          <div className={`flex-shrink-0 px-6 py-5 border-b border-rule2 border-l-4 ${policy.border} ${policy.bg}`}>
+          <div className={`flex-shrink-0 px-6 py-5 border-b border-rule2 ${policy.bg}`}>
             <div className="flex items-start justify-between gap-4">
               <div>
                 <div className="flex items-center gap-2 mb-1">
-                  <StatusBadge status={policy.status} />
+                  <StatusPill tone={STATUS_TONE[policy.status] ?? 'muted'}>{STATUS_LABEL[policy.status] ?? policy.status}</StatusPill>
                   {policy.activeSince && <span className="font-body text-muted text-label">Active since {policy.activeSince}</span>}
                 </div>
                 <div className="font-display font-bold text-ink text-2xl leading-none mb-1">{policy.name}</div>
@@ -218,10 +215,10 @@ export default function CompliancePolicy() {
                   </div>
                   {t.lastGenerated
                     ? <span className="font-body text-muted text-label">Last: {t.lastGenerated}</span>
-                    : <span className="font-body text-muted text-label italic">Never generated</span>
+                    : <span className="font-body text-muted text-label">Never generated</span>
                   }
                   <button type="button"
-                    className="font-body text-label px-2.5 py-1.5 border border-rule2 text-muted hover:text-ink hover:border-muted transition-colors opacity-0 group-hover:opacity-100">
+                    className="font-body text-label px-2.5 py-1.5 text-muted hover:text-ink hover:border-muted transition-colors opacity-0 group-hover:opacity-100">
                     Generate
                   </button>
                 </div>
@@ -230,7 +227,7 @@ export default function CompliancePolicy() {
 
             {/* Inactive policy CTA */}
             {policy.status === 'inactive' && (
-              <div className="mx-6 my-6 px-5 py-4 border border-rule2 border-l-4 border-l-rule2 bg-stone2">
+              <div className="mx-6 my-6 px-5 py-4 border-l-4 border-l-rule2 bg-stone2">
                 <div className="font-body font-semibold text-ink text-base mb-1">This policy is inactive</div>
                 <div className="font-body text-muted text-label leading-relaxed mb-3">
                   Activating this policy will add all {policy.frameworks.length} frameworks to your compliance monitoring surface. Evidence requirements and escalation logic will be enforced immediately.

@@ -280,7 +280,7 @@ function UnitCard({ unit, selected, onSelect }) {
     <button
       type="button"
       onClick={() => onSelect(unit.id)}
-      className={`w-full text-left border border-rule2 border-l-4 ${hs.border} ${hs.bg} p-4 transition-colors ${
+      className={`w-full text-left border-l-4 ${hs.border} ${hs.bg} p-4 transition-colors ${
         selected
           ? 'ring-1 ring-ink/20 shadow-sm'
           : 'hover:bg-stone2'
@@ -546,7 +546,7 @@ export default function RobotFleet() {
 
         {/* Fault log — below grid */}
         {faultLog.length > 0 && (
-          <div className="mt-6 border border-rule2 bg-stone">
+          <div className="mt-6 bg-stone">
             <div className="px-4 py-2 border-b border-rule2 bg-stone2">
               <span className="font-body text-muted text-label tracking-normal">Shift event log</span>
             </div>
@@ -585,20 +585,20 @@ export default function RobotFleet() {
                   <Gamepad2 size={13} strokeWidth={2} />
                   Take control
                 </button>
-                <button type="button" className="flex items-center gap-1.5 font-body text-label px-3 py-2 border border-rule2 text-muted hover:text-ink hover:border-muted transition-colors">
+                <button type="button" className="flex items-center gap-1.5 font-body text-label px-3 py-2 text-muted hover:text-ink hover:border-muted transition-colors">
                   <Pause size={13} strokeWidth={2} />
                   Pause task
                 </button>
               </>
             )}
             {selectedUnit.status === 'online' && (
-              <button type="button" className="flex items-center gap-1.5 font-body text-label px-3 py-2 border border-rule2 text-muted hover:text-ink hover:border-muted transition-colors">
+              <button type="button" className="flex items-center gap-1.5 font-body text-label px-3 py-2 text-muted hover:text-ink hover:border-muted transition-colors">
                 <Route size={13} strokeWidth={2} />
                 Reroute robot
               </button>
             )}
             {rs && (
-              <button type="button" className="flex items-center gap-1.5 font-body text-label px-3 py-2 border border-rule2 text-muted hover:text-ink hover:border-muted transition-colors">
+              <button type="button" className="flex items-center gap-1.5 font-body text-label px-3 py-2 text-muted hover:text-ink hover:border-muted transition-colors">
                 <LifeBuoy size={13} strokeWidth={2} />
                 Deploy recovery
               </button>

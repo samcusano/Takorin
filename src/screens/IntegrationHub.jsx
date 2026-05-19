@@ -7,9 +7,9 @@ import { connectors, integrationSummary, semanticConflicts, integrationCategorie
 import { AlertTriangle, CheckCircle, Zap, Radio } from 'lucide-react'
 
 const STATUS_CFG = {
-  active:    { label: 'Active',     dot: 'bg-ok',     text: 'text-ok',     badge: 'bg-ok/10 text-ok border border-ok/30' },
-  available: { label: 'Available',  dot: 'bg-rule2',  text: 'text-muted',  badge: 'bg-stone3 text-muted border border-rule2' },
-  soon:      { label: 'Coming soon',dot: 'bg-ochre',  text: 'text-ochre',  badge: 'bg-ochre/10 text-ochre border border-ochre/30' },
+  active:    { label: 'Active',     dot: 'bg-ok',     text: 'text-ok',     badge: 'bg-ok/10 text-ok' },
+  available: { label: 'Available',  dot: 'bg-rule2',  text: 'text-muted',  badge: 'bg-stone3 text-muted' },
+  soon:      { label: 'Coming soon',dot: 'bg-ochre',  text: 'text-ochre',  badge: 'bg-ochre/10 text-ochre' },
 }
 
 function ConnectorCard({ c, selected, onClick }) {
@@ -61,7 +61,7 @@ function ConnectorDetail({ c }) {
             {c.status === 'active' && c.streaming && <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-ok opacity-40" />}
             <span className={`relative inline-flex rounded-full h-2 w-2 ${cfg.dot}`} />
           </div>
-          <span className={`font-body text-label tracking-normal px-1.5 py-0.5 border ${cfg.badge}`}>{cfg.label}</span>
+          <span className={`font-body text-label tracking-normal px-1.5 py-0.5 ${cfg.badge}`}>{cfg.label}</span>
           {c.streaming && <span className="font-body text-ok text-label tracking-normal flex items-center gap-1"><Radio size={9} strokeWidth={2} />Streaming</span>}
         </div>
         <div className="font-display font-bold text-ink text-subhead leading-none mb-1">{c.name}</div>
@@ -69,7 +69,7 @@ function ConnectorDetail({ c }) {
       </div>
 
       {c.status === 'active' && (
-        <div className="grid grid-cols-3 gap-px bg-rule2 border border-rule2">
+        <div className="grid grid-cols-3 gap-px bg-rule2">
           {[
             { label: 'Data quality',  val: c.quality != null ? `${c.quality}%` : '—', tone: c.quality >= 95 ? 'text-ok' : c.quality >= 85 ? 'text-ochre' : 'text-warn' },
             { label: 'Last sync',     val: c.lastSync ?? '—', tone: 'text-muted' },
@@ -87,14 +87,14 @@ function ConnectorDetail({ c }) {
       )}
 
       {c.note && (
-        <div className="flex items-start gap-2 px-3 py-2.5 border border-warn/30 bg-warn/[0.04] border-l-2 border-l-warn">
+        <div className="flex items-start gap-2 px-3 py-2.5 bg-warn/[0.04] border-l-2 border-l-warn">
           <AlertTriangle size={10} className="text-warn flex-shrink-0 mt-0.5" strokeWidth={2} />
           <p className="font-body text-warn text-label leading-snug">{c.note}</p>
         </div>
       )}
 
       {c.status === 'available' && (
-        <div className="px-4 py-4 border border-rule2 border-l-4 border-l-ochre bg-stone2">
+        <div className="px-4 py-4 border-l-4 border-l-ochre bg-stone2">
           <div className="font-body font-semibold text-ink text-base mb-1">Available — not connected</div>
           <div className="font-body text-muted text-label leading-relaxed mb-3">
             This connector is supported by the integration framework. Configure credentials and field mappings to activate.
@@ -106,7 +106,7 @@ function ConnectorDetail({ c }) {
       )}
 
       {c.status === 'soon' && (
-        <div className="px-4 py-4 border border-rule2 bg-stone2">
+        <div className="px-4 py-4 bg-stone2">
           <div className="font-body font-semibold text-ink text-base mb-1">Coming soon</div>
           <div className="font-body text-muted text-label">This connector is in development. Expected availability: Q3 2026.</div>
         </div>

@@ -5,10 +5,10 @@ import { CheckCircle2, AlertTriangle, Clock, RotateCcw, Zap, Eye, MessageSquare,
 const TIER_ICONS = { observe: Eye, recommend: MessageSquare, execute: Zap, govern: Shield }
 
 const OUTCOME_CFG = {
-  success:   { label: 'Success',     cls: 'bg-ok/10 text-ok border border-ok/30',         dot: 'bg-ok' },
-  escalated: { label: 'Escalated',   cls: 'bg-warn/10 text-warn border border-warn/30',   dot: 'bg-warn' },
-  pending:   { label: 'Pending',     cls: 'bg-ochre/10 text-ochre border border-ochre/30', dot: 'bg-ochre' },
-  rollback:  { label: 'Rolled back', cls: 'bg-stone3 text-muted border border-rule2',      dot: 'bg-muted' },
+  success:   { label: 'Success',     cls: 'bg-ok/10 text-ok',         dot: 'bg-ok' },
+  escalated: { label: 'Escalated',   cls: 'bg-warn/10 text-warn',   dot: 'bg-warn' },
+  pending:   { label: 'Pending',     cls: 'bg-ochre/10 text-ochre', dot: 'bg-ochre' },
+  rollback:  { label: 'Rolled back', cls: 'bg-stone3 text-muted',      dot: 'bg-muted' },
 }
 
 function TierRow({ tier, isActive, onClick }) {
@@ -47,27 +47,19 @@ function LogRow({ entry, selected, onClick }) {
   return (
     <button type="button" onClick={onClick}
       className={`w-full text-left px-4 py-3 border-b border-rule2 transition-colors ${
-        selected ? 'bg-stone2 border-l-4 border-l-ochre' : 'hover:bg-stone2/50 border-l-4 border-l-transparent'
+        selected ? 'bg-stone2' : 'hover:bg-stone2/50'
       }`}>
-      <div className="flex items-start gap-2 mb-1">
-        <div className={`relative flex h-1.5 w-1.5 flex-shrink-0 mt-1`}>
-          {entry.outcome === 'success' && !entry.deviation && (
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-ok opacity-30" />
-          )}
-          <span className={`relative inline-flex rounded-full h-1.5 w-1.5 ${out.dot}`} />
+      <div className="mb-1">
+        <span className={`inline-flex items-center font-body text-label px-1.5 py-0.5 mb-1.5 ${out.cls}`}>{out.label}</span>
+        <p className="font-display font-medium text-ink text-section leading-snug mb-0.5">{entry.action}</p>
+        <div className="flex items-center gap-2">
+          <span className="font-body text-muted text-label">{entry.agent}</span>
+          <span className="font-body text-muted text-label opacity-50">·</span>
+          <TierIcon size={9} strokeWidth={2} className="text-muted opacity-60" />
+          <span className="font-body text-muted text-label capitalize">{entry.tier}</span>
         </div>
-        <div className="flex-1 min-w-0">
-          <p className="font-body text-ink text-label leading-snug mb-0.5">{entry.action}</p>
-          <div className="flex items-center gap-2">
-            <span className="font-body text-muted text-label">{entry.agent}</span>
-            <span className="font-body text-muted text-label opacity-50">·</span>
-            <TierIcon size={9} strokeWidth={2} className="text-muted opacity-60" />
-            <span className="font-body text-muted text-label capitalize">{entry.tier}</span>
-          </div>
-        </div>
-        <span className={`font-body text-micro px-1.5 py-0.5 flex-shrink-0 ${out.cls}`}>{out.label}</span>
       </div>
-      <div className="flex items-center gap-3 pl-3.5">
+      <div className="flex items-center gap-3">
         <span className="font-body text-muted text-label">{entry.timeLabel}</span>
         {entry.monitoringWindow && (
           <span className="font-body text-muted text-label">· {entry.monitoringWindow} window</span>
@@ -104,13 +96,13 @@ function ActionDetail({ entry }) {
       </div>
 
       {/* Rationale */}
-      <div className="px-4 py-3 bg-stone2 border border-rule2 border-l-4 border-l-ochre">
+      <div className="px-4 py-3 bg-stone2 border-l-4 border-l-ochre">
         <div className="font-body text-muted text-label tracking-normal mb-1">Agent rationale</div>
         <p className="font-body text-ink text-label leading-relaxed">{entry.rationale}</p>
       </div>
 
       {/* Metrics grid */}
-      <div className="grid grid-cols-3 gap-px bg-rule2 border border-rule2">
+      <div className="grid grid-cols-3 gap-px bg-rule2">
         {[
           { label: 'Outcome', val: out.label, tone: entry.outcome === 'success' ? 'text-ok' : entry.outcome === 'escalated' ? 'text-warn' : 'text-ochre' },
           { label: 'Monitoring window', val: entry.monitoringWindow ?? 'N/A', tone: 'text-muted' },
@@ -128,7 +120,7 @@ function ActionDetail({ entry }) {
 
       {/* Impact */}
       {entry.impact && (
-        <div className={`flex items-center gap-3 px-4 py-3 border ${entry.impact.positive ? 'border-ok/30 bg-ok/[0.04]' : 'border-warn/30 bg-warn/[0.04]'}`}>
+        <div className={`flex items-center gap-3 px-4 py-3 border ${entry.impact.positive ? 'bg-ok/[0.04]' : 'bg-warn/[0.04]'}`}>
           <ArrowRight size={12} className={entry.impact.positive ? 'text-ok' : 'text-warn'} strokeWidth={2} />
           <div>
             <div className="font-body text-muted text-label tracking-normal">{entry.impact.metric}</div>
@@ -139,7 +131,7 @@ function ActionDetail({ entry }) {
 
       {/* Escalation note */}
       {entry.escalationNote && (
-        <div className="flex items-start gap-2 px-3 py-2.5 border border-warn/30 bg-warn/[0.04] border-l-2 border-l-warn">
+        <div className="flex items-start gap-2 px-3 py-2.5 bg-warn/[0.04] border-l-2 border-l-warn">
           <AlertTriangle size={10} className="text-warn flex-shrink-0 mt-0.5" strokeWidth={2} />
           <p className="font-body text-warn text-label leading-snug">{entry.escalationNote}</p>
         </div>
@@ -157,7 +149,7 @@ function ActionDetail({ entry }) {
           <div className="flex items-center gap-2 mt-2">
             <span className="font-body text-muted text-label">{rb.timestamp.replace('T', ' ').substring(0, 16)}</span>
             <span className="font-body text-muted text-label opacity-50">·</span>
-            <span className="font-body text-label px-1.5 py-0.5 bg-ok/10 text-ok border border-ok/30">Complete</span>
+            <span className="font-body text-label px-1.5 py-0.5 bg-ok/10 text-ok">Complete</span>
           </div>
         </div>
       )}

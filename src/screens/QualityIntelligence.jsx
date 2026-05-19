@@ -105,12 +105,12 @@ function AnnotationsTab() {
     <div className="flex-1 overflow-y-auto divide-y divide-rule2">
       {expertAnnotations.map(a => {
         const typeLabel = { 'quality-watch': 'Quality watch', 'grade-confirmation': 'Grade confirmation', 'process-note': 'Process note', 'outcome-validation': 'Outcome validation' }[a.type] ?? a.type
-        const typeTone = { 'quality-watch': 'text-warn bg-warn/10 border-warn/30', 'grade-confirmation': 'text-ok bg-ok/10 border-ok/30', 'process-note': 'text-muted bg-stone3 border-rule2', 'outcome-validation': 'text-ochre bg-ochre/10 border-ochre/30' }[a.type] ?? 'text-muted bg-stone3 border-rule2'
+        const typeTone = { 'quality-watch': 'text-warn bg-warn/10 ', 'grade-confirmation': 'text-ok bg-ok/10 ', 'process-note': 'text-muted bg-stone3 border-rule2', 'outcome-validation': 'text-ochre bg-ochre/10 border-ochre/30' }[a.type] ?? 'text-muted bg-stone3 border-rule2'
         return (
           <div key={a.id} className="px-6 py-4 hover:bg-stone2 transition-colors">
             <div className="flex items-start justify-between gap-4 mb-2">
               <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded-full bg-stone3 border border-rule2 flex items-center justify-center flex-shrink-0">
+                <div className="w-6 h-6 rounded-full bg-stone3 flex items-center justify-center flex-shrink-0">
                   <span className="font-body text-muted text-label font-medium">{a.author.split(' ').map(p => p[0]).join('')}</span>
                 </div>
                 <div>
@@ -119,7 +119,7 @@ function AnnotationsTab() {
                 </div>
               </div>
               <div className="flex items-center gap-2 flex-shrink-0">
-                <span className={`font-body text-label tracking-normal px-1.5 py-0.5 border ${typeTone}`}>{typeLabel}</span>
+                <span className={`font-body text-label tracking-normal px-1.5 py-0.5 ${typeTone}`}>{typeLabel}</span>
                 <span className="font-body text-muted text-label">
                   {new Date(a.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                 </span>
@@ -128,7 +128,7 @@ function AnnotationsTab() {
             <div className="font-body text-muted text-label mb-1.5">Batch: {a.batch}</div>
             <p className="font-body text-ink text-body leading-relaxed mb-2">{a.observation}</p>
             {a.modelResponse && (
-              <div className="flex items-start gap-2 px-3 py-2 bg-stone2 border border-rule2">
+              <div className="flex items-start gap-2 px-3 py-2 bg-stone2">
                 <div className="font-body text-muted text-label tracking-normal flex-shrink-0 mt-0.5">Model</div>
                 <div className="font-body text-muted text-label leading-snug">{a.modelResponse}</div>
                 {a.confidenceImpact && (
@@ -166,7 +166,7 @@ function PriorsTab() {
             <span className="font-body text-muted text-label">{p.evidenceYears}</span>
           </div>
           <div className="flex items-center gap-2 mt-2">
-            <div className={`font-body text-label px-1.5 py-0.5 border ${p.tone === 'warn' ? 'text-warn border-warn/30 bg-warn/10' : 'text-ok border-ok/30 bg-ok/10'}`}>
+            <div className={`font-body text-label px-1.5 py-0.5 ${p.tone === 'warn' ? 'text-warn bg-warn/10' : 'text-ok bg-ok/10'}`}>
               {p.modelStatus.split('—')[0].trim()}
             </div>
             {p.activeBatches.length > 0 && (

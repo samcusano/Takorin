@@ -281,7 +281,7 @@ function Module({ title, badge, children, defaultOpen = false }) {
         <div className="flex items-center gap-3 min-w-0">
           <span className="font-body font-medium text-ink text-body">{title}</span>
           {badge && (
-            <span className="font-body text-muted text-label px-2 py-0.5 bg-stone2 border border-rule2 rounded-btn flex-shrink-0">
+            <span className="font-body text-muted text-label px-2 py-0.5 bg-stone2 flex-shrink-0">
               {badge}
             </span>
           )}
@@ -359,7 +359,7 @@ export default function Analytics() {
         <div className="ml-auto flex items-center gap-3">
           <span className="font-body text-muted text-label">{facility.name} · Apr 16, 2026</span>
           <button type="button" onClick={handleExport} disabled={exportState === 'loading'}
-            className="flex items-center gap-1.5 font-body text-label text-muted px-3 py-1.5 border border-rule2 hover:border-ink/30 hover:text-muted transition-colors disabled:opacity-50">
+            className="flex items-center gap-1.5 font-body text-label text-muted px-3 py-1.5 hover:border-ink/30 hover:text-muted transition-colors disabled:opacity-50">
             {exportState === 'done'
               ? <><Check size={11} strokeWidth={2} className="text-ok" />Exported</>
               : <><Download size={11} strokeWidth={2} />{exportState === 'loading' ? 'Preparing…' : 'Export'}</>}

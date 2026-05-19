@@ -356,7 +356,7 @@ function QueueClusterRow({ cluster, resolved, selected, onSelect }) {
       }`}>
       {/* Cluster badge */}
       <div className="flex items-center gap-1.5 mb-1.5">
-        <span className={`font-body text-label px-1.5 py-px rounded-btn font-semibold tracking-wider ${
+        <span className={`font-body text-label px-1.5 py-px font-semibold tracking-wider ${
           allResolved ? 'bg-ok/10 text-ok' : 'bg-ochre/15 text-ochre'
         }`}>
           {allResolved ? 'Resolved' : 'High impact cluster'}
@@ -521,7 +521,7 @@ function WorkspacePanel({ item, isCluster, resolved, onResolve, onResolveCluster
         {/* Issue context */}
         <div>
           <div className="flex items-center gap-2 mb-2">
-            {isCluster && <span className="font-body text-label px-1.5 py-px bg-ochre/15 text-ochre rounded-btn font-semibold tracking-wider">Cluster</span>}
+            {isCluster && <span className="font-body text-label px-1.5 py-px bg-ochre/15 text-ochre font-semibold tracking-wider">Cluster</span>}
             <span className={`font-body text-label font-medium ${severityColor}`}>{severityLabel}</span>
             {item.detectedAgo && <span className="font-body text-muted text-label">· Detected {item.detectedAgo}</span>}
             {isResolved && <span className="font-body text-ok text-label flex items-center gap-1"><Check size={10} strokeWidth={2.5} />Resolved</span>}
@@ -552,13 +552,13 @@ function WorkspacePanel({ item, isCluster, resolved, onResolve, onResolveCluster
             )}
           </div>
           {item.blockedBy && (
-            <div className="flex items-center gap-2 mt-3 px-3 py-2 bg-warn/[0.06] border border-warn/20 rounded-btn">
+            <div className="flex items-center gap-2 mt-3 px-3 py-2 bg-warn/[0.06] border border-warn/20">
               <AlertTriangle size={11} strokeWidth={2} className="text-warn flex-shrink-0" />
               <span className="font-body text-warn text-label">Blocked by: {item.blockedBy}</span>
             </div>
           )}
           {isCluster && (
-            <div className="mt-3 px-3 py-2 bg-stone2 border border-rule2 rounded-btn">
+            <div className="mt-3 px-3 py-2 bg-stone2">
               <div className="font-body text-muted text-label mb-1">Why grouped</div>
               <div className="font-body text-muted text-label leading-relaxed">{item.why}</div>
             </div>
@@ -568,11 +568,11 @@ function WorkspacePanel({ item, isCluster, resolved, onResolve, onResolveCluster
         {/* AI Assessment */}
         {item.aiAssessment && (
           <div>
-            <SectionHeader tone="muted" label="AI Assessment" className="mb-2 border border-rule2 rounded-btn" />
-            <div className="border border-rule2 bg-stone2 px-4 py-3.5 rounded-btn">
+            <SectionHeader tone="muted" label="AI Assessment" className="mb-2" />
+            <div className="border border-rule2 bg-stone2 px-4 py-3.5">
               <div className="flex items-start justify-between gap-3 mb-2">
                 <div className="font-body text-ink text-body leading-relaxed flex-1">{item.aiAssessment.text}</div>
-                <span className="font-mono text-label font-bold text-ochre flex-shrink-0 px-2 py-0.5 bg-ochre/10 rounded-btn">
+                <span className="font-mono text-label font-bold text-ochre flex-shrink-0 px-2 py-0.5 bg-ochre/10">
                   {item.aiAssessment.confidence}%
                 </span>
               </div>
@@ -583,8 +583,8 @@ function WorkspacePanel({ item, isCluster, resolved, onResolve, onResolveCluster
         {/* Fix Sequencing */}
         {item.fixSequence?.length > 0 && (
           <div>
-            <SectionHeader tone="muted" label="Recommended resolution order" className="mb-2 border border-rule2 rounded-btn" />
-            <div className="border border-rule2 bg-stone divide-y divide-rule2 rounded-btn">
+            <SectionHeader tone="muted" label="Recommended resolution order" className="mb-2" />
+            <div className="border border-rule2 bg-stone divide-y divide-rule2">
               {item.fixSequence.map((step, i) => (
                 <div key={i} className="flex items-center gap-4 px-4 py-3">
                   <span className="display-num text-base font-bold text-muted/60 flex-shrink-0 w-4">{i + 1}</span>
@@ -605,8 +605,8 @@ function WorkspacePanel({ item, isCluster, resolved, onResolve, onResolveCluster
         {/* Auto-remediation */}
         {item.autoEligible && !isResolved && (
           <div>
-            <SectionHeader tone="muted" label="Automatic remediation" className="mb-2 border border-rule2 rounded-btn" />
-            <div className="border border-rule2 bg-stone px-4 py-4 rounded-btn">
+            <SectionHeader tone="muted" label="Automatic remediation" className="mb-2" />
+            <div className="border border-rule2 bg-stone px-4 py-4">
               <div className="flex items-center gap-2 mb-3">
                 <Zap size={12} strokeWidth={2} className="text-ochre flex-shrink-0" />
                 <span className="font-body font-semibold text-ink text-body">Eligible for automatic remediation</span>
@@ -642,10 +642,10 @@ function WorkspacePanel({ item, isCluster, resolved, onResolve, onResolveCluster
         {/* Risk Forecast */}
         {item.riskForecast?.length > 0 && !isResolved && (
           <div>
-            <SectionHeader tone="muted" label="Projected risk if unresolved" className="mb-2 border border-rule2 rounded-btn" />
+            <SectionHeader tone="muted" label="Projected risk if unresolved" className="mb-2" />
             <div className="space-y-2">
               {item.riskForecast.map(r => (
-                <div key={r.hours} className="flex items-start gap-4 px-4 py-3 border border-rule2 bg-stone rounded-btn">
+                <div key={r.hours} className="flex items-start gap-4 px-4 py-3 bg-stone">
                   <div className="flex-shrink-0 text-right w-14">
                     <div className="display-num text-body font-bold text-muted tabular-nums">{r.hours}h</div>
                   </div>
@@ -688,7 +688,7 @@ function WorkspacePanel({ item, isCluster, resolved, onResolve, onResolveCluster
         {/* Permanent item info */}
         {item.permanent && (
           <div className="border-t border-rule2 pt-6">
-            <div className="flex items-center gap-2 px-4 py-3 bg-warn/[0.06] border border-warn/20 rounded-btn">
+            <div className="flex items-center gap-2 px-4 py-3 bg-warn/[0.06] border border-warn/20">
               <AlertTriangle size={12} strokeWidth={2} className="text-warn flex-shrink-0" />
               <span className="font-body text-warn text-label">Resolution requires external action — cannot be completed from this interface</span>
             </div>
@@ -697,7 +697,7 @@ function WorkspacePanel({ item, isCluster, resolved, onResolve, onResolveCluster
 
         {/* Resolved state */}
         {isResolved && (
-          <div className="flex items-center gap-2 px-4 py-3 bg-ok/[0.06] border border-ok/20 rounded-btn">
+          <div className="flex items-center gap-2 px-4 py-3 bg-ok/[0.06] border border-ok/20">
             <Check size={13} strokeWidth={2} className="text-ok flex-shrink-0" />
             <span className="font-body font-medium text-ok text-body">Resolved — downstream systems updating</span>
           </div>

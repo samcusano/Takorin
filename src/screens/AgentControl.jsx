@@ -98,7 +98,7 @@ function OverrideModal({ agentName, actionLabel, onConfirm, onCancel }) {
   useEffect(() => { ref.current?.focus() }, [])
   return (
     <div className="fixed inset-0 bg-ink/40 z-50 flex items-center justify-center p-6">
-      <div className="bg-stone border border-rule2 w-full max-w-md shadow-raise slide-in">
+      <div className="bg-stone w-full max-w-md shadow-raise slide-in">
         <div className="px-5 py-4 border-b border-rule2 bg-stone2">
           <div className="font-body text-muted text-label tracking-normal mb-1">Why are you overriding?</div>
           <div className="font-display font-bold text-ink text-base">{agentName}</div>
@@ -112,7 +112,7 @@ function OverrideModal({ agentName, actionLabel, onConfirm, onCancel }) {
             <label className="font-body text-muted text-label tracking-normal block mb-1.5">Rationale</label>
             <textarea ref={ref} value={rationale} onChange={e => setRationale(e.target.value)}
               rows={3} placeholder="Why are you overriding? (min 20 characters)"
-              className="w-full font-body text-body text-ink bg-stone2 border border-rule2 px-3 py-2 resize-none focus:outline-none focus:border-rule" />
+              className="w-full font-body text-body text-ink bg-stone2 px-3 py-2 resize-none focus:outline-none focus:border-rule" />
             <div className={`font-body text-label mt-1 ${tooShort ? 'text-danger' : 'text-ok'}`}>
               {tooShort ? `${20 - rationale.trim().length} more characters required` : 'Rationale meets minimum length'}
             </div>
@@ -132,7 +132,7 @@ function OverrideModal({ agentName, actionLabel, onConfirm, onCancel }) {
 function DisableModal({ agent, onConfirm, onCancel }) {
   return (
     <div className="fixed inset-0 bg-ink/40 z-50 flex items-center justify-center p-6">
-      <div className="bg-stone border border-rule2 w-full max-w-md shadow-raise slide-in">
+      <div className="bg-stone w-full max-w-md shadow-raise slide-in">
         <div className="px-5 py-4 border-b border-rule2 bg-stone2">
           <div className="font-body text-muted text-label tracking-normal mb-1">Disable agent — confirm</div>
           <div className="font-display font-bold text-ink text-base">{agent.name}</div>
@@ -285,8 +285,8 @@ function LedgerRow({ pa, agent, onInvestigate, onApprove, onOverrideRequest, sel
 
         {/* Expiry chip (only when urgent, non-emergency) */}
         {meta.showExpiry && !pa.isEmergencyAutoAct && (
-          <span className={`font-body text-label px-1.5 py-0.5 flex-shrink-0 whitespace-nowrap ${
-            meta.consequence === 'high' ? 'bg-warn/[0.08] text-warn' : 'bg-stone3 text-muted'
+          <span className={`inline-flex items-center font-body text-label px-1.5 py-0.5 flex-shrink-0 whitespace-nowrap ${
+            meta.consequence === 'high' ? 'bg-warn/[0.08] text-warn' : 'bg-stone3 text-muted border-rule2'
           }`}>
             {meta.expiresLabel}
           </span>
@@ -310,14 +310,14 @@ function LedgerRow({ pa, agent, onInvestigate, onApprove, onOverrideRequest, sel
                 onApprove={() => onApprove(pa._key)} />
               <button type="button" onClick={() => onOverrideRequest(pa, agent)}
                 aria-label="Override" title="Override"
-                className="inline-flex items-center justify-center w-11 h-11 rounded-full border border-rule2 text-muted hover:text-ink hover:border-muted transition-colors">
+                className="inline-flex items-center justify-center w-11 h-11 rounded-full text-muted hover:text-ink hover:border-muted transition-colors">
                 <Flag size={13} strokeWidth={2} />
               </button>
             </>
           )}
           <button type="button" onClick={() => onInvestigate(pa, agent)}
             aria-label="Investigate" title="Investigate"
-            className="inline-flex items-center justify-center w-11 h-11 rounded-full border border-rule2 text-muted hover:text-ink hover:border-muted transition-colors">
+            className="inline-flex items-center justify-center w-11 h-11 rounded-full text-muted hover:text-ink hover:border-muted transition-colors">
             <InspectionPanel size={13} strokeWidth={2} />
           </button>
         </div>
@@ -411,7 +411,7 @@ function DependencyGroup({ groupId, rows, commonProps }) {
         <span className="ml-auto font-body text-ochre text-label">Resolve together → {meta.boost}</span>
       </div>
       <div className="px-4 py-1 border-b border-rule2 bg-stone2">
-        <span className="font-body text-muted text-label italic">{meta.note}</span>
+        <span className="font-body text-muted text-label">{meta.note}</span>
       </div>
       {rows.map(({ pa, agent }) => (
         <LedgerRow key={pa._key} pa={pa} agent={agent} {...commonProps} inGroup />
@@ -543,7 +543,7 @@ function DecisionReplay({ pa, agent }) {
   return (
     <div className="space-y-4">
       {/* Live confidence readout */}
-      <div className="px-4 py-3 bg-stone2 border border-rule2">
+      <div className="px-4 py-3 bg-stone2">
         <div className="flex items-end gap-2 mb-2">
           <span className={`font-display font-extrabold text-display leading-none tabular-nums ${confColor}`}
             style={{ transition: 'color 250ms var(--ease-standard)' }}>
@@ -562,17 +562,17 @@ function DecisionReplay({ pa, agent }) {
       <div className="flex items-center gap-1.5">
         <button type="button" title="Reset" aria-label="Reset to start"
           onClick={() => { setPlaying(false); setActiveStep(0) }}
-          className="font-body text-label text-muted hover:text-ink px-2.5 py-1.5 border border-rule2 transition-colors">↩</button>
+          className="font-body text-label text-muted hover:text-ink px-2.5 py-1.5 transition-colors">↩</button>
         <button type="button" aria-label="Previous step"
           onClick={() => { setPlaying(false); setActiveStep(s => Math.max(0, s - 1)) }}
-          className="font-body text-label text-muted hover:text-ink px-2.5 py-1.5 border border-rule2 transition-colors">←</button>
+          className="font-body text-label text-muted hover:text-ink px-2.5 py-1.5 transition-colors">←</button>
         <button type="button" onClick={handlePlay}
           className="font-body font-medium text-label text-stone bg-ink px-4 py-1.5 hover:bg-ink/90 transition-colors flex items-center gap-1.5 flex-shrink-0">
           {playing ? '⏸ Pause' : activeStep >= STEPS.length - 1 ? '↩ Replay' : '▶ Play'}
         </button>
         <button type="button" aria-label="Next step"
           onClick={() => { setPlaying(false); setActiveStep(s => Math.min(STEPS.length - 1, s + 1)) }}
-          className="font-body text-label text-muted hover:text-ink px-2.5 py-1.5 border border-rule2 transition-colors">→</button>
+          className="font-body text-label text-muted hover:text-ink px-2.5 py-1.5 transition-colors">→</button>
         <span className="font-body text-muted text-label tabular-nums ml-auto">{activeStep + 1} / {STEPS.length}</span>
       </div>
 
@@ -631,7 +631,7 @@ function DecisionReplay({ pa, agent }) {
 
                 {/* Expanded detail for active step */}
                 {isActive && s.items?.length > 0 && (
-                  <div className="mb-2 px-3 py-3 bg-stone2 border border-rule2 border-l-2 border-l-ochre slide-in">
+                  <div className="mb-2 px-3 py-3 bg-stone2 border-l-2 border-l-ochre slide-in">
                     <div className="font-body text-muted text-label tracking-normal mb-2">Step detail</div>
                     <div className="space-y-1.5">
                       {s.items.filter(it => it?.text).map((it, j) => (
@@ -1156,7 +1156,7 @@ export default function AgentControl() {
                     <div className="font-body text-muted text-label">{agent.name}</div>
                     <div className="font-body text-ink text-label leading-snug">{pa._meta.verbFirst}</div>
                   </div>
-                  <span className="font-body text-muted text-label px-1.5 py-0.5 bg-stone3 flex-shrink-0">Notified</span>
+                  <span className="font-body text-label text-muted px-1.5 py-0.5 bg-stone3 flex-shrink-0">Notified</span>
                 </div>
               )
             })}
@@ -1172,13 +1172,13 @@ export default function AgentControl() {
           <div className="flex items-center gap-2.5">
             <span className="font-body font-medium text-label tracking-normal text-ink">For your review</span>
             {undecidedCount > 0 && (
-              <span className="font-body text-label text-warn bg-warn/[0.1] px-1.5 py-0.5">{undecidedCount} awaiting</span>
+              <span className="font-body text-label text-warn bg-warn/[0.08] px-1.5 py-0.5">{undecidedCount} awaiting</span>
             )}
           </div>
           <div className="flex items-center gap-2">
             <span className="font-body text-muted text-label">Ranked by urgency and consequence</span>
             <button type="button" onClick={() => setActivityDrawer(true)}
-              className="font-body text-label px-3 py-1.5 border border-rule2 text-muted hover:text-ink hover:border-muted transition-colors">
+              className="font-body text-label px-3 py-1.5 text-muted hover:text-ink hover:border-muted transition-colors">
               Activity
             </button>
           </div>
@@ -1233,8 +1233,8 @@ export default function AgentControl() {
                                 {pa._decided === 'approved' ? 'Approved' : 'Overridden'}
                               </span>
                             ) : pa._meta.showExpiry ? (
-                              <span className={`font-body text-label px-1.5 py-0.5 rounded-btn flex-shrink-0 whitespace-nowrap ${
-                                pa._meta.consequence === 'critical' ? 'bg-danger/[0.04] text-danger' : 'bg-warn/10 text-warn'
+                              <span className={`inline-flex items-center font-body text-label px-1.5 py-0.5 flex-shrink-0 whitespace-nowrap ${
+                                pa._meta.consequence === 'critical' ? 'bg-danger/[0.08] text-danger' : 'bg-warn/[0.08] text-warn'
                               }`}>{pa._meta.expiresLabel}</span>
                             ) : null}
                           </button>
@@ -1336,7 +1336,7 @@ export default function AgentControl() {
                       ) : (
                       <div className="px-6 py-5 space-y-5">
                       {pa.rationale && (
-                        <div className="px-4 py-3 bg-stone2 border border-rule2 border-l-4 border-l-ochre">
+                        <div className="px-4 py-3 bg-stone2 border-l-4 border-l-ochre">
                           <div className="font-body text-muted text-label tracking-normal mb-1">AI rationale</div>
                           <p className="font-body text-ink text-body leading-relaxed">{pa.rationale}</p>
                         </div>
@@ -1362,7 +1362,7 @@ export default function AgentControl() {
                                               <div className="flex items-center gap-1.5 mb-0.5">
                                                 <div className="font-body text-muted text-label">{s.signal}</div>
                                                 {s.stage && (
-                                                  <span className={`font-body text-micro px-1 py-0.5 rounded-btn font-medium tracking-normal ${stageCfg.cls}`}>{stageCfg.label}</span>
+                                                  <span className={`font-body text-micro px-1 py-0.5 font-medium tracking-normal ${stageCfg.cls}`}>{stageCfg.label}</span>
                                                 )}
                                               </div>
                                               <div className="font-body text-ink text-label font-medium">{s.reading}</div>
@@ -1424,7 +1424,7 @@ export default function AgentControl() {
                       {pa.evidence?.riskForecast && (
                         <div>
                           <div className="font-body text-muted text-label tracking-normal mb-2">Risk if deferred</div>
-                          <p className="font-body text-muted text-label leading-relaxed px-4 py-3 border border-rule2 bg-stone2">{pa.evidence.riskForecast}</p>
+                          <p className="font-body text-muted text-label leading-relaxed px-4 py-3 bg-stone2">{pa.evidence.riskForecast}</p>
                         </div>
                       )}
                       </div>
@@ -1441,11 +1441,11 @@ export default function AgentControl() {
                         <>
                           <ApproveBtn isCompliance={isCompliance} disabled={false} onApprove={() => handleApprove(pa._key)} />
                           <button type="button" onClick={() => setOverrideModal({ pa, agent })}
-                            className="inline-flex items-center justify-center w-11 h-11 rounded-full border border-rule2 text-muted hover:text-ink hover:border-muted transition-colors">
+                            className="inline-flex items-center justify-center w-11 h-11 rounded-full text-muted hover:text-ink hover:border-muted transition-colors">
                             <Flag size={13} strokeWidth={2} />
                           </button>
                           <button type="button" onClick={() => setInvestigationDrawer({ pa, agent })}
-                            className="inline-flex items-center justify-center w-11 h-11 rounded-full border border-rule2 text-muted hover:text-ink hover:border-muted transition-colors">
+                            className="inline-flex items-center justify-center w-11 h-11 rounded-full text-muted hover:text-ink hover:border-muted transition-colors">
                             <InspectionPanel size={13} strokeWidth={2} />
                           </button>
                           <span className="font-body text-muted text-label ml-1">{pa._meta.blastRadius}</span>
@@ -1531,7 +1531,7 @@ export default function AgentControl() {
                                   <div className="font-body text-muted text-label">{agent.name}</div>
                                   <div className="font-display font-bold text-ink text-base leading-snug mt-0.5">{pa._meta.verbFirst}</div>
                                 </div>
-                                <span className={`font-body text-micro px-1.5 py-0.5 rounded-btn flex-shrink-0 ${cfg.color} ${cfg.bg}`}>{cfg.label}</span>
+                                <span className={`font-body text-micro px-1.5 py-0.5 flex-shrink-0 ${cfg.color} ${cfg.bg}`}>{cfg.label}</span>
                               </div>
                               {pa.impactPreview?.slice(0, 2).map((l, i) => (
                                 <div key={i} className="font-body text-muted text-label leading-snug mb-0.5">· {l}</div>
@@ -1547,11 +1547,11 @@ export default function AgentControl() {
                                 <div className="flex items-center gap-2">
                                   <ApproveBtn isCompliance={isCompliance} disabled={false} onApprove={() => handleApprove(pa._key)} />
                                   <button type="button" onClick={() => setOverrideModal({ pa, agent })}
-                                    className="inline-flex items-center justify-center w-11 h-11 rounded-full border border-rule2 text-muted hover:text-ink transition-colors">
+                                    className="inline-flex items-center justify-center w-11 h-11 rounded-full text-muted hover:text-ink transition-colors">
                                     <Flag size={12} strokeWidth={2} />
                                   </button>
                                   <button type="button" onClick={() => setInvestigationDrawer({ pa, agent })}
-                                    className="inline-flex items-center justify-center w-11 h-11 rounded-full border border-rule2 text-muted hover:text-ink transition-colors">
+                                    className="inline-flex items-center justify-center w-11 h-11 rounded-full text-muted hover:text-ink transition-colors">
                                     <InspectionPanel size={12} strokeWidth={2} />
                                   </button>
                                 </div>
@@ -1591,7 +1591,7 @@ export default function AgentControl() {
                                 <div className="flex items-center gap-1.5">
                                   <ApproveBtn isCompliance={false} disabled={false} onApprove={() => handleApprove(pa._key)} />
                                   <button type="button" onClick={() => setOverrideModal({ pa, agent })}
-                                    className="inline-flex items-center justify-center w-11 h-11 rounded-full border border-rule2 text-muted hover:text-ink transition-colors">
+                                    className="inline-flex items-center justify-center w-11 h-11 rounded-full text-muted hover:text-ink transition-colors">
                                     <Flag size={12} strokeWidth={2} />
                                   </button>
                                 </div>

@@ -3,10 +3,10 @@ import { equipment, recipes, spcData, runHistory } from '../data/equipment'
 import { AlertTriangle, CheckCircle2, Wrench, Activity, Clock } from 'lucide-react'
 
 const STATUS_CFG = {
-  active:      { label: 'Active',       dot: 'bg-ok',     badge: 'bg-ok/10 text-ok border border-ok/30' },
-  maintenance: { label: 'Maintenance',  dot: 'bg-warn',   badge: 'bg-warn/10 text-warn border border-warn/30' },
-  offline:     { label: 'Offline',      dot: 'bg-danger', badge: 'bg-danger/[0.04] text-danger border border-danger/30' },
-  idle:        { label: 'Idle',         dot: 'bg-muted',  badge: 'bg-stone3 text-muted border border-rule2' },
+  active:      { label: 'Active',       dot: 'bg-ok',     badge: 'bg-ok/10 text-ok' },
+  maintenance: { label: 'Maintenance',  dot: 'bg-warn',   badge: 'bg-warn/10 text-warn' },
+  offline:     { label: 'Offline',      dot: 'bg-danger', badge: 'bg-danger/[0.04] text-danger' },
+  idle:        { label: 'Idle',         dot: 'bg-muted',  badge: 'bg-stone3 text-muted' },
 }
 
 const SPC_CFG = {
@@ -34,15 +34,15 @@ function EquipmentCard({ eq, selected, onClick }) {
   const spcCfg = eq.spcStatus ? SPC_CFG[eq.spcStatus] : null
   return (
     <button type="button" onClick={onClick}
-      className={`w-full text-left p-3 border-b border-rule2 border-l-4 transition-colors ${
-        selected ? 'border-l-ochre bg-stone2' : 'border-l-transparent hover:bg-stone2/50'
+      className={`w-full text-left p-3 border-b border-rule2 transition-colors ${
+        selected ? 'bg-stone2' : 'hover:bg-stone2/50'
       }`}>
       <div className="flex items-start justify-between gap-2 mb-1">
         <div>
-          <div className="font-body font-medium text-ink text-label leading-snug">{eq.name}</div>
+          <div className="font-display font-medium text-ink text-section leading-snug">{eq.name}</div>
           <div className="font-body text-muted text-label">{eq.type} · {eq.zone}</div>
         </div>
-        <span className={`font-body text-micro px-1.5 py-0.5 border flex-shrink-0 ${cfg.badge}`}>{cfg.label}</span>
+        <span className={`font-body text-label px-1.5 py-0.5 flex-shrink-0 ${cfg.badge}`}>{cfg.label}</span>
       </div>
       {eq.status === 'active' && <HealthBar score={eq.healthScore} />}
       <div className="flex items-center gap-3 mt-1.5">
@@ -173,10 +173,10 @@ function RunHistory({ eqId }) {
   const runs = runHistory[eqId]
   if (!runs || runs.length === 0) return null
   const OUTCOME_CFG = {
-    'in-progress': { cls: 'text-ochre', label: 'In progress' },
-    'pending-qp':  { cls: 'text-warn',  label: 'Pending QP' },
-    'released':    { cls: 'text-ok',    label: 'Released' },
-    'rejected':    { cls: 'text-danger', label: 'Rejected' },
+    'in-progress': { cls: 'bg-ochre/10 text-ochre', label: 'In progress' },
+    'pending-qp':  { cls: 'bg-warn/10 text-warn',   label: 'Pending QP' },
+    'released':    { cls: 'bg-ok/10 text-ok',        label: 'Released' },
+    'rejected':    { cls: 'bg-danger/10 text-danger', label: 'Rejected' },
   }
   return (
     <div className="flex-shrink-0 border-t border-rule2">
@@ -193,7 +193,7 @@ function RunHistory({ eqId }) {
               <div className="font-body text-muted text-label">{r.recipe} · {r.startDate}{r.endDate ? ` → ${r.endDate}` : ' → present'}</div>
             </div>
             <div className="text-right flex-shrink-0">
-              <div className={`font-body text-label ${oc.cls}`}>{oc.label}</div>
+              <span className={`font-body text-label px-1.5 py-0.5 ${oc.cls}`}>{oc.label}</span>
               {r.spcViolations > 0 && (
                 <div className="font-body text-warn text-micro">{r.spcViolations} SPC violation{r.spcViolations > 1 ? 's' : ''}</div>
               )}
@@ -219,7 +219,7 @@ function EquipmentDetail({ eq }) {
       {/* Header */}
       <div className="flex-shrink-0 px-6 py-4 border-b border-rule2">
         <div className="flex items-center gap-2 mb-2">
-          <span className={`font-body text-label px-1.5 py-0.5 border ${cfg.badge}`}>{cfg.label}</span>
+          <span className={`font-body text-label px-1.5 py-0.5 ${cfg.badge}`}>{cfg.label}</span>
           {spcCfg && (
             <span className={`flex items-center gap-1 font-body text-label ${spcCfg.tone}`}>
               <span className={`w-1.5 h-1.5 rounded-full ${spcCfg.dot}`} />

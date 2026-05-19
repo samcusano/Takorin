@@ -105,7 +105,7 @@ function SignalRow({ s }) {
         <div className="flex items-baseline gap-2">
           <span className="font-body text-muted text-label tracking-normal">{s.label}</span>
           {s.influence === 'critical' && (
-            <span className="font-body text-micro text-ochre tracking-normal border border-ochre/40 px-1">critical signal</span>
+            <span className="font-body text-micro text-ochre tracking-normal px-1">critical signal</span>
           )}
         </div>
         {s.note && <div className="font-body text-muted text-label mt-0.5 leading-snug">{s.note}</div>}
@@ -178,7 +178,7 @@ function QualityTab() {
                       <div className="font-body text-muted text-label">{r.gradeProjection} · {r.confidence}% conf</div>
                     </div>
                   </div>
-                  <div className="divide-y divide-rule2 border border-rule2">
+                  <div className="divide-y divide-rule2">
                     {r.compounds.map((c, i) => {
                       const toneColor = c.tone === 'ok' ? 'text-ok' : c.tone === 'warn' ? 'text-warn' : 'text-danger'
                       const Arrow = c.direction === 'up' ? TrendingUp : c.direction === 'down' ? TrendingDown : Minus
@@ -206,7 +206,7 @@ function QualityTab() {
         {qTab === 'annotations' && (
           <div className="divide-y divide-rule2">
             {expertAnnotations.map(a => {
-              const typeTone = { 'quality-watch': 'text-warn bg-warn/10 border-warn/30', 'grade-confirmation': 'text-ok bg-ok/10 border-ok/30', 'process-note': 'text-muted bg-stone3 border-rule2', 'outcome-validation': 'text-ochre bg-ochre/10 border-ochre/30' }[a.type] ?? 'text-muted bg-stone3 border-rule2'
+              const typeTone = { 'quality-watch': 'text-warn bg-warn/10 ', 'grade-confirmation': 'text-ok bg-ok/10 ', 'process-note': 'text-muted bg-stone3 border-rule2', 'outcome-validation': 'text-ochre bg-ochre/10 border-ochre/30' }[a.type] ?? 'text-muted bg-stone3 border-rule2'
               const typeLabel = { 'quality-watch': 'Quality watch', 'grade-confirmation': 'Grade confirmation', 'process-note': 'Process note', 'outcome-validation': 'Outcome validation' }[a.type] ?? a.type
               return (
                 <div key={a.id} className="px-6 py-4">
@@ -215,11 +215,11 @@ function QualityTab() {
                       <div className="font-body font-medium text-ink text-body">{a.author} <span className="text-muted font-normal">· {a.authorTitle}</span></div>
                       <div className="font-body text-muted text-label mt-0.5">Batch: {a.batch}</div>
                     </div>
-                    <span className={`font-body text-label tracking-normal px-1.5 py-0.5 border flex-shrink-0 ${typeTone}`}>{typeLabel}</span>
+                    <span className={`font-body text-label tracking-normal px-1.5 py-0.5 flex-shrink-0 ${typeTone}`}>{typeLabel}</span>
                   </div>
                   <p className="font-body text-ink text-label leading-relaxed mb-2">{a.observation}</p>
                   {a.modelResponse && (
-                    <div className="flex items-start gap-2 px-3 py-2 bg-stone2 border border-rule2">
+                    <div className="flex items-start gap-2 px-3 py-2 bg-stone2">
                       <span className="font-body text-muted text-label tracking-normal flex-shrink-0 mt-0.5">Model</span>
                       <span className="font-body text-muted text-label leading-snug flex-1">{a.modelResponse}</span>
                       {a.confidenceImpact && <span className="font-body text-ok text-label flex-shrink-0 font-medium">{a.confidenceImpact}</span>}
@@ -248,7 +248,7 @@ function QualityTab() {
                   <span className="font-body text-muted text-label">{p.author}</span>
                   <span className="font-body text-muted">·</span>
                   <span className="font-body text-muted text-label">{p.evidenceYears}</span>
-                  <div className={`ml-2 font-body text-label px-1.5 py-0.5 border ${p.tone === 'warn' ? 'text-warn border-warn/30 bg-warn/10' : 'text-ok border-ok/30 bg-ok/10'}`}>{p.modelStatus.split('—')[0].trim()}</div>
+                  <div className={`ml-2 font-body text-label px-1.5 py-0.5 ${p.tone === 'warn' ? 'text-warn bg-warn/10' : 'text-ok bg-ok/10'}`}>{p.modelStatus.split('—')[0].trim()}</div>
                 </div>
               </div>
             ))}
@@ -321,13 +321,16 @@ export default function BatchIntelligence() {
             const pctDone = Math.round((b.daysElapsed / b.totalDays) * 100)
             return (
               <button key={b.id} type="button" onClick={() => setSelectedId(b.id)}
-                className={`w-full text-left px-4 py-3.5 transition-colors border-l-4 ${
-                  isSelected
-                    ? 'bg-stone2 border-l-ochre'
-                    : 'border-l-transparent hover:bg-stone2/50'
+                className={`w-full text-left px-4 py-3.5 transition-colors ${
+                  isSelected ? 'bg-stone2' : 'hover:bg-stone2/50'
                 }`}>
+                {conf != null && conf < 75 && (
+                  <span className={`inline-flex items-center font-body text-label px-1.5 py-0.5 mb-1.5 ${conf < 60 ? 'bg-danger/10 text-danger' : 'bg-warn/10 text-warn'}`}>
+                    {conf < 60 ? 'Critical' : 'Watch'}
+                  </span>
+                )}
                 <div className="flex items-baseline justify-between gap-2 mb-1">
-                  <span className="font-display font-bold text-ink text-base leading-none truncate">{b.name}</span>
+                  <span className="font-display font-medium text-ink text-section leading-none truncate">{b.name}</span>
                   <span className={`font-body font-medium text-label tabular-nums flex-shrink-0 ${confColor}`}>{conf}%</span>
                 </div>
                 <div className="font-body text-muted text-label mb-2">{b.vessel} · {b.daysElapsed}/{b.totalDays}d</div>
@@ -340,7 +343,7 @@ export default function BatchIntelligence() {
                 </div>
                 {b.hasFinding && (
                   <div className="mt-1.5">
-                    <span className="font-body text-micro px-1 py-0.5 border border-warn/30 text-warn bg-warn/[0.04]">Finding</span>
+                    <span className="font-body text-micro px-1 py-0.5 text-warn bg-warn/[0.04]">Finding</span>
                   </div>
                 )}
               </button>
@@ -368,7 +371,7 @@ export default function BatchIntelligence() {
               <span className="font-body text-muted text-label">{batch.volume}</span>
               <span className="font-body text-muted">·</span>
               {activePolicies.map(p => (
-                <span key={p.id} className={`font-body text-label px-1.5 py-0.5 border ${p.status === 'active' ? 'border-ok/30 text-ok bg-ok/[0.04]' : 'border-rule2 text-muted'}`}>
+                <span key={p.id} className={`font-body text-label px-1.5 py-0.5 ${p.status === 'active' ? 'text-ok bg-ok/[0.04]' : 'border-rule2 text-muted'}`}>
                   {p.name}
                 </span>
               ))}
@@ -487,7 +490,7 @@ export default function BatchIntelligence() {
                   <div>
                     <div className="font-body text-muted text-label tracking-normal mb-2">Historical comparables</div>
                     {batch.qualityPrediction.historicalComparables.map((c, i) => (
-                      <div key={i} className={`px-3 py-2 border border-rule2 mb-1.5 border-l-2 ${c.finalGrade === 'Premium' ? 'border-l-ok' : 'border-l-warn'}`}>
+                      <div key={i} className={`px-3 py-2 mb-1.5 border-l-2 ${c.finalGrade === 'Premium' ? 'border-l-ok' : 'border-l-warn'}`}>
                         <div className="flex items-baseline justify-between">
                           <span className="font-body text-muted text-label">{c.batch}</span>
                           <span className="font-body text-muted text-label">{c.similarity}% match</span>

@@ -128,14 +128,14 @@ function EntryDetail({ entry }) {
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1.5 flex-wrap">
               {domain && (
-                <span className={`font-body text-label px-2 py-0.5 rounded-btn ${domain.badge}`}>{domain.label}</span>
+                <span className={`font-body text-label px-2 py-0.5 ${domain.badge}`}>{domain.label}</span>
               )}
               {memType && (
                 <span className="inline-flex items-center gap-1 font-body text-label text-muted">
                   <span className={`w-1.5 h-1.5 rounded-full ${memType.dot}`} />{memType.label}
                 </span>
               )}
-              <span className={`inline-flex items-center gap-1 font-body font-medium text-label px-2 py-0.5 rounded-btn ${recallColor.chip}`}>
+              <span className={`inline-flex items-center gap-1 font-body font-medium text-label px-2 py-0.5 ${recallColor.chip}`}>
                 <span className={`w-1 h-1 rounded-full ${recallColor.dot}`} />
                 {entry._recallMode}-driven
               </span>
@@ -148,7 +148,7 @@ function EntryDetail({ entry }) {
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <div className="w-5 h-5 rounded-full bg-stone3 border border-rule2 flex items-center justify-center flex-shrink-0">
+          <div className="w-5 h-5 rounded-full bg-stone3 flex items-center justify-center flex-shrink-0">
             <span className="font-body text-muted text-micro">{entry.author.name.split(' ').map(p => p[0]).join('')}</span>
           </div>
           <span className="font-body text-muted text-label">{entry.author.name} · {entry.author.title}</span>
@@ -163,9 +163,9 @@ function EntryDetail({ entry }) {
         </div>
         <div>
           <div className="font-body text-muted text-label tracking-normal mb-2">Encoded rule</div>
-          <pre className="font-body text-muted text-label leading-relaxed bg-stone2 border border-rule2 px-4 py-3 whitespace-pre-wrap">{entry.codedRule}</pre>
+          <pre className="font-body text-muted text-label leading-relaxed bg-stone2 px-4 py-3 whitespace-pre-wrap">{entry.codedRule}</pre>
         </div>
-        <div className="grid grid-cols-3 gap-px bg-rule2 border border-rule2">
+        <div className="grid grid-cols-3 gap-px bg-rule2">
           {[
             { label: 'Evidence batches', val: entry.evidenceBase.batchCount != null ? String(entry.evidenceBase.batchCount) : 'Protocol-based' },
             { label: 'Year range',       val: entry.evidenceBase.yearRange },
@@ -182,16 +182,16 @@ function EntryDetail({ entry }) {
             <div className="font-body text-muted text-label tracking-normal mb-2">Active batches</div>
             <div className="flex flex-wrap gap-1.5">
               {entry.activeBatches.map(b => (
-                <span key={b} className="font-body text-ochre text-label px-2 py-0.5 border border-ochre/40 bg-ochre/[0.06]">{b}</span>
+                <span key={b} className="font-body text-ochre text-label px-2 py-0.5 bg-ochre/[0.06]">{b}</span>
               ))}
             </div>
           </div>
         )}
         {entry.institutionalRisk && (
-          <div className={`px-4 py-3 border border-l-4 ${
-            entry.institutionalRisk.startsWith('HIGH')   ? 'border-danger/30 border-l-danger bg-danger/[0.03]' :
-            entry.institutionalRisk.startsWith('MEDIUM') ? 'border-warn/30 border-l-warn bg-warn/[0.02]'     :
-            'border-rule2 border-l-ok'
+          <div className={`px-4 py-3 border ${
+            entry.institutionalRisk.startsWith('HIGH')   ? 'border-danger/30 bg-danger/[0.03]' :
+            entry.institutionalRisk.startsWith('MEDIUM') ? 'bg-warn/[0.02]'     :
+            'border-rule2'
           }`}>
             <div className="font-body text-muted text-label tracking-normal mb-0.5">Institutional risk</div>
             <p className="font-body text-muted text-label leading-snug">{entry.institutionalRisk}</p>
@@ -383,7 +383,7 @@ function OperationalMemoryVault() {
                                       {risk.label}
                                     </StatusPill>
                                   )}
-                                  <span className={`inline-flex items-center gap-1 font-body text-label px-1.5 py-0.5 rounded-btn ${recallC.chip}`}>
+                                  <span className={`inline-flex items-center gap-1 font-body text-label px-1.5 py-0.5 ${recallC.chip}`}>
                                     <span className={`w-1 h-1 rounded-full ${recallC.dot}`} />
                                     {e._recallMode}
                                   </span>
@@ -429,7 +429,7 @@ function OperationalMemoryVault() {
         <SlidePanel title={slideEntry.batchId} subtitle={`${slideEntry.sku} · ${slideEntry.grade}`}
           onClose={() => setSlideEntry(null)} maxWidth="480px">
           <div className="space-y-4 px-1 py-2">
-            <div className="grid grid-cols-3 gap-px bg-rule2 border border-rule2">
+            <div className="grid grid-cols-3 gap-px bg-rule2">
               {[{ label: 'Aroma', val: String(slideEntry.finalAromaScore) }, { label: 'EBC', val: String(slideEntry.finalEBC) }, { label: 'Amino N', val: slideEntry.finalAminoNitrogen }].map(({ label, val }) => (
                 <div key={label} className="bg-stone px-3 py-2.5">
                   <div className="font-body text-muted text-label tracking-normal mb-0.5">{label}</div>
@@ -439,7 +439,7 @@ function OperationalMemoryVault() {
             </div>
             <div>
               <div className="font-body text-muted text-label tracking-normal mb-2">Key signal events</div>
-              <div className="divide-y divide-rule2 border border-rule2">
+              <div className="divide-y divide-rule2">
                 {slideEntry.keySignals?.map((s, i) => (
                   <div key={i} className="flex items-start gap-3 px-4 py-2.5">
                     <span className="font-body text-muted text-label w-10 flex-shrink-0 pt-0.5">Day {s.day}</span>
@@ -482,7 +482,7 @@ function ResearchMode({ variant, setVariant }) {
           <div className="font-body text-muted text-label tracking-normal mb-0.5">Platform Architecture</div>
           <div className="font-display font-bold text-ink text-head leading-none">Knowledge Vault</div>
         </div>
-        <div className="flex items-stretch border border-rule2 overflow-hidden">
+        <div className="flex items-stretch overflow-hidden">
           {['A', 'B', 'C'].map(v => (
             <button key={v} type="button" onClick={() => setVariant(v)}
               className={`font-body text-label px-2.5 py-1 transition-colors ${variant === v ? 'bg-ink text-stone' : 'text-muted hover:text-muted'}`}>
@@ -499,7 +499,7 @@ function ResearchMode({ variant, setVariant }) {
           return (
             <button key={String(d.id)} type="button"
               onClick={() => { setFilterCat(d.id); setShowMemory(false) }}
-              className={`inline-flex items-center gap-1 font-body font-medium text-label px-2 py-0.5 rounded-btn transition-colors ${
+              className={`inline-flex items-center gap-1 font-body font-medium text-label px-2 py-0.5 transition-colors ${
                 isActive ? (domDef ? domDef.badge : 'bg-ochre/10 text-ochre') : 'bg-stone3 text-muted hover:text-muted'
               }`}>
               <span className="w-1 h-1 rounded-full bg-current" />{d.label} <span className="opacity-60">{d.count}</span>
@@ -507,7 +507,7 @@ function ResearchMode({ variant, setVariant }) {
           )
         })}
         <button type="button" onClick={() => { setShowMemory(true); setFilterCat(null) }}
-          className={`inline-flex items-center gap-1 font-body font-medium text-label px-2 py-0.5 rounded-btn transition-colors ${showMemory ? 'bg-ochre/10 text-ochre' : 'bg-stone3 text-muted hover:text-muted'}`}>
+          className={`inline-flex items-center gap-1 font-body font-medium text-label px-2 py-0.5 transition-colors ${showMemory ? 'bg-ochre/10 text-ochre' : 'bg-stone3 text-muted hover:text-muted'}`}>
           <span className="w-1 h-1 rounded-full bg-current" />Process Memory {processMemory.length}
         </button>
       </div>
@@ -515,17 +515,20 @@ function ResearchMode({ variant, setVariant }) {
         {filtered.map(e => {
           const open = expandedIds.has(e.id)
           const riskKey = e.institutionalRisk?.split(' ')[0]
-          const borderLeft = riskKey === 'HIGH' ? 'border-l-danger' : riskKey === 'MEDIUM' ? 'border-l-warn' : 'border-l-ok/40'
+          const riskBadgeCls = riskKey === 'HIGH' ? 'bg-danger/10 text-danger' : riskKey === 'MEDIUM' ? 'bg-warn/10 text-warn' : null
           const domain = DOMAINS.find(d => d.id === e._domain)
           const conf = e.confidence >= 90 ? 'text-ok' : e.confidence >= 80 ? 'text-ochre' : 'text-warn'
           return (
-            <div key={e.id} className={`border-l-4 ${borderLeft}`}>
+            <div key={e.id}>
               <button type="button"
                 onClick={() => setExpandedIds(prev => { const n = new Set(prev); n.has(e.id) ? n.delete(e.id) : n.add(e.id); return n })}
                 className="w-full text-left px-5 py-4 hover:bg-stone2/50 transition-colors flex items-start gap-4">
                 <div className="flex-1 min-w-0">
-                  {domain && <span className={`font-body text-label px-1.5 py-0.5 rounded-btn ${domain.badge} mb-1 inline-block`}>{domain.label}</span>}
-                  <div className="font-body font-medium text-ink text-base leading-snug mb-1">{e.title}</div>
+                  <div className="flex items-center gap-2 mb-1.5">
+                    {domain && <span className={`font-body text-micro px-1.5 py-0.5 ${domain.badge}`}>{domain.label}</span>}
+                    {riskBadgeCls && <span className={`inline-flex items-center font-body text-label px-1.5 py-0.5 ${riskBadgeCls}`}>{riskKey === 'HIGH' ? 'High risk' : 'Medium risk'}</span>}
+                  </div>
+                  <div className="font-display font-medium text-ink text-section leading-snug mb-1">{e.title}</div>
                   <div className="font-body text-muted text-label line-clamp-2">{e.body?.slice(0, 100)}…</div>
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0">
@@ -536,7 +539,7 @@ function ResearchMode({ variant, setVariant }) {
               {open && (
                 <div className="px-5 pb-4 border-t border-rule2 bg-stone2">
                   <p className="font-body text-ink text-body leading-relaxed pt-3 mb-3">{e.body}</p>
-                  <pre className="font-body text-muted text-label leading-relaxed bg-stone border border-rule2 px-4 py-3 whitespace-pre-wrap">{e.codedRule}</pre>
+                  <pre className="font-body text-muted text-label leading-relaxed bg-stone px-4 py-3 whitespace-pre-wrap">{e.codedRule}</pre>
                 </div>
               )}
             </div>
@@ -563,7 +566,7 @@ function DeepReference({ variant, setVariant }) {
       <div className="w-[200px] flex-shrink-0 border-r border-rule2 flex flex-col bg-stone">
         <div className="flex-shrink-0 flex items-center justify-between px-4 py-3 border-b border-rule2 bg-stone2">
           <div className="font-display font-bold text-ink text-base leading-none">Knowledge Vault</div>
-          <div className="flex items-stretch border border-rule2 overflow-hidden">
+          <div className="flex items-stretch overflow-hidden">
             {['A', 'B', 'C'].map(v => (
               <button key={v} type="button" onClick={() => setVariant(v)}
                 className={`font-body text-label px-1.5 py-1 transition-colors ${variant === v ? 'bg-ink text-stone' : 'text-muted hover:text-muted'}`}>
@@ -618,7 +621,7 @@ function DeepReference({ variant, setVariant }) {
               return (
                 <button key={e.id} type="button" onClick={() => setSelectedId(e.id)}
                   className={`w-full text-left px-4 py-3.5 border-l-4 transition-colors ${selectedId === e.id ? 'bg-stone2 border-l-ochre' : `${borderLeft} hover:bg-stone2/50`}`}>
-                  {domain && <span className={`font-body text-micro px-1.5 py-0.5 rounded-btn ${domain.badge} mb-1 inline-block`}>{domain.label}</span>}
+                  {domain && <span className={`font-body text-micro px-1.5 py-0.5 ${domain.badge} mb-1 inline-block`}>{domain.label}</span>}
                   <div className="flex items-start justify-between gap-2">
                     <div className="font-body font-medium text-ink text-body leading-snug flex-1">{e.title}</div>
                     <div className={`font-display font-bold display-num text-subhead leading-none flex-shrink-0 ${conf}`}>{e.confidence}%</div>

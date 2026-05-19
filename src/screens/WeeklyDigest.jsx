@@ -131,7 +131,7 @@ export default function WeeklyDigest() {
         </div>
         <div className="flex items-center gap-2">
           <button type="button" onClick={() => window.print()}
-            className="flex items-center gap-1.5 font-body text-label text-muted px-3 py-2 border border-rule2 hover:border-ink/30 transition-colors">
+            className="flex items-center gap-1.5 font-body text-label text-muted px-3 py-2 hover:border-ink/30 transition-colors">
             <Printer size={12} strokeWidth={2} />
             Print
           </button>
@@ -159,7 +159,7 @@ export default function WeeklyDigest() {
                 const avg = Math.round(vals.reduce((a, b) => a + b, 0) / vals.length)
                 const delta = avg - 82
                 return (
-                  <div key={key} className="bg-stone2 px-3 py-3 border border-rule2">
+                  <div key={key} className="bg-stone2 px-3 py-3">
                     <div className="font-body text-muted text-label mb-1" style={{ color: LINE_COLORS[key] }}>{label}</div>
                     <div className="display-num text-2xl font-bold text-ink">{avg}%</div>
                     <DeltaBadge delta={delta} />
@@ -183,7 +183,7 @@ export default function WeeklyDigest() {
                 <div className="display-num text-3xl font-bold text-ok">{closedCount}</div>
                 <div className="font-body text-ok text-label mt-0.5">cases · all evidence-gated</div>
               </div>
-              <div className={`border px-4 py-4 ${openCount > 0 ? 'border-warn/30 bg-warn/[0.03]' : 'border-rule2 bg-stone'}`}>
+              <div className={`border px-4 py-4 ${openCount > 0 ? 'bg-warn/[0.03]' : 'border-rule2 bg-stone'}`}>
                 <div className="font-body text-muted text-label tracking-normal mb-1">Open</div>
                 <div className={`display-num text-3xl font-bold ${openCount > 0 ? 'text-warn' : 'text-ok'}`}>{openCount}</div>
                 <div className="font-body text-muted text-label mt-0.5">cases in progress</div>
@@ -217,7 +217,7 @@ export default function WeeklyDigest() {
           {/* 3. Highest-value intervention */}
           <section>
             <h2 className="font-display font-bold text-ink text-body mb-4">Highest-value intervention this week</h2>
-            <div className="border border-ok/30 bg-ok/[0.03] px-5 py-4">
+            <div className="border bg-ok/[0.03] px-5 py-4">
               <div className="flex items-start justify-between mb-2">
                 <div>
                   <div className="font-body text-ok text-label tracking-normal mb-1">{topIntervention.line}</div>
@@ -286,7 +286,7 @@ export default function WeeklyDigest() {
                       <span className={`display-num text-xl font-bold ${onTrack ? 'text-ok' : 'text-warn'}`}>{g.current}</span>
                       <span className="font-body text-muted text-label">{g.unit}</span>
                     </div>
-                    <div className={`font-body text-label font-medium px-2 py-0.5 flex-shrink-0 rounded-btn ${onTrack ? 'bg-ok/10 text-ok' : 'bg-warn/10 text-warn'}`}>
+                    <div className={`font-body text-label font-medium px-2 py-0.5 flex-shrink-0 ${onTrack ? 'bg-ok/10 text-ok' : 'bg-warn/10 text-warn'}`}>
                       {onTrack ? 'On track' : 'Needs attention'}
                     </div>
                   </div>

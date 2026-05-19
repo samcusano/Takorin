@@ -86,7 +86,6 @@ function Narrative({ children, size = 13, color, style = {}, ...props }) {
         fontSize: size,
         lineHeight: 1.55,
         color: color || P.clay,
-        fontStyle: 'italic',
         ...style,
       }}
       {...props}>
@@ -136,7 +135,7 @@ function FindingCard({ f, index, onAct }) {
       <div style={{ padding: '14px 16px 10px', display: 'flex', alignItems: 'flex-start', gap: 14 }}>
         {/* Ordinal — editorial serif */}
         <span style={{
-          fontFamily: 'Georgia, Times New Roman, serif',
+          fontFamily: "'Inter', 'Helvetica Neue', system-ui, sans-serif",
           fontSize: 22,
           fontWeight: 700,
           color: uc,
@@ -475,7 +474,7 @@ export default function ShiftIQV2({ score = 78, lineLabel = 'Line 4 · AM Shift'
             {/* Score block — the instrument */}
             <div style={{ flexShrink: 0 }}>
               <div style={{
-                fontFamily: 'Georgia, Times New Roman, serif',
+                fontFamily: "'Inter', 'Helvetica Neue', system-ui, sans-serif",
                 fontSize: 88,
                 fontWeight: 800,
                 lineHeight: 1,
@@ -588,7 +587,7 @@ export default function ShiftIQV2({ score = 78, lineLabel = 'Line 4 · AM Shift'
                 {/* Count */}
                 <div style={{ flexShrink: 0 }}>
                   <span style={{
-                    fontFamily: 'Georgia, Times New Roman, serif',
+                    fontFamily: "'Inter', 'Helvetica Neue', system-ui, sans-serif",
                     fontSize: 36,
                     fontWeight: 700,
                     lineHeight: 1,
@@ -631,7 +630,7 @@ export default function ShiftIQV2({ score = 78, lineLabel = 'Line 4 · AM Shift'
 
               {/* Narrative context for checklist state */}
               <div style={{ marginTop: 10, paddingLeft: 2 }}>
-                <Narrative size={11} color={P.clay} style={{ fontStyle: 'italic', lineHeight: 1.6 }}>
+                <Narrative size={11} color={P.clay} style={{ lineHeight: 1.6 }}>
                   4 overdue items at T+42 correlates with 18% elevated scrap rate on comparable Line 4 Pepperoni runs.
                 </Narrative>
               </div>

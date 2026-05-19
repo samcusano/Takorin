@@ -181,7 +181,7 @@ function PriorityQueueRow({ c, isSelected, onSelect, isEscalated, isResolved }) 
   </StatusPill>
   {/* Directed ownership indicator */}
   {c.directorTurn && !isResolved && !isEscalated && (
-   <span className="font-body text-label bg-ochre/10 text-ochre px-1.5 py-0.5 font-medium">Your turn</span>
+   <span className="font-body text-label bg-ochre/10 text-ochre px-1.5 py-0.5">Your turn</span>
   )}
   {c.currentOwner && !c.directorTurn && !isResolved && !isEscalated && (
    <span className="font-body text-muted text-label">{c.currentOwner}</span>
@@ -353,7 +353,7 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
     </div>
    </div>
    <button type="button" onClick={() => acknowledgeCapaAssignment?.(c.id)}
-    className="font-body text-label px-3 py-1.5 border border-rule2 bg-stone text-muted hover:text-ink hover:border-rule transition-colors flex-shrink-0">
+    className="font-body text-label px-3 py-1.5 bg-stone text-muted hover:text-ink hover:border-rule transition-colors flex-shrink-0">
     Acknowledge assignment
    </button>
   </div>
@@ -404,7 +404,7 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
  <div className="space-y-3">
   <div>
    <div className="font-body text-muted text-label mb-1">Root cause confirmed</div>
-   <div className="font-body text-ink2 text-label px-3 py-2 bg-stone border border-rule2">{c.rootCause}</div>
+   <div className="font-body text-ink2 text-label px-3 py-2 bg-stone">{c.rootCause}</div>
   </div>
   <div>
    <div className="font-body text-muted text-label mb-1">Corrective measure <span className="text-danger">*</span></div>
@@ -413,7 +413,7 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
     onChange={e => setCorrectiveMeasure(e.target.value)}
     placeholder="Describe what was done to resolve this case and prevent recurrence…"
     rows={3}
-    className="w-full font-body text-ink text-label bg-stone border border-rule2 px-3 py-2 resize-none focus:border-ink outline-none"
+    className="w-full font-body text-ink text-label bg-stone px-3 py-2 resize-none focus:border-ink outline-none"
    />
   </div>
   {/* Evidence declaration checklist — required before close */}
@@ -434,7 +434,7 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
     </label>
    ))}
    {!declarationComplete && (
-    <p className="font-body text-muted text-label italic mt-1">All three must be checked before the case can close.</p>
+    <p className="font-body text-muted text-label mt-1">All three must be checked before the case can close.</p>
    )}
   </div>
   <HoldButton
@@ -636,7 +636,7 @@ function LayoutQueue({ visibleCases, blockingEvidenceUploaded, setBlockingEviden
 
  {/* Search */}
  <div className="px-3 py-2 border-b border-rule2 flex-shrink-0">
-  <div className="flex items-center gap-2 bg-stone2 px-2 py-1.5 border border-rule2">
+  <div className="flex items-center gap-2 bg-stone2 px-2 py-1.5">
    <Search size={11} strokeWidth={2} className="text-muted flex-shrink-0" />
    <input
     type="text"
@@ -755,7 +755,7 @@ export default function CapaEngine() {
  aria-label="Reassign overdue cases to"
  value={reassignTarget}
  onChange={e => setReassignTarget(e.target.value)}
- className="font-body text-ink text-label bg-stone border border-rule2 px-2 py-1 flex-1 cursor-pointer"
+ className="font-body text-ink text-label bg-stone px-2 py-1 flex-1 cursor-pointer"
  >
  <option value="">Reassign overdue cases to…</option>
  <option>M. Santos · Line 4 PM</option>

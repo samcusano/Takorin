@@ -103,7 +103,7 @@ function ExposureOverlay({ triggerRef, active, actions, onAction, onBulkAction, 
         {/* Plant chips + note + FSMA */}
         <div className="flex items-center gap-2 px-4 pb-3 flex-wrap">
          {e.affectedPlants.map(id => (
-          <span key={id} className={`font-body text-label font-medium px-1.5 py-0.5 rounded-btn ${
+          <span key={id} className={`font-body text-label font-medium px-1.5 py-0.5 ${
            isCross ? 'bg-danger/[0.04] text-danger' : 'bg-warn/10 text-warn'
           }`}>{PLANT_CODE[id] || id}</span>
          ))}
@@ -259,7 +259,7 @@ function SupplierRegistry({ rows }) {
        {/* Exposure Count */}
        <div className="flex justify-center">
         {s.activeExposureCount > 0 ? (
-         <span className="font-body text-danger text-label font-medium px-2 py-0.5 bg-danger/[0.04] rounded-btn whitespace-nowrap">
+         <span className="font-body text-danger text-label font-medium px-2 py-0.5 bg-danger/[0.04] whitespace-nowrap">
           {s.activeExposureCount} active
          </span>
         ) : (

@@ -58,11 +58,11 @@ const STAGE_LABELS = {
   'unknown':   'Unknown',
 }
 const STAGE_COLORS = {
-  'primary':   'bg-ochre/10 text-ochre border-ochre/30',
-  'secondary': 'bg-ok/10 text-ok border-ok/30',
-  'koji':      'bg-muted/10 text-muted border-rule2',
-  'complete':  'bg-ok/[0.06] text-ok/70 border-ok/20',
-  'unknown':   'bg-stone3 text-muted border-rule2',
+  'primary':   'bg-ochre/10 text-ochre',
+  'secondary': 'bg-ok/10 text-ok',
+  'koji':      'bg-stone3 text-muted',
+  'complete':  'bg-ok/10 text-ok',
+  'unknown':   'bg-stone3 text-muted',
 }
 
 // Causal chains derived from zone data — maps zone ids to upstream/downstream context
@@ -187,7 +187,7 @@ function ScoreBar({ score, width = 60 }) {
 
 function EnvChip({ label, val, tone }) {
   return (
-    <div className={`flex items-center gap-1 px-2 py-1 border ${tone === 'ok' ? 'border-ok/20 bg-ok/[0.04]' : 'border-warn/30 bg-warn/[0.04]'}`}>
+    <div className={`flex items-center gap-1 px-2 py-1 border ${tone === 'ok' ? 'border-ok/20 bg-ok/[0.04]' : 'bg-warn/[0.04]'}`}>
       <span className="font-body text-muted text-label tracking-normal">{label}</span>
       <span className={`font-body font-medium text-label tabular-nums ${tone === 'ok' ? 'text-ok' : 'text-warn'}`}>{val}</span>
     </div>
@@ -272,7 +272,7 @@ function CausalPanel({ zone, building }) {
           </div>
         </div>
         {zone.alert && (
-          <div className="flex items-start gap-2 mt-3 px-3 py-2.5 bg-warn/[0.06] border border-warn/30 border-l-4 border-l-warn">
+          <div className="flex items-start gap-2 mt-3 px-3 py-2.5 bg-warn/[0.06] border-l-4 border-l-warn">
             <AlertTriangle size={10} className="text-warn flex-shrink-0 mt-0.5" strokeWidth={2} />
             <span className="font-body text-warn text-label leading-snug">{zone.alert.msg}</span>
           </div>
@@ -302,7 +302,7 @@ function CausalPanel({ zone, building }) {
                 </div>
                 <div className="space-y-1.5">
                   {causal.upstream.map((u, i) => (
-                    <div key={i} className={`flex items-start gap-3 px-3 py-2.5 border border-l-4 ${u.tone === 'warn' ? 'border-warn/30 border-l-warn bg-warn/[0.03]' : u.tone === 'danger' ? 'border-danger/30 border-l-danger bg-danger/[0.03]' : 'border-rule2 border-l-ok'}`}>
+                    <div key={i} className={`flex items-start gap-3 px-3 py-2.5 border border-l-4 ${u.tone === 'warn' ? 'border-l-warn bg-warn/[0.03]' : u.tone === 'danger' ? 'border-danger/30 border-l-danger bg-danger/[0.03]' : 'border-rule2 border-l-ok'}`}>
                       <div className="flex-1 min-w-0">
                         <div className="font-body font-medium text-ink text-label leading-snug">{u.label}</div>
                         <div className="font-body text-muted text-label leading-snug mt-0.5">{u.detail}</div>
@@ -314,7 +314,7 @@ function CausalPanel({ zone, building }) {
             )}
 
             {/* Current zone marker */}
-            <div className="flex items-center gap-2 py-2 px-3 bg-stone2 border border-rule2">
+            <div className="flex items-center gap-2 py-2 px-3 bg-stone2">
               <div className={`w-2 h-2 rounded-full flex-shrink-0 ${scoreBg(zone.score)}`} />
               <span className="font-body font-medium text-ink text-label">{zone.label}</span>
               <span className={`font-body font-bold text-label ml-auto ${statusColor}`}>{statusLabel} · {zone.score}</span>
@@ -485,7 +485,7 @@ function ReasoningPanel({ zone, building }) {
             <div className="font-body text-muted text-label tracking-normal mb-3">Other explanations</div>
             <div className="space-y-2">
               {r.competingHypotheses.map((h, i) => (
-                <div key={i} className="flex items-start gap-3 px-3 py-2.5 border border-rule2 bg-stone2">
+                <div key={i} className="flex items-start gap-3 px-3 py-2.5 bg-stone2">
                   <span className="font-body font-bold text-muted text-label flex-shrink-0 mt-0.5">{String.fromCharCode(65 + i)}</span>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-2 mb-0.5">
@@ -685,7 +685,7 @@ export default function ProcessHierarchy() {
           <div className="font-display font-bold display-num text-metric leading-none text-ochre">{site.activeBatches}</div>
           <div className="font-body text-muted text-label tracking-normal">active batches</div>
         </div>
-        <div className="flex items-stretch border border-rule2 overflow-hidden ml-2">
+        <div className="flex items-stretch overflow-hidden ml-2">
           {[
             { v: 'A', label: 'State' },
             { v: 'B', label: 'Structure' },
@@ -763,7 +763,7 @@ export default function ProcessHierarchy() {
                         {Object.keys(stageCounts).length > 0 && (
                           <div className="flex items-center gap-1.5 flex-wrap">
                             {Object.entries(stageCounts).map(([stage, count]) => (
-                              <span key={stage} className={`inline-flex items-center gap-1 font-body text-micro px-1.5 py-0.5 border ${STAGE_COLORS[stage] ?? STAGE_COLORS.unknown}`}>
+                              <span key={stage} className={`inline-flex items-center font-body text-label px-1.5 py-0.5 ${STAGE_COLORS[stage] ?? STAGE_COLORS.unknown}`}>
                                 {STAGE_LABELS[stage] ?? stage} <span className="opacity-70">{count}</span>
                               </span>
                             ))}
@@ -834,7 +834,7 @@ export default function ProcessHierarchy() {
                         {Object.keys(stats.stages).length > 0 && (
                           <div className="flex items-center gap-1.5 flex-wrap">
                             {Object.entries(stats.stages).map(([stage, count]) => (
-                              <span key={stage} className={`inline-flex items-center gap-1 font-body text-micro px-1.5 py-0.5 border ${STAGE_COLORS[stage] ?? STAGE_COLORS.unknown}`}>
+                              <span key={stage} className={`inline-flex items-center font-body text-label px-1.5 py-0.5 ${STAGE_COLORS[stage] ?? STAGE_COLORS.unknown}`}>
                                 {STAGE_LABELS[stage] ?? stage} <span className="opacity-70">{count}</span>
                               </span>
                             ))}
@@ -913,7 +913,7 @@ export default function ProcessHierarchy() {
                           {/* Stage chips */}
                           <div className="flex items-center gap-1.5 flex-wrap">
                             {Object.entries(stageCounts).map(([stage, count]) => (
-                              <span key={stage} className={`inline-flex items-center gap-1 font-body text-micro px-1.5 py-0.5 border ${STAGE_COLORS[stage] ?? STAGE_COLORS.unknown}`}>
+                              <span key={stage} className={`inline-flex items-center font-body text-label px-1.5 py-0.5 ${STAGE_COLORS[stage] ?? STAGE_COLORS.unknown}`}>
                                 {STAGE_LABELS[stage] ?? stage} <span className="opacity-70">{count}</span>
                               </span>
                             ))}

@@ -3,10 +3,10 @@ import { deliverySummary, orders, demandForecast, carbonBreakdown, skuVolatility
 import { TrendingUp, TrendingDown, Leaf, Package, AlertTriangle, CheckCircle2 } from 'lucide-react'
 
 const STATUS_CFG = {
-  'scheduled':     { label: 'Scheduled',     dot: 'bg-muted',  badge: 'bg-stone3 text-muted border border-rule2' },
-  'in-production': { label: 'In production', dot: 'bg-ochre',  badge: 'bg-ochre/10 text-ochre border border-ochre/30' },
-  'finishing':     { label: 'Finishing',     dot: 'bg-warn',   badge: 'bg-warn/10 text-warn border border-warn/30' },
-  'shipped':       { label: 'Shipped',       dot: 'bg-ok',     badge: 'bg-ok/10 text-ok border border-ok/30' },
+  'scheduled':     { label: 'Scheduled',     dot: 'bg-muted',  badge: 'bg-stone3 text-muted' },
+  'in-production': { label: 'In production', dot: 'bg-ochre',  badge: 'bg-ochre/10 text-ochre' },
+  'finishing':     { label: 'Finishing',     dot: 'bg-warn',   badge: 'bg-warn/10 text-warn' },
+  'shipped':       { label: 'Shipped',       dot: 'bg-ok',     badge: 'bg-ok/10 text-ok' },
 }
 
 function MiniDemandChart() {
@@ -59,7 +59,7 @@ function OrderRow({ order, selected, onClick }) {
           </div>
           <div className="font-body text-muted text-label">{order.customer} · {order.skuLabel}</div>
         </div>
-        <span className={`font-body text-micro px-1.5 py-0.5 border flex-shrink-0 ${cfg.badge}`}>{cfg.label}</span>
+        <span className={`font-body text-label px-1.5 py-0.5 flex-shrink-0 ${cfg.badge}`}>{cfg.label}</span>
       </div>
       <div className="flex items-center gap-3">
         <div className="flex items-center gap-1">
@@ -100,7 +100,7 @@ function OrderDetail({ order }) {
       {/* Header */}
       <div>
         <div className="flex items-center gap-2 mb-2">
-          <span className={`font-body text-label px-1.5 py-0.5 border ${cfg.badge}`}>{cfg.label}</span>
+          <span className={`font-body text-label px-1.5 py-0.5 ${cfg.badge}`}>{cfg.label}</span>
           {!order.onTrack && (
             <span className="flex items-center gap-1 font-body text-warn text-label">
               <AlertTriangle size={9} strokeWidth={2} />
@@ -113,7 +113,7 @@ function OrderDetail({ order }) {
       </div>
 
       {/* Key metrics */}
-      <div className="grid grid-cols-2 gap-px bg-rule2 border border-rule2">
+      <div className="grid grid-cols-2 gap-px bg-rule2">
         {[
           { label: 'SKU', val: order.skuLabel, tone: 'text-ink' },
           { label: 'Quantity', val: `${order.qty.toLocaleString()} units`, tone: 'text-ink' },

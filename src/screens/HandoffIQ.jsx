@@ -61,7 +61,7 @@ function ForecastRow({ row }) {
     <div className="flex gap-1.5 flex-wrap mb-1">
      {signals.map((s, i) => {
       const cls = s.tone === 'ok' ? 'text-ok bg-ok/10' : (s.tone === 'bad' || s.tone === 'danger') ? 'text-danger bg-danger/[0.04]' : 'text-warn bg-warn/10'
-      return <span key={i} className={`font-body text-label px-1.5 py-px rounded-btn ${cls}`}>{s.label}</span>
+      return <span key={i} className={`font-body text-label px-1.5 py-px ${cls}`}>{s.label}</span>
      })}
     </div>
     {row.action && <p className={`font-body text-label ${hasConflict ? 'text-warn' : 'text-muted'}`}>{row.action}</p>}
@@ -109,7 +109,7 @@ function LayoutGrid({ d, signed, setSigned, currentPlant, carryForwardItems, ack
        <button
         type="button"
         onClick={() => setSigned(true)}
-        className="font-body font-medium text-body px-4 py-2.5 min-h-[40px] inline-flex items-center gap-2 border border-warn/40 bg-warn/10 text-warn hover:bg-warn/20 transition-colors rounded-btn"
+        className="font-body font-medium text-body px-4 py-2.5 min-h-[40px] inline-flex items-center gap-2 border border-warn/40 bg-warn/10 text-warn hover:bg-warn/20 transition-colors"
        >
         Acknowledge data gaps and sign
        </button>
@@ -319,7 +319,7 @@ function MachineStateHandoff() {
      <span className="font-body font-semibold text-ink text-body">Handoff Synthesis Agent — pre-populated from live fleet data</span>
      <div className="font-body text-muted text-label mt-0.5">4 items synthesized · 1 requires director review · Generated 13:15</div>
     </div>
-    <span className="font-body text-ochre text-label px-2 py-0.5 bg-ochre/10 border border-ochre/30">Review &amp; validate</span>
+    <span className="font-body text-ochre text-label px-2 py-0.5 bg-ochre/10">Review &amp; validate</span>
    </div>
 
    {/* ── Two-column body ─────────────────────────────────────────── */}
@@ -416,7 +416,7 @@ function MachineStateHandoff() {
      </div>
     </div>
     {systemValidated
-     ? <span className="font-body text-ok text-label px-2 py-0.5 bg-ok/10 border border-ok/30 flex-shrink-0">Validated</span>
+     ? <span className="font-body text-ok text-label px-2 py-0.5 bg-ok/10 flex-shrink-0">Validated</span>
      : <button type="button" onClick={() => setSystemValidated(true)}
         className="font-body font-medium text-body px-4 py-2.5 min-h-[40px] bg-ink text-stone hover:bg-ink/90 transition-colors flex-shrink-0">
         Run validation

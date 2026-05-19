@@ -42,7 +42,7 @@ function CoaPanel({ lot, onClose }) {
       footer={<Btn variant="secondary" onClick={onClose}>Close</Btn>}
     >
       {/* ── COA status hero ─────────────────────────────────────────── */}
-      <div className={`px-5 py-5 border border-rule2 ${coaPass ? 'bg-ok/[0.035] border-ok/25' : 'bg-danger/[0.035] border-danger/25'}`}>
+      <div className={`px-5 py-5 ${coaPass ? 'bg-ok/[0.035]' : 'bg-danger/[0.035]'}`}>
         <div className={`font-body text-label tracking-normal mb-2 ${coaPass ? 'text-ok' : 'text-danger'}`}>
           Certificate of Analysis
         </div>
@@ -153,7 +153,7 @@ const FOOD_ICONS = {
 function AlertChip({ count, tone, label }) {
   const cls = {
     danger: 'border-danger/30 text-danger bg-danger/5',
-    warn:   'border-warn/30 text-warn bg-warn/5',
+    warn:   'text-warn bg-warn/5',
     muted:  'border-rule2 text-muted bg-stone2',
   }[tone]
   return (
@@ -365,7 +365,7 @@ export default function SupplierIQ() {
                   actions={
                     <>
                       <button type="button" onClick={() => setCoaViewLot(lot)}
-                        className="font-body font-medium text-label px-3 py-2 min-h-[36px] flex items-center gap-2 border border-rule2 bg-stone2 text-muted hover:border-muted hover:bg-stone3 transition-colors">
+                        className="font-body font-medium text-label px-3 py-2 min-h-[36px] flex items-center gap-2 bg-stone2 text-muted hover:border-muted hover:bg-stone3 transition-colors">
                         <Eye size={10} /> View COA
                       </button>
                     </>

@@ -191,13 +191,13 @@ export function SignalChip({ label, healthy = true, tone }) {
 }
 
 // ── Status pill (unified across all modules)
-export function StatusPill({ tone, level, variant, status, children, dot = true, icon, className = '' }) {
+export function StatusPill({ tone, level, variant, status, children, icon, className = '' }) {
  const resolvedTone = tone || level || variant || (status === 'complete' ? 'ok' : status === 'error' ? 'danger' : status === 'pending' ? 'warn' : 'info')
  const Icon = icon || (status === 'complete' ? Check : status === 'error' ? X : null)
  const label = children || (status ? status.charAt(0).toUpperCase() + status.slice(1) : null)
  return (
- <span className={`inline-flex items-center gap-1 text-label font-medium px-2 py-0.5 font-body rounded-btn ${toneStyle(resolvedTone, 'pill')} ${className}`}>
- {Icon ? <Icon size={10} strokeWidth={2} className="flex-shrink-0" /> : dot ? <span className="w-1 h-1 rounded-full bg-current flex-shrink-0" /> : null}
+ <span className={`inline-flex items-center gap-1.5 text-label font-body px-1.5 py-0.5 ${toneStyle(resolvedTone, 'pill')} ${className}`}>
+ {Icon && <Icon size={10} strokeWidth={2} className="flex-shrink-0" />}
  {label}
  </span>
  )
@@ -837,17 +837,32 @@ export function ExpandableMetadata({ title, defaultOpen = false, children, icon:
 // Groups content by urgency with clear actions, status tracking, and prominence
 export function SurfaceCard({ tone = 'muted', children, className = '' }) {
  return (
-  <div className={`border-l-2 ${toneStyle(tone, 'borderLeft')} bg-stone border border-rule rounded-lg mb-2.5 overflow-hidden shadow-card ${className}`}>
+  <div className={`bg-stone border border-rule2 mb-2 overflow-hidden ${className}`}>
    {children}
   </div>
  )
 }
 
-export function ActionCard({ tone = 'danger', title, subtitle, metadata, actions, status, children, icon: CardIcon }) {
+const TONE_BADGE = {
+ danger: 'bg-danger/[0.10] text-danger',
+ warn:   'bg-warn/[0.10] text-warn',
+ ok:     'bg-ok/[0.10] text-ok',
+ ochre:  'bg-ochre/[0.10] text-ochre',
+ muted:  'bg-stone3 text-muted',
+}
+const TONE_LABEL = { danger: 'Critical', warn: 'Warning', ok: 'Clear', ochre: 'Active', muted: '' }
+
+export function ActionCard({ tone = 'danger', title, subtitle, metadata, actions, status, children, icon: CardIcon, badgeLabel }) {
+ const badge = badgeLabel !== undefined ? badgeLabel : (tone !== 'muted' ? TONE_LABEL[tone] : null)
  return (
   <SurfaceCard tone={tone}>
    <div className="px-4 py-3 flex items-start justify-between gap-3">
     <div className="flex-1 min-w-0">
+     {badge && (
+      <span className={`inline-flex items-center font-body text-label px-1.5 py-0.5 mb-1.5 ${TONE_BADGE[tone] || TONE_BADGE.muted}`}>
+       {badge}
+      </span>
+     )}
      <div className="font-display font-medium text-ink text-section mb-1">{title}</div>
      {subtitle && <div className="font-body text-muted text-label mb-2">{subtitle}</div>}
      {metadata && (
