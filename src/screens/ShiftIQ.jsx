@@ -64,9 +64,9 @@ function AgentTimeline({ timeline, sparkline, score }) {
  <div className="px-4 pt-5 pb-4 border-b border-rule2 bg-stone">
   <div className="flex items-start justify-between gap-3">
    <div>
-    <div className="font-body text-muted text-label tracking-normal mb-3">Line 4 · AM shift</div>
+    <div className="font-body text-muted text-label mb-3">Line 4 · AM shift</div>
     <div className={`display-num text-hero leading-none ${scoreTextColor}`}>{score}</div>
-    <div className={`font-body font-medium text-label tracking-normal mt-1.5 ${scoreTextColor}`}>{zone}</div>
+    <div className={`font-body font-medium text-label mt-1.5 ${scoreTextColor}`}>{zone}</div>
    </div>
    <div className="pt-5 flex-shrink-0">
     <WaveformSparkline data={sparkline} color={scoreColor} width={64} height={44} />
@@ -122,7 +122,7 @@ function ScoreExplainer({ score, open, onToggle }) {
    >
     <div className="flex items-center gap-2">
      <Brain size={11} strokeWidth={1.75} className="text-muted" />
-     <span className="font-body text-muted text-label tracking-normal">Why {score}?</span>
+     <span className="font-body text-muted text-label">Why {score}?</span>
     </div>
     {open
      ? <ChevronUp size={11} className="text-muted" />
@@ -191,8 +191,8 @@ function SignalCard({ sig }) {
     <Activity size={16} strokeWidth={2.2} className={stale ? 'text-danger' : 'text-ok'} aria-hidden="true" />
    </div>
    <div className="min-w-0 flex-1">
-    <div className="truncate font-body text-body font-semibold leading-[1.15] text-ink tracking-normal">{sig.name}</div>
-    <div className="mt-1 truncate font-body text-label leading-[1.15] text-muted tracking-normal">{sig.sub}</div>
+    <div className="truncate font-body text-body font-semibold leading-[1.15] text-ink">{sig.name}</div>
+    <div className="mt-1 truncate font-body text-label leading-[1.15] text-muted">{sig.sub}</div>
    </div>
    <span className={`flex-shrink-0 rounded-full border px-4 py-2 font-body text-label font-semibold leading-none ${
     stale
@@ -317,7 +317,7 @@ function OperatorPanel({ name, onClose, onSelectOperator }) {
  <div style={{ height:5, background:'#CAC2B6', marginBottom:8 }}>
  <div style={{ height:'100%', width:`${meta.certPct}%`, background:certC, transition:'width 500ms cubic-bezier(0.19,0.91,0.38,1)' }} />
  </div>
- <span className="display-num text-xl" style={{ color: certC }}>{meta.certPct}%</span>
+ <span className="display-num text-title" style={{ color: certC }}>{meta.certPct}%</span>
  </div>
  </div>
 
@@ -599,7 +599,7 @@ function LineDropdown({ lines, activeLine, onSelect, triggerRef, onClose }) {
    <div className="w-[260px] bg-sidebar border border-sidebar-border rounded-2xl shadow-raise overflow-hidden">
     <div className="plant-drop-in-content">
      <div className="px-4 py-2.5 border-b border-sidebar-border">
-      <p className="font-body text-sidebar-ghost/40 text-label tracking-normal">Select line</p>
+      <p className="font-body text-sidebar-ghost/40 text-label">Select line</p>
      </div>
      {lines.map(line => {
       const sc = riskColorClass(line.score)
@@ -622,8 +622,8 @@ function LineDropdown({ lines, activeLine, onSelect, triggerRef, onClose }) {
         <div className="flex items-center gap-2">
          {hasPilotData ? (
           <>
-           <span className={`font-body text-label tracking-normal ${sc}`}>{zoneLabel}</span>
-           <span className={`display-num text-xl ${sc}`} aria-label={`Risk score ${line.score}`}>{line.score}</span>
+           <span className={`font-body text-label ${sc}`}>{zoneLabel}</span>
+           <span className={`display-num text-title ${sc}`} aria-label={`Risk score ${line.score}`}>{line.score}</span>
           </>
          ) : (
           <span className="font-body text-sidebar-ghost/40 text-label">No data</span>
@@ -863,10 +863,10 @@ export default function ShiftIQ() {
     >
      <span className="font-body font-medium text-ink text-base">{al.name}</span>
      <span
-      className={`font-body font-medium tracking-normal text-label ${sc} cursor-help`}
+      className={`font-body font-medium text-label ${sc} cursor-help`}
       title="At risk: score ≥ 75 · Watch: 60–74 · Clear: below 60"
      >{zone}</span>
-     <span className={`display-num text-xl leading-none ${sc}`} aria-label={`Risk score ${al.score} — ${zone}`}>{al.score}</span>
+     <span className={`display-num text-title leading-none ${sc}`} aria-label={`Risk score ${al.score} — ${zone}`}>{al.score}</span>
      {d.confidence < d.rawConfidence && activeLine === 'l4' && (
       <span className="font-body text-warn text-label">adj.</span>
      )}
@@ -953,7 +953,7 @@ export default function ShiftIQ() {
   ].map(tab => (
    <button type="button" key={tab.id} type="button"
    onClick={() => setCol1Tab(tab.id)}
-   className={`px-4 py-2 font-body text-label tracking-normal font-medium border-b-2 transition-colors cursor-pointer ${
+   className={`px-4 py-2 font-body text-label font-medium border-b-2 transition-colors cursor-pointer ${
     col1Tab === tab.id ? 'border-b-ochre text-ink' : 'border-b-transparent text-muted hover:text-muted'
    }`}>
    {tab.label}
@@ -1064,7 +1064,7 @@ export default function ShiftIQ() {
   {/* ── Header ───────────────────────────────────────────────────────── */}
   <div className="flex items-center justify-between px-5 py-2.5 border-b border-rule2 bg-stone2 flex-shrink-0">
    <div className="flex items-center gap-2">
-    <span className="font-body text-muted text-label tracking-normal">Tasks</span>
+    <span className="font-body text-muted text-label">Tasks</span>
     {pendingTaskCount > 0 && (
      <span className="font-body text-warn text-label font-medium">{pendingTaskCount} pending</span>
     )}
@@ -1116,7 +1116,7 @@ export default function ShiftIQ() {
   {maintenanceTickets.length > 0 && (
    <>
     <div className="px-5 py-2 border-b border-t border-rule2 bg-stone2 flex-shrink-0">
-     <span className="font-body text-muted text-label tracking-normal">Maintenance</span>
+     <span className="font-body text-muted text-label">Maintenance</span>
     </div>
     <div className="px-3 py-3 space-y-2.5">
     {maintenanceTickets.map((t, i) => (
@@ -1168,7 +1168,7 @@ export default function ShiftIQ() {
    )}
    {showNearMiss && !nearMissSubmitted && (
     <div className="slide-in space-y-2">
-     <div className="font-body text-muted text-label tracking-normal">Near-miss report</div>
+     <div className="font-body text-muted text-label">Near-miss report</div>
      <select aria-label="Station where near-miss occurred" value={nearMissForm.station} onChange={e => setNearMissForm(p => ({...p, station: e.target.value}))}
       className="w-full font-body text-ink text-label bg-stone px-2 py-1 cursor-pointer">
       <option value="">Station…</option>
@@ -1211,7 +1211,7 @@ export default function ShiftIQ() {
   >
    <div className="p-5 space-y-5">
     <div>
-     <div className="font-body text-muted text-label tracking-normal mb-3">Assign to</div>
+     <div className="font-body text-muted text-label mb-3">Assign to</div>
      <div className="grid grid-cols-5 gap-2">
       {['A. Martinez','C. Reyes','P. Okonkwo','F. Adeyemi','T. Osei'].map(name => (
        <button type="button" key={name} type="button"
@@ -1226,7 +1226,7 @@ export default function ShiftIQ() {
      </div>
     </div>
     <div>
-     <div className="font-body text-muted text-label tracking-normal mb-3">Due</div>
+     <div className="font-body text-muted text-label mb-3">Due</div>
      <div className="grid grid-cols-2 gap-2">
       {['Before shift end','Tomorrow AM','This week','No deadline'].map(time => (
        <button type="button" key={time} type="button"
@@ -1240,7 +1240,7 @@ export default function ShiftIQ() {
      </div>
     </div>
     <div>
-     <div className="font-body text-muted text-label tracking-normal mb-2">Task</div>
+     <div className="font-body text-muted text-label mb-2">Task</div>
      <input aria-label="Task description" placeholder="Describe the task…"
       value={taskForm.label} onChange={e => setTaskForm(p => ({...p, label: e.target.value}))}
       className="w-full font-body text-ink text-body bg-stone px-3 py-2.5 focus:outline-none focus:border-ochre" />
@@ -1295,7 +1295,7 @@ export default function ShiftIQ() {
    </div>
    {showEmpForm && (
     <div className="pb-2 px-1 space-y-1.5 slide-in">
-    <div className="font-body text-muted text-label tracking-normal">Swab result required</div>
+    <div className="font-body text-muted text-label">Swab result required</div>
     <div className="flex gap-2">
      {['negative','positive'].map(r => (
      <button type="button" key={r} onClick={() => setEmpForm(p => ({...p, [item.key]: {...p[item.key], result: r}}))}
@@ -1367,10 +1367,10 @@ export default function ShiftIQ() {
    className="flex items-center justify-between w-full px-4 py-2.5 bg-stone2 border-b border-rule2 hover:bg-stone3 transition-colors">
     <div className="flex items-center gap-2">
      <Brain size={12} strokeWidth={1.75} className="text-muted" />
-     <span className="font-body text-muted text-label tracking-normal">Pilot validation</span>
+     <span className="font-body text-muted text-label">Pilot validation</span>
     </div>
     <div className="flex items-center gap-2">
-     <span className="display-num text-sm font-bold text-ok">{d.pilotAccuracy}%</span>
+     <span className="display-num text-base font-bold text-ok">{d.pilotAccuracy}%</span>
      {pilotExpanded ? <ChevronUp size={11} className="text-muted" /> : <ChevronDown size={11} className="text-muted" />}
     </div>
    </button>
@@ -1379,7 +1379,7 @@ export default function ShiftIQ() {
    <div className="slide-in">
     <div className="px-4 py-3 border-b border-rule2">
      <div className="flex items-baseline gap-2 mb-3">
-      <span className="display-num text-3xl font-bold text-ok">{d.pilotAccuracy}%</span>
+      <span className="display-num text-page font-bold text-ok">{d.pilotAccuracy}%</span>
       <span className="font-body text-ok text-label">accuracy · 28 shifts</span>
      </div>
      <div className="mb-3">
@@ -1456,7 +1456,7 @@ export default function ShiftIQ() {
   {/* Crew — shown when pilot panel is collapsed */}
   {!pilotExpanded && hasLiveData && (
   <div className="border-t border-rule2">
-   <div className="px-4 py-2.5 border-b border-rule2 font-body text-muted text-label tracking-normal">Crew</div>
+   <div className="px-4 py-2.5 border-b border-rule2 font-body text-muted text-label">Crew</div>
    {lineD.crew.map((m, i) => <CrewRow key={i} m={m} onView={setViewingOperator} />)}
   </div>
   )}
@@ -1678,7 +1678,7 @@ export default function ShiftIQ() {
     </div>
     {showEmpForm && (
      <div className="pb-2 px-1 space-y-1.5 slide-in">
-     <div className="font-body text-muted text-label tracking-normal">Swab result required</div>
+     <div className="font-body text-muted text-label">Swab result required</div>
      <div className="flex gap-2">
       {['negative','positive'].map(r => (
       <button type="button" key={r} onClick={() => setEmpForm(p => ({...p, [item.key]: {...p[item.key], result: r}}))}

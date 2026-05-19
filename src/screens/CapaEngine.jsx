@@ -58,7 +58,7 @@ function CaseDetailPanel({ caseData, onClose }) {
  {[{l:'Status',v:caseData.badge,vc:caseData.badgeColor},{l:'Administrative owner',v:caseData.administrativeOwner||caseData.assigned},{l:'Due date',v:caseData.due,vc:caseData.dueColor},{l:'Source',v:caseData.source}].map(m=>(
  <div key={m.l} className="bg-stone2 px-4 py-3">
  <div className="font-body text-label text-muted mb-1">{m.l}</div>
- <div className={`font-body text-xs font-medium ${m.vc||'text-ink'}`}>{m.v}</div>
+ <div className={`font-body text-label font-medium ${m.vc||'text-ink'}`}>{m.v}</div>
  </div>
  ))}
  </div>
@@ -103,13 +103,13 @@ function CaseDetailPanel({ caseData, onClose }) {
  {caseData.activity.map((a,i)=>(
  <div key={i} className="py-2 border-b border-rule2 last:border-0">
  <div className="font-body text-label text-muted mb-0.5">{a.time}</div>
- <div className="font-body text-xs text-muted leading-relaxed">{a.text}</div>
+ <div className="font-body text-label text-muted leading-relaxed">{a.text}</div>
  </div>
  ))}
  </div>
  </div>
  {actionTaken ? (
- <div className="px-4 py-3 border-t border-rule2 bg-ok/10 font-body text-ok text-xs slide-in flex-shrink-0">
+ <div className="px-4 py-3 border-t border-rule2 bg-ok/10 font-body text-ok text-label slide-in flex-shrink-0">
  {actionTaken==='escalate' ? 'Escalated to director.' : 'Reassignment request sent.'}
  </div>
  ) : (
@@ -155,7 +155,7 @@ function CollapsibleSection({ label, isOpen, onToggle, children }) {
  <div className="border-b border-rule2 last:border-b-0">
  <button type="button" onClick={onToggle}
  className="w-full flex items-center justify-between px-4 py-2.5 hover:bg-stone2 transition-colors">
- <span className="font-body text-muted text-label tracking-normal">{label}</span>
+ <span className="font-body text-muted text-label">{label}</span>
  <span className={`text-muted text-label transition-transform ${isOpen ? 'rotate-180' : ''}`}>▾</span>
  </button>
  {isOpen && <div className="border-t border-rule2 bg-stone">{children}</div>}
@@ -226,7 +226,7 @@ function ClosureRecord({ record }) {
   </div>
   <div className="space-y-2.5 bg-stone border border-ok/20 p-4">
    <div className="flex items-center justify-between border-b border-rule2 pb-2 mb-2">
-    <span className="font-body text-muted text-label tracking-normal">Closure record</span>
+    <span className="font-body text-muted text-label">Closure record</span>
     <span className="font-body text-muted text-label">FDA 21 CFR 110</span>
    </div>
    {[
@@ -319,7 +319,7 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
  <span className="font-body text-muted text-label">{c.capaId}</span>
  <StatusPill tone={c.badgeColor === 'text-danger' ? 'danger' : c.badgeColor === 'text-ok' ? 'ok' : 'warn'}>{c.badge}</StatusPill>
  </div>
- <div className="font-display text-lg font-black text-ink leading-tight">{c.title}</div>
+ <div className="font-display text-head font-black text-ink leading-tight">{c.title}</div>
  <div className="font-body text-muted text-label mt-0.5">
  {c.assigned} · {c.due}
  </div>
@@ -337,7 +337,7 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
  {/* ── Not director's turn — ownership context ── */}
  {!c.directorTurn && c.currentOwner && !isClosed && !actionTaken && c.handoffNote && (
   <div className="px-4 py-2.5 border-b border-rule2 bg-stone2 flex items-center gap-2">
-   <span className="font-body text-muted text-label tracking-normal">Ball is with</span>
+   <span className="font-body text-muted text-label">Ball is with</span>
    <span className="font-body text-muted text-label font-medium">{c.currentOwner}</span>
    <span className="font-body text-muted text-label">·</span>
    <span className="font-body text-muted text-label">{c.handoffNote}</span>
@@ -361,7 +361,7 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
  {/* ── Recommended action (the operative section) ── */}
  {!isClosed && !actionTaken && (
  <div className={`px-4 py-5 border-b border-rule2 border-l-2 ${isBlocking ? 'border-l-danger bg-danger/[0.02]' : c.type === 'ca' ? 'border-l-ok bg-ok/[0.015]' : 'border-l-warn bg-stone2'}`}>
- <div className="font-body text-muted text-label tracking-normal mb-3">
+ <div className="font-body text-muted text-label mb-3">
  Recommended action
  </div>
 
@@ -418,7 +418,7 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
   </div>
   {/* Evidence declaration checklist — required before close */}
   <div className="space-y-2 py-3 border-t border-rule2">
-   <div className="font-body text-muted text-label tracking-normal mb-2">Evidence declaration — required before closing</div>
+   <div className="font-body text-muted text-label mb-2">Evidence declaration — required before closing</div>
    {[
     { key: 'rootCause', label: 'Evidence addresses the root cause documented in this case' },
     { key: 'corrective', label: 'Corrective measure is documented and specific to this incident' },
@@ -493,7 +493,7 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
  ].map(tab => (
   <button key={tab.id} type="button"
   onClick={() => setDetailTab(tab.id)}
-  className={`px-4 py-2 font-body text-label tracking-normal font-medium border-b-2 transition-colors cursor-pointer ${
+  className={`px-4 py-2 font-body text-label font-medium border-b-2 transition-colors cursor-pointer ${
    detailTab === tab.id ? 'border-b-ochre text-ink' : 'border-b-transparent text-muted hover:text-muted'
   }`}>
   {tab.label}
@@ -677,7 +677,7 @@ function LayoutQueue({ visibleCases, blockingEvidenceUploaded, setBlockingEviden
  {sortedQueue.length === 0 && (
  <div className="flex-1 flex items-center justify-center px-4 text-center">
  <div>
- <div className="font-display font-bold text-ok text-2xl mb-1">All clear</div>
+ <div className="font-display font-bold text-ok text-page mb-1">All clear</div>
  <div className="font-body text-muted text-label">No open cases.</div>
  </div>
  </div>
@@ -707,7 +707,7 @@ function LayoutQueue({ visibleCases, blockingEvidenceUploaded, setBlockingEviden
  ) : (
  <div className="flex-1 flex items-center justify-center text-center px-8">
  <div>
- <div className="font-display font-bold text-ok text-2xl mb-2">All clear</div>
+ <div className="font-display font-bold text-ok text-page mb-2">All clear</div>
  <div className="font-body text-muted text-body">No open cases require attention.</div>
  </div>
  </div>

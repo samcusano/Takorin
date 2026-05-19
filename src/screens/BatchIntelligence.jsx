@@ -103,9 +103,9 @@ function SignalRow({ s }) {
     <div className="flex items-start gap-3 px-5 py-2.5 border-b border-rule2 last:border-0">
       <div className="flex-1 min-w-0">
         <div className="flex items-baseline gap-2">
-          <span className="font-body text-muted text-label tracking-normal">{s.label}</span>
+          <span className="font-body text-muted text-label">{s.label}</span>
           {s.influence === 'critical' && (
-            <span className="font-body text-micro text-ochre tracking-normal px-1">critical signal</span>
+            <span className="font-body text-micro text-ochre px-1">critical signal</span>
           )}
         </div>
         {s.note && <div className="font-body text-muted text-label mt-0.5 leading-snug">{s.note}</div>}
@@ -131,7 +131,7 @@ function InfluenceChain({ chain }) {
             {i < chain.length - 1 && <div className="w-px h-6 bg-rule2 mt-1" />}
           </div>
           <div className="flex-1 min-w-0 pb-1">
-            <div className="font-body text-muted text-label tracking-normal mb-0.5">Day {c.day}</div>
+            <div className="font-body text-muted text-label mb-0.5">Day {c.day}</div>
             <div className="font-body font-medium text-ink text-label leading-snug">{c.reading}</div>
             <div className="font-body text-muted text-label mt-0.5 leading-snug">→ {c.prediction}</div>
           </div>
@@ -174,7 +174,7 @@ function QualityTab() {
                       <div className="font-body text-muted text-label mt-0.5">{r.source} · {new Date(r.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</div>
                     </div>
                     <div className="text-right flex-shrink-0">
-                      <div className={`font-display font-bold display-num text-metric leading-none ${scoreColor}`}>{r.overallScore}</div>
+                      <div className={`display-num text-metric leading-none ${scoreColor}`}>{r.overallScore}</div>
                       <div className="font-body text-muted text-label">{r.gradeProjection} · {r.confidence}% conf</div>
                     </div>
                   </div>
@@ -215,12 +215,12 @@ function QualityTab() {
                       <div className="font-body font-medium text-ink text-body">{a.author} <span className="text-muted font-normal">· {a.authorTitle}</span></div>
                       <div className="font-body text-muted text-label mt-0.5">Batch: {a.batch}</div>
                     </div>
-                    <span className={`font-body text-label tracking-normal px-1.5 py-0.5 flex-shrink-0 ${typeTone}`}>{typeLabel}</span>
+                    <span className={`font-body text-label px-1.5 py-0.5 flex-shrink-0 ${typeTone}`}>{typeLabel}</span>
                   </div>
                   <p className="font-body text-ink text-label leading-relaxed mb-2">{a.observation}</p>
                   {a.modelResponse && (
                     <div className="flex items-start gap-2 px-3 py-2 bg-stone2">
-                      <span className="font-body text-muted text-label tracking-normal flex-shrink-0 mt-0.5">Model</span>
+                      <span className="font-body text-muted text-label flex-shrink-0 mt-0.5">Model</span>
                       <span className="font-body text-muted text-label leading-snug flex-1">{a.modelResponse}</span>
                       {a.confidenceImpact && <span className="font-body text-ok text-label flex-shrink-0 font-medium">{a.confidenceImpact}</span>}
                     </div>
@@ -236,11 +236,11 @@ function QualityTab() {
               <div key={p.id} className={`px-6 py-4 border-l-4 ${p.tone === 'warn' ? 'border-l-warn' : 'border-l-ok'}`}>
                 <div className="flex items-start justify-between gap-4 mb-1">
                   <div className="flex-1">
-                    <div className="font-body text-muted text-label tracking-normal mb-0.5">{p.domain}</div>
+                    <div className="font-body text-muted text-label mb-0.5">{p.domain}</div>
                     <div className="font-body font-medium text-ink text-body leading-snug">{p.rule}</div>
                   </div>
                   <div className="text-right flex-shrink-0">
-                    <div className={`font-display font-bold display-num text-title leading-none ${p.confidence >= 90 ? 'text-ok' : p.confidence >= 80 ? 'text-ochre' : 'text-warn'}`}>{p.confidence}%</div>
+                    <div className={`display-num text-title leading-none ${p.confidence >= 90 ? 'text-ok' : p.confidence >= 80 ? 'text-ochre' : 'text-warn'}`}>{p.confidence}%</div>
                     <div className="font-body text-muted text-label">{p.evidenceBatches} batches</div>
                   </div>
                 </div>
@@ -272,7 +272,7 @@ function QualityTab() {
                     { label: 'Expected aroma',      val: s.expectedAroma },
                   ].map(({ label, val }) => (
                     <div key={label}>
-                      <div className="font-body text-muted text-label tracking-normal">{label}</div>
+                      <div className="font-body text-muted text-label">{label}</div>
                       <div className="font-body text-ink text-label mt-0.5">{val}</div>
                     </div>
                   ))}
@@ -338,7 +338,7 @@ export default function BatchIntelligence() {
                   <div className={`h-full ${isComplete ? 'bg-ok' : 'bg-ochre'} transition-[width]`} style={{ width: `${pctDone}%` }} />
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="font-body text-muted text-label tracking-normal">{isComplete ? 'Complete' : b.stage.replace('-', ' ')}</span>
+                  <span className="font-body text-muted text-label">{isComplete ? 'Complete' : b.stage.replace('-', ' ')}</span>
                   <span className={`font-body text-label ${b.grade === 'Premium' ? 'text-ochre' : 'text-muted'}`}>{b.grade}</span>
                 </div>
                 {b.hasFinding && (
@@ -358,7 +358,7 @@ export default function BatchIntelligence() {
         {/* Header */}
         <div className="flex-shrink-0 flex items-start justify-between gap-4 px-6 py-4 border-b border-rule2 bg-stone">
           <div>
-            <div className="font-body text-muted text-label tracking-normal mb-1">{batch.vessel} · {batch.zone}</div>
+            <div className="font-body text-muted text-label mb-1">{batch.vessel} · {batch.zone}</div>
             <div className="font-display font-bold text-ink text-title leading-none mb-2">{batch.name}</div>
             <div className="flex items-center gap-3">
               <span className="font-body text-muted text-label">Start: {fmtDate(batch.startDate)}</span>
@@ -379,12 +379,12 @@ export default function BatchIntelligence() {
           </div>
           <div className="flex items-center gap-6 flex-shrink-0">
             <div className="text-right">
-              <div className={`font-display font-bold display-num text-display leading-none tabular-nums ${scoreColor}`}>{confidence != null ? `${confidence}%` : '—'}</div>
-              <div className="font-body text-muted text-label tracking-normal mt-0.5">outcome confidence</div>
+              <div className={`display-num text-display leading-none tabular-nums ${scoreColor}`}>{confidence != null ? `${confidence}%` : '—'}</div>
+              <div className="font-body text-muted text-label mt-0.5">outcome confidence</div>
             </div>
             <div className="text-right border-l border-rule2 pl-6">
-              <div className={`font-display font-bold text-2xl leading-none ${gradeColor}`}>{batch.grade}</div>
-              <div className="font-body text-muted text-label tracking-normal mt-0.5">projected grade</div>
+              <div className={`font-display font-bold text-page leading-none ${gradeColor}`}>{batch.grade}</div>
+              <div className="font-body text-muted text-label mt-0.5">projected grade</div>
             </div>
           </div>
         </div>
@@ -392,7 +392,7 @@ export default function BatchIntelligence() {
         {/* Lifecycle progress */}
         <div className="flex-shrink-0 px-6 py-4 border-b border-rule2 bg-stone2">
           <div className="flex items-center justify-between mb-3">
-            <span className="font-body text-muted text-label tracking-normal">Lifecycle progress</span>
+            <span className="font-body text-muted text-label">Lifecycle progress</span>
             <span className="font-body text-muted text-label">{batch.daysElapsed} of {batch.totalDays} days · {pct}%</span>
           </div>
           <StageTracker stages={batch.stages} />
@@ -420,7 +420,7 @@ export default function BatchIntelligence() {
           <div className="px-6 py-4 border-b border-rule2">
             <div className="flex items-center justify-between mb-3">
               <div>
-                <div className="font-body text-muted text-label tracking-normal mb-0.5">Confidence trajectory</div>
+                <div className="font-body text-muted text-label mb-0.5">Confidence trajectory</div>
                 <div className="font-body text-muted text-label">
                   <span className="inline-flex items-center gap-1.5">
                     <span className="inline-block w-6 h-0.5 bg-ok" />actual
@@ -458,7 +458,7 @@ export default function BatchIntelligence() {
               </div>
               <div className="px-5 py-4 space-y-4">
                 <div>
-                  <div className="font-body text-muted text-label tracking-normal mb-2">Sensory scores</div>
+                  <div className="font-body text-muted text-label mb-2">Sensory scores</div>
                   {[
                     { label: 'Aroma',  val: batch.qualityPrediction.aroma },
                     { label: 'Color',  val: batch.qualityPrediction.color },
@@ -477,7 +477,7 @@ export default function BatchIntelligence() {
                 </div>
                 {batch.qualityPrediction.riskFactors.length > 0 && (
                   <div>
-                    <div className="font-body text-muted text-label tracking-normal mb-2">Risk factors</div>
+                    <div className="font-body text-muted text-label mb-2">Risk factors</div>
                     {batch.qualityPrediction.riskFactors.map((r, i) => (
                       <div key={i} className="flex items-start gap-1.5 font-body text-label text-warn mb-1">
                         <AlertTriangle size={9} className="flex-shrink-0 mt-0.5" strokeWidth={2} />
@@ -488,7 +488,7 @@ export default function BatchIntelligence() {
                 )}
                 {batch.qualityPrediction.historicalComparables.length > 0 && (
                   <div>
-                    <div className="font-body text-muted text-label tracking-normal mb-2">Historical comparables</div>
+                    <div className="font-body text-muted text-label mb-2">Historical comparables</div>
                     {batch.qualityPrediction.historicalComparables.map((c, i) => (
                       <div key={i} className={`px-3 py-2 mb-1.5 border-l-2 ${c.finalGrade === 'Premium' ? 'border-l-ok' : 'border-l-warn'}`}>
                         <div className="flex items-baseline justify-between">

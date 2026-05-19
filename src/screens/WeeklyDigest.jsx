@@ -94,9 +94,9 @@ function DeltaBadge({ delta, invert = false }) {
 function MetricBlock({ label, value, unit, sub, delta, invertDelta }) {
   return (
     <div className="flex flex-col gap-0.5">
-      <div className="font-body text-muted text-label tracking-normal">{label}</div>
+      <div className="font-body text-muted text-label">{label}</div>
       <div className="flex items-baseline gap-1.5">
-        <span className="display-num text-3xl font-bold text-ink">{value}</span>
+        <span className="display-num text-page font-bold text-ink">{value}</span>
         {unit && <span className="font-body text-muted text-label">{unit}</span>}
       </div>
       {sub && <div className="font-body text-muted text-label">{sub}</div>}
@@ -125,7 +125,7 @@ export default function WeeklyDigest() {
       {/* Header */}
       <div className="flex items-center justify-between px-6 py-4 border-b border-rule2 bg-stone2 flex-shrink-0">
         <div>
-          <div className="font-body text-muted text-label tracking-normal mb-0.5">Weekly Operations Digest</div>
+          <div className="font-body text-muted text-label mb-0.5">Weekly Operations Digest</div>
           <div className="font-display font-bold text-ink text-head">{facility.name}</div>
           <div className="font-body text-muted text-label mt-0.5">Apr 10–16, 2026 · Prepared for J. Crocker, Plant Director</div>
         </div>
@@ -161,7 +161,7 @@ export default function WeeklyDigest() {
                 return (
                   <div key={key} className="bg-stone2 px-3 py-3">
                     <div className="font-body text-muted text-label mb-1" style={{ color: LINE_COLORS[key] }}>{label}</div>
-                    <div className="display-num text-2xl font-bold text-ink">{avg}%</div>
+                    <div className="display-num text-subhead font-bold text-ink">{avg}%</div>
                     <DeltaBadge delta={delta} />
                   </div>
                 )
@@ -179,18 +179,18 @@ export default function WeeklyDigest() {
             <h2 className="font-display font-bold text-ink text-body mb-4">CAPA register status</h2>
             <div className="grid grid-cols-3 gap-4 mb-4">
               <div className="border border-rule2 bg-stone px-4 py-4">
-                <div className="font-body text-muted text-label tracking-normal mb-1">Closed this week</div>
-                <div className="display-num text-3xl font-bold text-ok">{closedCount}</div>
+                <div className="font-body text-muted text-label mb-1">Closed this week</div>
+                <div className="display-num text-page font-bold text-ok">{closedCount}</div>
                 <div className="font-body text-ok text-label mt-0.5">cases · all evidence-gated</div>
               </div>
               <div className={`border px-4 py-4 ${openCount > 0 ? 'bg-warn/[0.03]' : 'border-rule2 bg-stone'}`}>
-                <div className="font-body text-muted text-label tracking-normal mb-1">Open</div>
-                <div className={`display-num text-3xl font-bold ${openCount > 0 ? 'text-warn' : 'text-ok'}`}>{openCount}</div>
+                <div className="font-body text-muted text-label mb-1">Open</div>
+                <div className={`display-num text-page font-bold ${openCount > 0 ? 'text-warn' : 'text-ok'}`}>{openCount}</div>
                 <div className="font-body text-muted text-label mt-0.5">cases in progress</div>
               </div>
               <div className={`border px-4 py-4 ${overdueCount > 0 ? 'border-danger/30 bg-danger/[0.04]' : 'border-rule2 bg-stone'}`}>
-                <div className="font-body text-muted text-label tracking-normal mb-1">Overdue</div>
-                <div className={`display-num text-3xl font-bold ${overdueCount > 0 ? 'text-danger' : 'text-ok'}`}>{overdueCount}</div>
+                <div className="font-body text-muted text-label mb-1">Overdue</div>
+                <div className={`display-num text-page font-bold ${overdueCount > 0 ? 'text-danger' : 'text-ok'}`}>{overdueCount}</div>
                 <div className={`font-body text-label mt-0.5 ${overdueCount > 0 ? 'text-danger/80' : 'text-muted'}`}>
                   {overdueCount > 0 ? 'require immediate action' : 'none overdue'}
                 </div>
@@ -199,7 +199,7 @@ export default function WeeklyDigest() {
 
             {/* Top root cause */}
             <div className="border border-rule2 bg-stone px-4 py-3">
-              <div className="font-body text-muted text-label tracking-normal mb-2">Top root cause · this week</div>
+              <div className="font-body text-muted text-label mb-2">Top root cause · this week</div>
               <div className="flex items-center gap-3">
                 <div className="flex-1">
                   <div className="font-body font-medium text-ink text-base">Skill / Cert mismatch</div>
@@ -220,12 +220,12 @@ export default function WeeklyDigest() {
             <div className="border bg-ok/[0.03] px-5 py-4">
               <div className="flex items-start justify-between mb-2">
                 <div>
-                  <div className="font-body text-ok text-label tracking-normal mb-1">{topIntervention.line}</div>
+                  <div className="font-body text-ok text-label mb-1">{topIntervention.line}</div>
                   <div className="font-display font-bold text-ink text-base">{topIntervention.finding}</div>
                 </div>
                 <div className="text-right flex-shrink-0 ml-4">
                   <div className="font-body text-muted text-label">Est. value protected</div>
-                  <div className="display-num text-3xl font-bold text-ok">{topIntervention.impact}</div>
+                  <div className="display-num text-page font-bold text-ok">{topIntervention.impact}</div>
                 </div>
               </div>
               <p className="font-body text-ink2 text-body leading-relaxed">{topIntervention.desc}</p>
@@ -239,9 +239,9 @@ export default function WeeklyDigest() {
             <h2 className="font-display font-bold text-ink text-body mb-4">Data readiness</h2>
             <div className="grid grid-cols-2 gap-4">
               <div className="border border-rule2 bg-stone px-4 py-4">
-                <div className="font-body text-muted text-label tracking-normal mb-2">Current score</div>
+                <div className="font-body text-muted text-label mb-2">Current score</div>
                 <div className="flex items-baseline gap-2">
-                  <span className={`display-num text-3xl font-bold ${(readinessScore ?? 64) >= 75 ? 'text-ok' : 'text-warn'}`}>
+                  <span className={`display-num text-page font-bold ${(readinessScore ?? 64) >= 75 ? 'text-ok' : 'text-warn'}`}>
                     {readinessScore ?? 64}
                   </span>
                   <span className="font-body text-muted text-label">/ 100</span>
@@ -253,7 +253,7 @@ export default function WeeklyDigest() {
                 {readinessDelta !== 0 && <DeltaBadge delta={readinessDelta} />}
               </div>
               <div className="border border-rule2 bg-stone px-4 py-4">
-                <div className="font-body text-muted text-label tracking-normal mb-2">Open issues</div>
+                <div className="font-body text-muted text-label mb-2">Open issues</div>
                 {readinessData.sources.filter(s => s.tone !== 'ok').map((s, i) => (
                   <div key={i} className="flex items-center gap-2 py-1 border-b border-rule2 last:border-b-0">
                     <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${s.tone === 'danger' ? 'bg-danger' : 'bg-warn'}`} />
@@ -283,7 +283,7 @@ export default function WeeklyDigest() {
                       <div className="font-body text-muted text-label mt-0.5">Target: {g.target}{g.unit} · Deadline: {g.deadline}</div>
                     </div>
                     <div className="flex items-baseline gap-1 flex-shrink-0">
-                      <span className={`display-num text-xl font-bold ${onTrack ? 'text-ok' : 'text-warn'}`}>{g.current}</span>
+                      <span className={`display-num text-title font-bold ${onTrack ? 'text-ok' : 'text-warn'}`}>{g.current}</span>
                       <span className="font-body text-muted text-label">{g.unit}</span>
                     </div>
                     <div className={`font-body text-label font-medium px-2 py-0.5 flex-shrink-0 ${onTrack ? 'bg-ok/10 text-ok' : 'bg-warn/10 text-warn'}`}>

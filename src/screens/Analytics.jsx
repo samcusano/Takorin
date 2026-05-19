@@ -235,7 +235,7 @@ function BenchmarkBlock({ b }) {
     <div className="border border-rule2 bg-stone flex items-center gap-6 px-5 py-4">
       {/* Metric + score */}
       <div className="w-44 flex-shrink-0">
-        <div className="font-body text-muted text-label tracking-normal mb-1">{b.metric}</div>
+        <div className="font-body text-muted text-label mb-1">{b.metric}</div>
         <div className="flex items-baseline gap-2">
           <span className="display-num text-metric font-bold text-ink leading-none">{b.score}</span>
           <span className={`font-body text-label font-medium ${b.deltaDir === 'up' ? 'text-ok' : 'text-danger'}`}>
@@ -401,7 +401,7 @@ export default function Analytics() {
 
           {/* ── Attribution hero ─────────────────────────────────────────── */}
           <section className="mb-8">
-            <div className="font-body text-muted text-label tracking-normal mb-4">
+            <div className="font-body text-muted text-label mb-4">
               {attr.line} · OEE attribution · {GRAINS.find(g => g.id === timeGrain)?.label}
             </div>
 
@@ -451,7 +451,7 @@ export default function Analytics() {
 
           {/* ── Recovery table ───────────────────────────────────────────── */}
           <section className="mb-10">
-            <div className="font-body text-muted text-label tracking-normal mb-3">Recovery actions</div>
+            <div className="font-body text-muted text-label mb-3">Recovery actions</div>
             <div className="border border-rule2 bg-stone divide-y divide-rule2">
               <div className="grid px-5 py-2 bg-stone2" style={{ gridTemplateColumns: '1.1fr 1fr 116px' }}>
                 <span className="font-body text-muted text-label">Driver</span>
@@ -481,7 +481,7 @@ export default function Analytics() {
           <div className="h-px bg-rule2 mb-8" />
 
           {/* ── Supporting intelligence ───────────────────────────────────── */}
-          <div className="font-body text-muted text-label tracking-normal mb-3">Supporting intelligence</div>
+          <div className="font-body text-muted text-label mb-3">Supporting intelligence</div>
           <div className="space-y-px">
 
             <Module title="Impact" badge="$312K protected · 47 interventions · Q2 2026" defaultOpen>
@@ -538,14 +538,14 @@ export default function Analytics() {
                         { label: 'Quick approvals', val: String(lowDwellCount), tone: lowDwellCount > 0 ? 'text-danger' : 'text-ok' },
                       ].map(({ label, val, tone }) => (
                         <div key={label} className="bg-stone px-5 py-3.5">
-                          <div className="font-body text-muted text-label tracking-normal mb-1">{label}</div>
-                          <div className={`display-num text-2xl leading-none ${tone}`}>{val}</div>
+                          <div className="font-body text-muted text-label mb-1">{label}</div>
+                          <div className={`display-num text-subhead leading-none ${tone}`}>{val}</div>
                         </div>
                       ))}
                     </div>
                     {/* Decision distribution by consequence */}
                     <div className="px-5 py-4 border-b border-rule2">
-                      <div className="font-body text-muted text-label tracking-normal mb-3">Decision distribution by consequence</div>
+                      <div className="font-body text-muted text-label mb-3">Decision distribution by consequence</div>
                       <div className="space-y-2">
                         {decisionBars.map(d => {
                           const total = d.approved + d.overridden + d.deferred
@@ -602,14 +602,14 @@ export default function Analytics() {
                         { label: 'Quick approvals', val: String(interventionSummary.lowDwellDecisions), tone: interventionSummary.lowDwellDecisions > 0 ? 'text-danger' : 'text-ok' },
                       ].map(({ label, val, tone }) => (
                         <div key={label} className="bg-stone px-5 py-3.5">
-                          <div className="font-body text-muted text-label tracking-normal mb-1">{label}</div>
-                          <div className={`display-num text-2xl leading-none ${tone}`}>{val}</div>
+                          <div className="font-body text-muted text-label mb-1">{label}</div>
+                          <div className={`display-num text-subhead leading-none ${tone}`}>{val}</div>
                         </div>
                       ))}
                     </div>
                     {/* Outcome distribution bar */}
                     <div className="px-5 py-4 border-b border-rule2">
-                      <div className="font-body text-muted text-label tracking-normal mb-3">Outcome distribution</div>
+                      <div className="font-body text-muted text-label mb-3">Outcome distribution</div>
                       <div className="h-4 bg-rule2 flex overflow-hidden mb-2">
                         {positiveCount > 0 && <div className="h-full bg-ok/70" style={{ width: `${(positiveCount/interventionSummary.total)*100}%` }} />}
                         {unclearCount > 0  && <div className="h-full bg-ochre/60" style={{ width: `${(unclearCount/interventionSummary.total)*100}%` }} />}

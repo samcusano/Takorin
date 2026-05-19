@@ -88,7 +88,7 @@ function ActionDetail({ entry }) {
       <div>
         <div className="flex items-center gap-2 mb-2">
           <TierIcon size={10} strokeWidth={2} className="text-muted" />
-          <span className="font-body text-muted text-label tracking-normal capitalize">{entry.tier} tier</span>
+          <span className="font-body text-muted text-label capitalize">{entry.tier} tier</span>
           <span className={`ml-auto font-body text-label px-1.5 py-0.5 ${out.cls}`}>{out.label}</span>
         </div>
         <div className="font-display font-bold text-ink text-head leading-tight mb-1">{entry.action}</div>
@@ -97,7 +97,7 @@ function ActionDetail({ entry }) {
 
       {/* Rationale */}
       <div className="px-4 py-3 bg-stone2 border-l-4 border-l-ochre">
-        <div className="font-body text-muted text-label tracking-normal mb-1">Agent rationale</div>
+        <div className="font-body text-muted text-label mb-1">Agent rationale</div>
         <p className="font-body text-ink text-label leading-relaxed">{entry.rationale}</p>
       </div>
 
@@ -112,7 +112,7 @@ function ActionDetail({ entry }) {
           { label: 'Rollback available', val: entry.rollbackAvailable ? 'Yes' : 'No', tone: entry.rollbackAvailable ? 'text-ok' : 'text-muted' },
         ].map(({ label, val, tone }) => (
           <div key={label} className="bg-stone px-3 py-2.5">
-            <div className="font-body text-muted text-label tracking-normal mb-0.5">{label}</div>
+            <div className="font-body text-muted text-label mb-0.5">{label}</div>
             <div className={`font-body font-medium text-body ${tone}`}>{val}</div>
           </div>
         ))}
@@ -123,7 +123,7 @@ function ActionDetail({ entry }) {
         <div className={`flex items-center gap-3 px-4 py-3 border ${entry.impact.positive ? 'bg-ok/[0.04]' : 'bg-warn/[0.04]'}`}>
           <ArrowRight size={12} className={entry.impact.positive ? 'text-ok' : 'text-warn'} strokeWidth={2} />
           <div>
-            <div className="font-body text-muted text-label tracking-normal">{entry.impact.metric}</div>
+            <div className="font-body text-muted text-label">{entry.impact.metric}</div>
             <div className={`font-body font-medium text-base ${entry.impact.positive ? 'text-ok' : 'text-warn'}`}>{entry.impact.delta}</div>
           </div>
         </div>
@@ -142,7 +142,7 @@ function ActionDetail({ entry }) {
         <div className="border border-rule2 bg-stone2 px-4 py-3">
           <div className="flex items-center gap-1.5 mb-2">
             <RotateCcw size={10} className="text-muted" strokeWidth={2} />
-            <span className="font-body text-muted text-label tracking-normal">Rollback executed</span>
+            <span className="font-body text-muted text-label">Rollback executed</span>
           </div>
           <p className="font-body text-ink text-label mb-1">{rb.rollbackAction}</p>
           <p className="font-body text-muted text-label leading-snug">{rb.reason}</p>
@@ -173,10 +173,10 @@ export default function ExecutionAuthority() {
       {/* Left: tier panel */}
       <div className="w-[260px] flex-shrink-0 border-r border-rule2 flex flex-col bg-stone">
         <div className="flex-shrink-0 px-5 py-4 border-b border-rule2 bg-stone2">
-          <div className="font-body text-muted text-label tracking-normal mb-0.5">Frontier Layer</div>
+          <div className="font-body text-muted text-label mb-0.5">Frontier Layer</div>
           <div className="font-display font-bold text-ink text-head leading-none">Execution Authority</div>
           <div className="flex items-center gap-2 mt-2">
-            <span className={`font-display font-bold display-num text-title text-ok`}>{executionSummary.totalActions}</span>
+            <span className={`display-num text-title text-ok`}>{executionSummary.totalActions}</span>
             <span className="font-body text-muted text-label">autonomous actions · 30d</span>
           </div>
         </div>
@@ -190,7 +190,7 @@ export default function ExecutionAuthority() {
             { label: 'Avg monitor', val: executionSummary.avgMonitoringWindow, tone: 'text-ink' },
           ].map(({ label, val, tone }) => (
             <div key={label} className="bg-stone px-3 py-2">
-              <div className="font-body text-muted text-micro tracking-normal mb-0.5">{label}</div>
+              <div className="font-body text-muted text-micro mb-0.5">{label}</div>
               <div className={`font-body font-medium text-body ${tone}`}>{val}</div>
             </div>
           ))}
@@ -198,7 +198,7 @@ export default function ExecutionAuthority() {
 
         {/* Tiers */}
         <div className="flex-shrink-0 px-4 py-2 border-b border-rule2 bg-stone2">
-          <div className="font-body text-muted text-label tracking-normal">Autonomy tiers</div>
+          <div className="font-body text-muted text-label">Autonomy tiers</div>
         </div>
         <div className="flex-1 overflow-y-auto">
           <button type="button" onClick={() => { setSelectedTier(null); setSelectedId(null) }}
@@ -217,7 +217,7 @@ export default function ExecutionAuthority() {
       {/* Center: execution timeline */}
       <div className="w-[380px] flex-shrink-0 border-r border-rule2 flex flex-col">
         <div className="flex-shrink-0 px-4 py-2.5 border-b border-rule2 bg-stone2 flex items-center justify-between">
-          <span className="font-body text-muted text-label tracking-normal">
+          <span className="font-body text-muted text-label">
             {selectedTier ? `${selectedTier} tier` : 'All events'} · {filtered.length}
           </span>
           <div className="flex items-center gap-3">
@@ -249,7 +249,7 @@ export default function ExecutionAuthority() {
       {/* Right: action detail */}
       <div className="flex-1 flex flex-col overflow-hidden bg-stone">
         <div className="flex-shrink-0 px-5 py-2.5 border-b border-rule2 bg-stone2">
-          <span className="font-body text-muted text-label tracking-normal">Event detail</span>
+          <span className="font-body text-muted text-label">Event detail</span>
         </div>
         <ActionDetail entry={selectedEntry} />
       </div>

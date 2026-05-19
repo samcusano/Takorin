@@ -61,8 +61,8 @@ function ConnectorDetail({ c }) {
             {c.status === 'active' && c.streaming && <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-ok opacity-40" />}
             <span className={`relative inline-flex rounded-full h-2 w-2 ${cfg.dot}`} />
           </div>
-          <span className={`font-body text-label tracking-normal px-1.5 py-0.5 ${cfg.badge}`}>{cfg.label}</span>
-          {c.streaming && <span className="font-body text-ok text-label tracking-normal flex items-center gap-1"><Radio size={9} strokeWidth={2} />Streaming</span>}
+          <span className={`font-body text-label px-1.5 py-0.5 ${cfg.badge}`}>{cfg.label}</span>
+          {c.streaming && <span className="font-body text-ok text-label flex items-center gap-1"><Radio size={9} strokeWidth={2} />Streaming</span>}
         </div>
         <div className="font-display font-bold text-ink text-subhead leading-none mb-1">{c.name}</div>
         <div className="font-body text-muted text-body">{c.vendor}</div>
@@ -79,7 +79,7 @@ function ConnectorDetail({ c }) {
             { label: 'Conflicts',     val: c.conflicts > 0 ? String(c.conflicts) : 'None', tone: c.conflicts > 0 ? 'text-warn' : 'text-ok' },
           ].map(({ label, val, tone }) => (
             <div key={label} className="bg-stone px-3 py-2.5">
-              <div className="font-body text-muted text-label tracking-normal mb-0.5">{label}</div>
+              <div className="font-body text-muted text-label mb-0.5">{label}</div>
               <div className={`font-body font-medium text-body ${tone}`}>{val}</div>
             </div>
           ))}
@@ -138,10 +138,10 @@ export default function IntegrationHub() {
       {/* ── Left: categories + conflicts ────────────────────── */}
       <div className="w-[240px] flex-shrink-0 border-r border-rule2 flex flex-col bg-stone">
         <div className="flex-shrink-0 px-5 py-4 border-b border-rule2 bg-stone2">
-          <div className="font-body text-muted text-label tracking-normal mb-0.5">Platform Architecture</div>
+          <div className="font-body text-muted text-label mb-0.5">Platform Architecture</div>
           <div className="font-display font-bold text-ink text-head leading-none">Integration Hub</div>
           <div className="flex items-center gap-2 mt-2">
-            <span className={`font-display font-bold display-num text-title ${integrationSummary.active >= 30 ? 'text-ok' : 'text-warn'}`}>{integrationSummary.active}</span>
+            <span className={`display-num text-title ${integrationSummary.active >= 30 ? 'text-ok' : 'text-warn'}`}>{integrationSummary.active}</span>
             <span className="font-body text-muted text-label">of {integrationSummary.total} active</span>
           </div>
         </div>
@@ -180,7 +180,7 @@ export default function IntegrationHub() {
 
           {/* Semantic conflicts */}
           <div className="px-4 py-2.5 border-b border-rule2 bg-stone2 mt-2">
-            <div className="font-body text-muted text-label tracking-normal">Semantic conflicts</div>
+            <div className="font-body text-muted text-label">Semantic conflicts</div>
           </div>
           {semanticConflicts.map(sc => (
             <div key={sc.id} className="px-4 py-2.5 border-b border-rule2 border-l-4 border-l-warn bg-warn/[0.02]">
@@ -199,8 +199,8 @@ export default function IntegrationHub() {
               { label: 'Streaming', val: String(integrationSummary.streamingSources) },
             ].map(({ label, val }) => (
               <div key={label}>
-                <div className="font-body text-muted text-label tracking-normal">{label}</div>
-                <div className="font-display font-bold display-num text-base text-ink">{val}</div>
+                <div className="font-body text-muted text-label">{label}</div>
+                <div className="display-num text-base text-ink">{val}</div>
               </div>
             ))}
           </div>
@@ -210,7 +210,7 @@ export default function IntegrationHub() {
       {/* ── Center: connector grid ────────────────────────── */}
       <div className="w-[380px] flex-shrink-0 border-r border-rule2 flex flex-col">
         <div className="flex-shrink-0 px-4 py-2.5 border-b border-rule2 bg-stone2 flex items-center justify-between">
-          <span className="font-body text-muted text-label tracking-normal">
+          <span className="font-body text-muted text-label">
             {selectedCategory ?? 'All sources'} · {filtered.length}
           </span>
           <div className="flex items-center gap-3">
@@ -233,7 +233,7 @@ export default function IntegrationHub() {
       {/* ── Right: connector detail ───────────────────────── */}
       <div className="flex-1 flex flex-col overflow-hidden bg-stone">
         <div className="flex-shrink-0 px-5 py-2.5 border-b border-rule2 bg-stone2">
-          <span className="font-body text-muted text-label tracking-normal">Connector detail</span>
+          <span className="font-body text-muted text-label">Connector detail</span>
         </div>
         <ConnectorDetail c={selectedConnector} />
       </div>

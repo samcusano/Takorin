@@ -99,7 +99,7 @@ function SPCChart({ eqId }) {
     <div className="flex flex-col h-full">
       <div className="flex-shrink-0 px-5 py-2.5 border-b border-rule2 bg-stone2 flex items-center justify-between">
         <div>
-          <span className="font-body text-muted text-label tracking-normal">SPC · {param}</span>
+          <span className="font-body text-muted text-label">SPC · {param}</span>
         </div>
         <div className="flex items-center gap-4 text-label font-body">
           <span className="flex items-center gap-1 text-danger"><span className="w-3 border-t border-dashed border-danger" />UCL {ucl}{unit}</span>
@@ -140,7 +140,7 @@ function RecipePanel({ recipeId }) {
   return (
     <div className="flex-shrink-0 border-t border-rule2">
       <div className="px-5 py-2.5 border-b border-rule2 bg-stone2">
-        <div className="font-body text-muted text-label tracking-normal">
+        <div className="font-body text-muted text-label">
           Active recipe · {recipe.name} <span className="text-muted">v{recipe.version}</span>
         </div>
       </div>
@@ -149,7 +149,7 @@ function RecipePanel({ recipeId }) {
           <thead>
             <tr className="border-b border-rule2 bg-stone2">
               {['Parameter', 'LCL', 'Target', 'UCL'].map(h => (
-                <th key={h} className="px-4 py-1.5 text-left font-body text-muted text-micro tracking-normal">{h}</th>
+                <th key={h} className="px-4 py-1.5 text-left font-body text-muted text-micro">{h}</th>
               ))}
             </tr>
           </thead>
@@ -181,7 +181,7 @@ function RunHistory({ eqId }) {
   return (
     <div className="flex-shrink-0 border-t border-rule2">
       <div className="px-5 py-2.5 border-b border-rule2 bg-stone2">
-        <div className="font-body text-muted text-label tracking-normal">Run history</div>
+        <div className="font-body text-muted text-label">Run history</div>
       </div>
       {runs.map(r => {
         const oc = OUTCOME_CFG[r.outcome] ?? OUTCOME_CFG.released
@@ -240,7 +240,7 @@ function EquipmentDetail({ eq }) {
           { label: 'Next PM', val: eq.nextPM, tone: eq.status === 'maintenance' ? 'text-warn' : 'text-muted' },
         ].map(({ label, val, tone }) => (
           <div key={label} className="bg-stone px-3 py-2.5">
-            <div className="font-body text-muted text-label tracking-normal mb-0.5">{label}</div>
+            <div className="font-body text-muted text-label mb-0.5">{label}</div>
             <div className={`font-body font-medium text-base ${tone}`}>{val}</div>
           </div>
         ))}
@@ -280,7 +280,7 @@ export default function EquipmentIntelligence() {
       {/* Left: equipment list */}
       <div className="w-[260px] flex-shrink-0 border-r border-rule2 flex flex-col bg-stone">
         <div className="flex-shrink-0 px-5 py-4 border-b border-rule2 bg-stone2">
-          <div className="font-body text-muted text-label tracking-normal mb-0.5">Frontier Layer</div>
+          <div className="font-body text-muted text-label mb-0.5">Frontier Layer</div>
           <div className="font-display font-bold text-ink text-head leading-none">Equipment Intelligence</div>
           <div className="font-body text-muted text-label mt-1">Tool → Recipe → Run</div>
           <div className="flex items-center gap-3 mt-2">
@@ -309,7 +309,7 @@ export default function EquipmentIntelligence() {
       {/* Right: equipment detail + SPC + recipe + runs */}
       <div className="flex-1 flex flex-col overflow-hidden bg-stone">
         <div className="flex-shrink-0 px-5 py-2.5 border-b border-rule2 bg-stone2">
-          <span className="font-body text-muted text-label tracking-normal">Equipment detail</span>
+          <span className="font-body text-muted text-label">Equipment detail</span>
         </div>
         <EquipmentDetail eq={selectedEq} />
       </div>

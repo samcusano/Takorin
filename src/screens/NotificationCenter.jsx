@@ -216,7 +216,7 @@ export default function NotificationCenter({ onClose }) {
     <div className="border-b border-rule2 bg-stone2">
      <div className="px-4 py-2.5 border-b border-rule2 flex items-center gap-2">
       <Brain size={11} strokeWidth={1.75} className="text-muted" />
-      <span className="font-body text-label tracking-normal text-muted font-medium">Intelligence summary</span>
+      <span className="font-body text-label text-muted font-medium">Intelligence summary</span>
       <span className="font-body text-muted text-label ml-auto">Updated 06:42</span>
      </div>
      <div className="px-3 py-3 space-y-2.5">
@@ -250,7 +250,7 @@ export default function NotificationCenter({ onClose }) {
    {filteredActivity.length > 0 && (
     <>
      <div className="px-4 py-2 bg-stone2 border-b border-rule2">
-      <span className="font-body text-label tracking-normal text-muted font-medium">Activity</span>
+      <span className="font-body text-label text-muted font-medium">Activity</span>
      </div>
      <div className="px-3 py-3 space-y-2.5">
       {filteredActivity.map(item => (

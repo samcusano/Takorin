@@ -302,7 +302,7 @@ export default function PlantOverview() {
         <button type="button" onClick={() => setImpactExpanded(e => !e)}
           className="flex items-center gap-4 px-6 py-2 bg-stone2 hover:bg-stone3 transition-colors text-left w-full">
           <CircleDot size={10} strokeWidth={2} className="text-ok flex-shrink-0" />
-          <span className="font-body text-muted text-label tracking-normal">Impact · Last 30 days</span>
+          <span className="font-body text-muted text-label">Impact · Last 30 days</span>
           <div className="flex items-center gap-4 ml-2">
             <span className="font-body text-ink text-label">
               <span className="font-medium">{interventionSummary.total}</span>
@@ -407,7 +407,7 @@ export default function PlantOverview() {
       {mode === 'whatif' && (
         <div className="flex-shrink-0 px-5 py-3 border-b border-rule2 bg-stone2">
           <div className="flex items-center gap-2 mb-1.5">
-            <span className="font-body text-muted text-label tracking-normal">Projected cascade</span>
+            <span className="font-body text-muted text-label">Projected cascade</span>
             {anyAdjusted && (
               <button type="button" onClick={() => setWhatIfScores({})}
                 className="font-body text-label text-danger hover:text-ink transition-colors ml-auto">
@@ -455,7 +455,7 @@ export default function PlantOverview() {
       {mode === 'compare' && (
         <div className="flex-shrink-0 border-b border-rule2">
           <div className="px-5 py-1.5 bg-stone3 border-b border-rule2 flex items-center gap-2">
-            <span className="font-body text-muted text-label tracking-normal">
+            <span className="font-body text-muted text-label">
               {compareLines.length < 2
                 ? `Select ${2 - compareLines.length} more line${2 - compareLines.length !== 1 ? 's' : ''} to compare`
                 : `${compareLines[0].name} vs ${compareLines[1].name}`}
@@ -481,7 +481,7 @@ export default function PlantOverview() {
                   <div key={line.id} className="px-5 py-4">
                     <div className="flex items-start justify-between mb-2">
                       <div>
-                        <div className="font-body text-muted text-label tracking-normal mb-0.5">
+                        <div className="font-body text-muted text-label mb-0.5">
                           {LINE_AREAS[line.id]?.area ?? ''} · {line.name}
                         </div>
                         <div className="font-body text-muted text-label">{meta?.supervisor}</div>
@@ -625,7 +625,7 @@ export default function PlantOverview() {
 
                           {/* Score — pressure-weighted color, smooth transition */}
                           <div
-                            className={`font-display font-bold display-num text-score leading-none tabular-nums mb-2 ${riskColorClass(eff)}`}
+                            className={`display-num text-score leading-none tabular-nums mb-2 ${riskColorClass(eff)}`}
                             style={{ transition: 'color 250ms var(--ease-standard)' }}
                           >
                             {eff}
@@ -657,7 +657,7 @@ export default function PlantOverview() {
 
                           {/* Zone label + findings pip */}
                           <div className="flex items-center justify-between">
-                            <span className={`font-body text-label tracking-normal ${riskColorClass(eff)}`}>
+                            <span className={`font-body text-label ${riskColorClass(eff)}`}>
                               {riskLabel(eff)}
                             </span>
                             {pend > 0

@@ -262,7 +262,7 @@ function ConfBar({ value }) {
       <div className="h-[3px] flex-1 bg-stone3 overflow-hidden">
         <div className={`h-full ${clr} transition-[width] duration-500`} style={{ width: `${value}%` }} />
       </div>
-      <span className={`font-display font-bold display-num text-label w-7 text-right flex-shrink-0 tabular-nums ${txt}`}>
+      <span className={`display-num text-label w-7 text-right flex-shrink-0 tabular-nums ${txt}`}>
         {value}%
       </span>
     </div>
@@ -305,7 +305,7 @@ function UnitCard({ unit, selected, onSelect }) {
 
       {/* State core */}
       <div className="mb-2">
-        <div className={`font-body font-medium text-label tracking-normal ${hs.color}`}>
+        <div className={`font-body font-medium text-label ${hs.color}`}>
           {hs.label}
         </div>
         {unit.status !== 'maintenance' && unit.status !== 'fault' && (
@@ -338,7 +338,7 @@ function SignalRow({ label, val, unit, delta, tone }) {
     <div className="flex items-baseline justify-between py-1.5 border-b border-rule2 last:border-0">
       <span className="font-body text-muted text-label w-28 flex-shrink-0">{label}</span>
       <div className="flex items-baseline gap-1.5 flex-1 justify-end">
-        <span className={`font-display font-bold display-num text-base tabular-nums ${valColor}`}>{val}</span>
+        <span className={`display-num text-base tabular-nums ${valColor}`}>{val}</span>
         {unit && <span className="font-body text-muted text-label">{unit}</span>}
         <span className={`font-body text-label w-10 text-right flex-shrink-0 tabular-nums ${dColor}`}>
           {delta ?? '—'}
@@ -366,21 +366,21 @@ function DiagPaneContents({ unit, ext, hs }) {
     <>
       {/* §1 — Unit Summary */}
       <div className={`-mx-5 -mt-5 px-5 py-4 border-b border-rule2 mb-4 ${hs.bg}`}>
-        <div className="font-body text-muted text-label tracking-normal mb-2">Current task</div>
+        <div className="font-body text-muted text-label mb-2">Current task</div>
         <div className="font-body text-ink text-body leading-snug mb-3">
           {unit.assignedTask ?? (unit.status === 'maintenance' ? 'PM in progress — unit offline' : 'Offline — fault active')}
         </div>
         <div className="flex items-center gap-5">
           <div>
-            <div className="font-body text-muted text-label tracking-normal mb-0.5">State</div>
+            <div className="font-body text-muted text-label mb-0.5">State</div>
             <div className={`font-body font-medium text-label ${hs.color}`}>{hs.label}</div>
           </div>
           <div>
-            <div className="font-body text-muted text-label tracking-normal mb-0.5">Autonomy</div>
+            <div className="font-body text-muted text-label mb-0.5">Autonomy</div>
             <div className={`font-body text-label ${AUTONOMY_COLOR[mode]}`}>{AUTONOMY_LABEL[mode]}</div>
           </div>
           <div>
-            <div className="font-body text-muted text-label tracking-normal mb-0.5">Intervention</div>
+            <div className="font-body text-muted text-label mb-0.5">Intervention</div>
             <div className={`font-body font-medium text-label ${INTERVENTION_COLOR[interventionStatus]}`}>
               {INTERVENTION_LABEL[interventionStatus]}
             </div>
@@ -391,7 +391,7 @@ function DiagPaneContents({ unit, ext, hs }) {
       {/* §2 — Live Telemetry */}
       {ext?.signals?.length > 0 && (
         <div className="-mx-5 px-5 py-4 border-b border-rule2 mb-4">
-          <div className="font-body text-muted text-label tracking-normal mb-3">Live signals</div>
+          <div className="font-body text-muted text-label mb-3">Live signals</div>
           {ext.signals.map((s, i) => (
             <SignalRow key={i} {...s} />
           ))}
@@ -401,7 +401,7 @@ function DiagPaneContents({ unit, ext, hs }) {
       {/* §3 — AI Decision Trace */}
       {ext?.decisionTrace?.length > 0 && (
         <div className="-mx-5 px-5 py-4 border-b border-rule2 mb-4">
-          <div className="font-body text-muted text-label tracking-normal mb-2">Decision trace</div>
+          <div className="font-body text-muted text-label mb-2">Decision trace</div>
           {ext.decisionTrace.map((d, i) => (
             <TraceRow key={i} {...d} />
           ))}
@@ -410,19 +410,19 @@ function DiagPaneContents({ unit, ext, hs }) {
 
       {/* §4 — Fix / Intervention */}
       <div className="-mx-5 px-5 py-4 border-b border-rule2 mb-4">
-        <div className="font-body text-muted text-label tracking-normal mb-3">Action</div>
+        <div className="font-body text-muted text-label mb-3">Action</div>
         {!rs ? (
           <div className="font-body text-muted text-label">No action required — monitor only</div>
         ) : (
           <>
             <div className="border border-rule2 bg-stone2 px-3 py-2.5 mb-2">
-              <div className="font-body text-muted text-label tracking-normal mb-0.5">Suggested fix</div>
+              <div className="font-body text-muted text-label mb-0.5">Suggested fix</div>
               <div className="font-body text-ink text-label font-medium">{rs.primary.label}</div>
               <div className="font-body text-muted text-label mt-0.5">{rs.primary.detail}</div>
             </div>
             {rs.alternative && (
               <div className="border border-rule2 bg-stone2 px-3 py-2.5 mb-2">
-                <div className="font-body text-muted text-label tracking-normal mb-0.5">Alternative</div>
+                <div className="font-body text-muted text-label mb-0.5">Alternative</div>
                 <div className="font-body text-ink text-label">{rs.alternative.label}</div>
                 <div className="font-body text-muted text-label mt-0.5">{rs.alternative.detail}</div>
               </div>
@@ -440,7 +440,7 @@ function DiagPaneContents({ unit, ext, hs }) {
       {/* §5 — Dependency Awareness */}
       {ext?.dependencies?.length > 0 && (
         <div>
-          <div className="font-body text-muted text-label tracking-normal mb-2">Dependencies</div>
+          <div className="font-body text-muted text-label mb-2">Dependencies</div>
           {ext.dependencies.map((d, i) => {
             const dot = d.status === 'ok' ? 'bg-ok' : d.status === 'warn' ? 'bg-warn' : 'bg-danger'
             const txt = d.status === 'ok' ? 'text-muted' : d.status === 'warn' ? 'text-warn' : 'text-danger'
@@ -480,14 +480,14 @@ function StatStrip({ summary, filter, setFilter }) {
             filter === s.k ? 'bg-stone2' : 'bg-stone hover:bg-stone2'
           }`}
         >
-          <div className="font-body text-muted text-label tracking-normal mb-0.5">{s.l}</div>
-          <div className={`font-display font-extrabold display-num text-xl leading-none tabular-nums ${s.tone}`}>{s.v}</div>
+          <div className="font-body text-muted text-label mb-0.5">{s.l}</div>
+          <div className={`display-num text-title leading-none tabular-nums ${s.tone}`}>{s.v}</div>
         </button>
       ))}
       <div className="flex items-center px-4 border-l border-rule2 bg-stone flex-shrink-0">
         <div>
-          <div className="font-body text-muted text-label tracking-normal mb-0.5">Avg uptime</div>
-          <div className="font-display font-extrabold display-num text-xl text-ink leading-none">{summary.avgUptime}%</div>
+          <div className="font-body text-muted text-label mb-0.5">Avg uptime</div>
+          <div className="display-num text-title text-ink leading-none">{summary.avgUptime}%</div>
         </div>
       </div>
     </div>
@@ -516,8 +516,8 @@ export default function RobotFleet() {
       {/* Fleet header */}
       <div className="flex-shrink-0 border-b border-rule2 px-6 py-4 bg-stone flex items-center justify-between">
         <div>
-          <div className="font-body text-muted text-label tracking-normal mb-0.5">Robot Fleet · Salina Campus</div>
-          <div className="font-display font-extrabold display-num text-3xl text-ink leading-none">
+          <div className="font-body text-muted text-label mb-0.5">Robot Fleet · Salina Campus</div>
+          <div className="display-num text-page text-ink leading-none">
             {summary.online}
             <span className="font-body font-normal text-muted text-base ml-2">of {summary.total} online</span>
           </div>
@@ -548,7 +548,7 @@ export default function RobotFleet() {
         {faultLog.length > 0 && (
           <div className="mt-6 bg-stone">
             <div className="px-4 py-2 border-b border-rule2 bg-stone2">
-              <span className="font-body text-muted text-label tracking-normal">Shift event log</span>
+              <span className="font-body text-muted text-label">Shift event log</span>
             </div>
             {faultLog.map((f, i) => (
               <div key={i} className="flex items-center gap-3 px-4 py-2.5 border-b border-rule2 last:border-0">

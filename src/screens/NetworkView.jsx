@@ -216,12 +216,12 @@ function SupplierRegistry({ rows }) {
    {/* Column headers */}
    <div className="grid px-6 py-2 bg-stone2 border-b border-rule2 flex-shrink-0"
     style={{ gridTemplateColumns: COL }}>
-    <span className="font-body text-muted text-label tracking-normal">Supplier</span>
-    <span className="font-body text-muted text-label tracking-normal text-right">Net. Risk</span>
-    <span className="font-body text-muted text-label tracking-normal text-center">Exposures</span>
-    <span className="font-body text-muted text-label tracking-normal">Affected Plants</span>
-    <span className="font-body text-muted text-label tracking-normal text-right">Trend</span>
-    <span className="font-body text-muted text-label tracking-normal text-right">Confidence</span>
+    <span className="font-body text-muted text-label">Supplier</span>
+    <span className="font-body text-muted text-label text-right">Net. Risk</span>
+    <span className="font-body text-muted text-label text-center">Exposures</span>
+    <span className="font-body text-muted text-label">Affected Plants</span>
+    <span className="font-body text-muted text-label text-right">Trend</span>
+    <span className="font-body text-muted text-label text-right">Confidence</span>
    </div>
 
    {/* Supplier rows */}
@@ -309,7 +309,7 @@ function SupplierRegistry({ rows }) {
     <div className="border-t border-rule2 flex-shrink-0">
      <div className="px-6 py-2 bg-stone2 border-b border-rule2 flex items-center gap-2">
       <Brain size={10} strokeWidth={1.75} className="text-muted" />
-      <span className="font-body text-muted text-label tracking-normal">
+      <span className="font-body text-muted text-label">
        {lockedSignals.length} intelligence signals locked — activate at 3 connected plants
       </span>
      </div>
@@ -379,7 +379,7 @@ function NetworkSummaryBar({ activeExposures, containmentMode }) {
 
    {/* Active intelligence signals */}
    <div className="flex-1 px-6 py-4 flex flex-col justify-center gap-2.5">
-    <div className="font-body text-muted text-label tracking-normal mb-0.5">Active signals</div>
+    <div className="font-body text-muted text-label mb-0.5">Active signals</div>
     {activeSignals.map(sig => (
      <div key={sig.id} className="flex items-start gap-3">
       <span className={`display-num text-body font-bold flex-shrink-0 tabular-nums leading-none mt-px ${

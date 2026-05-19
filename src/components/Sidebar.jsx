@@ -34,7 +34,7 @@ function SideItem({ to, icon: Icon, label, badge, badgeType, disabled, id, onDis
  if (disabled) return (
  <button type="button"
  onClick={() => onDisabledClick?.(label)}
- className="flex items-center gap-3 px-4 py-2.5 text-sm opacity-40 cursor-not-allowed select-none w-full text-left"
+ className="flex items-center gap-3 px-4 py-2.5 text-label opacity-40 cursor-not-allowed select-none w-full text-left"
  >
  <Icon size={15} strokeWidth={1.75} className="flex-shrink-0" />
  <span className="font-body">{label}</span>
@@ -192,7 +192,7 @@ function PlantDropdown({ triggerRef, onClose, complianceState, currentPlant, set
      {/* Demo sector plants */}
      <div className="mx-5 h-px bg-sidebar-border" />
      <div className="px-5 pt-3 pb-4">
-      <p className="font-body text-white/50 text-label tracking-normal mb-2">Sector demos</p>
+      <p className="font-body text-white/50 text-label mb-2">Sector demos</p>
       {DEMO_PLANTS.map(p => {
        const isActive = currentPlant.id === p.id
        const sectorColor = SECTOR_COLORS[p.sector] ?? 'text-muted'

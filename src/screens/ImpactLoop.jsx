@@ -63,7 +63,7 @@ function EventChain({ entry, compact = false }) {
   return (
     <div className="flex items-stretch gap-0">
       <div className="flex-1 min-w-0 px-3 py-2.5 bg-stone2">
-        <div className="font-body text-muted text-micro tracking-normal mb-0.5">AI observation</div>
+        <div className="font-body text-muted text-micro mb-0.5">AI observation</div>
         <div className="font-body text-ink text-label leading-snug truncate">{entry.agent}</div>
         <div className={`font-body text-label ${fc.cls}`}>{fc.label} signals</div>
         <div className="font-body text-muted text-label">{Math.round(entry.signalCompleteness * 100)}% complete</div>
@@ -72,7 +72,7 @@ function EventChain({ entry, compact = false }) {
         <ArrowRight size={10} />
       </div>
       <div className="flex-1 min-w-0 px-3 py-2.5 bg-stone2">
-        <div className="font-body text-muted text-micro tracking-normal mb-0.5">Human decision</div>
+        <div className="font-body text-muted text-micro mb-0.5">Human decision</div>
         <div className={`font-body font-medium text-label ${dc.cls}`}>{dc.label}</div>
         <div className="font-body text-muted text-label">{entry.reviewedBy}</div>
         <DwellBadge ms={entry.dwellTimeMs} />
@@ -81,7 +81,7 @@ function EventChain({ entry, compact = false }) {
         <ArrowRight size={10} />
       </div>
       <div className={`flex-1 min-w-0 px-3 py-2.5 border ${entry.outcomeClassification === 'positive' ? 'bg-ok/[0.04] ' : entry.outcomeClassification === 'unclear' ? 'bg-ochre/[0.04] border-ochre/30' : 'bg-stone2 border-rule2'}`}>
-        <div className="font-body text-muted text-micro tracking-normal mb-0.5">Consequence</div>
+        <div className="font-body text-muted text-micro mb-0.5">Consequence</div>
         <div className="font-body font-medium text-label">
           <span className={`inline-flex items-center gap-1 ${entry.outcomeClassification === 'positive' ? 'text-ok' : entry.outcomeClassification === 'unclear' ? 'text-ochre' : 'text-muted'}`}>
             <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${oc.dot}`} />
@@ -161,17 +161,17 @@ function InterventionDetail({ entry }) {
       </div>
 
       <div>
-        <div className="font-body text-muted text-label tracking-normal mb-2">Event chain</div>
+        <div className="font-body text-muted text-label mb-2">Event chain</div>
         <EventChain entry={entry} compact={false} />
       </div>
 
       <div className="px-4 py-3 bg-stone2 border-l-4 border-l-ochre">
-        <div className="font-body text-muted text-label tracking-normal mb-1">AI rationale</div>
+        <div className="font-body text-muted text-label mb-1">AI rationale</div>
         <p className="font-body text-ink text-label leading-relaxed">{entry.rationaleText}</p>
       </div>
 
       <div>
-        <div className="font-body text-muted text-label tracking-normal mb-2">
+        <div className="font-body text-muted text-label mb-2">
           Source signals · <span className={fc.cls}>{fc.label}</span> · {Math.round(entry.signalCompleteness * 100)}% complete
         </div>
         <div className="border border-rule2 divide-y divide-rule2">
@@ -206,7 +206,7 @@ function InterventionDetail({ entry }) {
           { label: 'Caution',        val: entry.cautionNote ?? 'None',                                           tone: entry.cautionNote ? 'text-warn' : 'text-muted' },
         ].map(({ label, val, tone }) => (
           <div key={label} className="bg-stone px-3 py-2.5">
-            <div className="font-body text-muted text-label tracking-normal mb-0.5">{label}</div>
+            <div className="font-body text-muted text-label mb-0.5">{label}</div>
             <div className={`font-body font-medium text-label leading-snug ${tone}`}>{val}</div>
           </div>
         ))}
@@ -214,7 +214,7 @@ function InterventionDetail({ entry }) {
 
       {entry.metricsAfter && (
         <div>
-          <div className="font-body text-muted text-label tracking-normal mb-2">Before → After (from telemetry)</div>
+          <div className="font-body text-muted text-label mb-2">Before → After (from telemetry)</div>
           <div className="grid grid-cols-2 gap-px bg-rule2">
             <div className="bg-stone px-3 py-2">
               <div className="font-body text-muted text-label mb-1">Before</div>
@@ -234,7 +234,7 @@ function InterventionDetail({ entry }) {
 
       {entry.kpiDelta && (
         <div className={`px-4 py-3 border ${entry.kpiDelta.direction === 'improvement' ? 'bg-ok/[0.04]' : entry.kpiDelta.direction === 'degradation' ? 'bg-warn/[0.04]' : 'border-rule2 bg-stone2'}`}>
-          <div className="font-body text-muted text-label tracking-normal mb-1">KPI impact · {entry.kpiDelta.metric}</div>
+          <div className="font-body text-muted text-label mb-1">KPI impact · {entry.kpiDelta.metric}</div>
           <div className="flex items-center gap-3">
             <span className="font-body text-muted text-body">{entry.kpiDelta.before}</span>
             <ArrowRight size={12} className="text-muted" />
@@ -253,7 +253,7 @@ function InterventionDetail({ entry }) {
         <div className="flex items-start gap-3 px-4 py-3 bg-ok/[0.04] border-l-4 border-l-ok">
           <CheckCircle2 size={12} strokeWidth={2} className="text-ok flex-shrink-0 mt-0.5" />
           <div className="flex-1 min-w-0">
-            <div className="font-body text-muted text-label tracking-normal mb-0.5">Confirmed by operator</div>
+            <div className="font-body text-muted text-label mb-0.5">Confirmed by operator</div>
             <div className="font-body font-medium text-ink text-label">{entry.operatorConfirmation.confirmedBy} · {entry.operatorConfirmation.station}</div>
             <div className="font-body text-ok text-label">{entry.operatorConfirmation.note}</div>
             <div className="font-body text-muted text-label mt-0.5">{entry.operatorConfirmation.confirmedAt}</div>
@@ -267,7 +267,7 @@ function InterventionDetail({ entry }) {
       )}
 
       <div className="px-4 py-3 bg-stone2">
-        <div className="font-body text-muted text-label tracking-normal mb-1">Outcome narrative</div>
+        <div className="font-body text-muted text-label mb-1">Outcome narrative</div>
         <p className="font-body text-ink text-label leading-relaxed">{entry.outcomeNotes}</p>
       </div>
 
@@ -309,7 +309,7 @@ export default function ImpactLoop() {
 
         {/* Header */}
         <div className="flex-shrink-0 px-5 py-4 border-b border-rule2 bg-stone2">
-          <div className="font-body text-muted text-label tracking-normal mb-0.5">Causality Layer</div>
+          <div className="font-body text-muted text-label mb-0.5">Causality Layer</div>
           <div className="font-display font-bold text-ink text-subhead leading-none">Impact Loop</div>
           <div className="font-body text-muted text-label mt-1">AI observation → decision → consequence</div>
         </div>
@@ -323,7 +323,7 @@ export default function ImpactLoop() {
             { label: 'Low-dwell',         val: String(lowDwellCount), tone: lowDwellCount > 0 ? 'text-danger' : 'text-ok'                                  },
           ].map(({ label, val, tone }) => (
             <div key={label} className="bg-stone px-4 py-3">
-              <div className="font-body text-muted text-micro tracking-normal mb-0.5">{label}</div>
+              <div className="font-body text-muted text-micro mb-0.5">{label}</div>
               <div className={`font-body font-bold text-head display-num ${tone}`}>{val}</div>
             </div>
           ))}
@@ -372,7 +372,7 @@ export default function ImpactLoop() {
       {/* ── Right: event chain detail ─────────────────────────────────── */}
       <div className="flex-1 flex flex-col overflow-hidden bg-stone">
         <div className="flex-shrink-0 px-5 py-2.5 border-b border-rule2 bg-stone2">
-          <span className="font-body text-muted text-label tracking-normal">Event chain detail</span>
+          <span className="font-body text-muted text-label">Event chain detail</span>
         </div>
         <InterventionDetail entry={selectedEntry} />
       </div>

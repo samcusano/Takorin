@@ -100,7 +100,7 @@ function OverrideModal({ agentName, actionLabel, onConfirm, onCancel }) {
     <div className="fixed inset-0 bg-ink/40 z-50 flex items-center justify-center p-6">
       <div className="bg-stone w-full max-w-md shadow-raise slide-in">
         <div className="px-5 py-4 border-b border-rule2 bg-stone2">
-          <div className="font-body text-muted text-label tracking-normal mb-1">Why are you overriding?</div>
+          <div className="font-body text-muted text-label mb-1">Why are you overriding?</div>
           <div className="font-display font-bold text-ink text-base">{agentName}</div>
           <div className="font-body text-muted text-label mt-0.5">{actionLabel}</div>
         </div>
@@ -109,7 +109,7 @@ function OverrideModal({ agentName, actionLabel, onConfirm, onCancel }) {
             Overriding a compliance action. Your reason is logged and becomes part of the audit record.
           </p>
           <div>
-            <label className="font-body text-muted text-label tracking-normal block mb-1.5">Rationale</label>
+            <label className="font-body text-muted text-label block mb-1.5">Rationale</label>
             <textarea ref={ref} value={rationale} onChange={e => setRationale(e.target.value)}
               rows={3} placeholder="Why are you overriding? (min 20 characters)"
               className="w-full font-body text-body text-ink bg-stone2 px-3 py-2 resize-none focus:outline-none focus:border-rule" />
@@ -134,7 +134,7 @@ function DisableModal({ agent, onConfirm, onCancel }) {
     <div className="fixed inset-0 bg-ink/40 z-50 flex items-center justify-center p-6">
       <div className="bg-stone w-full max-w-md shadow-raise slide-in">
         <div className="px-5 py-4 border-b border-rule2 bg-stone2">
-          <div className="font-body text-muted text-label tracking-normal mb-1">Disable agent — confirm</div>
+          <div className="font-body text-muted text-label mb-1">Disable agent — confirm</div>
           <div className="font-display font-bold text-ink text-base">{agent.name}</div>
         </div>
         <div className="px-5 py-4 space-y-3">
@@ -335,7 +335,7 @@ function LedgerRow({ pa, agent, onInvestigate, onApprove, onOverrideRequest, sel
           {/* Rationale — always shown prominently when expanded */}
           {pa.rationale && (
             <div>
-              <div className="font-body text-muted text-label tracking-normal mb-1">AI rationale</div>
+              <div className="font-body text-muted text-label mb-1">AI rationale</div>
               <p className="font-body text-ink text-label leading-relaxed">{pa.rationale}</p>
             </div>
           )}
@@ -343,7 +343,7 @@ function LedgerRow({ pa, agent, onInvestigate, onApprove, onOverrideRequest, sel
           <div className="grid grid-cols-2 gap-4">
             {pa.impactPreview?.length > 0 && (
               <div>
-                <div className="font-body text-muted text-label tracking-normal mb-1.5">Impact preview</div>
+                <div className="font-body text-muted text-label mb-1.5">Impact preview</div>
                 {pa.impactPreview.slice(0, 3).map((l, i) => (
                   <div key={i} className="font-body text-muted text-label leading-snug mb-1">· {l}</div>
                 ))}
@@ -351,7 +351,7 @@ function LedgerRow({ pa, agent, onInvestigate, onApprove, onOverrideRequest, sel
             )}
             <div className="space-y-2">
               <div>
-                <div className="font-body text-muted text-label tracking-normal mb-1">Confidence</div>
+                <div className="font-body text-muted text-label mb-1">Confidence</div>
                 <div className="flex items-center gap-2">
                   <div className="h-[2px] w-20 bg-stone3 flex-shrink-0 relative">
                     <div className={`h-full ${pa.confidence >= 85 ? 'bg-ok' : pa.confidence >= 65 ? 'bg-warn' : 'bg-danger'}`}
@@ -365,7 +365,7 @@ function LedgerRow({ pa, agent, onInvestigate, onApprove, onOverrideRequest, sel
                 </div>
               </div>
               <div>
-                <div className="font-body text-muted text-label tracking-normal mb-0.5">What it affects</div>
+                <div className="font-body text-muted text-label mb-0.5">What it affects</div>
                 <div className="font-body text-muted text-label">{meta.blastRadius}</div>
               </div>
             </div>
@@ -632,7 +632,7 @@ function DecisionReplay({ pa, agent }) {
                 {/* Expanded detail for active step */}
                 {isActive && s.items?.length > 0 && (
                   <div className="mb-2 px-3 py-3 bg-stone2 border-l-2 border-l-ochre slide-in">
-                    <div className="font-body text-muted text-label tracking-normal mb-2">Step detail</div>
+                    <div className="font-body text-muted text-label mb-2">Step detail</div>
                     <div className="space-y-1.5">
                       {s.items.filter(it => it?.text).map((it, j) => (
                         <div key={j} className="flex items-start gap-2">
@@ -686,12 +686,12 @@ function InvestigationPanel({ pa, agent, agentActions }) {
             {pa.evidence ? (
               <>
                 <div>
-                  <div className="font-body text-muted text-label tracking-normal mb-2">Summary</div>
+                  <div className="font-body text-muted text-label mb-2">Summary</div>
                   <p className="font-body text-ink text-body leading-relaxed">{pa.evidence.summary}</p>
                 </div>
                 {pa.evidence.causalSignals?.length > 0 && (
                   <div>
-                    <div className="font-body text-muted text-label tracking-normal mb-2">Causal signals</div>
+                    <div className="font-body text-muted text-label mb-2">Causal signals</div>
                     <div className="border border-rule2 divide-y divide-rule2">
                       {pa.evidence.causalSignals.map((s, i) => {
                         const c = s.status === 'breach' || s.status === 'stale' ? 'text-danger' : s.status === 'warn' ? 'text-warn' : s.status === 'eligible' ? 'text-ok' : 'text-ok'
@@ -713,7 +713,7 @@ function InvestigationPanel({ pa, agent, agentActions }) {
                 )}
                 {pa.evidence.dependencies?.length > 0 && (
                   <div>
-                    <div className="font-body text-muted text-label tracking-normal mb-2">Dependencies</div>
+                    <div className="font-body text-muted text-label mb-2">Dependencies</div>
                     <div className="border border-rule2 divide-y divide-rule2">
                       {pa.evidence.dependencies.map((d, i) => {
                         const dot = d.status === 'required' ? 'bg-warn' : d.status === 'blocked' ? 'bg-danger' : d.status === 'eligible' ? 'bg-ok' : 'bg-muted'
@@ -726,7 +726,7 @@ function InvestigationPanel({ pa, agent, agentActions }) {
                               <div className="font-body text-ink text-label font-medium">{d.label}</div>
                               {d.note && <div className="font-body text-muted text-label mt-0.5 leading-snug">{d.note}</div>}
                             </div>
-                            <div className={`font-body text-label tracking-normal flex-shrink-0 ${lc}`}>{ll}</div>
+                            <div className={`font-body text-label flex-shrink-0 ${lc}`}>{ll}</div>
                           </div>
                         )
                       })}
@@ -735,7 +735,7 @@ function InvestigationPanel({ pa, agent, agentActions }) {
                 )}
                 {pa.evidence.riskForecast && (
                   <div>
-                    <div className="font-body text-muted text-label tracking-normal mb-2">Risk forecast</div>
+                    <div className="font-body text-muted text-label mb-2">Risk forecast</div>
                     <div className="border border-rule2 bg-stone2 px-4 py-3">
                       <p className="font-body text-ink text-body leading-relaxed">{pa.evidence.riskForecast}</p>
                     </div>
@@ -751,7 +751,7 @@ function InvestigationPanel({ pa, agent, agentActions }) {
         {tab === 'impact' && (
           <div className="space-y-4">
             <div>
-              <div className="font-body text-muted text-label tracking-normal mb-2">If approved — downstream effects</div>
+              <div className="font-body text-muted text-label mb-2">If approved — downstream effects</div>
               {pa.impactPreview?.length > 0 ? (
                 <div className="border border-rule2 divide-y divide-rule2">
                   {pa.impactPreview.map((line, i) => (
@@ -766,7 +766,7 @@ function InvestigationPanel({ pa, agent, agentActions }) {
               )}
             </div>
             <div>
-              <div className="font-body text-muted text-label tracking-normal mb-2">Confidence</div>
+              <div className="font-body text-muted text-label mb-2">Confidence</div>
               <div className="flex items-center gap-3">
                 <div className="flex-1 h-1.5 bg-stone3 relative">
                   <div className={`h-full ${pa.confidence >= 85 ? 'bg-ok' : pa.confidence >= 65 ? 'bg-warn' : 'bg-danger'}`}
@@ -786,7 +786,7 @@ function InvestigationPanel({ pa, agent, agentActions }) {
 
         {tab === 'action-log' && (
           <div>
-            <div className="font-body text-muted text-label tracking-normal mb-2">Recent actions — {agent.name}</div>
+            <div className="font-body text-muted text-label mb-2">Recent actions — {agent.name}</div>
             {recentActions.length > 0 ? (
               <div className="border border-rule2 divide-y divide-rule2">
                 {recentActions.map((a, i) => (
@@ -809,7 +809,7 @@ function InvestigationPanel({ pa, agent, agentActions }) {
         {tab === 'diagnostics' && (
           <div className="space-y-4">
             <div>
-              <div className="font-body text-muted text-label tracking-normal mb-2">Model diagnostics</div>
+              <div className="font-body text-muted text-label mb-2">Model diagnostics</div>
               <div className="border border-rule2 divide-y divide-rule2">
                 {[
                   ['Prompt version', `v${prompt?.version ?? agent.promptVersion ?? '—'}`],
@@ -827,7 +827,7 @@ function InvestigationPanel({ pa, agent, agentActions }) {
             </div>
             {prompt?.hardConstraints?.length > 0 && (
               <div>
-                <div className="font-body text-muted text-label tracking-normal mb-2">Hard constraints</div>
+                <div className="font-body text-muted text-label mb-2">Hard constraints</div>
                 <ul className="space-y-1.5">
                   {prompt.hardConstraints.map((c, i) => (
                     <li key={i} className="flex items-start gap-2 font-body text-label text-muted">
@@ -899,10 +899,10 @@ function FleetStrip({ agents }) {
             <div className="font-body text-muted text-label leading-none mb-0.5 truncate" style={{ maxWidth: 72 }}>
               {agent.name.split(' ')[0]}
             </div>
-            <div className={`font-display font-bold display-num text-label leading-none ${color}`}>
+            <div className={`display-num text-label leading-none ${color}`}>
               {agent.enabled ? `${confVal}%` : 'Off'}
             </div>
-            {isAuto && agent.enabled && <div className="font-body text-micro text-ok tracking-normal mt-0.5">auto</div>}
+            {isAuto && agent.enabled && <div className="font-body text-micro text-ok mt-0.5">auto</div>}
           </div>
         )
       })}
@@ -926,7 +926,7 @@ function AgentTierStrip({ tier0Count, tier1Items, tier2Items, tier3Items, expand
       <div className="flex items-center gap-2.5 px-4 py-2 border-r border-rule2 flex-shrink-0">
         <div className="w-1.5 h-1.5 rounded-full bg-ok flex-shrink-0" />
         <div>
-          <div className="font-body text-muted text-micro tracking-normal mb-0.5">Tier 0</div>
+          <div className="font-body text-muted text-micro mb-0.5">Tier 0</div>
           <div className="font-body text-ink text-label font-medium">{tier0Count} auto</div>
         </div>
       </div>
@@ -935,7 +935,7 @@ function AgentTierStrip({ tier0Count, tier1Items, tier2Items, tier3Items, expand
         className={`flex items-center gap-2.5 px-4 py-2 border-r border-rule2 flex-shrink-0 hover:bg-stone3 transition-colors text-left ${expandTier1 ? 'bg-stone3' : ''}`}>
         <div className="w-1.5 h-1.5 rounded-full bg-ochre flex-shrink-0" />
         <div>
-          <div className="font-body text-muted text-micro tracking-normal mb-0.5">Tier 1 · Notified</div>
+          <div className="font-body text-muted text-micro mb-0.5">Tier 1 · Notified</div>
           <div className="font-body text-ink text-label font-medium">{tier1Items.length} informed</div>
         </div>
         <ChevronDown size={9} className={`text-muted flex-shrink-0 transition-transform ${expandTier1 ? 'rotate-180' : ''}`} />
@@ -945,7 +945,7 @@ function AgentTierStrip({ tier0Count, tier1Items, tier2Items, tier3Items, expand
         <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${tier2Undecided > TIER2_BUDGET ? 'bg-danger' : 'bg-warn'}`} />
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between gap-2 mb-1">
-            <div className="font-body text-muted text-micro tracking-normal">Tier 2 · Your review</div>
+            <div className="font-body text-muted text-micro">Tier 2 · Your review</div>
             <div className={`font-body text-label tabular-nums font-medium ${tier2Undecided > TIER2_BUDGET ? 'text-danger' : 'text-muted'}`}>
               {tier2Undecided}/{TIER2_BUDGET}
               {tier2Undecided > TIER2_BUDGET && ' — over budget'}
@@ -960,7 +960,7 @@ function AgentTierStrip({ tier0Count, tier1Items, tier2Items, tier3Items, expand
       <div className={`flex items-center gap-2.5 px-4 py-2 flex-shrink-0 ${tier3Undecided > 0 ? 'bg-danger/[0.04]' : ''}`}>
         <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${tier3Undecided > 0 ? 'bg-danger animate-pulse' : 'bg-muted'}`} />
         <div>
-          <div className="font-body text-muted text-micro tracking-normal mb-0.5">Tier 3 · Locked</div>
+          <div className="font-body text-muted text-micro mb-0.5">Tier 3 · Locked</div>
           <div className={`font-body text-label font-medium ${tier3Undecided > 0 ? 'text-danger' : 'text-muted'}`}>
             {tier3Undecided > 0 ? `${tier3Undecided} pending` : tier3Items.length > 0 ? `${tier3Items.length} reviewed` : 'None'}
           </div>
@@ -1098,8 +1098,8 @@ export default function AgentControl() {
       {/* ── System confidence header ─────────────────────────────────── */}
       <div className="flex-shrink-0 flex items-stretch border-b border-rule2 bg-stone">
         <div className="px-5 py-3 border-r border-rule2 flex-shrink-0">
-          <div className="font-body text-muted text-label tracking-normal mb-0.5">Agent Control · Salina</div>
-          <div className={`font-display font-extrabold display-num text-2xl leading-none ${confColor}`}>
+          <div className="font-body text-muted text-label mb-0.5">Agent Control · Salina</div>
+          <div className={`display-num text-subhead leading-none ${confColor}`}>
             {systemConfidence ?? 79}%
             <span className="font-body font-normal text-muted text-label ml-1.5">system confidence</span>
           </div>
@@ -1142,7 +1142,7 @@ export default function AgentControl() {
         <div className="flex-shrink-0 border-b border-rule2 bg-stone2">
           <div className="px-5 py-1.5 border-b border-rule2 flex items-center gap-2">
             <div className="h-1 w-1 rounded-full bg-ochre flex-shrink-0" />
-            <span className="font-body text-muted text-label tracking-normal">System acted · you're informed</span>
+            <span className="font-body text-muted text-label">System acted · you're informed</span>
           </div>
           <div className="divide-y divide-rule2">
             {tier1Items.map(pa => {
@@ -1170,7 +1170,7 @@ export default function AgentControl() {
         {/* Queue header */}
         <div className="flex-shrink-0 flex items-center justify-between px-5 py-2 border-b border-rule2 bg-stone">
           <div className="flex items-center gap-2.5">
-            <span className="font-body font-medium text-label tracking-normal text-ink">For your review</span>
+            <span className="font-body font-medium text-label text-ink">For your review</span>
             {undecidedCount > 0 && (
               <span className="font-body text-label text-warn bg-warn/[0.08] px-1.5 py-0.5">{undecidedCount} awaiting</span>
             )}
@@ -1282,7 +1282,7 @@ export default function AgentControl() {
                         <Icon size={14} className="text-muted" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="font-body text-muted text-label tracking-normal mb-0.5">{agent.name} · {cfg.label} consequence</div>
+                        <div className="font-body text-muted text-label mb-0.5">{agent.name} · {cfg.label} consequence</div>
                         <div className="font-display font-bold text-ink text-head leading-snug">{pa._meta.verbFirst}</div>
                         {pa._decided && (
                           <div className={`font-body text-label mt-0.5 ${pa._decided === 'approved' ? 'text-ok' : 'text-muted'}`}>
@@ -1303,7 +1303,7 @@ export default function AgentControl() {
                         return (
                           <div className="text-right flex-shrink-0">
                             <div className="flex items-center gap-1.5 justify-end">
-                              <div className={`font-display font-bold display-num text-title tabular-nums leading-none ${confColor}`}>{pa.confidence}%</div>
+                              <div className={`display-num text-title tabular-nums leading-none ${confColor}`}>{pa.confidence}%</div>
                               <div className="font-body text-muted text-label">conf</div>
                             </div>
                             {modelLabel && (
@@ -1337,7 +1337,7 @@ export default function AgentControl() {
                       <div className="px-6 py-5 space-y-5">
                       {pa.rationale && (
                         <div className="px-4 py-3 bg-stone2 border-l-4 border-l-ochre">
-                          <div className="font-body text-muted text-label tracking-normal mb-1">AI rationale</div>
+                          <div className="font-body text-muted text-label mb-1">AI rationale</div>
                           <p className="font-body text-ink text-body leading-relaxed">{pa.rationale}</p>
                         </div>
                       )}
@@ -1350,7 +1350,7 @@ export default function AgentControl() {
                               <>
                                 {active.length > 0 && (
                                   <div>
-                                    <div className="font-body text-muted text-label tracking-normal mb-2">Signal pipeline</div>
+                                    <div className="font-body text-muted text-label mb-2">Signal pipeline</div>
                                     <div className="border border-rule2 divide-y divide-rule2">
                                       {active.map((s, i) => {
                                         const c = s.status === 'breach' || s.status === 'stale' ? 'text-danger' : s.status === 'warn' ? 'text-warn' : 'text-ok'
@@ -1362,7 +1362,7 @@ export default function AgentControl() {
                                               <div className="flex items-center gap-1.5 mb-0.5">
                                                 <div className="font-body text-muted text-label">{s.signal}</div>
                                                 {s.stage && (
-                                                  <span className={`font-body text-micro px-1 py-0.5 font-medium tracking-normal ${stageCfg.cls}`}>{stageCfg.label}</span>
+                                                  <span className={`font-body text-micro px-1 py-0.5 font-medium ${stageCfg.cls}`}>{stageCfg.label}</span>
                                                 )}
                                               </div>
                                               <div className="font-body text-ink text-label font-medium">{s.reading}</div>
@@ -1377,7 +1377,7 @@ export default function AgentControl() {
                                 )}
                                 {suppressed.length > 0 && (
                                   <div>
-                                    <div className="font-body text-muted text-label tracking-normal mb-2">Excluded from reasoning</div>
+                                    <div className="font-body text-muted text-label mb-2">Excluded from reasoning</div>
                                     <div className="border border-rule2 divide-y divide-rule2 opacity-60">
                                       {suppressed.map((s, i) => (
                                         <div key={i} className="flex items-start gap-3 px-4 py-2">
@@ -1398,7 +1398,7 @@ export default function AgentControl() {
                       )}
                       {pa.impactPreview?.length > 0 && (
                         <div>
-                          <div className="font-body text-muted text-label tracking-normal mb-2">If approved</div>
+                          <div className="font-body text-muted text-label mb-2">If approved</div>
                           <div className="border border-rule2 divide-y divide-rule2">
                             {pa.impactPreview.map((line, i) => (
                               <div key={i} className="px-4 py-2 font-body text-label text-muted leading-snug">{line}</div>
@@ -1407,7 +1407,7 @@ export default function AgentControl() {
                         </div>
                       )}
                       <div>
-                        <div className="font-body text-muted text-label tracking-normal mb-2">Confidence vs threshold</div>
+                        <div className="font-body text-muted text-label mb-2">Confidence vs threshold</div>
                         <div className="flex items-center gap-3">
                           <div className="flex-1 h-1.5 bg-stone3 relative">
                             <div className={`h-full ${pa.confidence >= 85 ? 'bg-ok' : pa.confidence >= 65 ? 'bg-warn' : 'bg-danger'}`}
@@ -1423,7 +1423,7 @@ export default function AgentControl() {
                       </div>
                       {pa.evidence?.riskForecast && (
                         <div>
-                          <div className="font-body text-muted text-label tracking-normal mb-2">Risk if deferred</div>
+                          <div className="font-body text-muted text-label mb-2">Risk if deferred</div>
                           <p className="font-body text-muted text-label leading-relaxed px-4 py-3 bg-stone2">{pa.evidence.riskForecast}</p>
                         </div>
                       )}
@@ -1482,7 +1482,7 @@ export default function AgentControl() {
                         <div className="flex items-center gap-3">
                           <Icon size={16} className="text-danger flex-shrink-0" />
                           <div>
-                            <div className="font-body text-muted text-label tracking-normal">{agent.name} · Auto-executing</div>
+                            <div className="font-body text-muted text-label">{agent.name} · Auto-executing</div>
                             <div className="font-display font-bold text-ink text-base leading-snug mt-0.5">{pa._meta.verbFirst}</div>
                           </div>
                         </div>
@@ -1506,7 +1506,7 @@ export default function AgentControl() {
                   const rendered = new Set()
                   return (
                     <div>
-                      <div className="font-body text-muted text-label tracking-normal mb-2">High consequence</div>
+                      <div className="font-body text-muted text-label mb-2">High consequence</div>
                       <div className="grid grid-cols-2 gap-3">
                         {highItems.map(pa => {
                           if (pa._meta.groupId && rendered.has(pa._meta.groupId)) return null
@@ -1575,7 +1575,7 @@ export default function AgentControl() {
                   if (medItems.length === 0) return null
                   return (
                     <div>
-                      <div className="font-body text-muted text-label tracking-normal mb-2">Medium consequence</div>
+                      <div className="font-body text-muted text-label mb-2">Medium consequence</div>
                       <div className="border border-rule2 divide-y divide-rule2">
                         {medItems.map(pa => {
                           const agent = agents.find(a => a.id === pa._agentId)

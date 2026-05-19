@@ -69,7 +69,7 @@ function HoldPointRow({ hp }) {
           <div className="font-body text-muted text-label">Requires {hp.requiredRole} · Prior hold points must clear first</div>
         )}
       </div>
-      <span className={`font-body text-micro tracking-normal flex-shrink-0 ${cfg.cls}`}>{cfg.label}</span>
+      <span className={`font-body text-micro flex-shrink-0 ${cfg.cls}`}>{cfg.label}</span>
     </div>
   )
 }
@@ -226,14 +226,14 @@ function RecordDetail({ rec }) {
                     { label: 'Submitted', val: rec.qpDisposition.submittedAt },
                   ].map(({ label, val }) => (
                     <div key={label} className="bg-stone px-3 py-2.5">
-                      <div className="font-body text-muted text-label tracking-normal mb-0.5">{label}</div>
+                      <div className="font-body text-muted text-label mb-0.5">{label}</div>
                       <div className="font-body font-medium text-ink text-body">{val}</div>
                     </div>
                   ))}
                 </div>
                 {rec.qpDisposition.notes && (
                   <div className="px-4 py-3 bg-stone2">
-                    <div className="font-body text-muted text-label tracking-normal mb-1">QP notes</div>
+                    <div className="font-body text-muted text-label mb-1">QP notes</div>
                     <p className="font-body text-ink text-label leading-relaxed">{rec.qpDisposition.notes}</p>
                   </div>
                 )}
@@ -265,7 +265,7 @@ export default function RecordVault() {
       {/* Left: record list */}
       <div className="w-[280px] flex-shrink-0 border-r border-rule2 flex flex-col bg-stone">
         <div className="flex-shrink-0 px-5 py-4 border-b border-rule2 bg-stone2">
-          <div className="font-body text-muted text-label tracking-normal mb-0.5">Frontier Layer</div>
+          <div className="font-body text-muted text-label mb-0.5">Frontier Layer</div>
           <div className="font-display font-bold text-ink text-head leading-none">Record Vault</div>
           <div className="font-body text-muted text-label mt-1">21 CFR Part 11 · EU Annex 11</div>
           <div className="flex items-center gap-3 mt-2">
@@ -304,7 +304,7 @@ export default function RecordVault() {
       {/* Right: record detail */}
       <div className="flex-1 flex flex-col overflow-hidden bg-stone">
         <div className="flex-shrink-0 px-5 py-2.5 border-b border-rule2 bg-stone2">
-          <span className="font-body text-muted text-label tracking-normal">Batch Manufacturing Record</span>
+          <span className="font-body text-muted text-label">Batch Manufacturing Record</span>
         </div>
         <RecordDetail rec={selectedRecord} />
       </div>

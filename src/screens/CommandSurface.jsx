@@ -30,8 +30,8 @@ function CommandBanner({ critItems, watchItems, pendingIds, readiness, activeExp
     <div className="flex items-start gap-3 mb-4">
      <div className="w-2 h-2 rounded-full bg-danger flex-shrink-0 mt-2 beat" />
      <div>
-      <div className="font-body text-danger text-label tracking-normal mb-1">Active network exposure</div>
-      <div className="font-display font-bold text-ink text-2xl leading-none mb-1.5">
+      <div className="font-body text-danger text-label mb-1">Active network exposure</div>
+      <div className="font-display font-bold text-ink text-page leading-none mb-1.5">
        {supplier} hold active
       </div>
       <div className="font-body text-ink2 text-body leading-relaxed">
@@ -54,10 +54,10 @@ function CommandBanner({ critItems, watchItems, pendingIds, readiness, activeExp
     <div className="flex items-start gap-3 mb-4">
      <div className={`w-2 h-2 rounded-full flex-shrink-0 mt-2 ${isDanger ? 'bg-danger beat' : 'bg-warn'}`} />
      <div>
-      <div className={`font-body text-label tracking-normal mb-1 ${isDanger ? 'text-danger' : 'text-warn'}`}>
+      <div className={`font-body text-label mb-1 ${isDanger ? 'text-danger' : 'text-warn'}`}>
        {isNow ? 'Immediate action required' : 'Emerging risk'}
       </div>
-      <div className="font-display font-bold text-ink text-2xl leading-none mb-1.5">
+      <div className="font-display font-bold text-ink text-page leading-none mb-1.5">
        {topItem.title}
       </div>
       <div className="font-body text-ink2 text-body leading-relaxed">{topItem.action}</div>
@@ -77,8 +77,8 @@ function CommandBanner({ critItems, watchItems, pendingIds, readiness, activeExp
    <div className="flex items-start gap-3">
     <div className="w-2 h-2 rounded-full bg-ok flex-shrink-0 mt-2" />
     <div>
-     <div className="font-body text-ok text-label tracking-normal mb-1">No critical interventions</div>
-     <div className="font-display font-bold text-ink text-2xl leading-none mb-1.5">Plant running clean</div>
+     <div className="font-body text-ok text-label mb-1">No critical interventions</div>
+     <div className="font-display font-bold text-ink text-page leading-none mb-1.5">Plant running clean</div>
      <div className="font-body text-muted text-body">
       {watchItems.length > 0
        ? `${watchItems.length} item${watchItems.length > 1 ? 's' : ''} watching · `
@@ -207,7 +207,7 @@ function TriageSection({ label, urgency, items, pendingIds, onAcknowledge, escal
   <div>
    <div className={`flex items-baseline gap-2.5 px-4 py-2.5 border-b-2 ${hdrBorder} ${hdrBg} flex-shrink-0`}>
     <span className={`display-num text-title font-bold leading-none ${hdrColor}`}>{visibleCount}</span>
-    <span className={`font-body font-semibold text-label tracking-normal ${hdrColor}`}>{label}</span>
+    <span className={`font-body font-semibold text-label ${hdrColor}`}>{label}</span>
    </div>
    {items.map(item => (
     <TriageRow
@@ -255,7 +255,7 @@ function PlantStrip() {
      onClick={() => directorOnFloor ? returnFromFloor() : goToFloor('D. Kowalski')}
      className="w-full text-left"
     >
-     <div className="font-body text-muted text-label tracking-normal mb-0.5">Director status</div>
+     <div className="font-body text-muted text-label mb-0.5">Director status</div>
      <div className={`font-body text-label font-medium ${directorOnFloor ? 'text-warn' : 'text-muted'}`}>
       {directorOnFloor ? `On floor · ${floorBackup} backup` : 'At desk'}
      </div>
@@ -265,7 +265,7 @@ function PlantStrip() {
     </button>
    </div>
    <div className="px-3 py-2 border-b border-rule2 bg-stone2 flex-shrink-0">
-    <span className="font-body text-muted text-label tracking-normal">Lines</span>
+    <span className="font-body text-muted text-label">Lines</span>
    </div>
    <div className="flex-1">
     {shiftData.lines.map(line => {
@@ -290,7 +290,7 @@ function PlantStrip() {
    {/* System confidence */}
    <div className="border-t border-rule2 flex-shrink-0 px-3 py-2">
     <div className="flex items-center justify-between mb-1">
-     <span className="font-body text-muted text-label tracking-normal">System confidence</span>
+     <span className="font-body text-muted text-label">System confidence</span>
      <span className={`display-num text-body font-bold ${(systemConfidence||79) >= 85 ? 'text-ok' : (systemConfidence||79) >= 65 ? 'text-warn' : 'text-danger'}`}>
       {systemConfidence ?? 79}%
      </span>
@@ -316,7 +316,7 @@ function PlantStrip() {
      className="w-full flex items-center gap-1.5 px-3 py-2 bg-stone2 hover:bg-stone2/80 transition-colors"
     >
      <Cpu size={10} className="text-ochre" strokeWidth={1.75} />
-     <span className="font-body text-muted text-label tracking-normal flex-1">Agents</span>
+     <span className="font-body text-muted text-label flex-1">Agents</span>
      {pendingAgentActions.length > 0 && (
       <span className="font-body text-label bg-warn/20 text-warn px-1 py-0.5">{pendingAgentActions.length}</span>
      )}

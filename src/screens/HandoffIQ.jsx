@@ -55,7 +55,7 @@ function ForecastRow({ row }) {
  return (
   <div className={`flex border-b border-rule2 last:border-b-0 min-h-[46px] ${hasConflict ? 'bg-danger/[0.03]' : ''}`}>
    <div className="w-[72px] flex-shrink-0 px-3 py-2.5 border-r border-rule2 font-body text-muted text-label leading-relaxed whitespace-pre-line">{row.time}</div>
-   <div className={`w-10 flex-shrink-0 px-2 pt-2.5 display-num text-lg ${scoreColor}`}>{row.score}</div>
+   <div className={`w-10 flex-shrink-0 px-2 pt-2.5 display-num text-head ${scoreColor}`}>{row.score}</div>
    <div className="flex-1 px-3 py-2.5">
     <div className="font-body font-medium text-ink text-body mb-1">{row.name}</div>
     <div className="flex gap-1.5 flex-wrap mb-1">
@@ -161,7 +161,7 @@ function LayoutGrid({ d, signed, setSigned, currentPlant, carryForwardItems, ack
      </div>
      {/* Stale data warning — per source */}
      <div className="px-4 py-2 bg-warn/[0.05] border-b border-rule2 flex-shrink-0">
-      <div className="font-body text-muted text-label tracking-normal mb-1.5">Data freshness — verify stale items before signing</div>
+      <div className="font-body text-muted text-label mb-1.5">Data freshness — verify stale items before signing</div>
       {[
        { source: 'Sensor A-7', age: '8 min', tone: 'ok' },
        { source: 'CAPA-2604-001', age: '22 min', tone: 'ok' },
@@ -286,7 +286,7 @@ function MachineStateHandoff() {
 
    {/* ── Header: eyebrow + title ─────────────────────────────────── */}
    <div className="flex-shrink-0 px-6 py-4 border-b border-rule2 bg-stone" style={{ borderLeft: '6px solid var(--color-ochre)' }}>
-    <div className="font-body font-semibold text-muted text-label tracking-normal mb-1.5">
+    <div className="font-body font-semibold text-muted text-label mb-1.5">
      Machine State Handoff · Robotic workforce · Wichita Plant
     </div>
     <div className="font-display font-bold text-page text-ink leading-none">
@@ -297,16 +297,16 @@ function MachineStateHandoff() {
    {/* ── Stats strip — SupplierIQ pattern ───────────────────────── */}
    <div className="flex-shrink-0 flex items-center divide-x divide-rule2 border-b border-rule2 bg-stone">
     <div className="flex items-center gap-2.5 px-5 py-2.5">
-     <span className="font-body text-muted text-label tracking-normal">Online units</span>
+     <span className="font-body text-muted text-label">Online units</span>
      <span className="display-num text-metric font-bold leading-none text-ok">{onlineCount}/{units.length}</span>
     </div>
     <div className="flex items-center gap-2.5 px-5 py-2.5">
-     <span className="font-body text-muted text-label tracking-normal">Active faults</span>
+     <span className="font-body text-muted text-label">Active faults</span>
      <span className={`display-num text-metric font-bold leading-none ${faultCount > 0 ? 'text-danger' : 'text-muted'}`}>{faultCount}</span>
      {faultCount > 0 && <span className="font-body text-danger text-label">blocking handoff</span>}
     </div>
     <div className="flex items-center gap-2.5 px-5 py-2.5">
-     <span className="font-body text-muted text-label tracking-normal">Pending maintenance</span>
+     <span className="font-body text-muted text-label">Pending maintenance</span>
      <span className={`display-num text-metric font-bold leading-none ${pmCount > 0 ? 'text-warn' : 'text-muted'}`}>{pmCount}</span>
      {pmCount > 0 && <span className="font-body text-warn text-label">≤ 24h window</span>}
     </div>
@@ -346,7 +346,7 @@ function MachineStateHandoff() {
        </div>
       )}
       <div className="flex-shrink-0 px-5 py-2 border-b border-rule2 bg-stone2">
-       <span className="font-body text-muted text-label tracking-normal">Maintenance carry-forward</span>
+       <span className="font-body text-muted text-label">Maintenance carry-forward</span>
       </div>
       {BACKLOG.map((item, i) => {
        const borderCls  = item.urgency === 'danger' ? 'border-l-danger bg-danger/[0.02]' : item.urgency === 'warn' ? 'border-l-warn bg-warn/[0.015]' : 'border-l-rule2'

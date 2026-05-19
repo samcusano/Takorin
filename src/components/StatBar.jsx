@@ -12,7 +12,7 @@ export function StatCell({ type = 'so', label, value, sub, pct }) {
  return (
  <div className="bg-stone px-4 py-3 flex flex-col gap-1 min-w-0">
  <div className="text-label font-body text-muted truncate">{label}</div>
- <div className={`font-display text-2xl font-black tracking-tight leading-none ${s.text}`}>
+ <div className={`display-num text-page leading-none ${s.text}`}>
  {value}
  </div>
  {sub && <div className="text-label font-body text-muted truncate">{sub}</div>}

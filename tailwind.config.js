@@ -36,8 +36,7 @@ export default {
       fontSize: {
         // ── UI text scale ──────────────────────────────────────────────────
         micro:   ['8px',  { lineHeight: '1.2' }],
-        label:   ['11px', { lineHeight: '1.2' }],   // mono labels read slightly larger
-        caption: ['12px', { lineHeight: '1.35' }],
+        label:   ['11px', { lineHeight: '1.2' }],
         body:    ['13px', { lineHeight: '1.45' }],
         section: ['14px', { lineHeight: '1.3' }],
         // ── Display / numeric scale ────────────────────────────────────────

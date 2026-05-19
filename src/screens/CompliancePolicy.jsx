@@ -74,7 +74,7 @@ export default function CompliancePolicy() {
       {/* ── Left: policy list ───────────────────────────────────── */}
       <div className="w-[280px] flex-shrink-0 border-r border-rule2 flex flex-col bg-stone">
         <div className="flex-shrink-0 px-5 py-4 border-b border-rule2 bg-stone2">
-          <div className="font-body text-muted text-label tracking-normal mb-0.5">Platform Architecture</div>
+          <div className="font-body text-muted text-label mb-0.5">Platform Architecture</div>
           <div className="font-display font-bold text-ink text-head leading-none">Compliance Engine</div>
           <div className="font-body text-muted text-label mt-1.5 leading-relaxed">
             Policy is configurable. Swap regulatory frameworks without rebuilding the product.
@@ -117,7 +117,7 @@ export default function CompliancePolicy() {
 
         {/* Export markets */}
         <div className="flex-shrink-0 px-5 py-3 border-t border-rule2 bg-stone2">
-          <div className="font-body text-muted text-label tracking-normal mb-1.5">Export markets</div>
+          <div className="font-body text-muted text-label mb-1.5">Export markets</div>
           <div className="flex flex-wrap gap-1">
             {multiRegulatoryCoverage.currentExportMarkets.map(m => (
               <span key={m} className="font-body text-muted text-label bg-stone3 px-1.5 py-0.5">{m}</span>
@@ -138,24 +138,24 @@ export default function CompliancePolicy() {
                   <StatusPill tone={STATUS_TONE[policy.status] ?? 'muted'}>{STATUS_LABEL[policy.status] ?? policy.status}</StatusPill>
                   {policy.activeSince && <span className="font-body text-muted text-label">Active since {policy.activeSince}</span>}
                 </div>
-                <div className="font-display font-bold text-ink text-2xl leading-none mb-1">{policy.name}</div>
+                <div className="font-display font-bold text-ink text-page leading-none mb-1">{policy.name}</div>
                 <div className="font-body text-muted text-body">{policy.jurisdiction}</div>
               </div>
               <div className="flex gap-6 flex-shrink-0">
                 {policy.nextInspection && (
                   <div className="text-right">
-                    <div className="font-display font-bold display-num text-page leading-none text-warn tabular-nums">
+                    <div className="display-num text-page leading-none text-warn tabular-nums">
                       {policy.nextInspection.daysRemaining}
                     </div>
-                    <div className="font-body text-muted text-label tracking-normal mt-0.5">days to inspection</div>
+                    <div className="font-body text-muted text-label mt-0.5">days to inspection</div>
                     <div className="font-body text-muted text-label mt-0.5">{policy.nextInspection.authority}</div>
                   </div>
                 )}
                 <div className="text-right">
-                  <div className={`font-display font-bold display-num text-page leading-none tabular-nums ${policy.openItems.capaCount > 0 ? 'text-warn' : 'text-ok'}`}>
+                  <div className={`display-num text-page leading-none tabular-nums ${policy.openItems.capaCount > 0 ? 'text-warn' : 'text-ok'}`}>
                     {policy.openItems.capaCount}
                   </div>
-                  <div className="font-body text-muted text-label tracking-normal mt-0.5">open CAPAs</div>
+                  <div className="font-body text-muted text-label mt-0.5">open CAPAs</div>
                   {policy.openItems.overdueCount > 0 && (
                     <div className="font-body text-danger text-label mt-0.5">{policy.openItems.overdueCount} overdue</div>
                   )}
@@ -185,9 +185,9 @@ export default function CompliancePolicy() {
                 </div>
                 <div className="divide-y divide-rule2">
                   <div className="flex items-center gap-3 px-5 py-2 bg-stone2/50">
-                    <span className="font-body text-muted text-label tracking-normal flex-1">Domain</span>
-                    <span className="font-body text-muted text-label tracking-normal flex-1">Requirement</span>
-                    <span className="font-body text-muted text-label tracking-normal w-5">Req.</span>
+                    <span className="font-body text-muted text-label flex-1">Domain</span>
+                    <span className="font-body text-muted text-label flex-1">Requirement</span>
+                    <span className="font-body text-muted text-label w-5">Req.</span>
                   </div>
                   {policy.evidenceRequirements.map((e, i) => <EvidenceRow key={i} e={e} />)}
                 </div>

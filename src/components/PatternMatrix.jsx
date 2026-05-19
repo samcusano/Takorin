@@ -50,7 +50,7 @@ export default function PatternMatrix({ rows }) {
  style={{ gridTemplateColumns: '1fr auto auto auto' }}
  >
  <div className="px-4 py-2.5">
- <div className="font-body text-xs font-medium text-ink">{row.label}</div>
+ <div className="font-body text-label font-medium text-ink">{row.label}</div>
  {row.sub && <div className="font-body text-label text-muted mt-0.5">{row.sub}</div>}
  </div>
  <PatternDots dots={row.dots} />

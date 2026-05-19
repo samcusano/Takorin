@@ -55,7 +55,7 @@ export default function AgentTimeline({ events, sparkData }) {
  {renderBold(ev.text)}
  </p>
  {ev.delta && (
- <span className={`font-display text-xs font-bold ${ev.deltaColor || 'text-muted'}`}>
+ <span className={`font-display text-label font-bold ${ev.deltaColor || 'text-muted'}`}>
  {ev.delta}
  </span>
  )}

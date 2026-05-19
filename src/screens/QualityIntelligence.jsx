@@ -66,9 +66,9 @@ function SensoryTab() {
       {/* Reading detail */}
       <div className="flex-1 overflow-y-auto">
         <div className="px-6 py-5 border-b border-rule2">
-          <div className="font-body text-muted text-label tracking-normal mb-1">{reading.source} · {reading.batch}</div>
+          <div className="font-body text-muted text-label mb-1">{reading.source} · {reading.batch}</div>
           <div className="flex items-baseline gap-4 mb-2">
-            <span className={`font-display font-bold display-num text-display leading-none tabular-nums ${scoreColor}`}>{reading.overallScore}</span>
+            <span className={`display-num text-display leading-none tabular-nums ${scoreColor}`}>{reading.overallScore}</span>
             <div>
               <div className="font-body text-muted text-body">Overall aroma score</div>
               <div className="font-body text-muted text-label">Projected: {reading.gradeProjection} · {reading.confidence}% confidence</div>
@@ -89,7 +89,7 @@ function SensoryTab() {
           <div className="px-6 py-4 border-b border-rule2 bg-ochre/[0.03]">
             <div className="flex items-center gap-2 mb-2">
               <div className="w-1.5 h-1.5 rounded-full bg-ochre" />
-              <span className="font-body text-muted text-label tracking-normal">Master blender annotation</span>
+              <span className="font-body text-muted text-label">Master blender annotation</span>
               <span className="font-body text-muted text-label">{reading.expertAnnotation.author}</span>
             </div>
             <p className="font-body text-ink text-body leading-relaxed">{reading.expertAnnotation.note}</p>
@@ -119,7 +119,7 @@ function AnnotationsTab() {
                 </div>
               </div>
               <div className="flex items-center gap-2 flex-shrink-0">
-                <span className={`font-body text-label tracking-normal px-1.5 py-0.5 ${typeTone}`}>{typeLabel}</span>
+                <span className={`font-body text-label px-1.5 py-0.5 ${typeTone}`}>{typeLabel}</span>
                 <span className="font-body text-muted text-label">
                   {new Date(a.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                 </span>
@@ -129,7 +129,7 @@ function AnnotationsTab() {
             <p className="font-body text-ink text-body leading-relaxed mb-2">{a.observation}</p>
             {a.modelResponse && (
               <div className="flex items-start gap-2 px-3 py-2 bg-stone2">
-                <div className="font-body text-muted text-label tracking-normal flex-shrink-0 mt-0.5">Model</div>
+                <div className="font-body text-muted text-label flex-shrink-0 mt-0.5">Model</div>
                 <div className="font-body text-muted text-label leading-snug">{a.modelResponse}</div>
                 {a.confidenceImpact && (
                   <span className="font-body text-ok text-label flex-shrink-0 font-medium">{a.confidenceImpact}</span>
@@ -150,11 +150,11 @@ function PriorsTab() {
         <div key={p.id} className={`px-6 py-4 border-l-4 ${p.tone === 'warn' ? 'border-l-warn bg-warn/[0.01]' : 'border-l-ok'} hover:bg-stone2 transition-colors`}>
           <div className="flex items-start justify-between gap-4 mb-2">
             <div className="flex-1">
-              <div className="font-body text-muted text-label tracking-normal mb-0.5">{p.domain}</div>
+              <div className="font-body text-muted text-label mb-0.5">{p.domain}</div>
               <div className="font-body font-medium text-ink text-body leading-snug">{p.rule}</div>
             </div>
             <div className="flex flex-col items-end flex-shrink-0 gap-1">
-              <span className={`font-display font-bold display-num text-2xl leading-none ${p.confidence >= 90 ? 'text-ok' : p.confidence >= 80 ? 'text-ochre' : 'text-warn'}`}>{p.confidence}%</span>
+              <span className={`display-num text-subhead leading-none ${p.confidence >= 90 ? 'text-ok' : p.confidence >= 80 ? 'text-ochre' : 'text-warn'}`}>{p.confidence}%</span>
               <span className="font-body text-muted text-label">confidence</span>
             </div>
           </div>
@@ -202,7 +202,7 @@ function BaselinesTab() {
                 { label: 'Expected aroma',      val: s.expectedAroma },
               ].map(({ label, val }) => (
                 <div key={label}>
-                  <div className="font-body text-muted text-label tracking-normal">{label}</div>
+                  <div className="font-body text-muted text-label">{label}</div>
                   <div className="font-body text-ink text-label leading-snug mt-0.5">{val}</div>
                 </div>
               ))}
@@ -226,21 +226,21 @@ export default function QualityIntelligence() {
       {/* Header */}
       <div className="flex-shrink-0 flex items-center justify-between px-6 py-4 border-b border-rule2 bg-stone">
         <div>
-          <div className="font-body text-muted text-label tracking-normal mb-0.5">Platform Architecture</div>
+          <div className="font-body text-muted text-label mb-0.5">Platform Architecture</div>
           <div className="font-display font-bold text-ink text-title leading-none">Quality Intelligence</div>
         </div>
         <div className="flex items-center gap-6 text-right">
           <div>
-            <div className="font-display font-bold display-num text-metric text-ochre leading-none">{craftPriors.length}</div>
-            <div className="font-body text-muted text-label tracking-normal">craft priors</div>
+            <div className="display-num text-metric text-ochre leading-none">{craftPriors.length}</div>
+            <div className="font-body text-muted text-label">craft priors</div>
           </div>
           <div>
-            <div className="font-display font-bold display-num text-metric text-ok leading-none">{expertAnnotations.length}</div>
-            <div className="font-body text-muted text-label tracking-normal">annotations</div>
+            <div className="display-num text-metric text-ok leading-none">{expertAnnotations.length}</div>
+            <div className="font-body text-muted text-label">annotations</div>
           </div>
           <div>
-            <div className="font-display font-bold display-num text-metric text-muted leading-none">{sensoryReadings.length}</div>
-            <div className="font-body text-muted text-label tracking-normal">readings</div>
+            <div className="display-num text-metric text-muted leading-none">{sensoryReadings.length}</div>
+            <div className="font-body text-muted text-label">readings</div>
           </div>
         </div>
       </div>

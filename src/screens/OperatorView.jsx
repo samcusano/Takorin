@@ -94,7 +94,7 @@ function OperationalStateHeader({ ctx }) {
    <div className="flex-shrink-0 px-5 py-4 border-b-2 border-b-rule2 bg-stone">
     <div className="flex items-center gap-2 mb-0.5">
      <CheckCircle2 size={12} strokeWidth={2} className="text-ok flex-shrink-0" />
-     <div className="font-body text-ok text-label tracking-normal font-medium">Standard Operation</div>
+     <div className="font-body text-ok text-label font-medium">Standard Operation</div>
     </div>
     <div className="font-display font-bold text-ink text-head leading-none mb-1">{ctx?.station} · {ctx?.condition}</div>
     <div className="font-body text-muted text-label">{ctx?.conditionDetail}</div>
@@ -109,7 +109,7 @@ function OperationalStateHeader({ ctx }) {
   <div className={`flex-shrink-0 px-5 py-4 border-b-2 ${borderClass}`}>
    <div className="flex items-center gap-2 mb-0.5">
     <Icon size={12} strokeWidth={2} className={`flex-shrink-0 ${textClass}`} />
-    <div className={`font-body text-label tracking-normal font-medium ${textClass}`}>{ctx.modeLabel}</div>
+    <div className={`font-body text-label font-medium ${textClass}`}>{ctx.modeLabel}</div>
    </div>
    <div className="font-display font-bold text-ink text-head leading-none mb-1">
     {ctx.station} · {ctx.condition}
@@ -176,7 +176,7 @@ function ProceduralSurface({ ctx, completions, onComplete, onRequestSignOff }) {
 
    {/* Steps header */}
    <div className="px-5 py-2 bg-stone2 border-b border-rule2 flex items-center justify-between">
-    <span className="font-body text-muted text-label tracking-normal">Verification sequence</span>
+    <span className="font-body text-muted text-label">Verification sequence</span>
     <span className="font-body text-muted text-label">{completedCount} of {steps.length}</span>
    </div>
 
@@ -302,7 +302,7 @@ function MonitoringSurface({ ctx, entries, onLog }) {
 
    {/* Reading history */}
    <div className="px-5 py-4">
-    <div className="font-body text-muted text-label tracking-normal mb-3">Reading history</div>
+    <div className="font-body text-muted text-label mb-3">Reading history</div>
     <div className="space-y-px">
      {[...allEntries].reverse().map((r, i) => (
       <div key={i} className="flex items-center gap-3 py-2 border-b border-rule2 last:border-b-0">
@@ -480,7 +480,7 @@ export default function OperatorView({ role }) {
    {!isOperatorRole && (
     <>
     <div className="flex-shrink-0 flex items-center gap-3 px-4 py-2 border-b border-rule2 bg-stone2">
-     <span className="font-body text-muted text-label tracking-normal">Station simulation</span>
+     <span className="font-body text-muted text-label">Station simulation</span>
      <span className="font-body text-muted text-label">—</span>
      <span className="font-body text-muted text-label">Viewing {selected}'s station as director. Not a live session.</span>
     </div>
@@ -565,7 +565,7 @@ export default function OperatorView({ role }) {
      if (!myFatigue) return null
      return (
       <div className="border-t border-rule2 px-5 py-3">
-       <div className="font-body text-muted text-label tracking-normal mb-2">My scheduling data</div>
+       <div className="font-body text-muted text-label mb-2">My scheduling data</div>
        <p className="font-body text-muted text-label mb-2">Shift scheduling only — not your performance review.</p>
        <div className="grid grid-cols-3 gap-2">
         {[

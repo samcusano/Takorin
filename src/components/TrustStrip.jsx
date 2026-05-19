@@ -45,7 +45,7 @@ export default function TrustStrip() {
           )}
           <span className={`relative inline-flex rounded-full h-1.5 w-1.5 ${cfg.dot}`} />
         </div>
-        <span className={`font-body font-medium text-label tracking-normal ${cfg.text}`}>{cfg.label}</span>
+        <span className={`font-body font-medium text-label ${cfg.text}`}>{cfg.label}</span>
       </div>
 
       <div className="w-px h-3 bg-rule2 flex-shrink-0" />

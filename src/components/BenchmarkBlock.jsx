@@ -5,7 +5,7 @@ export default function BenchmarkBlock({ metric, rank, total, score, delta, delt
  return (
  <div className="border-b border-rule last:border-0">
  <div className="flex items-center justify-between px-4 pt-3 pb-2">
- <span className="font-body text-xs text-muted">{metric}</span>
+ <span className="font-body text-label text-muted">{metric}</span>
  <div className="flex items-center gap-1 px-2 py-0.5 border border-rule text-label font-body text-muted">
  <BarChart2 className="w-3 h-3" />
  {rank} / {total} plants
@@ -14,13 +14,13 @@ export default function BenchmarkBlock({ metric, rank, total, score, delta, delt
 
  <div className="flex items-baseline gap-2 px-4 pb-2">
  <span
- className="font-display text-3xl font-bold tracking-tight leading-none"
+ className="display-num text-page font-bold leading-none"
  style={{ color: percentile >= 60 ? 'var(--color-ok)' : percentile >= 40 ? 'var(--color-warn)' : 'var(--color-danger)' }}
  >
  {score}
  </span>
  {delta && (
- <span className={`font-body text-xs flex items-center gap-0.5 ${deltaDir === 'up' ? 'text-ok' : 'text-danger'}`}>
+ <span className={`font-body text-label flex items-center gap-0.5 ${deltaDir === 'up' ? 'text-ok' : 'text-danger'}`}>
  {deltaDir === 'up' ? <TrendingUp size={11} className="inline" /> : <TrendingDown size={11} className="inline" />} {delta}
  </span>
  )}
@@ -47,7 +47,7 @@ export default function BenchmarkBlock({ metric, rank, total, score, delta, delt
  <div key={i} className="flex items-center gap-2 py-1 border-b border-rule last:border-0">
  <span className="display-num text-label text-muted w-4 flex-shrink-0">{i + 1}</span>
  <span className="flex-1 font-body text-label text-muted">{p.name}</span>
- <span className="font-display text-xs font-bold text-ink">{p.value}</span>
+ <span className="font-display text-label font-bold text-ink">{p.value}</span>
  </div>
  ))}
  </div>

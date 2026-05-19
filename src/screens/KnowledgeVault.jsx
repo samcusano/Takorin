@@ -143,8 +143,8 @@ function EntryDetail({ entry }) {
             <div className="font-display font-bold text-ink text-head leading-snug">{entry.title}</div>
           </div>
           <div className="text-right flex-shrink-0">
-            <div className={`font-display font-bold display-num text-page leading-none ${confColor}`}>{entry.confidence}%</div>
-            <div className="font-body text-muted text-label tracking-normal">confidence</div>
+            <div className={`display-num text-page leading-none ${confColor}`}>{entry.confidence}%</div>
+            <div className="font-body text-muted text-label">confidence</div>
           </div>
         </div>
         <div className="flex items-center gap-3">
@@ -158,11 +158,11 @@ function EntryDetail({ entry }) {
       </div>
       <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
         <div>
-          <div className="font-body text-muted text-label tracking-normal mb-2">Expert observation</div>
+          <div className="font-body text-muted text-label mb-2">Expert observation</div>
           <p className="font-body text-ink text-base leading-relaxed">{entry.body}</p>
         </div>
         <div>
-          <div className="font-body text-muted text-label tracking-normal mb-2">Encoded rule</div>
+          <div className="font-body text-muted text-label mb-2">Encoded rule</div>
           <pre className="font-body text-muted text-label leading-relaxed bg-stone2 px-4 py-3 whitespace-pre-wrap">{entry.codedRule}</pre>
         </div>
         <div className="grid grid-cols-3 gap-px bg-rule2">
@@ -172,14 +172,14 @@ function EntryDetail({ entry }) {
             { label: 'Success rate',     val: entry.evidenceBase.successRate ?? 'N/A' },
           ].map(({ label, val }) => (
             <div key={label} className="bg-stone px-3 py-2.5">
-              <div className="font-body text-muted text-label tracking-normal mb-0.5">{label}</div>
+              <div className="font-body text-muted text-label mb-0.5">{label}</div>
               <div className="font-body font-medium text-ink text-body">{val}</div>
             </div>
           ))}
         </div>
         {entry.activeBatches?.length > 0 && (
           <div>
-            <div className="font-body text-muted text-label tracking-normal mb-2">Active batches</div>
+            <div className="font-body text-muted text-label mb-2">Active batches</div>
             <div className="flex flex-wrap gap-1.5">
               {entry.activeBatches.map(b => (
                 <span key={b} className="font-body text-ochre text-label px-2 py-0.5 bg-ochre/[0.06]">{b}</span>
@@ -193,7 +193,7 @@ function EntryDetail({ entry }) {
             entry.institutionalRisk.startsWith('MEDIUM') ? 'bg-warn/[0.02]'     :
             'border-rule2'
           }`}>
-            <div className="font-body text-muted text-label tracking-normal mb-0.5">Institutional risk</div>
+            <div className="font-body text-muted text-label mb-0.5">Institutional risk</div>
             <p className="font-body text-muted text-label leading-snug">{entry.institutionalRisk}</p>
           </div>
         )}
@@ -242,7 +242,7 @@ function OperationalMemoryVault() {
       <div className="w-[200px] flex-shrink-0 border-r border-rule2 flex flex-col bg-stone overflow-hidden">
         {/* Header */}
         <div className="flex-shrink-0 px-4 py-3 border-b border-rule2 bg-stone2">
-          <div className="font-body text-muted text-label tracking-normal mb-0.5">Platform Architecture</div>
+          <div className="font-body text-muted text-label mb-0.5">Platform Architecture</div>
           <div className="font-display font-bold text-ink text-base leading-none">Knowledge Vault</div>
         </div>
 
@@ -295,7 +295,7 @@ function OperationalMemoryVault() {
         {showMemory ? (
           <>
             <div className="flex-shrink-0 px-5 py-2.5 border-b border-rule2 bg-stone2">
-              <span className="font-body text-muted text-label tracking-normal">Process Memory · {processMemory.length} reference batches</span>
+              <span className="font-body text-muted text-label">Process Memory · {processMemory.length} reference batches</span>
             </div>
             <div className="flex flex-1 min-h-0 overflow-hidden">
               {/* Batch list */}
@@ -358,7 +358,7 @@ function OperationalMemoryVault() {
                     {/* Memory type section header */}
                     <div className="flex items-center gap-2 px-5 py-2 bg-stone2 border-b border-rule2 sticky top-0">
                       <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${group.dot}`} />
-                      <span className="font-body text-muted text-label tracking-normal">{group.label}</span>
+                      <span className="font-body text-muted text-label">{group.label}</span>
                       <span className="font-body text-muted/50 text-label ml-1">{group.entries.length}</span>
                     </div>
                     <div className="px-3 py-3 space-y-2.5">
@@ -391,7 +391,7 @@ function OperationalMemoryVault() {
                                     <span className="font-body text-danger text-label font-medium">active</span>
                                   )}
                                 </div>
-                                <div className={`font-display font-bold display-num text-title leading-none flex-shrink-0 ${confColor}`}>{e.confidence}%</div>
+                                <div className={`display-num text-title leading-none flex-shrink-0 ${confColor}`}>{e.confidence}%</div>
                               </div>
                               {/* Body: title + preview */}
                               <div className="font-body font-medium text-ink text-body leading-snug mb-1.5">{e.title}</div>
@@ -432,13 +432,13 @@ function OperationalMemoryVault() {
             <div className="grid grid-cols-3 gap-px bg-rule2">
               {[{ label: 'Aroma', val: String(slideEntry.finalAromaScore) }, { label: 'EBC', val: String(slideEntry.finalEBC) }, { label: 'Amino N', val: slideEntry.finalAminoNitrogen }].map(({ label, val }) => (
                 <div key={label} className="bg-stone px-3 py-2.5">
-                  <div className="font-body text-muted text-label tracking-normal mb-0.5">{label}</div>
+                  <div className="font-body text-muted text-label mb-0.5">{label}</div>
                   <div className="font-body font-medium text-ink text-body">{val}</div>
                 </div>
               ))}
             </div>
             <div>
-              <div className="font-body text-muted text-label tracking-normal mb-2">Key signal events</div>
+              <div className="font-body text-muted text-label mb-2">Key signal events</div>
               <div className="divide-y divide-rule2">
                 {slideEntry.keySignals?.map((s, i) => (
                   <div key={i} className="flex items-start gap-3 px-4 py-2.5">
@@ -453,7 +453,7 @@ function OperationalMemoryVault() {
             </div>
             {slideEntry.masterBlenderNote && (
               <div className="px-4 py-3 bg-ochre/[0.04] border border-ochre/20 border-l-4 border-l-ochre">
-                <div className="font-body text-muted text-label tracking-normal mb-1">Master blender note</div>
+                <div className="font-body text-muted text-label mb-1">Master blender note</div>
                 <p className="font-body text-ink text-body leading-relaxed">{slideEntry.masterBlenderNote}</p>
               </div>
             )}
@@ -479,7 +479,7 @@ function ResearchMode({ variant, setVariant }) {
       {/* Header */}
       <div className="flex-shrink-0 flex items-center justify-between px-5 py-3 border-b border-rule2 bg-stone2">
         <div>
-          <div className="font-body text-muted text-label tracking-normal mb-0.5">Platform Architecture</div>
+          <div className="font-body text-muted text-label mb-0.5">Platform Architecture</div>
           <div className="font-display font-bold text-ink text-head leading-none">Knowledge Vault</div>
         </div>
         <div className="flex items-stretch overflow-hidden">
@@ -532,7 +532,7 @@ function ResearchMode({ variant, setVariant }) {
                   <div className="font-body text-muted text-label line-clamp-2">{e.body?.slice(0, 100)}…</div>
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0">
-                  <div className={`font-display font-bold display-num text-title ${conf}`}>{e.confidence}%</div>
+                  <div className={`display-num text-title ${conf}`}>{e.confidence}%</div>
                   {open ? <ChevronDown size={12} className="text-muted" /> : <ChevronRight size={12} className="text-muted" />}
                 </div>
               </button>
@@ -610,7 +610,7 @@ function DeepReference({ variant, setVariant }) {
       {!showMemory && (
         <div className="w-[280px] flex-shrink-0 border-r border-rule2 flex flex-col overflow-hidden">
           <div className="flex-shrink-0 px-4 py-2.5 border-b border-rule2 bg-stone2">
-            <span className="font-body text-muted text-label tracking-normal">{filtered.length} entries</span>
+            <span className="font-body text-muted text-label">{filtered.length} entries</span>
           </div>
           <div className="flex-1 overflow-y-auto divide-y divide-rule2">
             {filtered.map(e => {
@@ -624,7 +624,7 @@ function DeepReference({ variant, setVariant }) {
                   {domain && <span className={`font-body text-micro px-1.5 py-0.5 ${domain.badge} mb-1 inline-block`}>{domain.label}</span>}
                   <div className="flex items-start justify-between gap-2">
                     <div className="font-body font-medium text-ink text-body leading-snug flex-1">{e.title}</div>
-                    <div className={`font-display font-bold display-num text-subhead leading-none flex-shrink-0 ${conf}`}>{e.confidence}%</div>
+                    <div className={`display-num text-subhead leading-none flex-shrink-0 ${conf}`}>{e.confidence}%</div>
                   </div>
                   <div className="font-body text-muted text-label mt-1 truncate">{e.body?.slice(0, 60)}…</div>
                 </button>

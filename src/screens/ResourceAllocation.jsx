@@ -54,7 +54,7 @@ function ImpactPreview({ task, onConfirm, onCancel }) {
     <div className="fixed inset-0 bg-ink/30 z-40 flex items-center justify-center p-6">
       <div className="bg-stone w-full max-w-md shadow-raise slide-in">
         <div className="px-5 py-4 border-b border-rule2 bg-stone2">
-          <div className="font-body text-muted text-label tracking-normal mb-1">Reallocation preview</div>
+          <div className="font-body text-muted text-label mb-1">Reallocation preview</div>
           <div className="font-display font-bold text-ink text-base">{task.label} — {task.line}</div>
         </div>
 
@@ -68,7 +68,7 @@ function ImpactPreview({ task, onConfirm, onCancel }) {
 
           {/* Downstream effects */}
           <div className="space-y-2">
-            <div className="font-body text-muted text-label tracking-normal">If you confirm — downstream effects</div>
+            <div className="font-body text-muted text-label">If you confirm — downstream effects</div>
             {effects.map((e, i) => (
               <div key={i} className={`flex items-start gap-2 font-body text-label ${
                 e.startsWith('⚠') ? 'text-warn' : e.includes('single point') ? 'text-danger' : 'text-muted'
@@ -224,7 +224,7 @@ export default function ResourceAllocation() {
           { label: 'Cert gaps',     value: String(certGapCount), sub: 'fallback has cert mismatch', fill: null, tone: 'warn'   },
         ].map(s => (
           <div key={s.label} className="flex-1 px-5 py-4 border-r border-rule2 last:border-0">
-            <div className="font-body text-muted text-label tracking-normal mb-1">{s.label}</div>
+            <div className="font-body text-muted text-label mb-1">{s.label}</div>
             <div className={`display-num text-metric leading-none ${
               s.tone === 'danger' ? 'text-danger' : s.tone === 'warn' ? 'text-warn' : 'text-ink'
             }`}>{s.value}</div>
@@ -257,10 +257,10 @@ export default function ResourceAllocation() {
         {tab === 'matrix' && (
           <div>
             <div className="flex items-center gap-5 px-5 py-2 bg-stone2 border-b border-rule2">
-              <span className="font-body text-muted text-label tracking-normal flex-1">Task</span>
-              <span className="font-body text-muted text-label tracking-normal w-48">Primary</span>
-              <span className="font-body text-muted text-label tracking-normal w-52">Fallback</span>
-              <span className="font-body text-muted text-label tracking-normal w-20">Action</span>
+              <span className="font-body text-muted text-label flex-1">Task</span>
+              <span className="font-body text-muted text-label w-48">Primary</span>
+              <span className="font-body text-muted text-label w-52">Fallback</span>
+              <span className="font-body text-muted text-label w-20">Action</span>
             </div>
             {tasks.map(task => (
               <TaskRow
@@ -307,10 +307,10 @@ export default function ResourceAllocation() {
               </p>
             </div>
             <div className="grid grid-cols-[1fr_80px_80px_88px] px-5 py-2 bg-stone2 border-b border-rule2 gap-4">
-              <span className="font-body text-muted text-label tracking-normal">Task</span>
-              <span className="font-body text-muted text-label tracking-normal text-center">Human</span>
-              <span className="font-body text-muted text-label tracking-normal text-center">Robot</span>
-              <span className="font-body text-muted text-label tracking-normal text-center">Status</span>
+              <span className="font-body text-muted text-label">Task</span>
+              <span className="font-body text-muted text-label text-center">Human</span>
+              <span className="font-body text-muted text-label text-center">Robot</span>
+              <span className="font-body text-muted text-label text-center">Status</span>
             </div>
             {redundancyMap.map((row, i) => (
               <div key={i} className={`grid grid-cols-[1fr_80px_80px_88px] px-5 py-3 border-b border-rule2 last:border-0 gap-4 ${row.status === 'danger' ? 'bg-danger/[0.015]' : ''}`}>
@@ -357,15 +357,15 @@ export default function ResourceAllocation() {
                 </div>
                 <div className="grid grid-cols-3 gap-4 mb-2">
                   <div>
-                    <div className="font-body text-muted text-label tracking-normal mb-0.5">Operator</div>
+                    <div className="font-body text-muted text-label mb-0.5">Operator</div>
                     <div className="font-body text-ink text-label">{entry.operator}</div>
                   </div>
                   <div>
-                    <div className="font-body text-muted text-label tracking-normal mb-0.5">Robot</div>
+                    <div className="font-body text-muted text-label mb-0.5">Robot</div>
                     <div className="font-body text-ochre text-label">{entry.robotName} ({entry.robotId})</div>
                   </div>
                   <div>
-                    <div className="font-body text-muted text-label tracking-normal mb-0.5">Outcome</div>
+                    <div className="font-body text-muted text-label mb-0.5">Outcome</div>
                     <div className="font-body text-ok text-label">{entry.outcome}</div>
                   </div>
                 </div>

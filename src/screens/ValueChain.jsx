@@ -131,7 +131,7 @@ function OrderDetail({ order }) {
           },
         ].map(({ label, val, tone }) => (
           <div key={label} className="bg-stone px-3 py-2.5">
-            <div className="font-body text-muted text-label tracking-normal mb-0.5">{label}</div>
+            <div className="font-body text-muted text-label mb-0.5">{label}</div>
             <div className={`font-body font-medium text-label ${tone}`}>{val}</div>
           </div>
         ))}
@@ -140,7 +140,7 @@ function OrderDetail({ order }) {
       {/* Carbon breakdown */}
       {order.carbonPerUnit != null && (
         <div>
-          <div className="font-body text-muted text-label tracking-normal mb-2">Carbon breakdown (site avg)</div>
+          <div className="font-body text-muted text-label mb-2">Carbon breakdown (site avg)</div>
           <div className="space-y-2">
             {carbonBreakdown.components.map(c => (
               <div key={c.label} className="flex items-center gap-3">
@@ -184,7 +184,7 @@ export default function ValueChain() {
       {/* Left: summary + demand */}
       <div className="w-[260px] flex-shrink-0 border-r border-rule2 flex flex-col bg-stone">
         <div className="flex-shrink-0 px-5 py-4 border-b border-rule2 bg-stone2">
-          <div className="font-body text-muted text-label tracking-normal mb-0.5">Frontier Layer</div>
+          <div className="font-body text-muted text-label mb-0.5">Frontier Layer</div>
           <div className="font-display font-bold text-ink text-head leading-none">Value Chain</div>
           <div className="font-body text-muted text-label mt-1">Supplier → Production → Customer</div>
         </div>
@@ -217,9 +217,9 @@ export default function ValueChain() {
             <div key={label} className="bg-stone px-4 py-3">
               <div className="flex items-center gap-1.5 mb-0.5">
                 <Icon size={9} strokeWidth={2} className={tone} />
-                <span className="font-body text-muted text-label tracking-normal">{label}</span>
+                <span className="font-body text-muted text-label">{label}</span>
               </div>
-              <div className={`font-display font-bold display-num text-subhead ${tone}`}>{val}</div>
+              <div className={`display-num text-subhead ${tone}`}>{val}</div>
               <div className="font-body text-muted text-label">{sub}</div>
             </div>
           ))}
@@ -227,7 +227,7 @@ export default function ValueChain() {
 
         {/* Demand chart */}
         <div className="flex-shrink-0 px-4 py-3 border-b border-rule2">
-          <div className="font-body text-muted text-label tracking-normal mb-2">Demand forecast vs actual</div>
+          <div className="font-body text-muted text-label mb-2">Demand forecast vs actual</div>
           <MiniDemandChart />
           <div className="flex items-center gap-4 mt-2">
             <div className="flex items-center gap-1.5">
@@ -244,7 +244,7 @@ export default function ValueChain() {
         {/* SKU volatility */}
         <div className="flex-1 overflow-y-auto">
           <div className="px-4 py-2 border-b border-rule2 bg-stone2">
-            <div className="font-body text-muted text-label tracking-normal">SKU demand trend</div>
+            <div className="font-body text-muted text-label">SKU demand trend</div>
           </div>
           {skuVolatility.map(s => (
             <div key={s.sku} className="flex items-center justify-between px-4 py-2.5 border-b border-rule2">
@@ -266,7 +266,7 @@ export default function ValueChain() {
       {/* Center: order pipeline */}
       <div className="w-[360px] flex-shrink-0 border-r border-rule2 flex flex-col">
         <div className="flex-shrink-0 px-4 py-2.5 border-b border-rule2 bg-stone2 flex items-center justify-between">
-          <span className="font-body text-muted text-label tracking-normal">
+          <span className="font-body text-muted text-label">
             Orders · {filtered.length}
             {deliverySummary.lateOrders > 0 && (
               <span className="ml-2 text-warn">{deliverySummary.lateOrders} late</span>
@@ -308,7 +308,7 @@ export default function ValueChain() {
       {/* Right: order detail */}
       <div className="flex-1 flex flex-col overflow-hidden bg-stone">
         <div className="flex-shrink-0 px-5 py-2.5 border-b border-rule2 bg-stone2">
-          <span className="font-body text-muted text-label tracking-normal">Order detail</span>
+          <span className="font-body text-muted text-label">Order detail</span>
         </div>
         <OrderDetail order={selectedOrder} />
       </div>

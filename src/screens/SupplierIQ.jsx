@@ -43,7 +43,7 @@ function CoaPanel({ lot, onClose }) {
     >
       {/* ── COA status hero ─────────────────────────────────────────── */}
       <div className={`px-5 py-5 ${coaPass ? 'bg-ok/[0.035]' : 'bg-danger/[0.035]'}`}>
-        <div className={`font-body text-label tracking-normal mb-2 ${coaPass ? 'text-ok' : 'text-danger'}`}>
+        <div className={`font-body text-label mb-2 ${coaPass ? 'text-ok' : 'text-danger'}`}>
           Certificate of Analysis
         </div>
         <div className={`font-display font-bold text-metric leading-none mb-1.5 ${coaPass ? 'text-ok' : 'text-danger'}`}>

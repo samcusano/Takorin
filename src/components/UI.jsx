@@ -264,7 +264,7 @@ export function CaseCard({ urgency = 'warn', num, children }) {
  <div className="bg-stone border border-rule rounded-lg mb-2.5 overflow-hidden shadow-card">
   <div className={`h-[3px] w-full ${topBar}`} />
   <div className="grid grid-cols-[28px_1fr] gap-0">
-   <div className={`pt-4 pl-3 font-body font-bold text-sm ${numColor}`}>{num}</div>
+   <div className={`pt-4 pl-3 font-body font-bold text-base ${numColor}`}>{num}</div>
    <div className="p-4 pl-2">{children}</div>
   </div>
  </div>
@@ -447,7 +447,7 @@ export function MetricCard({ title, value, valueColor = 'text-ink', waveformData
  return (
  <div className="px-4 pt-4 pb-3 border-b border-rule2">
  <div className="flex items-baseline justify-between gap-2 mb-3">
- <span className="font-body font-medium text-muted text-label leading-snug flex-1 tracking-normal">{title}</span>
+ <span className="font-body font-medium text-muted text-label leading-snug flex-1">{title}</span>
  <span className={`font-body font-bold text-metric leading-none tracking-tight flex-shrink-0 ${valueColor}`}>{value}</span>
  </div>
  {waveformData && (
@@ -457,7 +457,7 @@ export function MetricCard({ title, value, valueColor = 'text-ink', waveformData
  )}
  {meta && (
  <div className="flex items-baseline gap-1.5 mt-2.5 pt-2 border-t border-rule2">
- <span className="font-body font-medium text-muted text-label tracking-normal flex-shrink-0">{meta.label}</span>
+ <span className="font-body font-medium text-muted text-label flex-shrink-0">{meta.label}</span>
  <span className="font-body text-muted text-label">{meta.value}</span>
  </div>
  )}

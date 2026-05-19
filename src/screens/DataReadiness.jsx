@@ -288,7 +288,7 @@ function ReadinessInstrument({ score, resolved }) {
 
   return (
     <div className="px-5 pt-5 pb-4 border-b border-rule2 flex-shrink-0">
-      <div className="font-body text-muted text-label tracking-normal mb-3">Data Readiness</div>
+      <div className="font-body text-muted text-label mb-3">Data Readiness</div>
 
       {/* Score */}
       <div className="flex items-baseline gap-3 mb-1">
@@ -426,7 +426,7 @@ function ResolutionQueue({ selected, onSelect, resolved }) {
   return (
     <div className="flex-1 overflow-y-auto">
       <div className="px-4 py-2 border-b border-rule2 bg-stone2 flex-shrink-0">
-        <span className="font-body text-muted text-label tracking-normal">AI Resolution Queue</span>
+        <span className="font-body text-muted text-label">AI Resolution Queue</span>
       </div>
 
       {/* Cluster */}
@@ -434,7 +434,7 @@ function ResolutionQueue({ selected, onSelect, resolved }) {
 
       {/* Individual issues */}
       <div className="px-4 py-1.5 border-b border-rule2 bg-stone2 flex-shrink-0">
-        <span className="font-body text-muted text-label tracking-normal">Individual issues</span>
+        <span className="font-body text-muted text-label">Individual issues</span>
       </div>
       <QueueIssueRow item={ISSUE_CTX}   resolved={resolved} selected={selected} onSelect={onSelect} />
       <QueueIssueRow item={ISSUE_TRACE} resolved={resolved} selected={selected} onSelect={onSelect} />
@@ -445,7 +445,7 @@ function ResolutionQueue({ selected, onSelect, resolved }) {
       {/* Advisory */}
       <button type="button" onClick={() => setAdvisoryOpen(v => !v)}
         className="w-full flex items-center justify-between px-4 py-2 border-b border-rule2 bg-stone2 hover:bg-stone3 transition-colors">
-        <span className="font-body text-muted text-label tracking-normal">Advisory · no score impact</span>
+        <span className="font-body text-muted text-label">Advisory · no score impact</span>
         {advisoryOpen ? <ChevronUp size={10} className="text-muted" /> : <ChevronDown size={10} className="text-muted" />}
       </button>
       {advisoryOpen && ADVISORY_ITEMS.map(a => (

@@ -65,14 +65,14 @@ export default function FindingCard({
  </div>
  {/* Body */}
  <div className="min-w-0">
- <h3 className="font-body text-sm font-medium text-takorin-ink mb-1.5 leading-snug">
+ <h3 className="font-body text-base font-medium text-takorin-ink mb-1.5 leading-snug">
  {title}
  </h3>
- <p className="font-body text-xs text-takorin-muted leading-relaxed mb-2">
+ <p className="font-body text-label text-takorin-muted leading-relaxed mb-2">
  {description}
  </p>
  {evidence && (
- <p className="font-body text-xs text-takorin-ghost mb-3">
+ <p className="font-body text-label text-takorin-ghost mb-3">
  {evidence}
  </p>
  )}
@@ -87,7 +87,7 @@ export default function FindingCard({
  )}
  </>
  ) : (
- <span className="font-body text-xs text-ok">
+ <span className="font-body text-label text-ok">
  ✓ {primaryLabel}
  </span>
  )}

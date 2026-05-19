@@ -180,7 +180,7 @@ function ScoreBar({ score, width = 60 }) {
       <div className="h-0.5 bg-rule2 flex-shrink-0" style={{ width }}>
         <div className={`h-full ${color}`} style={{ width: `${score}%` }} />
       </div>
-      <span className={`font-display font-bold display-num text-body tabular-nums ${textColor}`}>{score}</span>
+      <span className={`display-num text-body tabular-nums ${textColor}`}>{score}</span>
     </div>
   )
 }
@@ -188,7 +188,7 @@ function ScoreBar({ score, width = 60 }) {
 function EnvChip({ label, val, tone }) {
   return (
     <div className={`flex items-center gap-1 px-2 py-1 border ${tone === 'ok' ? 'border-ok/20 bg-ok/[0.04]' : 'bg-warn/[0.04]'}`}>
-      <span className="font-body text-muted text-label tracking-normal">{label}</span>
+      <span className="font-body text-muted text-label">{label}</span>
       <span className={`font-body font-medium text-label tabular-nums ${tone === 'ok' ? 'text-ok' : 'text-warn'}`}>{val}</span>
     </div>
   )
@@ -262,13 +262,13 @@ function CausalPanel({ zone, building }) {
       <div className="flex-shrink-0 px-5 py-4 border-b border-rule2 bg-stone">
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
-            <div className="font-body text-muted text-label tracking-normal mb-0.5">{building.name} · {building.label}</div>
+            <div className="font-body text-muted text-label mb-0.5">{building.name} · {building.label}</div>
             <div className="font-display font-bold text-ink text-head leading-none mb-1">{zone.label}</div>
             <div className="font-body text-muted text-label">{zone.name} · {zone.vessels} vessels · {zone.activeBatches} active batches</div>
           </div>
           <div className="text-right flex-shrink-0">
-            <div className={`font-display font-bold display-num text-page leading-none ${scoreColor(zone.score)}`}>{zone.score}</div>
-            <div className={`font-body font-bold text-label tracking-normal ${statusColor}`}>{statusLabel}</div>
+            <div className={`display-num text-page leading-none ${scoreColor(zone.score)}`}>{zone.score}</div>
+            <div className={`font-body font-bold text-label ${statusColor}`}>{statusLabel}</div>
           </div>
         </div>
         {zone.alert && (
@@ -293,7 +293,7 @@ function CausalPanel({ zone, building }) {
         {/* Causal chain — upstream → current → downstream */}
         {(causal.upstream.length > 0 || causal.downstream.length > 0) && (
           <div className="px-5 py-4 border-b border-rule2">
-            <div className="font-body text-muted text-label tracking-normal mb-3">Cause chain</div>
+            <div className="font-body text-muted text-label mb-3">Cause chain</div>
 
             {causal.upstream.length > 0 && (
               <div className="mb-3">
@@ -351,7 +351,7 @@ function CausalPanel({ zone, building }) {
         {allVessels.length > 0 && (
           <div className="border-b border-rule2">
             <div className="px-5 py-2.5 bg-stone2 border-b border-rule2">
-              <span className="font-body text-muted text-label tracking-normal">{allVessels.length} vessels</span>
+              <span className="font-body text-muted text-label">{allVessels.length} vessels</span>
             </div>
             <VesselGrid vessels={allVessels} />
           </div>
@@ -360,7 +360,7 @@ function CausalPanel({ zone, building }) {
         {/* Environment */}
         {(zone.temperature || zone.humidity) && (
           <div className="px-5 py-3 border-b border-rule2 flex items-center gap-3">
-            <span className="font-body text-muted text-label tracking-normal">Environment</span>
+            <span className="font-body text-muted text-label">Environment</span>
             {zone.temperature && <EnvChip label="Temp" val={zone.temperature.val} tone={zone.temperature.tone} />}
             {zone.humidity    && <EnvChip label="RH"   val={zone.humidity.val}    tone={zone.humidity.tone} />}
           </div>
@@ -369,7 +369,7 @@ function CausalPanel({ zone, building }) {
         {/* Recommended actions */}
         {causal.actions.length > 0 && (
           <div className="px-5 py-4">
-            <div className="font-body text-muted text-label tracking-normal mb-2">Recommended actions</div>
+            <div className="font-body text-muted text-label mb-2">Recommended actions</div>
             <div className="space-y-2">
               {causal.actions.map((a, i) => (
                 <div key={i} className="border border-rule2 px-4 py-3">
@@ -412,13 +412,13 @@ function ReasoningPanel({ zone, building }) {
       <div className="flex-shrink-0 px-5 py-4 border-b border-rule2 bg-stone">
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
-            <div className="font-body text-muted text-label tracking-normal mb-0.5">{building.name} · {building.label}</div>
+            <div className="font-body text-muted text-label mb-0.5">{building.name} · {building.label}</div>
             <div className="font-display font-bold text-ink text-head leading-none mb-1">{zone.label}</div>
             <div className="font-body text-muted text-label">{zone.name}</div>
           </div>
           <div className="text-right flex-shrink-0">
-            <div className={`font-display font-bold display-num text-page leading-none ${scoreColor(zone.score)}`}>{zone.score}</div>
-            <div className={`font-body font-bold text-label tracking-normal ${statusColor}`}>{statusLabel}</div>
+            <div className={`display-num text-page leading-none ${scoreColor(zone.score)}`}>{zone.score}</div>
+            <div className={`font-body font-bold text-label ${statusColor}`}>{statusLabel}</div>
           </div>
         </div>
         {r.confidence != null && (
@@ -438,14 +438,14 @@ function ReasoningPanel({ zone, building }) {
       <div className="flex-1 overflow-y-auto">
         {r.recommendation && (
           <div className="px-5 py-4 border-b border-rule2">
-            <div className="font-body text-muted text-label tracking-normal mb-2">Recommendation</div>
+            <div className="font-body text-muted text-label mb-2">Recommendation</div>
             <div className="font-body text-ink text-body leading-relaxed">{r.recommendation}</div>
           </div>
         )}
 
         {r.primaryContributors.length > 0 && (
           <div className="px-5 py-4 border-b border-rule2">
-            <div className="font-body text-muted text-label tracking-normal mb-3">What's driving this</div>
+            <div className="font-body text-muted text-label mb-3">What's driving this</div>
             <div className="space-y-2.5">
               {r.primaryContributors.map((c, i) => (
                 <div key={i} className="flex items-center gap-3">
@@ -465,7 +465,7 @@ function ReasoningPanel({ zone, building }) {
 
         {r.suppressedContributors.length > 0 && (
           <div className="px-5 py-4 border-b border-rule2">
-            <div className="font-body text-muted text-label tracking-normal mb-3">Not used</div>
+            <div className="font-body text-muted text-label mb-3">Not used</div>
             <div className="space-y-2">
               {r.suppressedContributors.map((s, i) => (
                 <div key={i} className="flex items-start gap-3">
@@ -482,7 +482,7 @@ function ReasoningPanel({ zone, building }) {
 
         {r.competingHypotheses.length > 0 && (
           <div className="px-5 py-4 border-b border-rule2">
-            <div className="font-body text-muted text-label tracking-normal mb-3">Other explanations</div>
+            <div className="font-body text-muted text-label mb-3">Other explanations</div>
             <div className="space-y-2">
               {r.competingHypotheses.map((h, i) => (
                 <div key={i} className="flex items-start gap-3 px-3 py-2.5 bg-stone2">
@@ -502,7 +502,7 @@ function ReasoningPanel({ zone, building }) {
 
         {r.forecastIfUnbounded && (
           <div className="px-5 py-4">
-            <div className="font-body text-muted text-label tracking-normal mb-2">If nothing changes</div>
+            <div className="font-body text-muted text-label mb-2">If nothing changes</div>
             <div className="flex items-start gap-2 px-3 py-2.5 border border-danger/20 bg-danger/[0.03]">
               <Zap size={10} className="text-danger flex-shrink-0 mt-0.5" strokeWidth={2} />
               <div className="font-body text-danger text-label leading-snug">{r.forecastIfUnbounded}</div>
@@ -553,7 +553,7 @@ function StateFieldView({ site, ScreenHeader }) {
         <div className="flex-1 overflow-y-auto p-6">
           {/* Pressure legend */}
           <div className="flex items-center gap-4 mb-6">
-            <span className="font-body text-muted text-label tracking-normal">Pressure intensity</span>
+            <span className="font-body text-muted text-label">Pressure intensity</span>
             {[
               { label: 'Clear',    color: 'bg-ok',     range: '90+' },
               { label: 'Watch',    color: 'bg-ochre',  range: '80–89' },
@@ -573,7 +573,7 @@ function StateFieldView({ site, ScreenHeader }) {
               {/* Building label */}
               <div className="flex items-center gap-2 mb-3">
                 <div className={`w-px h-4 ${scoreBg(b.score)}`} />
-                <span className="font-body text-muted text-label tracking-normal">{b.name}</span>
+                <span className="font-body text-muted text-label">{b.name}</span>
                 <span className="font-body text-muted/50 text-label">— {b.label}</span>
                 <span className={`font-body font-medium text-label ml-auto ${scoreColor(b.score)}`}>{b.score}</span>
               </div>
@@ -598,11 +598,11 @@ function StateFieldView({ site, ScreenHeader }) {
                           <AlertTriangle size={9} className="text-warn animate-pulse" strokeWidth={2} />
                         </span>
                       )}
-                      <div className="font-body text-muted text-label tracking-normal mb-1">{z.name}</div>
+                      <div className="font-body text-muted text-label mb-1">{z.name}</div>
                       <div className="font-body font-medium text-ink text-body leading-snug mb-2">{z.label}</div>
-                      <div className={`font-display font-bold display-num text-2xl leading-none ${sc} mb-1`}>{z.score}</div>
+                      <div className={`display-num text-subhead leading-none ${sc} mb-1`}>{z.score}</div>
                       <div className="flex items-center justify-between">
-                        <span className={`font-body text-label font-medium tracking-normal ${sc}`}>{statusLabel}</span>
+                        <span className={`font-body text-label font-medium ${sc}`}>{statusLabel}</span>
                         <span className="font-body text-muted text-label">{z.vessels}v</span>
                       </div>
                       {isSelected && (
@@ -631,7 +631,7 @@ function StateFieldView({ site, ScreenHeader }) {
             </div>
           ) : (
             <div className="flex-shrink-0 px-5 py-2.5 border-b border-rule2 bg-stone2">
-              <span className="font-body text-muted text-label tracking-normal">Select a zone</span>
+              <span className="font-body text-muted text-label">Select a zone</span>
             </div>
           )}
           <div className="h-[calc(100%-36px)]">
@@ -669,7 +669,7 @@ export default function ProcessHierarchy() {
   const ScreenHeader = () => (
     <div className="flex-shrink-0 flex items-center justify-between px-6 py-3.5 border-b border-rule2 bg-stone">
       <div className="flex-1 min-w-0">
-        <div className="font-body text-muted text-label tracking-normal mb-1">Platform Architecture · Process Hierarchy</div>
+        <div className="font-body text-muted text-label mb-1">Platform Architecture · Process Hierarchy</div>
         {variant === 'B' ? (
           <Breadcrumb crumbs={crumbs} onNavigate={navigateTo} />
         ) : (
@@ -678,12 +678,12 @@ export default function ProcessHierarchy() {
       </div>
       <div className="flex items-center gap-4 flex-shrink-0">
         <div className="text-right">
-          <div className={`font-display font-bold display-num text-metric leading-none ${scoreColor(site.score)}`}>{site.score}</div>
-          <div className="font-body text-muted text-label tracking-normal">site health</div>
+          <div className={`display-num text-metric leading-none ${scoreColor(site.score)}`}>{site.score}</div>
+          <div className="font-body text-muted text-label">site health</div>
         </div>
         <div className="text-right border-l border-rule2 pl-4">
-          <div className="font-display font-bold display-num text-metric leading-none text-ochre">{site.activeBatches}</div>
-          <div className="font-body text-muted text-label tracking-normal">active batches</div>
+          <div className="display-num text-metric leading-none text-ochre">{site.activeBatches}</div>
+          <div className="font-body text-muted text-label">active batches</div>
         </div>
         <div className="flex items-stretch overflow-hidden ml-2">
           {[
@@ -717,7 +717,7 @@ export default function ProcessHierarchy() {
         {!selectedBuilding && (
           <div>
             <div className="px-5 py-2.5 border-b border-rule2 bg-stone2 flex items-center gap-2">
-              <span className="font-body text-muted text-label tracking-normal">{site.code} · {site.location}</span>
+              <span className="font-body text-muted text-label">{site.code} · {site.location}</span>
               <span className="font-body text-muted">·</span>
               <span className="font-body text-muted text-label">{site.vessels} vessels · {site.workers.toLocaleString()} workers</span>
             </div>
