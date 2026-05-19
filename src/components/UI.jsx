@@ -360,7 +360,7 @@ export function ScoreRing({ pct = 0, size = 32, color }) {
  const w = size <= 40 ? 56 : size * 2
  return (
  <div className="flex flex-col gap-1 flex-shrink-0" style={{ width: w }}>
- <span className="font-display font-extrabold leading-none" style={{ fontSize: numSize, color: c }}>{pct}</span>
+ <span className="font-display font-bold leading-none" style={{ fontSize: numSize, color: c }}>{pct}</span>
  <div style={{ height: barH, background: 'var(--color-rule-2)' }}>
  <div style={{ height: '100%', width: `${pct}%`, background: c, transition: 'width var(--dur-data) var(--ease-enter)' }} />
  </div>

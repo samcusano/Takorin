@@ -22,7 +22,7 @@ function FrameworkRow({ f }) {
         </div>
         <div className="font-body text-muted text-label mt-0.5 leading-snug">{f.description}</div>
       </div>
-      <span className={`font-body text-label flex-shrink-0 ${statusColor}`}>{f.status}</span>
+      <span className={`font-body text-label flex-shrink-0 ${statusColor}`}>{STATUS_LABEL[f.status] ?? f.status}</span>
     </div>
   )
 }

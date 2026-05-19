@@ -36,10 +36,10 @@ export default function TrustStrip() {
   const cfg = trustCfg[trustLevel]
 
   return (
-    <div className={`flex-shrink-0 flex items-center gap-4 px-5 py-1.5 border-b ${cfg.strip}`} role="status" aria-label="Platform trust state">
+    <div className={`flex-shrink-0 flex items-center gap-5 px-5 py-1.5 border-b ${cfg.strip}`} role="status" aria-label="Platform trust state">
       {/* Trust level */}
       <div className="flex items-center gap-1.5">
-        <div className={`relative flex h-1.5 w-1.5`}>
+        <div className="relative flex h-1.5 w-1.5">
           {trustLevel === 'full' && (
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-ok opacity-40" />
           )}
@@ -47,8 +47,6 @@ export default function TrustStrip() {
         </div>
         <span className={`font-body font-medium text-label ${cfg.text}`}>{cfg.label}</span>
       </div>
-
-      <div className="w-px h-3 bg-rule2 flex-shrink-0" />
 
       {/* Connector health */}
       <div className="flex items-center gap-1.5">
@@ -65,29 +63,20 @@ export default function TrustStrip() {
 
       {/* Stale integrations */}
       {stale > 0 && (
-        <>
-          <div className="w-px h-3 bg-rule2 flex-shrink-0" />
-          <div className="flex items-center gap-1">
-            <AlertTriangle size={9} className="text-warn" strokeWidth={2} />
-            <span className="font-body text-warn text-label">{stale} stale signal{stale > 1 ? 's' : ''}</span>
-          </div>
-        </>
+        <div className="flex items-center gap-1">
+          <AlertTriangle size={9} className="text-warn" strokeWidth={2} />
+          <span className="font-body text-warn text-label">{stale} stale signal{stale > 1 ? 's' : ''}</span>
+        </div>
       )}
 
-      {/* Semantic conflicts */}
+      {/* Data conflicts */}
       {conflictCount > 0 && (
-        <>
-          <div className="w-px h-3 bg-rule2 flex-shrink-0" />
-          <span className="font-body text-warn text-label">{conflictCount} semantic conflict{conflictCount > 1 ? 's' : ''}</span>
-        </>
+        <span className="font-body text-warn text-label">{conflictCount} data conflict{conflictCount > 1 ? 's' : ''}</span>
       )}
 
       {/* Degraded mode notice */}
       {trustLevel === 'degraded' && (
-        <>
-          <div className="w-px h-3 bg-rule2 flex-shrink-0" />
-          <span className="font-body text-danger text-label font-medium">Data coverage degraded — review signal health</span>
-        </>
+        <span className="font-body text-danger text-label font-medium">Data coverage degraded — review signal health</span>
       )}
 
       <div className="ml-auto font-body text-muted text-label">

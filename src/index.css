@@ -68,10 +68,12 @@
 
   body {
     margin: 0;
-    font-family: 'SF Mono', 'JetBrains Mono', ui-monospace, 'Menlo', 'Consolas', monospace;
+    font-family: 'IBM Plex Mono', 'SF Mono', 'JetBrains Mono', ui-monospace, 'Menlo', 'Consolas', monospace;
     background: var(--color-stone);
     color: var(--color-ink);
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-kerning: normal;
     line-height: 1.45;
   }
   button { cursor: pointer; }
@@ -98,17 +100,12 @@
 
   /* ── Display type — large numeric values ───────────────────────────────── */
   .display-num {
-    font-family: 'SF Mono', 'JetBrains Mono', ui-monospace, monospace;
+    font-family: 'IBM Plex Mono', 'SF Mono', 'JetBrains Mono', ui-monospace, monospace;
     font-weight: 700;
     font-style: normal;
     letter-spacing: -0.03em;
     line-height: 1;
   }
-
-  /* ── Typography scale classes ──────────────────────────────────────────── */
-  .type-label   { font-size: 11px; letter-spacing: 0.02em; color: var(--color-muted); }
-  .type-body    { font-size: 13px; color: var(--color-ink); }
-  .type-section { font-size: 10px; letter-spacing: 0.1em; text-transform:; color: var(--color-dim); }
 
   /* ── Atmospheric glow — risk-toned, slow pulse ─────────────────────────── */
   @keyframes atmoPulse {

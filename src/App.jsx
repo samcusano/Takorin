@@ -9,7 +9,7 @@ import { useAppState } from './context/AppState'
 // Risk state is communicated through the score badge and signal health panel per screen.
 
 const PlantOverview         = lazy(() => import('./screens/PlantOverview'))
-const ShiftIQ               = lazy(() => import('./screens/ShiftIQV2'))
+const ShiftIQ               = lazy(() => import('./screens/ShiftIQ'))
 const SupplierIQ            = lazy(() => import('./screens/SupplierIQ'))
 const CAPAEngine            = lazy(() => import('./screens/CapaEngine'))
 const DataReadiness         = lazy(() => import('./screens/DataReadiness'))

@@ -27,11 +27,11 @@ export default {
       },
       fontFamily: {
         // System / data voice — monospace for all structured information
-        body:    ["'SF Mono'", "'JetBrains Mono'", 'ui-monospace', "'Menlo'", "'Consolas'", 'monospace'],
+        body:    ["'IBM Plex Mono'", "'SF Mono'", "'JetBrains Mono'", 'ui-monospace', "'Menlo'", "'Consolas'", 'monospace'],
         // Narrative / context voice — IBM Plex Sans (designed to pair with IBM Plex Mono)
         display: ["'IBM Plex Sans'", "'Inter'", 'system-ui', 'sans-serif'],
         // Explicit alias
-        mono:    ["'SF Mono'", "'JetBrains Mono'", 'ui-monospace', "'Menlo'", "'Consolas'", 'monospace'],
+        mono:    ["'IBM Plex Mono'", "'SF Mono'", "'JetBrains Mono'", 'ui-monospace', "'Menlo'", "'Consolas'", 'monospace'],
       },
       fontSize: {
         // ── UI text scale ──────────────────────────────────────────────────
