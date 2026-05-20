@@ -250,12 +250,6 @@ export default function PlantOverview() {
     return [...prev, id]
   })
 
-  // Grid: auto-fill, at most 4 columns, each ≥ 180px.
-  // minmax(max(180px, 25% - 12px), 1fr): when container ≥ 720px each column ≥ 25% → max 4 fit.
-  const GRID_STYLE = {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(max(180px, calc(25% - 12px)), 1fr))',
-  }
 
   return (<>
     <div className="flex flex-col h-full overflow-hidden content-reveal">
@@ -573,9 +567,9 @@ export default function PlantOverview() {
                   </span>
                 </div>
 
-                {/* Pressure grid — hairline gaps via bg-rule2 on container */}
-                <div className="bg-rule2" style={{ ...GRID_STYLE, gap: '1px' }}>
-                  {group.lines.map(line => {
+                {/* Ranked list — scales to 20+ lines */}
+                <div>
+                  {group.lines.map((line, idx) => {
                     const meta      = lineMeta[line.id]
                     if (!meta) return null
                     const eff       = effScore(line)
@@ -586,113 +580,103 @@ export default function PlantOverview() {
                     const delta     = sliderVal - line.score
 
                     return (
-                      <article
+                      <div
                         key={line.id}
-                        className={`relative bg-stone ${pressureCls(eff)} ${pressureClass(eff)}`}
+                        className={`border-b border-rule2 last:border-b-0 ${pressureCls(eff)} ${pressureClass(eff)}`}
                       >
-                        {/* Compare checkbox indicator */}
-                        {mode === 'compare' && (
-                          <div className={`absolute top-3 right-3 w-4 h-4 border-2 flex items-center justify-center z-10 transition-colors pointer-events-none ${
-                            isCompSel ? 'bg-ochre border-ochre' : 'border-rule2 bg-stone'
-                          }`} aria-hidden="true">
-                            {isCompSel && (
-                              <svg width={8} height={8} viewBox="0 0 24 24" fill="none" stroke="white"
-                                strokeWidth={3} strokeLinecap="round" strokeLinejoin="round">
-                                <polyline points="20 6 9 17 4 12" />
-                              </svg>
-                            )}
-                          </div>
-                        )}
-
-                        {/* Clickable tile body */}
                         <button
                           type="button"
-                          className={`w-full px-5 pt-4 pb-3 text-left transition-colors ${
-                            mode === 'compare' && isCompSel ? 'bg-ochre/[0.03]' : 'hover:bg-black/[0.012]'
+                          className={`w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors ${
+                            mode === 'compare' && isCompSel ? 'bg-ochre/[0.03]' : 'hover:bg-stone2/50'
                           }`}
                           onClick={() => mode === 'compare' ? toggleCompare(line.id) : navigate(`/shift?line=${line.id}`)}
-                          aria-label={`${line.name} — score ${eff}${mode === 'compare' ? (isCompSel ? ', selected for comparison' : ', click to select') : ', open ShiftIQ'}`}
+                          aria-label={`${line.name} — score ${eff}${mode === 'compare' ? (isCompSel ? ', selected' : ', click to select') : ', open ShiftIQ'}`}
                           aria-pressed={mode === 'compare' ? isCompSel : undefined}
                         >
-                          {/* Name + sparkline */}
-                          <div className="flex items-start justify-between mb-2">
-                            <div>
-                              <div className="font-display font-bold text-ink text-base leading-none">{line.name}</div>
-                              <div className="font-body text-muted text-label mt-0.5">{meta.supervisor}</div>
+                          {/* Compare checkbox */}
+                          {mode === 'compare' && (
+                            <div className={`w-4 h-4 border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
+                              isCompSel ? 'bg-ochre border-ochre' : 'border-rule2 bg-stone'
+                            }`} aria-hidden="true">
+                              {isCompSel && (
+                                <svg width={8} height={8} viewBox="0 0 24 24" fill="none" stroke="white"
+                                  strokeWidth={3} strokeLinecap="round" strokeLinejoin="round">
+                                  <polyline points="20 6 9 17 4 12" />
+                                </svg>
+                              )}
                             </div>
-                            <MiniSparkline data={meta.sparkline} color={riskBgColor(eff)} />
+                          )}
+
+                          {/* Rank */}
+                          <span className="display-num text-label text-muted tabular-nums w-4 text-right flex-shrink-0">{idx + 1}</span>
+
+                          {/* Name + supervisor */}
+                          <div className="w-28 flex-shrink-0">
+                            <div className="font-display font-semibold text-ink text-body leading-none">{line.name}</div>
+                            <div className="font-body text-muted text-label mt-0.5 truncate">{meta.supervisor}</div>
                           </div>
 
-                          {/* Score — pressure-weighted color, smooth transition */}
-                          <div
-                            className={`display-num text-score leading-none tabular-nums mb-2 ${riskColorClass(eff)}`}
-                            style={{ transition: 'color 250ms var(--ease-standard)' }}
-                          >
-                            {eff}
+                          {/* Score bar — zone bands + score fill + confidence tick */}
+                          <div className="flex-1 relative h-[6px] overflow-hidden">
+                            <div className="absolute inset-0 flex">
+                              <div className="h-full bg-ok/[0.12]"     style={{ width: '60%' }} />
+                              <div className="h-full bg-warn/[0.12]"   style={{ width: '15%' }} />
+                              <div className="h-full bg-danger/[0.12]" style={{ width: '25%' }} />
+                            </div>
+                            <div
+                              className={`absolute left-0 top-0 h-full transition-[width] duration-500 ease-enter ${riskBgColor(eff)}`}
+                              style={{ width: `${eff}%` }}
+                            />
+                            <div
+                              className="absolute top-0 h-full w-px bg-muted/50"
+                              style={{ left: `${meta.modelConfidence}%` }}
+                            />
+                          </div>
+
+                          {/* Score + what-if delta */}
+                          <div className="w-14 flex-shrink-0 text-right">
+                            <span
+                              className={`display-num text-base tabular-nums ${riskColorClass(eff)}`}
+                              style={{ transition: 'color 250ms var(--ease-standard)' }}
+                            >{eff}</span>
                             {modified && (
-                              <span className="font-body font-normal text-muted text-label ml-2 align-middle">
-                                was {line.score}
+                              <span className={`font-body text-label ml-1 tabular-nums ${delta > 0 ? 'text-danger' : 'text-ok'}`}>
+                                {delta > 0 ? '+' : ''}{delta}
                               </span>
                             )}
                           </div>
 
-                          {/* Model confidence */}
-                          <div className="mb-2.5">
-                            <div className="flex items-center justify-between mb-1">
-                              <div className="flex items-center gap-1">
-                                <Brain size={8} strokeWidth={1.75} className="text-muted" />
-                                <span className="font-body text-muted text-label">Model</span>
-                              </div>
-                              <span className={`font-body font-medium text-label tabular-nums ${
-                                meta.modelConfidence >= 90 ? 'text-ok' : meta.modelConfidence >= 80 ? 'text-muted' : 'text-warn'
-                              }`}>{meta.modelConfidence}%</span>
-                            </div>
-                            <div className="h-0.5 bg-rule2">
-                              <div
-                                className={`h-full ${meta.modelConfidence >= 90 ? 'bg-ok' : meta.modelConfidence >= 80 ? 'bg-rule' : 'bg-warn'}`}
-                                style={{ width: `${meta.modelConfidence}%` }}
-                              />
-                            </div>
-                          </div>
-
-                          {/* Zone label + findings pip */}
-                          <div className="flex items-center justify-between">
-                            <span className={`font-body text-label ${riskColorClass(eff)}`}>
-                              {riskLabel(eff)}
-                            </span>
+                          {/* Findings pip */}
+                          <div className="w-16 flex-shrink-0 flex items-center justify-end">
                             {pend > 0
                               ? <span className="font-body text-label text-warn flex items-center gap-0.5">
-                                  <AlertTriangle size={9} strokeWidth={2} />{pend} pending
+                                  <AlertTriangle size={9} strokeWidth={2} />{pend}
                                 </span>
-                              : <span className="font-body text-label text-ok flex items-center gap-0.5">
-                                  <CheckCircle size={9} strokeWidth={2} />Clear
+                              : <span className="font-body text-label text-ok/40 flex items-center gap-0.5">
+                                  <CheckCircle size={9} strokeWidth={2} />
                                 </span>
                             }
                           </div>
+
+                          {/* Sparkline */}
+                          <div className="flex-shrink-0">
+                            <MiniSparkline data={meta.sparkline} color={riskBgColor(eff)} />
+                          </div>
                         </button>
 
-                        {/* What-if slider — sibling to button, not nested inside */}
+                        {/* What-if slider */}
                         {mode === 'whatif' && (
-                          <div className="px-5 pb-3 pt-2 border-t border-rule2/40 bg-stone2/40">
-                            <div className="flex items-center justify-between mb-1">
-                              <span className="font-body text-muted text-label">
-                                Real: <span className="text-muted font-medium">{line.score}</span>
-                              </span>
-                              {delta !== 0 && (
-                                <span className={`font-body font-bold text-label tabular-nums ${delta > 0 ? 'text-danger' : 'text-ok'}`}>
-                                  {delta > 0 ? '+' : ''}{delta}
-                                </span>
-                              )}
-                            </div>
+                          <div className="flex items-center gap-3 px-4 pb-2.5 pt-1.5 border-t border-rule2/40 bg-stone2/40">
+                            <span className="font-body text-muted text-label flex-shrink-0">Real: <span className="font-medium">{line.score}</span></span>
                             <input
                               type="range" min={0} max={100} value={sliderVal}
                               onChange={e => setWhatIfScores(s => ({ ...s, [line.id]: Number(e.target.value) }))}
-                              className="w-full cursor-pointer accent-ochre"
+                              className="flex-1 cursor-pointer accent-ochre"
                               style={{ height: 2 }}
                             />
                           </div>
                         )}
-                      </article>
+                      </div>
                     )
                   })}
                 </div>
