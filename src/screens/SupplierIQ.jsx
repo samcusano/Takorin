@@ -6,7 +6,7 @@ import NetworkView from './NetworkView'
 import { useNavigate, Link } from 'react-router-dom'
 import { supplierData, supplierAudits, empResultsHistory } from '../data'
 import { useAppState } from '../context/AppState'
-import { StatusPill, SectionHeader, SP, Btn, Layout, ActionBanner, ScoreRing, Spinner, AnimatedCheck, MetadataRow, ExpandableMetadata, ActionCard, SlidePanel } from '../components/UI'
+import { StatusPill, SectionHeader, Btn, Layout, ActionBanner, Spinner, AnimatedCheck, MetadataRow, ExpandableMetadata, ActionCard, SlidePanel } from '../components/UI'
 import StatBar from '../components/StatBar.jsx'
 
 // ── CoaPanel ──────────────────────────────────────────────────────────────────
@@ -188,24 +188,41 @@ export default function SupplierIQ() {
 
   const resolveCount = blockingLots.length + auditActionSuppliers.length
 
-  // ── Right rail (unchanged) ────────────────────────────────────────────────
+  // ── Right rail ────────────────────────────────────────────────────────────
   const side = (
     <>
-      <SP title="Open gaps" sub="3 active">
-        {d.gaps.map((g, i) => (
-          <div key={i} className={`px-4 py-2.5 border-b border-rule2 last:border-b-0 border-l-2 ${
-            g.tone === 'block' ? 'border-l-danger bg-danger/[0.02]' : g.tone === 'warn' ? 'border-l-warn' : 'border-l-ok'
-          }`}>
-            <div className="flex justify-between items-start">
-              <div className="font-display font-medium text-ink text-base">{g.title}</div>
-              <span className={`font-body text-label ml-2 flex-shrink-0 ${g.badgeColor}`}>{g.badge}</span>
+      {/* Open gaps — severity-weighted */}
+      <div className="border-b border-rule2">
+        <div className="px-5 py-3 border-b border-rule2 flex items-baseline justify-between">
+          <span className="font-display font-semibold text-ink text-base">Open gaps</span>
+          <span className="font-body text-muted text-label">3 active</span>
+        </div>
+        {d.gaps.map((g, i) => {
+          const isBlock = g.tone === 'block'
+          const isWarn  = g.tone === 'warn'
+          return (
+            <div key={i} className={`border-b border-rule2 last:border-b-0 ${
+              isBlock ? 'bg-danger/[0.035]' : ''
+            } ${isBlock ? 'px-4 py-4' : 'px-4 py-3'}`}>
+              {/* Badge row */}
+              <div className="mb-2">
+                <span className={`font-body font-semibold text-label inline-flex items-center gap-1.5 px-2 py-0.5 ${
+                  isBlock ? 'bg-danger/15 text-danger' : isWarn ? 'bg-warn/10 text-warn' : 'bg-ok/10 text-ok'
+                }`}>
+                  {isBlock && <span className="w-1.5 h-1.5 rounded-full bg-danger inline-block animate-pulse" />}
+                  {g.badge}
+                </span>
+              </div>
+              {/* Title */}
+              <div className={`font-display font-semibold leading-tight ${
+                isBlock ? 'text-base text-danger' : 'text-body text-ink'
+              }`}>{g.title}</div>
+              {/* Sub */}
+              <div className="font-body text-muted text-label mt-1">{g.sub}</div>
             </div>
-            <div className="font-body text-muted text-label mt-0.5">{g.sub}</div>
-          </div>
-        ))}
-      </SP>
-
-
+          )
+        })}
+      </div>
     </>
   )
 
@@ -418,57 +435,75 @@ export default function SupplierIQ() {
         )}
 
         {/* ── Supplier standings ── */}
-        <SectionHeader tone="muted" label="Supplier standings" sub="5 active · sorted by score" />
+        <div className="border-b border-rule2">
+          <div className="flex items-center justify-between px-4 py-2.5 bg-stone2 border-b border-rule2">
+            <span className="font-body text-label tracking-widest text-muted">SUPPLIER STANDINGS</span>
+            <span className="font-body text-label text-muted">5 active · by score</span>
+          </div>
 
-        {sortedSuppliers.map(s => {
-          const audit = supplierAudits[s.name]
-          const intel = networkIntel[s.name]
-          return (
-            <div key={s.name} className={`border-b border-rule2 border-l-2 ${
-              audit?.needsAction ? 'border-l-danger bg-danger/[0.02]' : 'border-l-transparent bg-stone'
-            }`}>
-              <div className="px-4 py-3 flex items-center gap-4">
-                <ScoreRing pct={s.score} size={32} />
-                <div className="flex-1 min-w-0">
-                  <div className="font-display font-medium text-ink text-base">{s.name}</div>
-                  {audit?.reason && <div className="font-body text-warn text-label mt-0.5">{audit.reason}</div>}
-                  {intel && (
-                    <div className="flex items-center gap-1 mt-1">
-                      <div className="font-body text-muted text-label">{intel.percentile}th percentile</div>
-                      <div className="w-1 h-1 rounded-full bg-rule2" />
-                      <div className="font-body text-muted text-label">{intel.plants} plants</div>
-                      {intel.note && (
-                        <>
-                          <div className="w-1 h-1 rounded-full bg-rule2" />
-                          <div className={`font-body text-label ${intel.tone === 'danger' ? 'text-danger' : 'text-muted'}`}>{intel.note}</div>
-                        </>
+          {sortedSuppliers.map((s, i) => {
+            const audit = supplierAudits[s.name]
+            const intel = networkIntel[s.name]
+            const isDanger = s.tierTone === 'danger'
+            const isWarn   = s.tierTone === 'int'
+            const scoreColor = s.score >= 90 ? 'var(--color-ok)' : s.score >= 80 ? 'var(--color-warn)' : 'var(--color-danger)'
+            const scoreTextCls = s.score >= 90 ? 'text-ok' : s.score >= 80 ? 'text-warn' : 'text-danger'
+
+            return (
+              <div key={s.name} className={`border-b border-rule2 last:border-b-0 border-l-[3px] ${
+                isDanger ? 'border-l-danger bg-danger/[0.025]' : 'border-l-transparent'
+              }`}>
+                <div className="px-4 pt-3.5 pb-3">
+                  {/* Name row */}
+                  <div className="flex items-center gap-2 mb-2.5">
+                    <span className={`font-display font-semibold text-base leading-none ${isDanger ? 'text-danger' : 'text-ink'}`}>{s.name}</span>
+                    <span className={`font-body text-label px-1.5 py-0.5 leading-none ${
+                      s.tierTone === 'ok'     ? 'bg-ok/10 text-ok'
+                      : isDanger             ? 'bg-danger/[0.1] text-danger'
+                      : 'bg-warn/10 text-warn'
+                    }`}>{s.tier}</span>
+                    <div className="flex-1" />
+                    {audit?.needsAction
+                      ? <Btn variant="secondary">Schedule</Btn>
+                      : <button type="button" className="font-body text-muted text-label hover:text-ink transition-colors px-2 py-1 flex items-center gap-1">
+                        <History size={11} /><span className="sr-only">History</span>
+                      </button>
+                    }
+                  </div>
+
+                  {/* Score + wide bar row */}
+                  <div className="flex items-center gap-3 mb-1.5">
+                    <span className={`font-display font-bold text-subhead leading-none tabular-nums w-9 flex-shrink-0 ${scoreTextCls}`}>{s.score}</span>
+                    <div className="flex-1 h-[5px] bg-rule2">
+                      <div className="h-full transition-[width] duration-500 ease-enter" style={{ width: `${s.score}%`, background: scoreColor }} />
+                    </div>
+                    <div className="flex items-center gap-2 flex-shrink-0 text-right">
+                      <span className={`font-body font-medium text-label ${
+                        audit?.result === 'Approved'    ? 'text-ok'
+                        : audit?.result === 'Conditional' ? 'text-warn'
+                        : 'text-danger'
+                      }`}>{audit?.result}</span>
+                      {audit?.lastAudit && <span className="font-body text-muted text-label">{audit.lastAudit}</span>}
+                    </div>
+                  </div>
+
+                  {/* Audit reason or network intel */}
+                  {(audit?.reason || (intel && intel.note)) && (
+                    <div className="font-body text-label mt-1">
+                      {audit?.reason
+                        ? <span className="text-warn">{audit.reason.split(' · ')[0]}</span>
+                        : intel?.note && <span className={intel.tone === 'danger' ? 'text-danger' : 'text-muted'}>{intel.note}</span>
+                      }
+                      {intel && !audit?.reason && (
+                        <span className="text-muted"> · {intel.percentile}th pct. · {intel.plants} plants</span>
                       )}
                     </div>
                   )}
                 </div>
-                <span className={`font-body font-medium text-label px-2 py-1 flex-shrink-0 ${
-                  s.tierTone === 'ok' ? 'bg-ok/10 text-ok'
-                  : s.tierTone === 'danger' ? 'bg-danger/[0.04] text-danger'
-                  : 'bg-ochre/10 text-ochre'
-                }`}>{s.tier}</span>
-                <div className="text-right flex-shrink-0 min-w-fit">
-                  <div className="font-body text-muted text-label">{audit?.lastAudit}</div>
-                  <div className={`font-body font-medium text-label ${
-                    audit?.result === 'Approved' ? 'text-ok'
-                    : audit?.result === 'Conditional' ? 'text-warn'
-                    : 'text-danger'
-                  }`}>{audit?.result}</div>
-                </div>
-                {audit?.needsAction
-                  ? <Btn variant="secondary">Schedule</Btn>
-                  : <button type="button" className="font-body text-muted text-label hover:text-ink transition-colors flex items-center gap-1 px-2 py-2">
-                    <History size={11} /><span className="sr-only">Audit history</span>
-                  </button>
-                }
               </div>
-            </div>
-          )
-        })}
+            )
+          })}
+        </div>
 
       </Layout>
       </>}
