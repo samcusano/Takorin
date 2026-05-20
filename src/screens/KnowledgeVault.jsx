@@ -9,7 +9,7 @@ import {
   AlertTriangle, ChevronDown, ChevronRight, Database, Activity,
   Truck, ClipboardCheck, RotateCcw, TrendingDown, Shield, Zap, Waves,
 } from 'lucide-react'
-import { StatusPill, SlidePanel } from '../components/UI'
+import { StatusPill, SlidePanel, SegmentedControl } from '../components/UI'
 import { KnowledgeTreemap } from '../components/Charts'
 
 // ── Operational Memory Domains ───────────────────────────────────────────────
@@ -506,12 +506,11 @@ function ResearchMode({ variant, setVariant }) {
       {/* Header */}
       <div className="flex-shrink-0 flex items-center justify-between px-5 py-3 border-b border-rule2 bg-stone2">
         <div className="flex items-stretch overflow-hidden">
-          {['A', 'B', 'C'].map(v => (
-            <button key={v} type="button" onClick={() => setVariant(v)}
-              className={`font-body text-label px-2.5 py-1 transition-colors ${variant === v ? 'bg-ink text-stone' : 'text-muted hover:text-muted'}`}>
-              {v}
-            </button>
-          ))}
+          <SegmentedControl
+            options={[{ value: 'A', label: 'A' }, { value: 'B', label: 'B' }, { value: 'C', label: 'C' }]}
+            value={variant}
+            onChange={setVariant}
+          />
         </div>
       </div>
       {/* Domain filter chips */}

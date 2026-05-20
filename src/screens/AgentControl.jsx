@@ -4,7 +4,7 @@ import {
   ClipboardCheck, Shield, Database, ChevronDown, ChevronRight,
   Timer, CheckCircle, XCircle, Check, Flag, InspectionPanel, TrendingUp,
 } from 'lucide-react'
-import { Btn, SlidePanel } from '../components/UI'
+import { Btn, SlidePanel, Tabs } from '../components/UI'
 import { agentConfigData, dataSourceHealth } from '../data'
 import { agentPrompts } from '../data/prompts'
 import { useAppState } from '../context/AppState'
@@ -179,19 +179,17 @@ function ApproveBtn({ isCompliance, disabled: externalDisabled, onApprove }) {
     return () => clearTimeout(t)
   }, [count, isCompliance])
   return (
-    <button type="button" onClick={ready ? onApprove : undefined} disabled={!ready}
+    <Btn variant={ready ? 'primary' : 'secondary'} onClick={ready ? onApprove : undefined} disabled={!ready}
       aria-label={!timerReady ? `Approve (${count}s)` : externalDisabled ? 'Read rationale to approve' : 'Approve'}
       title={!timerReady ? `Approve (${count}s)` : externalDisabled ? 'Check "I have read the AI rationale" to approve' : 'Approve'}
-      className={`inline-flex items-center justify-center w-11 h-11 rounded-full transition-colors ${
-        ready ? 'bg-ink text-stone hover:bg-ink/90 cursor-pointer' : 'bg-stone3 text-muted cursor-not-allowed'
-      }`}>
+      className="!px-3 !min-h-[36px]">
       {!timerReady
-        ? <span className="font-body text-label tabular-nums">{count}</span>
+        ? <span className="font-body text-label tabular-nums">{count}s</span>
         : externalDisabled
           ? <span className="font-body text-label">—</span>
           : <Check size={13} strokeWidth={2} />
       }
-    </button>
+    </Btn>
   )
 }
 
@@ -297,30 +295,27 @@ function LedgerRow({ pa, agent, onInvestigate, onApprove, onOverrideRequest, sel
         {pa.isEmergencyAutoAct && <EmergencyChip overrideWindowMin={pa.overrideWindowMin} />}
 
         {/* CTAs */}
-        <div className="flex items-center gap-1.5 flex-shrink-0" onClick={e => e.stopPropagation()}>
+        <div className="flex items-center gap-1 flex-shrink-0" onClick={e => e.stopPropagation()}>
           {pa.isEmergencyAutoAct ? (
-            <button type="button" onClick={() => onOverrideRequest(pa, agent)}
-              aria-label="Override" title="Override"
-              className="inline-flex items-center justify-center w-11 h-11 rounded-full border border-danger/40 text-danger hover:bg-danger/[0.04] transition-colors">
+            <Btn variant="secondary" onClick={() => onOverrideRequest(pa, agent)}
+              aria-label="Override" title="Override" className="!px-2.5 !min-h-[36px] text-danger border-danger/40 hover:bg-danger/[0.04]">
               <Flag size={13} strokeWidth={2} />
-            </button>
+            </Btn>
           ) : (
             <>
               <ApproveBtn isCompliance={isCompliance}
                 disabled={requiresAck && !rationaleAcked && open}
                 onApprove={() => onApprove(pa._key)} />
-              <button type="button" onClick={() => onOverrideRequest(pa, agent)}
-                aria-label="Override" title="Override"
-                className="inline-flex items-center justify-center w-11 h-11 rounded-full text-muted hover:text-ink hover:border-muted transition-colors">
+              <Btn variant="ghost" onClick={() => onOverrideRequest(pa, agent)}
+                aria-label="Override" title="Override" className="!px-2.5 !min-h-[36px]">
                 <Flag size={13} strokeWidth={2} />
-              </button>
+              </Btn>
             </>
           )}
-          <button type="button" onClick={() => onInvestigate(pa, agent)}
-            aria-label="Investigate" title="Investigate"
-            className="inline-flex items-center justify-center w-11 h-11 rounded-full text-muted hover:text-ink hover:border-muted transition-colors">
+          <Btn variant="ghost" onClick={() => onInvestigate(pa, agent)}
+            aria-label="Investigate" title="Investigate" className="!px-2.5 !min-h-[36px]">
             <InspectionPanel size={13} strokeWidth={2} />
-          </button>
+          </Btn>
         </div>
 
         <button type="button" onClick={() => setOpen(o => !o)} className="flex-shrink-0 ml-0.5">
@@ -669,16 +664,7 @@ function InvestigationPanel({ pa, agent, agentActions }) {
 
   return (
     <div>
-      <div className="-mx-5 -mt-5 flex border-b border-rule2 mb-5">
-        {TABS.map(t => (
-          <button key={t.id} type="button" onClick={() => setTab(t.id)}
-            className={`font-body text-label px-4 py-2.5 border-b-2 transition-colors ${
-              tab === t.id ? 'border-b-ochre text-ink' : 'border-b-transparent text-muted hover:text-muted'
-            }`}>
-            {t.label}
-          </button>
-        ))}
-      </div>
+      <Tabs tabs={TABS} active={tab} onChange={setTab} flush />
 
       <div>
         {tab === 'evidence' && (
@@ -1366,17 +1352,12 @@ export default function AgentControl() {
                       })()}
                     </div>
 
-                    {/* Tab bar */}
-                    <div className="flex-shrink-0 flex border-b border-rule2 bg-stone">
-                      {[['evidence', 'Evidence'], ['trace', 'Decision trace']].map(([id, label]) => (
-                        <button key={id} type="button" onClick={() => setDetailTab(id)}
-                          className={`font-body text-label px-4 py-2.5 border-b-2 transition-colors ${
-                            detailTab === id ? 'border-b-ochre text-ink' : 'border-b-transparent text-muted hover:text-muted'
-                          }`}>
-                          {label}
-                        </button>
-                      ))}
-                    </div>
+                    <Tabs
+                      tabs={[{ id: 'evidence', label: 'Evidence' }, { id: 'trace', label: 'Decision trace' }]}
+                      active={detailTab}
+                      onChange={setDetailTab}
+                      className="flex-shrink-0 bg-stone"
+                    />
                     {/* Scrollable body */}
                     <div className="flex-1 overflow-y-auto">
                       {detailTab === 'trace' ? (

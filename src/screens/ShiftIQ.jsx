@@ -7,7 +7,7 @@ import ResourceAllocation from './ResourceAllocation'
 import { useFocusTrap, useExitAnimation, riskColorClass, riskLabel, riskBgColor } from '../lib/utils'
 import { shiftData, line6Data, wichitaData, denverData, haccpData, productionRate, crewHoursData } from '../data'
 import {
- StatusPill,
+ StatusPill, Tabs,
  Btn, ConsequenceNotice, PageHead, ActionBanner,
  PersonAvatar, Modal, WaveformSparkline, AnimatedCheck, Spinner,
  VaulDrawer, HoldButton
@@ -868,33 +868,24 @@ export default function ShiftIQ() {
 
  {/* Tab bar — Shift | Handoff | Fleet (robot/hybrid) | Allocation (hybrid) */}
  <div className="flex-shrink-0 flex items-center border-b border-rule2 bg-stone2">
-  <div className="flex flex-1">
-  {[
-   { id: 'shift',      label: 'Shift',       show: true },
-   { id: 'prepare',    label: 'Prepare',     show: true, urgent: shiftData.forecast?.some(r => r.critical) },
-   { id: 'handoff',    label: 'Handoff',     show: true },
-   { id: 'fleet',      label: 'Robot Fleet', show: workerMode === 'robot' || workerMode === 'hybrid' || currentPlant?.id === 'ks' },
-   { id: 'allocation', label: 'Allocation',  show: workerMode === 'hybrid' },
-  ].filter(t => t.show).map(t => (
-   <button key={t.id} type="button" onClick={() => setActiveTab(t.id)}
-    className={`flex items-center gap-1.5 px-5 py-2.5 font-body text-label border-b-2 transition-colors ${
-     activeTab === t.id ? 'border-b-ochre text-ink' : 'border-b-transparent text-muted hover:text-muted'
-    }`}>
-    {t.label}
-    {t.urgent && activeTab !== t.id && <span className="w-1.5 h-1.5 rounded-full bg-danger flex-shrink-0" />}
-   </button>
-  ))}
-  </div>
-  {/* Sleep mode trigger — Moon icon in tab bar */}
+  <Tabs
+   tabs={[
+    { id: 'shift',      label: 'Shift' },
+    { id: 'prepare',    label: 'Prepare',     dot: shiftData.forecast?.some(r => r.critical) },
+    { id: 'handoff',    label: 'Handoff' },
+    ...(workerMode === 'robot' || workerMode === 'hybrid' || currentPlant?.id === 'ks' ? [{ id: 'fleet', label: 'Robot Fleet' }] : []),
+    ...(workerMode === 'hybrid' ? [{ id: 'allocation', label: 'Allocation' }] : []),
+   ]}
+   active={activeTab}
+   onChange={setActiveTab}
+   className="flex-1 !border-b-0 -mb-px px-1"
+  />
+  {/* Sleep mode trigger */}
   {activeTab === 'shift' && (
-   <button
-    type="button"
-    onClick={() => setQuietForm(p => ({...p, open: true}))}
-    aria-label="Set quiet period"
-    title="Set quiet period"
-    className="mr-3 p-2 text-muted hover:text-ink transition-colors duration-100">
+   <Btn variant="ghost" onClick={() => setQuietForm(p => ({...p, open: true}))}
+    className="mr-2 !px-2 !min-h-0 !py-2" aria-label="Set quiet period" title="Set quiet period">
     <Moon size={13} strokeWidth={2} />
-   </button>
+   </Btn>
   )}
  </div>
 

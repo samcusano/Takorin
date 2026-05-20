@@ -8,7 +8,7 @@ import {
   Activity, CircleDot, ChevronDown, ChevronUp, ArrowRight, ExternalLink, X,
 } from 'lucide-react'
 import { interventionSummary, interventions } from '../data/interventions'
-import { FilterDropdown, SlidePanel, Btn } from '../components/UI'
+import { FilterDropdown, SlidePanel, Btn, SegmentedControl } from '../components/UI'
 
 // ─── Domain assignments ───────────────────────────────────────────────────────
 // Maps line.id → { area, areaOrder }
@@ -279,16 +279,11 @@ export default function PlantOverview() {
           </span>
           <span className="font-body text-muted text-label">{rawLines.length} lines · {totalWorkers} workers</span>
         </div>
-        <div className="ml-auto flex items-center gap-px">
-          {[['normal', 'Live'], ['whatif', 'What if'], ['compare', 'Compare']].map(([m, label]) => (
-            <button key={m} type="button" onClick={() => switchMode(m)}
-              className={`font-body text-micro px-2.5 py-1.5 transition-colors ${
-                mode === m ? 'bg-ink text-stone' : 'text-muted hover:text-ink border border-transparent hover:border-rule'
-              }`}>
-              {label}
-            </button>
-          ))}
-        </div>
+        <SegmentedControl
+          options={[{ value: 'normal', label: 'Live' }, { value: 'whatif', label: 'What if' }, { value: 'compare', label: 'Compare' }]}
+          value={mode}
+          onChange={switchMode}
+        />
       </div>
 
       {/* ── Impact Loop strip ───────────────────────────────────────────── */}

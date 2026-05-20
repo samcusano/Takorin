@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { interventions, interventionSummary, kpiTargets } from '../data/interventions'
 import { AlertTriangle, CheckCircle2, XCircle, ArrowRight, RotateCcw, AlertCircle, TrendingUp, TrendingDown } from 'lucide-react'
 import { AlluvialDiagram } from '../components/Charts'
+import { SegmentedControl } from '../components/UI'
 
 const OUTCOME_CFG = {
   positive: { label: 'Positive',  dot: 'bg-ok',     badge: 'bg-ok/10 text-ok',             border: 'border-l-ok',     chip: 'bg-ok/10 text-ok'     },
@@ -333,14 +334,11 @@ export default function ImpactLoop() {
           <span className="font-body text-muted text-label">
             {rightView === 'flow' ? 'Intervention flow' : 'Event chain detail'}
           </span>
-          <div className="flex items-stretch overflow-hidden">
-            {[{ id: 'detail', label: 'Detail' }, { id: 'flow', label: 'Flow' }].map(v => (
-              <button key={v.id} type="button" onClick={() => setRightView(v.id)}
-                className={`font-body text-label px-2.5 py-1 transition-colors ${rightView === v.id ? 'bg-ink text-stone' : 'text-muted hover:text-muted'}`}>
-                {v.label}
-              </button>
-            ))}
-          </div>
+          <SegmentedControl
+            options={[{ value: 'detail', label: 'Detail' }, { value: 'flow', label: 'Flow' }]}
+            value={rightView}
+            onChange={setRightView}
+          />
         </div>
         {rightView === 'flow' ? (
           <div className="flex-1 overflow-y-auto px-6 py-5">

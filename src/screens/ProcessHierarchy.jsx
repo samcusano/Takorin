@@ -7,7 +7,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { processHierarchy } from '../data/hierarchy'
 import { AlertTriangle, ChevronRight, ChevronDown, ArrowRight, ArrowDown, Activity, Zap, TrendingDown, Info } from 'lucide-react'
-import { SlidePanel } from '../components/UI'
+import { SlidePanel, SegmentedControl } from '../components/UI'
 import ShiftHero from '../components/ShiftHero'
 
 const scoreColor  = (s) => s >= 90 ? 'text-ok'     : s >= 80 ? 'text-ochre'   : s >= 70 ? 'text-warn'   : 'text-danger'
@@ -588,14 +588,11 @@ function StateFieldView({ site, variant, onVariantChange }) {
           <AlertTriangle size={9} strokeWidth={2} className="text-warn flex-shrink-0" />
           <span className="text-warn">{alertZones.length} active alert{alertZones.length !== 1 ? 's' : ''}</span>
         </div>
-        <div className="ml-auto flex items-stretch overflow-hidden">
-          {[{ v: 'A', label: 'State' }, { v: 'B', label: 'Structure' }].map(({ v, label }) => (
-            <button key={v} type="button" onClick={() => onVariantChange(v)}
-              className={`font-body text-label px-3 py-1 transition-colors ${variant === v ? 'bg-ink text-stone' : 'text-muted hover:text-muted'}`}>
-              {label}
-            </button>
-          ))}
-        </div>
+        <SegmentedControl
+          options={[{ value: 'A', label: 'State' }, { value: 'B', label: 'Structure' }]}
+          value={variant}
+          onChange={onVariantChange}
+        />
       </div>
 
       <div className="flex flex-1 min-h-0 overflow-hidden">
@@ -741,14 +738,11 @@ export default function ProcessHierarchy() {
         <span className="font-body text-muted text-label">For audit, compliance, and forensic analysis.</span>
       </div>
         )}
-        <div className="ml-auto flex items-stretch overflow-hidden">
-          {[{ v: 'A', label: 'State' }, { v: 'B', label: 'Structure' }].map(({ v, label }) => (
-            <button key={v} type="button" onClick={() => { setVariant(v); setPath([]) }}
-              className={`font-body text-label px-3 py-1 transition-colors ${variant === v ? 'bg-ink text-stone' : 'text-muted hover:text-muted'}`}>
-              {label}
-            </button>
-          ))}
-        </div>
+        <SegmentedControl
+          options={[{ value: 'A', label: 'State' }, { value: 'B', label: 'Structure' }]}
+          value={variant}
+          onChange={v => { setVariant(v); setPath([]) }}
+        />
       </div>
       <div className="flex-1 overflow-y-auto">
         {!selectedBuilding && (

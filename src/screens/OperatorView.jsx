@@ -3,7 +3,7 @@ import { Flag, ShieldCheck, Check, Lock, AlertTriangle, Activity, CheckCircle2, 
 import { operatorContextData, fatigueData } from '../data'
 import { integrationSummary, connectors } from '../data/integrations'
 import { useAppState } from '../context/AppState'
-import { SectionHeader, StatusPill, PersonAvatar, Btn, Modal } from '../components/UI'
+import { SectionHeader, StatusPill, PersonAvatar, Btn, Modal, Tabs } from '../components/UI'
 
 // ── Static operator data ──────────────────────────────────────────────────────
 
@@ -738,24 +738,16 @@ export default function OperatorView({ role }) {
      />
     )}
 
-    {/* ── Tab strip ─────────────────────────────────────────────── */}
-    <div className="flex-shrink-0 flex border-b border-rule2 bg-stone2 sticky top-0 z-10">
-     {[
+    <Tabs
+     tabs={[
       { id: 'today',    label: 'Today',    badge: tasks.filter(t => !t.done).length + linkedTasks.filter(t => !t.done).length },
       { id: 'progress', label: 'Progress', badge: 0 },
       { id: 'schedule', label: 'Schedule', badge: 0 },
-     ].map(tab => (
-      <button key={tab.id} type="button" onClick={() => setOpTab(tab.id)}
-       className={`flex items-center gap-1.5 px-4 py-2 font-body text-label font-medium border-b-2 transition-colors ${
-        opTab === tab.id ? 'border-b-ochre text-ink' : 'border-b-transparent text-muted hover:text-muted'
-       }`}>
-       {tab.label}
-       {tab.badge > 0 && opTab !== tab.id && (
-        <span className="font-body text-warn text-label">{tab.badge}</span>
-       )}
-      </button>
-     ))}
-    </div>
+     ]}
+     active={opTab}
+     onChange={setOpTab}
+     className="flex-shrink-0 bg-stone2 sticky top-0 z-10"
+    />
 
     {/* Today — tasks + troubleshooting */}
     {opTab === 'today' && (

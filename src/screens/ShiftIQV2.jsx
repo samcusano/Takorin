@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Brain, ChevronDown, ChevronUp, Check, Users } from 'lucide-react'
+import { Btn } from '../components/UI'
 import { Link } from 'react-router-dom'
 import { useAppState } from '../context/AppState'
 import { crew, agentEvents } from '../data/shift'
@@ -114,50 +115,28 @@ function FindingCard({ f, index, onAct, onDelegate }) {
           <span className="font-body text-label" style={{ color: P.sage }}>{f.consequence}</span>
         </div>
       ) : delegating ? (
-        <div style={{ padding: '10px 16px' }}>
-          <div className="font-body text-micro text-muted mb-2">Assign to:</div>
-          <div className="flex gap-2 flex-wrap">
-            {(f.delegateTo || []).map(op => (
-              <button key={op} type="button" onClick={() => handleDelegate(op)}
-                className="font-body text-label text-ink border border-rule px-2.5 py-1 hover:border-ochre hover:text-ochre transition-colors">
-                {op}
-              </button>
-            ))}
-            <button type="button" onClick={() => setDelegating(false)}
-              className="font-body text-label text-muted px-2 py-1 hover:text-ink transition-colors">
-              Cancel
-            </button>
-          </div>
+        <div className="px-4 py-3 flex gap-2 flex-wrap items-center">
+          <span className="font-body text-micro text-muted">Assign to:</span>
+          {(f.delegateTo || []).map(op => (
+            <Btn key={op} variant="secondary" onClick={() => handleDelegate(op)} className="!py-1 !px-2.5 !min-h-0">{op}</Btn>
+          ))}
+          <Btn variant="ghost" onClick={() => setDelegating(false)} className="!py-1 !min-h-0">Cancel</Btn>
         </div>
       ) : delegatedTo ? (
-        <div style={{ padding: '10px 16px', display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div className="px-4 py-3 flex items-center gap-2">
           <Check size={11} color={P.sage} />
           <span className="font-body text-label" style={{ color: P.sage }}>Assigned to {delegatedTo} — task in their dashboard</span>
         </div>
       ) : (
-        <div style={{ padding: '10px 16px', display: 'flex', alignItems: 'center', gap: 8 }}>
-          <button
-            type="button"
-            onClick={() => { setActed(true); onAct?.(f.id) }}
-            className="font-body text-label"
-            style={{ fontSize: 11, color: P.bg, background: urgencyColor, border: 'none', padding: '6px 14px', cursor: 'pointer', letterSpacing: '0.04em' }}>
-            {f.actions?.[0]}
-          </button>
+        <div className="px-4 py-3 flex items-center gap-2">
+          <Btn variant="primary" onClick={() => { setActed(true); onAct?.(f.id) }}>{f.actions?.[0]}</Btn>
           {f.actions?.[1] && (
-            <button
-              type="button"
-              onClick={() => setDismissed(true)}
-              className="font-body text-label"
-              style={{ fontSize: 11, color: P.cream, background: 'transparent', border: `1px solid ${P.border}`, padding: '6px 14px', cursor: 'pointer', letterSpacing: '0.04em' }}>
-              {f.actions[1]}
-            </button>
+            <Btn variant="secondary" onClick={() => setDismissed(true)}>{f.actions[1]}</Btn>
           )}
           {(f.delegateTo?.length > 0) && (
-            <button type="button" onClick={() => setDelegating(true)}
-              className="font-body text-label text-muted hover:text-ink transition-colors ml-auto flex items-center gap-1">
-              <Users size={10} strokeWidth={2} />
-              Assign
-            </button>
+            <Btn variant="ghost" onClick={() => setDelegating(true)} className="ml-auto !px-2 !min-h-0 flex items-center gap-1">
+              <Users size={10} strokeWidth={2} />Assign
+            </Btn>
           )}
         </div>
       )}

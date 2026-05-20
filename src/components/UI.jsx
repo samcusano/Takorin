@@ -237,16 +237,55 @@ export function ActionBanner({ tone = 'warn', headline, body, children, footer }
 // ── Button variants
 export function Btn({ variant = 'primary', icon: Icon, onClick, disabled, children, className = '', style }) {
  const base = 'font-body font-medium text-body px-4 py-2.5 min-h-[40px] inline-flex items-center justify-center gap-2 transition-[background-color,box-shadow,opacity,transform] duration-100 ease-standard active:scale-[0.97] cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed rounded-btn'
- const IconComp = Icon
  const cls = {
- primary:   'bg-ochre text-stone border-0 hover:bg-ochre-dark hover:shadow-raise',
- secondary: 'border border-rule bg-stone2 text-ink hover:bg-stone3 hover:border-rule2',
- }[variant] ?? 'bg-stone3 text-ink border border-rule hover:bg-stone4'
+  primary:   'bg-ochre text-stone hover:bg-ochre-dark hover:shadow-raise',
+  secondary: 'border border-rule bg-stone2 text-ink hover:bg-stone3 hover:border-rule2',
+  ghost:     'text-muted hover:text-ink',
+ }[variant] ?? 'border border-rule bg-stone2 text-ink hover:bg-stone3 hover:border-rule2'
  return (
- <button type="button" className={`${base} ${cls} ${className}`} onClick={onClick} disabled={disabled} style={style}>
-  {IconComp && <IconComp size={12} className="flex-shrink-0" aria-hidden="true" />}
-  <span>{children}</span>
- </button>
+  <button type="button" className={`${base} ${cls} ${className}`} onClick={onClick} disabled={disabled} style={style}>
+   {Icon && <Icon size={12} className="flex-shrink-0" aria-hidden="true" />}
+   <span>{children}</span>
+  </button>
+ )
+}
+
+// ── Tabs — underline navigation tabs ─────────────────────────────────────────
+// flush=true adds negative margins for use inside padded containers.
+// Tab item shape: { id, label, badge?, dot? }
+// dot: shows a danger pulse dot when tab is not active (e.g. urgent indicator)
+// badge: shows a count chip when > 0 and tab is not active
+export function Tabs({ tabs, active, onChange, flush = false, className = '' }) {
+ return (
+  <div className={`flex border-b border-rule2 ${flush ? '-mx-5 -mt-5 mb-5' : ''} ${className}`}>
+   {tabs.map(t => (
+    <button key={t.id} type="button" onClick={() => onChange(t.id)}
+     className={`font-body text-label px-4 py-2.5 border-b-2 transition-colors flex-shrink-0 flex items-center gap-1.5 ${
+      active === t.id ? 'border-b-ochre text-ink' : 'border-b-transparent text-muted hover:text-muted'
+     }`}>
+     {t.label}
+     {t.dot && active !== t.id && <span className="w-1.5 h-1.5 rounded-full bg-danger flex-shrink-0" />}
+     {t.badge > 0 && active !== t.id && <span className="font-body text-label bg-stone3 text-muted px-1">{t.badge}</span>}
+    </button>
+   ))}
+  </div>
+ )
+}
+
+// ── SegmentedControl — filled binary/multi view toggle ────────────────────────
+// options: [{ value, label }]
+export function SegmentedControl({ options, value, onChange }) {
+ return (
+  <div className="flex items-stretch overflow-hidden">
+   {options.map(o => (
+    <button key={o.value} type="button" onClick={() => onChange(o.value)}
+     className={`font-body text-label px-3 py-1 transition-colors ${
+      value === o.value ? 'bg-ink text-stone' : 'text-muted hover:text-muted'
+     }`}>
+     {o.label}
+    </button>
+   ))}
+  </div>
  )
 }
 

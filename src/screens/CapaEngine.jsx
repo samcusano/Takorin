@@ -4,7 +4,7 @@ import { useFocusTrap, useExitAnimation } from '../lib/utils'
 import { FileText, BarChart2, ShieldCheck, Clock, Brain, Search } from 'lucide-react'
 import StatBar from '../components/StatBar.jsx'
 import { Check, X, AlertTriangle, ArrowRight, TrendingUp, ChevronRight } from 'lucide-react'
-import { StatusPill, SP, ActionBanner, Btn, HoldButton } from '../components/UI'
+import { StatusPill, SP, ActionBanner, Btn, HoldButton, Tabs } from '../components/UI'
 import { openCases, patternRows, benchmarks } from '../data/capa.js'
 import { haccpData, goalsData } from '../data'
 import { useAppState } from '../context/AppState'
@@ -373,10 +373,9 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
      Administrative owner: <span className="text-muted font-medium">{c.administrativeOwner || c.assigned}</span> · Ownership clock starts on acknowledgment
     </div>
    </div>
-   <button type="button" onClick={() => acknowledgeCapaAssignment?.(c.id)}
-    className="font-body text-label px-3 py-1.5 bg-stone text-muted hover:text-ink hover:border-rule transition-colors flex-shrink-0">
+   <Btn variant="secondary" onClick={() => acknowledgeCapaAssignment?.(c.id)} className="flex-shrink-0">
     Acknowledge assignment
-   </button>
+   </Btn>
   </div>
  )}
  {/* ── Recommended action (the operative section) ── */}
@@ -412,11 +411,10 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
  {isBlocking ? (
  <>
  <input ref={fileInputRef} type="file" className="hidden" onChange={handleUpload} />
- <button type="button" onClick={() => fileInputRef.current?.click()}
- className="w-full font-body font-medium text-body px-4 py-3 bg-ink text-stone hover:bg-ink2 transition-colors text-left flex items-center justify-between">
- <span>{c.recommendedAction}</span>
- <ChevronRight size={13} strokeWidth={2} className="opacity-60" />
- </button>
+ <Btn variant="primary" onClick={() => fileInputRef.current?.click()} className="w-full !justify-between !rounded-none">
+  <span>{c.recommendedAction}</span>
+  <ChevronRight size={13} strokeWidth={2} className="opacity-60" />
+ </Btn>
  </>
  ) : c.type === 'ca' ? (
  closureStep === 'measure' ? (
@@ -468,18 +466,16 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
   <button type="button" onClick={() => setClosureStep(null)} className="font-body text-muted text-label hover:text-muted transition-colors">← Back</button>
  </div>
  ) : (
- <button type="button" onClick={() => setClosureStep('measure')}
- className="w-full font-body font-medium text-body px-4 py-3 bg-ink text-stone hover:bg-ink2 transition-colors text-left flex items-center justify-between">
- <span>{c.recommendedAction || 'Approve & close case'}</span>
- <ChevronRight size={13} strokeWidth={2} className="opacity-60" />
- </button>
+ <Btn variant="primary" onClick={() => setClosureStep('measure')} className="w-full !justify-between !rounded-none">
+  <span>{c.recommendedAction || 'Approve & close case'}</span>
+  <ChevronRight size={13} strokeWidth={2} className="opacity-60" />
+ </Btn>
  )
  ) : (
- <button type="button" onClick={handleEscalate}
- className="w-full font-body font-medium text-body px-4 py-3 bg-ink text-stone hover:bg-ink2 transition-colors text-left flex items-center justify-between">
- <span>{c.recommendedAction || c.primaryLabel}</span>
- <ChevronRight size={13} strokeWidth={2} className="opacity-60" />
- </button>
+ <Btn variant="primary" onClick={handleEscalate} className="w-full !justify-between !rounded-none">
+  <span>{c.recommendedAction || c.primaryLabel}</span>
+  <ChevronRight size={13} strokeWidth={2} className="opacity-60" />
+ </Btn>
  )}
  </div>
  )}
@@ -503,22 +499,12 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
  </div>
  )}
 
- {/* Tab bar */}
- <div className="flex border-b border-rule2 bg-stone2 flex-shrink-0">
- {[
-  { id: 'details', label: 'Details' },
-  { id: 'evidence', label: 'Evidence' },
-  { id: 'activity', label: `Activity` },
- ].map(tab => (
-  <button key={tab.id} type="button"
-  onClick={() => setDetailTab(tab.id)}
-  className={`px-4 py-2 font-body text-label font-medium border-b-2 transition-colors cursor-pointer ${
-   detailTab === tab.id ? 'border-b-ochre text-ink' : 'border-b-transparent text-muted hover:text-muted'
-  }`}>
-  {tab.label}
-  </button>
- ))}
- </div>
+ <Tabs
+  tabs={[{ id: 'details', label: 'Details' }, { id: 'evidence', label: 'Evidence' }, { id: 'activity', label: 'Activity' }]}
+  active={detailTab}
+  onChange={setDetailTab}
+  className="bg-stone2 flex-shrink-0"
+ />
 
  {/* Details tab */}
  {detailTab === 'details' && (

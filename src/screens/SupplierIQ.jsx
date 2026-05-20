@@ -6,7 +6,7 @@ import NetworkView from './NetworkView'
 import { useNavigate, Link } from 'react-router-dom'
 import { supplierData, supplierAudits, empResultsHistory } from '../data'
 import { useAppState } from '../context/AppState'
-import { StatusPill, SectionHeader, Btn, Layout, ActionBanner, Spinner, AnimatedCheck, MetadataRow, ExpandableMetadata, ActionCard, SlidePanel } from '../components/UI'
+import { StatusPill, SectionHeader, Btn, Layout, ActionBanner, Spinner, AnimatedCheck, MetadataRow, ExpandableMetadata, ActionCard, SlidePanel, Tabs } from '../components/UI'
 import StatBar from '../components/StatBar.jsx'
 
 // ── CoaPanel ──────────────────────────────────────────────────────────────────
@@ -231,20 +231,12 @@ export default function SupplierIQ() {
     <CoaPanel lot={coaViewLot} onClose={() => setCoaViewLot(null)} />
     <div className="flex flex-col h-full overflow-hidden content-reveal">
 
-      {/* Tab bar — Suppliers | Network */}
-      <div className="flex-shrink-0 flex border-b border-rule2 bg-stone2">
-        {[
-          { id: 'suppliers', label: 'Suppliers' },
-          { id: 'network',   label: 'Network' },
-        ].map(t => (
-          <button key={t.id} type="button" onClick={() => setActiveTab(t.id)}
-            className={`px-5 py-2.5 font-body text-label border-b-2 transition-colors ${
-              activeTab === t.id ? 'border-b-ochre text-ink' : 'border-b-transparent text-muted hover:text-muted'
-            }`}>
-            {t.label}
-          </button>
-        ))}
-      </div>
+      <Tabs
+        tabs={[{ id: 'suppliers', label: 'Suppliers' }, { id: 'network', label: 'Network' }]}
+        active={activeTab}
+        onChange={setActiveTab}
+        className="flex-shrink-0 bg-stone2"
+      />
 
       {activeTab === 'network' && <NetworkView />}
       {activeTab === 'suppliers' && <>
