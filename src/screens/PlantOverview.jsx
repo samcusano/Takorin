@@ -264,8 +264,7 @@ export default function PlantOverview() {
       <div className="flex-shrink-0 flex items-center gap-4 px-5 py-3 border-b border-rule2 bg-stone">
         <div className="flex items-center gap-2">
           <span className="live-dot w-1.5 h-1.5 rounded-full bg-ok flex-shrink-0" />
-          <span className="font-display font-bold text-ink text-base">{plantName}</span>
-          <span className="font-body text-muted text-label">· April 16 · 06:42</span>
+          <span className="font-body text-muted text-label">April 16 · 06:42</span>
         </div>
         <div className="flex items-center gap-4 ml-2">
           {critCount > 0 && (

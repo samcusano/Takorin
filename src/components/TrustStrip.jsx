@@ -74,11 +74,6 @@ export default function TrustStrip() {
         <span className="font-body text-warn text-label">{conflictCount} data conflict{conflictCount > 1 ? 's' : ''}</span>
       )}
 
-      {/* Degraded mode notice */}
-      {trustLevel === 'degraded' && (
-        <span className="font-body text-danger text-label font-medium">Data coverage degraded — review signal health</span>
-      )}
-
       <div className="ml-auto font-body text-muted text-label">
         {integrationSummary.totalSignals.toLocaleString()} signals · {integrationSummary.streamingSources} streaming
       </div>

@@ -165,21 +165,18 @@ function CollapsibleSection({ label, isOpen, onToggle, children }) {
 
 function PriorityQueueRow({ c, isSelected, onSelect, isEscalated, isResolved }) {
  const score = c.priorityScore || 0
- const borderColor = isSelected ? 'border-l-ochre'
- : score >= 80 ? 'border-l-danger' : score >= 55 ? 'border-l-warn' : 'border-l-rule2'
  const rowBg = isSelected ? 'bg-ochre/[0.04]'
  : score >= 80 && !isResolved && !isEscalated ? 'bg-danger/[0.015]' : ''
 
  return (
  <button type="button" onClick={onSelect}
- className={`w-full text-left border-b border-rule2 border-l-2 transition-colors ${borderColor} ${rowBg} ${isResolved || isEscalated ? 'opacity-50' : 'hover:bg-stone3'}`}>
- <div className="flex items-start gap-3 px-4 py-3">
+ className={`relative w-full text-left border-b border-rule2 transition-colors overflow-hidden ${rowBg} ${isResolved || isEscalated ? 'opacity-50' : 'hover:bg-stone3'}`}>
+ <div className="flex items-start gap-3 px-4 py-3 pb-6">
  <div className="flex-1 min-w-0">
   <div className="flex items-center gap-1.5 mb-0.5 flex-wrap">
   <StatusPill tone={isEscalated ? 'muted' : isResolved ? 'ok' : c.badgeColor === 'text-danger' ? 'danger' : c.badgeColor === 'text-ok' ? 'ok' : 'warn'}>
    {isEscalated ? 'Delegated' : isResolved ? 'Resolved' : c.badge}
   </StatusPill>
-  {/* Directed ownership indicator */}
   {c.directorTurn && !isResolved && !isEscalated && (
    <span className="font-body text-label bg-ochre/10 text-ochre px-1.5 py-0.5">Your turn</span>
   )}
@@ -206,13 +203,21 @@ function PriorityQueueRow({ c, isSelected, onSelect, isEscalated, isResolved }) 
   )}
  </div>
  {score > 0 && !isResolved && !isEscalated && (
-  <div className={`display-num text-base font-bold flex-shrink-0 tabular-nums ${
-   score >= 80 ? 'text-danger/50' : score >= 55 ? 'text-warn/50' : 'text-muted/40'
+  <div className={`display-num text-head font-black flex-shrink-0 tabular-nums leading-none mt-0.5 ${
+   score >= 80 ? 'text-danger' : score >= 55 ? 'text-warn' : 'text-muted/60'
   }`}>
    {score}
   </div>
  )}
  </div>
+ {/* Urgency bar — fills proportional to priority score */}
+ {!isResolved && !isEscalated && score > 0 && (
+  <div className="absolute bottom-0 left-0 h-[2px] w-full">
+   <div className={`h-full transition-[width] duration-500 ease-enter ${
+    score >= 80 ? 'bg-danger/50' : score >= 55 ? 'bg-warn/40' : 'bg-muted/20'
+   }`} style={{ width: `${score}%` }} />
+  </div>
+ )}
  </button>
  )
 }
@@ -314,15 +319,31 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
  return (
  <div className="flex flex-col h-full overflow-hidden content-reveal">
  {/* Case header */}
- <div className="px-4 py-4 border-b border-rule2 bg-stone2 flex-shrink-0">
- <div className="flex items-center gap-2 mb-1">
- <span className="font-body text-muted text-label">{c.capaId}</span>
- <StatusPill tone={c.badgeColor === 'text-danger' ? 'danger' : c.badgeColor === 'text-ok' ? 'ok' : 'warn'}>{c.badge}</StatusPill>
- </div>
- <div className="font-display text-head font-black text-ink leading-tight">{c.title}</div>
- <div className="font-body text-muted text-label mt-0.5">
- {c.assigned} · {c.due}
- </div>
+ <div className="border-b border-rule2 bg-stone2 flex-shrink-0 relative overflow-hidden">
+  {/* Urgency accent bar */}
+  <div className={`h-[3px] w-full ${
+   isBlocking ? 'bg-danger' : c.type === 'ca' ? 'bg-ok' : score >= 80 ? 'bg-danger' : 'bg-warn'
+  }`} />
+  <div className="px-4 py-4 flex items-start gap-3">
+   <div className="flex-1 min-w-0">
+    <div className="flex items-center gap-2 mb-1.5">
+     <span className="font-body text-muted text-label">{c.capaId}</span>
+     <StatusPill tone={c.badgeColor === 'text-danger' ? 'danger' : c.badgeColor === 'text-ok' ? 'ok' : 'warn'}>{c.badge}</StatusPill>
+    </div>
+    <div className="font-display text-head font-black text-ink leading-tight">{c.title}</div>
+    <div className="font-body text-muted text-label mt-0.5">
+     {c.assigned} · {c.due}
+    </div>
+   </div>
+   {/* Ghost score watermark */}
+   {score > 0 && (
+    <div className={`display-num font-black tabular-nums leading-none flex-shrink-0 select-none ${
+     score >= 80 ? 'text-danger/20' : score >= 55 ? 'text-warn/20' : 'text-muted/15'
+    }`} style={{ fontSize: 40 }}>
+     {score}
+    </div>
+   )}
+  </div>
  </div>
 
  <div className="flex-1 overflow-y-auto">
@@ -360,30 +381,28 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
  )}
  {/* ── Recommended action (the operative section) ── */}
  {!isClosed && !actionTaken && (
- <div className={`px-4 py-5 border-b border-rule2 border-l-2 ${isBlocking ? 'border-l-danger bg-danger/[0.02]' : c.type === 'ca' ? 'border-l-ok bg-ok/[0.015]' : 'border-l-warn bg-stone2'}`}>
- <div className="font-body text-muted text-label mb-3">
- Recommended action
- </div>
+ <div className={`px-4 py-4 border-b border-rule2 ${isBlocking ? 'bg-danger/[0.025]' : c.type === 'ca' ? 'bg-ok/[0.02]' : 'bg-stone2'}`}>
+ <div className="font-body text-muted text-label tracking-widest mb-3">RECOMMENDED ACTION</div>
 
- {/* Two-column impact context */}
+ {/* Two-column impact context — tinted by outcome */}
  {(c.expectedImpact || c.riskIfIgnored) && (
- <div className="grid grid-cols-2 gap-4 mb-4">
+ <div className="grid grid-cols-2 gap-px bg-rule2 mb-4">
  {c.expectedImpact && (
- <div className="flex items-start gap-2">
-  <Check size={12} strokeWidth={2} className="text-ok flex-shrink-0 mt-0.5" />
-  <div>
-   <div className="font-body text-muted text-label mb-1">If you act</div>
-   <div className="font-body text-ink text-body leading-snug">{c.expectedImpact}</div>
+ <div className="bg-ok/[0.05] px-3 py-3">
+  <div className="flex items-center gap-1.5 mb-1.5">
+   <Check size={11} strokeWidth={2.5} className="text-ok flex-shrink-0" />
+   <span className="font-body text-ok text-label font-medium">If you act</span>
   </div>
+  <div className="font-display text-muted text-body leading-snug">{c.expectedImpact}</div>
  </div>
  )}
  {c.riskIfIgnored && (
- <div className="flex items-start gap-2">
-  <X size={12} strokeWidth={2} className="text-danger flex-shrink-0 mt-0.5" />
-  <div>
-   <div className="font-body text-muted text-label mb-1">If you delay</div>
-   <div className="font-body text-ink text-body leading-snug">{c.riskIfIgnored}</div>
+ <div className="bg-danger/[0.04] px-3 py-3">
+  <div className="flex items-center gap-1.5 mb-1.5">
+   <X size={11} strokeWidth={2.5} className="text-danger flex-shrink-0" />
+   <span className="font-body text-danger text-label font-medium">If you delay</span>
   </div>
+  <div className="font-display text-muted text-body leading-snug">{c.riskIfIgnored}</div>
  </div>
  )}
  </div>
@@ -632,7 +651,7 @@ function LayoutQueue({ visibleCases, blockingEvidenceUploaded, setBlockingEviden
  <div className="flex flex-1 min-h-0 overflow-hidden">
 
  {/* Left: priority queue */}
- <div className="w-[300px] flex-shrink-0 border-r border-rule2 overflow-y-auto flex flex-col bg-stone">
+ <div className="w-[300px] flex-shrink-0 border-r border-rule2 flex flex-col bg-stone overflow-hidden">
 
  {/* Search */}
  <div className="px-3 py-2 border-b border-rule2 flex-shrink-0">
@@ -662,7 +681,8 @@ function LayoutQueue({ visibleCases, blockingEvidenceUploaded, setBlockingEviden
   </span>
  </div>
 
- {/* Ranked items */}
+ {/* Ranked items — scrollable */}
+ <div className="flex-1 overflow-y-auto">
  {(searchQuery ? filteredQueue : sortedQueue).map((c) => (
  <PriorityQueueRow
  key={c.id}
@@ -675,7 +695,7 @@ function LayoutQueue({ visibleCases, blockingEvidenceUploaded, setBlockingEviden
  ))}
 
  {sortedQueue.length === 0 && (
- <div className="flex-1 flex items-center justify-center px-4 text-center">
+ <div className="flex-1 flex items-center justify-center px-4 py-12 text-center">
  <div>
  <div className="font-display font-bold text-ok text-page mb-1">All clear</div>
  <div className="font-body text-muted text-label">No open cases.</div>
@@ -685,6 +705,7 @@ function LayoutQueue({ visibleCases, blockingEvidenceUploaded, setBlockingEviden
  {sortedQueue.length > 0 && searchQuery && filteredQueue.length === 0 && (
  <div className="px-4 py-8 text-center font-body text-muted text-label">No cases match "{searchQuery}"</div>
  )}
+ </div>
  </div>
 
  {/* Right: inline case panel */}
@@ -744,31 +765,44 @@ export default function CapaEngine() {
  return (
  <div className="flex flex-col h-full overflow-hidden content-reveal">
 
- {/* Overdue banner */}
- <ActionBanner
- tone="warn"
- headline="2 cases overdue — FDA inspection in 18 days"
- body="CAPA Engine · Salina Campus · April 16, 2026 · CAPA-2604-001 and CAPA-2604-002 past due."
- footer={showReassign && !reassignDone ? (
- <div className="flex items-center gap-2">
- <select
- aria-label="Reassign overdue cases to"
- value={reassignTarget}
- onChange={e => setReassignTarget(e.target.value)}
- className="font-body text-ink text-label bg-stone border border-rule2 px-2 py-1 flex-1 cursor-pointer focus:border-ochre focus:outline-none"
- >
- <option value="">Reassign overdue cases to…</option>
- <option>M. Santos · Line 4 PM</option>
- <option>A. Novotny · QA Lead</option>
- <option>T. Osei · QA Tech</option>
- </select>
- <Btn variant="primary" disabled={!reassignTarget} onClick={() => { setReassignDone(true); setShowReassign(false) }}>Confirm</Btn>
+ {/* Overdue banner — custom layout to surface FDA countdown */}
+ <div className="flex-shrink-0 border-b-2 border-b-warn bg-stone2">
+  <div className="px-5 py-4 flex items-center gap-5">
+   <div className="flex-1 min-w-0">
+    <div className="font-display font-semibold text-ink text-base leading-tight">
+     2 cases overdue
+    </div>
+    <div className="font-body text-muted text-label mt-0.5">
+     CAPA-2604-001 and CAPA-2604-002 past due · Salina Campus · April 16, 2026
+    </div>
+   </div>
+   {/* FDA inspection countdown */}
+   <div className="flex-shrink-0 text-right border-l border-rule2 pl-5">
+    <div className="display-num font-black text-warn leading-none" style={{ fontSize: 28 }}>18</div>
+    <div className="font-body text-muted text-label mt-0.5 whitespace-nowrap">days to FDA inspection</div>
+   </div>
+   <div className="flex gap-2 flex-shrink-0">
+    <Btn variant="primary" onClick={() => setEscalated(true)}>{escalated ? 'All overdue escalated ✓' : 'Escalate all overdue'}</Btn>
+    <Btn variant="secondary" onClick={() => setShowReassign(p => !p)}>{reassignDone ? 'Reassigned ✓' : 'Bulk reassign'}</Btn>
+   </div>
+  </div>
+  {showReassign && !reassignDone && (
+   <div className="px-5 pb-4 flex items-center gap-2">
+    <select
+     aria-label="Reassign overdue cases to"
+     value={reassignTarget}
+     onChange={e => setReassignTarget(e.target.value)}
+     className="font-body text-ink text-label bg-stone border border-rule2 px-2 py-1 flex-1 cursor-pointer focus:border-ochre focus:outline-none"
+    >
+     <option value="">Reassign overdue cases to…</option>
+     <option>M. Santos · Line 4 PM</option>
+     <option>A. Novotny · QA Lead</option>
+     <option>T. Osei · QA Tech</option>
+    </select>
+    <Btn variant="primary" disabled={!reassignTarget} onClick={() => { setReassignDone(true); setShowReassign(false) }}>Confirm</Btn>
+   </div>
+  )}
  </div>
- ) : null}
- >
- <Btn variant="primary" onClick={() => setEscalated(true)}>{escalated ? 'All overdue escalated ✓' : 'Escalate all overdue'}</Btn>
- <Btn variant="secondary" onClick={() => setShowReassign(p => !p)}>{reassignDone ? 'Reassigned ✓' : 'Bulk reassign'}</Btn>
- </ActionBanner>
 
  <StatBar cells={statCells} />
 
