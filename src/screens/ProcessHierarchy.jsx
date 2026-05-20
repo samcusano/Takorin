@@ -4,7 +4,7 @@
 // Secondary: Structural Explorer for audit/forensics (Variant B)
 // Tertiary: Global Overview snapshot (Variant C)
 
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { processHierarchy } from '../data/hierarchy'
 import { AlertTriangle, ChevronRight, ChevronDown, ArrowRight, ArrowDown, Activity, Zap, TrendingDown, Info } from 'lucide-react'
 import { SlidePanel } from '../components/UI'
@@ -225,17 +225,74 @@ function VesselGrid({ vessels }) {
 }
 
 function Breadcrumb({ crumbs, onNavigate }) {
+  const [open, setOpen] = useState(false)
+  const dropRef    = useRef(null)
+  const triggerRef = useRef(null)
+
+  useEffect(() => {
+    if (!open) return
+    function handle(e) {
+      if (
+        dropRef.current && !dropRef.current.contains(e.target) &&
+        triggerRef.current && !triggerRef.current.contains(e.target)
+      ) setOpen(false)
+    }
+    document.addEventListener('mousedown', handle)
+    return () => document.removeEventListener('mousedown', handle)
+  }, [open])
+
+  // ≤ 2 crumbs — flat linear, no dropdown needed
+  if (crumbs.length <= 2) {
+    return (
+      <div className="flex items-center gap-1.5">
+        {crumbs.map((c, i) => (
+          <div key={i} className="flex items-center gap-1.5">
+            {i > 0 && <ChevronRight size={10} className="text-muted flex-shrink-0" />}
+            {i < crumbs.length - 1
+              ? <button type="button" onClick={() => onNavigate(i)} className="font-body text-muted text-label hover:text-ink transition-colors">{c}</button>
+              : <span className="font-body font-medium text-ink text-label">{c}</span>
+            }
+          </div>
+        ))}
+      </div>
+    )
+  }
+
+  // 3+ crumbs — root · [middle dropdown] · current
+  const middleCrumbs = crumbs.slice(1, crumbs.length - 1)
+  const triggerLabel = middleCrumbs[middleCrumbs.length - 1]
+
   return (
-    <div className="flex items-center gap-1.5 flex-wrap">
-      {crumbs.map((c, i) => (
-        <div key={i} className="flex items-center gap-1.5">
-          {i > 0 && <ChevronRight size={10} className="text-muted flex-shrink-0" />}
-          {i < crumbs.length - 1
-            ? <button type="button" onClick={() => onNavigate(i)} className="font-body text-muted text-label hover:text-ink transition-colors">{c}</button>
-            : <span className="font-display font-bold text-ink text-base">{c}</span>
-          }
-        </div>
-      ))}
+    <div className="flex items-center gap-1.5">
+      <button type="button" onClick={() => onNavigate(0)}
+        className="font-body text-muted text-label hover:text-ink transition-colors">
+        {crumbs[0]}
+      </button>
+      <ChevronRight size={10} className="text-muted flex-shrink-0" />
+
+      <div className="relative">
+        <button ref={triggerRef} type="button" onClick={() => setOpen(o => !o)}
+          className="flex items-center gap-1 font-body text-muted text-label hover:text-ink transition-colors">
+          <span>{triggerLabel}</span>
+          <ChevronDown size={9} className={`flex-shrink-0 transition-transform ${open ? 'rotate-180' : ''}`} />
+        </button>
+        {open && (
+          <div ref={dropRef}
+            className="absolute top-full left-0 mt-1 z-50 bg-stone border border-rule2 shadow-raise overflow-hidden"
+            style={{ minWidth: 200 }}>
+            {middleCrumbs.map((c, i) => (
+              <button key={i} type="button"
+                onClick={() => { onNavigate(i + 1); setOpen(false) }}
+                className="w-full text-left px-4 py-2.5 font-body text-label text-muted hover:text-ink hover:bg-stone2 border-b border-rule2 last:border-0 transition-colors">
+                {c}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <ChevronRight size={10} className="text-muted flex-shrink-0" />
+      <span className="font-body font-medium text-ink text-label">{crumbs[crumbs.length - 1]}</span>
     </div>
   )
 }
@@ -501,7 +558,7 @@ function ReasoningPanel({ zone, building }) {
 
 // ── Variant A: Operational State Field ───────────────────────────────────────
 
-function StateFieldView({ site, ScreenHeader }) {
+function StateFieldView({ site, variant, onVariantChange }) {
   const [selectedZone, setSelectedZone] = useState(null)
   const [selectedBuilding, setSelectedBuilding] = useState(null)
   const [rightTab, setRightTab] = useState('context')
@@ -520,9 +577,8 @@ function StateFieldView({ site, ScreenHeader }) {
         scanInterval="4 min"
         trend="↑ +6 since 06:20"
       />
-      <ScreenHeader />
 
-      {/* System pressure summary */}
+      {/* System pressure summary + view toggle */}
       <div className="flex-shrink-0 flex items-center gap-4 px-5 py-2.5 border-b border-rule2 bg-stone2 text-label font-body">
         <div className="flex items-center gap-1.5">
           <div className="w-2 h-2 rounded-full bg-danger flex-shrink-0" />
@@ -532,7 +588,14 @@ function StateFieldView({ site, ScreenHeader }) {
           <AlertTriangle size={9} strokeWidth={2} className="text-warn flex-shrink-0" />
           <span className="text-warn">{alertZones.length} active alert{alertZones.length !== 1 ? 's' : ''}</span>
         </div>
-        <span className="text-muted ml-auto">Click a zone to see what's driving it</span>
+        <div className="ml-auto flex items-stretch overflow-hidden">
+          {[{ v: 'A', label: 'State' }, { v: 'B', label: 'Structure' }].map(({ v, label }) => (
+            <button key={v} type="button" onClick={() => onVariantChange(v)}
+              className={`font-body text-label px-3 py-1 transition-colors ${variant === v ? 'bg-ink text-stone' : 'text-muted hover:text-muted'}`}>
+              {label}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="flex flex-1 min-h-0 overflow-hidden">
@@ -654,43 +717,9 @@ export default function ProcessHierarchy() {
 
   const navigateTo = (level) => setPath(prev => prev.slice(0, level))
 
-  const ScreenHeader = () => (
-    <div className="flex-shrink-0 flex items-center justify-between px-6 py-3.5 border-b border-rule2 bg-stone">
-      <div className="flex-1 min-w-0">
-        <div className="font-body text-muted text-label mb-1">Platform Architecture · Process Hierarchy</div>
-        {variant === 'B' ? (
-          <Breadcrumb crumbs={crumbs} onNavigate={navigateTo} />
-        ) : (
-          <div className="font-display font-bold text-ink text-base leading-none">Gaoming Factory</div>
-        )}
-      </div>
-      <div className="flex items-center gap-4 flex-shrink-0">
-        <div className="text-right">
-          <div className={`display-num text-metric leading-none ${scoreColor(site.score)}`}>{site.score}</div>
-          <div className="font-body text-muted text-label">site health</div>
-        </div>
-        <div className="text-right border-l border-rule2 pl-4">
-          <div className="display-num text-metric leading-none text-ochre">{site.activeBatches}</div>
-          <div className="font-body text-muted text-label">active batches</div>
-        </div>
-        <div className="flex items-stretch overflow-hidden ml-2">
-          {[
-            { v: 'A', label: 'State' },
-            { v: 'B', label: 'Structure' },
-          ].map(({ v, label }) => (
-            <button key={v} type="button" onClick={() => { setVariant(v); setPath([]) }}
-              className={`font-body text-label px-3 py-1 transition-colors ${variant === v ? 'bg-ink text-stone' : 'text-muted hover:text-muted'}`}>
-              {label}
-            </button>
-          ))}
-        </div>
-      </div>
-    </div>
-  )
-
   // ── Variant A: Operational State Field ──────────────────────────────────
   if (variant === 'A') {
-    return <StateFieldView site={site} ScreenHeader={ScreenHeader} />
+    return <StateFieldView site={site} variant={variant} onVariantChange={(v) => { setVariant(v); setPath([]) }} />
   }
 
   // ── Variant B: Structural Explorer (audit / forensics) ────────────────────
@@ -703,10 +732,23 @@ export default function ProcessHierarchy() {
         scanInterval="4 min"
         trend="↑ +6 since 06:20"
       />
-      <ScreenHeader />
-      <div className="flex-shrink-0 px-5 py-2 border-b border-rule2 bg-danger/[0.03] flex items-center gap-2">
-        <Info size={9} className="text-muted flex-shrink-0" strokeWidth={2} />
-        <span className="font-body text-muted text-label">Structural view — for audit, compliance, and forensic analysis. Not the primary decision-making interface.</span>
+      <div className="flex-shrink-0 flex items-center gap-4 px-5 py-2.5 border-b border-rule2 bg-stone2 font-body text-label">
+        {selectedBuilding ? (
+          <Breadcrumb crumbs={crumbs} onNavigate={navigateTo} />
+        ) : (
+                <div className="flex-shrink-0 flex items-center gap-2">
+        <Info size={11} className="text-muted flex-shrink-0" strokeWidth={2} />
+        <span className="font-body text-muted text-label">For audit, compliance, and forensic analysis.</span>
+      </div>
+        )}
+        <div className="ml-auto flex items-stretch overflow-hidden">
+          {[{ v: 'A', label: 'State' }, { v: 'B', label: 'Structure' }].map(({ v, label }) => (
+            <button key={v} type="button" onClick={() => { setVariant(v); setPath([]) }}
+              className={`font-body text-label px-3 py-1 transition-colors ${variant === v ? 'bg-ink text-stone' : 'text-muted hover:text-muted'}`}>
+              {label}
+            </button>
+          ))}
+        </div>
       </div>
       <div className="flex-1 overflow-y-auto">
         {!selectedBuilding && (

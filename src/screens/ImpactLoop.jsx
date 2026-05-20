@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { interventions, interventionSummary, kpiTargets } from '../data/interventions'
 import { AlertTriangle, CheckCircle2, XCircle, ArrowRight, RotateCcw, AlertCircle, TrendingUp, TrendingDown } from 'lucide-react'
-import { SankeyDiagram } from '../components/Charts'
+import { AlluvialDiagram } from '../components/Charts'
 
 const OUTCOME_CFG = {
   positive: { label: 'Positive',  dot: 'bg-ok',     badge: 'bg-ok/10 text-ok',             border: 'border-l-ok',     chip: 'bg-ok/10 text-ok'     },
@@ -309,43 +309,6 @@ export default function ImpactLoop() {
       {/* ── Left: list + filters ──────────────────────────────────────── */}
       <div className="w-[280px] flex-shrink-0 border-r border-rule2 flex flex-col bg-stone">
 
-        {/* Summary stats — 2×2 grid */}
-        <div className="flex-shrink-0 grid grid-cols-2 gap-px bg-rule2 border-b border-rule2">
-          {[
-            { label: 'Interventions',     val: String(interventionSummary.total),                                                     tone: 'text-ink'    },
-            { label: 'Positive outcomes', val: `${positiveCount}/${interventionSummary.total}`,                                       tone: 'text-ok'     },
-            { label: 'Avg confidence',    val: `${avgAttrib}%`,   tone: avgAttrib >= 70 ? 'text-ok' : avgAttrib >= 50 ? 'text-warn' : 'text-danger'       },
-            { label: 'Low-dwell',         val: String(lowDwellCount), tone: lowDwellCount > 0 ? 'text-danger' : 'text-ok'                                  },
-          ].map(({ label, val, tone }) => (
-            <div key={label} className="bg-stone px-4 py-3">
-              <div className="font-body text-muted text-micro mb-0.5">{label}</div>
-              <div className={`font-body font-bold text-head display-num ${tone}`}>{val}</div>
-            </div>
-          ))}
-        </div>
-
-        {/* Low-dwell warning */}
-        {lowDwellCount > 0 && (
-          <div className="flex-shrink-0 flex items-start gap-2 px-4 py-2.5 border-b border-rule2 bg-danger/[0.03]">
-            <AlertTriangle size={9} className="text-danger flex-shrink-0 mt-0.5" strokeWidth={2} />
-            <p className="font-body text-danger text-label leading-snug">
-              {lowDwellCount} decision{lowDwellCount > 1 ? 's' : ''} made with &lt;5s rationale review. Approval legitimacy is unclear.
-            </p>
-          </div>
-        )}
-
-        {/* Intervention list */}
-        <div className="flex-shrink-0 flex items-center justify-between px-4 py-2 bg-stone2 border-b border-rule2">
-          <span className="font-body text-muted text-label">
-            {filtered.length} intervention{filtered.length !== 1 ? 's' : ''}
-          </span>
-          <div className="flex items-center gap-3">
-            <span className="flex items-center gap-1 font-body text-ok text-label"><span className="w-1.5 h-1.5 rounded-full bg-ok" />Positive</span>
-            <span className="flex items-center gap-1 font-body text-ochre text-label"><span className="w-1.5 h-1.5 rounded-full bg-ochre" />Unclear</span>
-            <span className="flex items-center gap-1 font-body text-danger text-label"><span className="w-1.5 h-1.5 rounded-full bg-danger" />Negative</span>
-          </div>
-        </div>
-
         <div className="flex-1 overflow-y-auto">
           {filtered.length === 0 ? (
             <div className="flex items-center justify-center h-full font-body text-muted text-label">
@@ -384,7 +347,7 @@ export default function ImpactLoop() {
             <p className="font-display text-muted text-body leading-relaxed mb-5">
               How interventions flow from agent recommendation through human decision to operational outcome. Width reflects count.
             </p>
-            <SankeyDiagram interventions={interventions} />
+            <AlluvialDiagram interventions={interventions} />
             <div className="mt-4 flex flex-wrap gap-3">
               {[['positive', 'Positive', 'text-ok'], ['unclear', 'Unclear', 'text-ochre'], ['negative', 'Negative', 'text-danger']].map(([k, l, cls]) => (
                 <span key={k} className={`font-body text-label flex items-center gap-1 ${cls}`}>

@@ -873,39 +873,40 @@ function ActivityLog({ agentActions }) {
 const STALE_AGENTS = new Set(['pre-shift', 'resource', 'handoff'])
 
 function FleetStrip({ agents }) {
-  const staleSource = dataSourceHealth?.find(s => s.status === 'stale')
+  const staleSources = dataSourceHealth?.filter(s => s.status === 'stale') ?? []
+  const staleSource = staleSources[0]
+
+  const enabledAgents = agents.filter(a => a.enabled)
+  const disabledCount = agents.length - enabledAgents.length
+
+  const summaries = enabledAgents.map(agent => {
+    const conf = agent.confidenceThreshold ?? 80
+    const confVal = agent.pendingActions?.[0]?.confidence ?? conf + 10
+    const isStale = !!staleSource && STALE_AGENTS.has(agent.id)
+    return { agent, isReady: confVal >= conf && !isStale }
+  })
+
+  const readyCount = summaries.filter(s => s.isReady).length
+  const total = summaries.length
+  const degraded = summaries.filter(s => !s.isReady).map(s => s.agent)
+  const allReady = readyCount === total
+
+  const headlineColor = allReady ? 'text-ok' : staleSources.length > 0 ? 'text-warn' : 'text-danger'
+  const headlineText = allReady
+    ? `Fleet ready — all ${total} agents above threshold`
+    : `Fleet at ${readyCount} of ${total} agents above threshold`
+
+  const details = []
+  if (degraded.length > 0) details.push(`${degraded.map(a => a.name.split(' ')[0]).join(', ')} degraded`)
+  if (staleSources.length > 0) details.push(`${staleSources.length} source${staleSources.length !== 1 ? 's' : ''} stale`)
+  if (disabledCount > 0) details.push(`${disabledCount} disabled`)
+
   return (
-    <div className="flex items-stretch border-t border-b border-rule2 bg-stone2 flex-shrink-0 overflow-x-auto">
-      {agents.map(agent => {
-        const Icon = ICON_MAP[agent.icon] || Shield
-        const conf = agent.confidenceThreshold ?? 80
-        const hasPending = agent.pendingActions?.length > 0
-        const isStale = staleSource && STALE_AGENTS.has(agent.id)
-        const confVal = agent.pendingActions?.[0]?.confidence ?? conf + 10
-        const isAuto = confVal >= conf && agent.enabled
-        const color = !agent.enabled ? 'text-muted' : confVal >= 85 ? 'text-ok' : confVal >= 65 ? 'text-warn' : 'text-danger'
-        return (
-          <div key={agent.id}
-            className={`flex flex-col justify-center px-3 py-2.5 border-r border-rule2 last:border-r-0 flex-shrink-0 min-w-[96px] ${hasPending ? 'bg-warn/[0.04]' : ''}`}>
-            <div className="flex items-center gap-1.5 mb-1">
-              <span className={`relative flex h-1.5 w-1.5 flex-shrink-0`}>
-                {agent.enabled && confVal >= conf && <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-ok opacity-40" />}
-                <span className={`relative inline-flex rounded-full h-1.5 w-1.5 ${!agent.enabled ? 'bg-muted' : confVal >= 85 ? 'bg-ok' : confVal >= 65 ? 'bg-warn' : 'bg-danger'}`} />
-              </span>
-              <Icon size={10} className="text-muted flex-shrink-0" />
-              {isStale && <AlertTriangle size={9} className="text-danger flex-shrink-0" />}
-              {hasPending && <span className="h-1 w-1 rounded-full bg-warn flex-shrink-0" />}
-            </div>
-            <div className="font-body text-muted text-label leading-none mb-1 truncate" style={{ maxWidth: 80 }}>
-              {agent.name.split(' ')[0]}
-            </div>
-            <div className={`display-num text-body leading-none font-bold ${color}`}>
-              {agent.enabled ? `${confVal}%` : 'Off'}
-            </div>
-            {isAuto && agent.enabled && <div className="font-body text-micro text-ok mt-0.5">auto</div>}
-          </div>
-        )
-      })}
+    <div className="flex-shrink-0 px-5 py-2.5 border-t border-b border-rule2 bg-stone2">
+      <div className={`font-body font-medium text-body leading-snug ${headlineColor}`}>{headlineText}</div>
+      {details.length > 0 && (
+        <div className="font-body text-muted text-label mt-0.5">{details.join(' · ')}</div>
+      )}
     </div>
   )
 }
@@ -914,7 +915,7 @@ function FleetStrip({ agents }) {
 
 const TIER2_BUDGET = 8
 
-function AgentTierStrip({ tier0Count, tier1Items, tier2Items, tier3Items, expandTier1, onToggleTier1 }) {
+function AgentTierStrip({ tier0Count, tier1Items, tier2Items, tier3Items, tier1Open, onToggleTier1, tier1BtnRef }) {
   const tier2Undecided = tier2Items.filter(p => !p._decided).length
   const tier3Undecided = tier3Items.filter(p => !p._decided).length
   const tier2Pct = Math.min(100, (tier2Undecided / TIER2_BUDGET) * 100)
@@ -930,15 +931,15 @@ function AgentTierStrip({ tier0Count, tier1Items, tier2Items, tier3Items, expand
           <div className="font-body text-ink text-body font-medium">{tier0Count} auto</div>
         </div>
       </div>
-      {/* Tier 1 — notify only (expandable) */}
-      <button type="button" onClick={onToggleTier1}
-        className={`flex items-center gap-2.5 px-4 py-3 border-r border-rule2 flex-shrink-0 hover:bg-stone3 transition-colors text-left ${expandTier1 ? 'bg-stone3' : ''}`}>
+      {/* Tier 1 — notify only (overlay on click) */}
+      <button ref={tier1BtnRef} type="button" onClick={onToggleTier1}
+        className={`flex items-center gap-2.5 px-4 py-3 border-r border-rule2 flex-shrink-0 hover:bg-stone3 transition-colors text-left ${tier1Open ? 'bg-stone3' : ''}`}>
         <div className="w-1.5 h-1.5 rounded-full bg-ochre flex-shrink-0" />
         <div>
           <div className="font-body text-muted text-label tracking-widest mb-0.5">TIER 1</div>
           <div className="font-body text-ink text-body font-medium">{tier1Items.length} informed</div>
         </div>
-        <ChevronDown size={9} className={`text-muted flex-shrink-0 transition-transform ${expandTier1 ? 'rotate-180' : ''}`} />
+        <ChevronDown size={9} className={`text-muted flex-shrink-0 transition-transform ${tier1Open ? 'rotate-180' : ''}`} />
       </button>
       {/* Tier 2 — budgeted approval with shift budget bar */}
       <div className="flex items-center gap-3 px-4 py-3 border-r border-rule2 flex-1 min-w-[180px]">
@@ -965,6 +966,63 @@ function AgentTierStrip({ tier0Count, tier1Items, tier2Items, tier3Items, expand
             {tier3Undecided > 0 ? `${tier3Undecided} pending` : tier3Items.length > 0 ? `${tier3Items.length} reviewed` : 'None'}
           </div>
         </div>
+      </div>
+    </div>
+  )
+}
+
+// ─── Tier 1 overlay ──────────────────────────────────────────────────────────
+
+function Tier1Overlay({ items, agents, btnRef, onClose }) {
+  const ref = useRef(null)
+  const [pos, setPos] = useState({ top: 0, left: 0 })
+
+  useEffect(() => {
+    if (btnRef.current) {
+      const r = btnRef.current.getBoundingClientRect()
+      setPos({ top: r.bottom + 4, left: r.left })
+    }
+  }, [btnRef])
+
+  useEffect(() => {
+    function handleClick(e) {
+      if (
+        ref.current && !ref.current.contains(e.target) &&
+        btnRef.current && !btnRef.current.contains(e.target)
+      ) onClose()
+    }
+    function handleKey(e) { if (e.key === 'Escape') onClose() }
+    document.addEventListener('mousedown', handleClick)
+    document.addEventListener('keydown', handleKey)
+    return () => {
+      document.removeEventListener('mousedown', handleClick)
+      document.removeEventListener('keydown', handleKey)
+    }
+  }, [onClose, btnRef])
+
+  return (
+    <div ref={ref} className="fixed z-50 bg-stone border border-rule2 shadow-raise overflow-hidden"
+      style={{ top: pos.top, left: pos.left, minWidth: 300 }}>
+      <div className="px-4 py-2 border-b border-rule2 flex items-center gap-2 bg-stone2">
+        <div className="h-1 w-1 rounded-full bg-ochre flex-shrink-0" />
+        <span className="font-body text-muted text-label">System acted · you're informed</span>
+      </div>
+      <div className="divide-y divide-rule2">
+        {items.map(pa => {
+          const agent = agents.find(a => a.id === pa._agentId)
+          if (!agent) return null
+          const Icon = ICON_MAP[agent.icon] || Shield
+          return (
+            <div key={pa._key} className="flex items-center gap-3 px-4 py-2.5">
+              <Icon size={10} className="text-muted flex-shrink-0" />
+              <div className="flex-1 min-w-0">
+                <div className="font-body text-muted text-label">{agent.name}</div>
+                <div className="font-body text-ink text-label leading-snug">{pa._meta.verbFirst}</div>
+              </div>
+              <span className="font-body text-label text-muted px-1.5 py-0.5 bg-stone3 flex-shrink-0">Notified</span>
+            </div>
+          )
+        })}
       </div>
     </div>
   )
@@ -997,7 +1055,8 @@ export default function AgentControl() {
   const [disableModal, setDisableModal]   = useState(null)
   const [splitFocused, setSplitFocused]   = useState(null)
   const [splitChecked, setSplitChecked]   = useState(new Set())
-  const [expandTier1, setExpandTier1]     = useState(false)
+  const [tier1Open, setTier1Open]         = useState(false)
+  const tier1BtnRef                       = useRef(null)
   const [detailTab, setDetailTab]         = useState('evidence')
 
   useEffect(() => { setDetailTab('evidence') }, [splitFocused])
@@ -1135,35 +1194,18 @@ export default function AgentControl() {
         tier1Items={tier1Items}
         tier2Items={tier2Items}
         tier3Items={tier3Items}
-        expandTier1={expandTier1}
-        onToggleTier1={() => setExpandTier1(e => !e)}
+        tier1Open={tier1Open}
+        tier1BtnRef={tier1BtnRef}
+        onToggleTier1={() => setTier1Open(o => !o)}
       />
 
-      {/* ── Tier 1 expandable notification strip ─────────────────────── */}
-      {expandTier1 && tier1Items.length > 0 && (
-        <div className="flex-shrink-0 border-b border-rule2 bg-stone2">
-          <div className="px-5 py-1.5 border-b border-rule2 flex items-center gap-2">
-            <div className="h-1 w-1 rounded-full bg-ochre flex-shrink-0" />
-            <span className="font-body text-muted text-label">System acted · you're informed</span>
-          </div>
-          <div className="divide-y divide-rule2">
-            {tier1Items.map(pa => {
-              const agent = agents.find(a => a.id === pa._agentId)
-              if (!agent) return null
-              const Icon = ICON_MAP[agent.icon] || Shield
-              return (
-                <div key={pa._key} className="flex items-center gap-3 px-5 py-2.5">
-                  <Icon size={10} className="text-muted flex-shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <div className="font-body text-muted text-label">{agent.name}</div>
-                    <div className="font-body text-ink text-label leading-snug">{pa._meta.verbFirst}</div>
-                  </div>
-                  <span className="font-body text-label text-muted px-1.5 py-0.5 bg-stone3 flex-shrink-0">Notified</span>
-                </div>
-              )
-            })}
-          </div>
-        </div>
+      {tier1Open && tier1Items.length > 0 && (
+        <Tier1Overlay
+          items={tier1Items}
+          agents={agents}
+          btnRef={tier1BtnRef}
+          onClose={() => setTier1Open(false)}
+        />
       )}
 
       {/* ── Priority-weighted ledger ──────────────────────────────────── */}

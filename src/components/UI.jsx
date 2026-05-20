@@ -568,7 +568,7 @@ export function VaulDrawer({ open, onClose, title, badge, children, maxHeight = 
 
  return (
   <div className="fixed inset-0 z-modal flex flex-col justify-end">
-   <div className="absolute inset-0 bg-transparent" onClick={handleClose} />
+   <div className="absolute inset-0 bg-stone/60" onClick={handleClose} />
    <div
     ref={contentRef}
     role="dialog"

@@ -13,135 +13,173 @@ const C = {
   dim:    '#4A5D74',
 }
 
-// ── 1. SANKEY DIAGRAM ─────────────────────────────────────────────────────────
-// Agent → Decision → Outcome flow for ImpactLoop
+// ── 1. ALLUVIAL DIAGRAM ───────────────────────────────────────────────────────
+// Agent → Decision → Outcome categorical flow for ImpactLoop.
+// Alluvial (not Sankey): data is categorical partitioning, not resource flow.
+// Wide blocks emphasise group size; ribbons show how groups split across stages.
 
-function buildSankeyLayout(interventions) {
-  // Count flows between columns
-  const agentFlow = {}, decisionFlow = {}, agentDecision = {}, decisionOutcome = {}
+const ALLUVIAL_W = 18   // block width
+const XA = 0            // agent block left edge
+const XD = 196          // decision block left edge
+const XO = 402          // outcome block left edge  (402 + 18 = 420 viewBox width)
+const ALLUVIAL_H = 200  // usable block height
+const ALLUVIAL_GAP = 10 // gap between blocks in a column
+
+const DISPLAY = {
+  QualityGuard: 'QualityGuard', ScheduleOptimizer: 'Scheduler',
+  SupplierBroker: 'Supplier', CAPAEngine: 'CAPA',
+  approved: 'Approved', 'auto-executed': 'Auto-run',
+  rejected: 'Rejected', overridden: 'Overridden',
+  positive: 'Positive', unclear: 'Unclear',
+  negative: 'Negative', harmful: 'Harmful',
+}
+
+function buildAlluvialLayout(interventions) {
+  const agentFlow = {}, decisionFlow = {}, outcomeFlow = {}
+  const agentDecision = {}, decisionOutcome = {}
+
   interventions.forEach(({ agent, decision, outcomeClassification: outcome }) => {
-    agentFlow[agent] = (agentFlow[agent] || 0) + 1
+    agentFlow[agent]     = (agentFlow[agent]     || 0) + 1
     decisionFlow[decision] = (decisionFlow[decision] || 0) + 1
-    const adKey = `${agent}||${decision}`
-    agentDecision[adKey] = (agentDecision[adKey] || 0) + 1
-    const doKey = `${decision}||${outcome}`
-    decisionOutcome[doKey] = (decisionOutcome[doKey] || 0) + 1
-  })
-
-  const outcomeFlow = {}
-  interventions.forEach(({ outcomeClassification: o }) => {
-    outcomeFlow[o] = (outcomeFlow[o] || 0) + 1
+    outcomeFlow[outcome] = (outcomeFlow[outcome]  || 0) + 1
+    agentDecision[`${agent}||${decision}`]     = (agentDecision[`${agent}||${decision}`]     || 0) + 1
+    decisionOutcome[`${decision}||${outcome}`] = (decisionOutcome[`${decision}||${outcome}`] || 0) + 1
   })
 
   const total = interventions.length
-  const H = 180, gap = 9, nodeW = 10
 
-  // Lay out nodes in a column given sorted name→count map
   function layoutCol(flowMap, order) {
-    const names = order || Object.keys(flowMap).sort((a, b) => flowMap[b] - flowMap[a])
-    const n = names.length
-    const available = H - gap * (n - 1)
+    const names = order.filter(n => flowMap[n])
+    const available = ALLUVIAL_H - ALLUVIAL_GAP * (names.length - 1)
     let y = 0
     const nodes = {}
     names.forEach(name => {
-      const h = Math.max(4, (flowMap[name] / total) * available)
-      nodes[name] = { y, h, inOff: 0, outOff: 0 }
-      y += h + gap
+      const h = Math.max(6, (flowMap[name] / total) * available)
+      nodes[name] = { y, h, count: flowMap[name], inOff: 0, outOff: 0 }
+      y += h + ALLUVIAL_GAP
     })
     return nodes
   }
 
-  const agentOrder = ['QualityGuard', 'ScheduleOptimizer', 'SupplierBroker', 'CAPAEngine']
-  const decOrder = ['approved', 'auto-executed', 'rejected', 'overridden']
-  const outOrder = ['positive', 'unclear', 'negative', 'harmful']
+  const col1 = layoutCol(agentFlow,    ['QualityGuard', 'ScheduleOptimizer', 'SupplierBroker', 'CAPAEngine'])
+  const col2 = layoutCol(decisionFlow, ['approved', 'auto-executed', 'rejected', 'overridden'])
+  const col3 = layoutCol(outcomeFlow,  ['positive', 'unclear', 'negative', 'harmful'])
 
-  const col1 = layoutCol(agentFlow, agentOrder.filter(a => agentFlow[a]))
-  const col2 = layoutCol(decisionFlow, decOrder.filter(d => decisionFlow[d]))
-  const col3 = layoutCol(outcomeFlow, outOrder.filter(o => outcomeFlow[o]))
-
-  // Build link paths (filled bezier areas)
-  const x1 = nodeW, x2 = 195, x3 = 200 + nodeW, x4 = 390
-  const mx12 = (x2 + x1) / 2, mx34 = (x4 + x3) / 2
-
-  function linkPath(x0, y0, h0, x1, y1, h1) {
+  function ribbon(x0, y0, h0, x1, y1, h1) {
     const mx = (x0 + x1) / 2
-    return `M ${x0} ${y0} C ${mx} ${y0}, ${mx} ${y1}, ${x1} ${y1} L ${x1} ${y1 + h1} C ${mx} ${y1 + h1}, ${mx} ${y0 + h0}, ${x0} ${y0 + h0} Z`
+    return `M ${x0} ${y0} C ${mx} ${y0}, ${mx} ${y1}, ${x1} ${y1} L ${x1} ${y1+h1} C ${mx} ${y1+h1}, ${mx} ${y0+h0}, ${x0} ${y0+h0} Z`
   }
 
-  const links1 = [] // agent → decision
+  const links1 = []
   Object.entries(agentDecision).forEach(([key, count]) => {
     const [agent, decision] = key.split('||')
     if (!col1[agent] || !col2[decision]) return
-    const srcH = (count / agentFlow[agent]) * col1[agent].h
+    const srcH = (count / agentFlow[agent])     * col1[agent].h
     const tgtH = (count / decisionFlow[decision]) * col2[decision].h
-    const y0 = col1[agent].y + col1[agent].outOff
+    const y0 = col1[agent].y    + col1[agent].outOff
     const y1 = col2[decision].y + col2[decision].inOff
-    col1[agent].outOff += srcH
-    col2[decision].inOff += tgtH
-    const outColor = decision === 'approved' ? C.ok : decision === 'auto-executed' ? C.ochre : C.warn
-    links1.push({ path: linkPath(x1, y0, srcH, x2, y1, tgtH), color: outColor })
+    col1[agent].outOff    += srcH
+    col2[decision].inOff  += tgtH
+    const color = decision === 'approved' ? C.ok : decision === 'auto-executed' ? C.ochre : C.warn
+    links1.push({ path: ribbon(XA + ALLUVIAL_W, y0, srcH, XD, y1, tgtH), color })
   })
 
-  const links2 = [] // decision → outcome
+  const links2 = []
   Object.entries(decisionOutcome).forEach(([key, count]) => {
     const [decision, outcome] = key.split('||')
     if (!col2[decision] || !col3[outcome]) return
     const srcH = (count / decisionFlow[decision]) * col2[decision].h
-    const tgtH = (count / outcomeFlow[outcome]) * col3[outcome].h
+    const tgtH = (count / outcomeFlow[outcome])   * col3[outcome].h
     const y0 = col2[decision].y + col2[decision].outOff
-    const y1 = col3[outcome].y + col3[outcome].inOff
+    const y1 = col3[outcome].y  + col3[outcome].inOff
     col2[decision].outOff += srcH
-    col3[outcome].inOff += tgtH
-    const outColor = outcome === 'positive' ? C.ok : outcome === 'unclear' ? C.ochre : C.danger
-    links2.push({ path: linkPath(x3, y0, srcH, x4, y1, tgtH), color: outColor })
+    col3[outcome].inOff   += tgtH
+    const color = outcome === 'positive' ? C.ok : outcome === 'unclear' ? C.ochre : C.danger
+    links2.push({ path: ribbon(XD + ALLUVIAL_W, y0, srcH, XO, y1, tgtH), color })
   })
 
   const AGENT_COLOR = { QualityGuard: C.ochre, ScheduleOptimizer: C.muted, SupplierBroker: C.muted, CAPAEngine: C.muted }
-  const DEC_COLOR = { approved: C.ok, 'auto-executed': C.ochre, rejected: C.warn, overridden: C.muted }
-  const OUT_COLOR = { positive: C.ok, unclear: C.ochre, negative: C.danger, harmful: C.danger }
+  const DEC_COLOR   = { approved: C.ok, 'auto-executed': C.ochre, rejected: C.warn, overridden: C.muted }
+  const OUT_COLOR   = { positive: C.ok, unclear: C.ochre, negative: C.danger, harmful: C.danger }
 
-  return { col1, col2, col3, links1, links2, nodeW, AGENT_COLOR, DEC_COLOR, OUT_COLOR }
+  return { col1, col2, col3, links1, links2, AGENT_COLOR, DEC_COLOR, OUT_COLOR, total }
 }
 
-export function SankeyDiagram({ interventions }) {
-  const { col1, col2, col3, links1, links2, nodeW, AGENT_COLOR, DEC_COLOR, OUT_COLOR } = buildSankeyLayout(interventions)
-  const svgH = 196, padT = 8
-
-  function NodeCol({ nodes, x, colorMap, labelX, labelAnchor }) {
-    return Object.entries(nodes).map(([name, n]) => {
-      const color = colorMap[name] || C.muted
-      const display = name.replace('auto-executed', 'Auto-run').replace('QualityGuard', 'QualityGuard').replace('ScheduleOptimizer', 'Scheduler').replace('SupplierBroker', 'Supplier')
-      return (
-        <g key={name}>
-          <rect x={x} y={n.y + padT} width={nodeW} height={Math.max(4, n.h)} fill={color} rx="1" opacity="0.85" />
-          <text x={labelX} y={n.y + padT + n.h / 2 + 3.5} fontSize="8.5" fill={color} textAnchor={labelAnchor}
-            fontFamily="'IBM Plex Mono', monospace" letterSpacing="0.02em">
-            {display}
-          </text>
-        </g>
-      )
-    })
-  }
+export function AlluvialDiagram({ interventions }) {
+  const { col1, col2, col3, links1, links2, AGENT_COLOR, DEC_COLOR, OUT_COLOR, total } = buildAlluvialLayout(interventions)
+  const PAD_T = 18
+  const VH = ALLUVIAL_H + PAD_T + 4
+  const FONT = "'IBM Plex Mono', monospace"
 
   return (
-    <svg width="100%" viewBox={`0 0 400 ${svgH + padT}`} preserveAspectRatio="xMidYMid meet"
-      role="img" aria-label="Sankey flow: agent → decision → outcome">
+    <svg width="100%" viewBox={`0 0 420 ${VH}`} preserveAspectRatio="xMidYMid meet"
+      role="img" aria-label="Alluvial diagram: agent classification → decision → outcome">
+
       {/* Column headers */}
-      {[['Agent', 5], ['Decision', 200], ['Outcome', 395]].map(([label, x]) => (
-        <text key={label} x={x} y="6" fontSize="7.5" fill={C.dim} textAnchor={x > 200 ? 'end' : 'start'}
-          fontFamily="'IBM Plex Mono', monospace" letterSpacing="0.08em">{label.toUpperCase()}</text>
+      {[['AGENT', XA, 'start'], ['DECISION', XD, 'start'], ['OUTCOME', XO + ALLUVIAL_W, 'end']].map(([label, x, anchor]) => (
+        <text key={label} x={x} y="10" fontSize="7" fill={C.dim} textAnchor={anchor}
+          fontFamily={FONT} letterSpacing="0.1em">{label}</text>
       ))}
 
-      {/* Links: agent → decision */}
-      {links1.map((l, i) => <path key={`a${i}`} d={l.path} fill={l.color} opacity="0.12" transform={`translate(0,${padT})`} />)}
-      {/* Links: decision → outcome */}
-      {links2.map((l, i) => <path key={`d${i}`} d={l.path} fill={l.color} opacity="0.18" transform={`translate(0,${padT})`} />)}
+      <g transform={`translate(0,${PAD_T})`}>
+        {/* Ribbons drawn first, blocks on top */}
+        {links1.map((l, i) => <path key={`r1-${i}`} d={l.path} fill={l.color} opacity="0.16" />)}
+        {links2.map((l, i) => <path key={`r2-${i}`} d={l.path} fill={l.color} opacity="0.22" />)}
 
-      {/* Nodes */}
-      <NodeCol nodes={col1} x={0} colorMap={AGENT_COLOR} labelX={12} labelAnchor="start" />
-      <NodeCol nodes={col2} x={190} colorMap={DEC_COLOR} labelX={188} labelAnchor="end" />
-      <NodeCol nodes={col2} x={200} colorMap={DEC_COLOR} labelX={212} labelAnchor="start" />
-      <NodeCol nodes={col3} x={390} colorMap={OUT_COLOR} labelX={388} labelAnchor="end" />
+        {/* Agent blocks */}
+        {Object.entries(col1).map(([name, n]) => {
+          const color = AGENT_COLOR[name] || C.muted
+          const pct = Math.round((n.count / total) * 100)
+          const cy = n.y + n.h / 2
+          return (
+            <g key={name}>
+              <rect x={XA} y={n.y} width={ALLUVIAL_W} height={Math.max(6, n.h)} fill={color} rx="1" opacity="0.88" />
+              <text x={XA + ALLUVIAL_W + 5} y={cy + 3} fontSize="8.5" fill={color} textAnchor="start" fontFamily={FONT}>
+                {DISPLAY[name] ?? name}
+              </text>
+              <text x={XA + ALLUVIAL_W + 5} y={cy + 13} fontSize="7" fill={C.dim} textAnchor="start" fontFamily={FONT}>
+                {pct}%
+              </text>
+            </g>
+          )
+        })}
+
+        {/* Decision blocks */}
+        {Object.entries(col2).map(([name, n]) => {
+          const color = DEC_COLOR[name] || C.muted
+          const pct = Math.round((n.count / total) * 100)
+          const cy = n.y + n.h / 2
+          return (
+            <g key={name}>
+              <rect x={XD} y={n.y} width={ALLUVIAL_W} height={Math.max(6, n.h)} fill={color} rx="1" opacity="0.88" />
+              <text x={XD - 5} y={cy + 3} fontSize="8.5" fill={color} textAnchor="end" fontFamily={FONT}>
+                {DISPLAY[name] ?? name}
+              </text>
+              <text x={XD + ALLUVIAL_W + 5} y={cy + 3} fontSize="7" fill={C.dim} textAnchor="start" fontFamily={FONT}>
+                {pct}%
+              </text>
+            </g>
+          )
+        })}
+
+        {/* Outcome blocks */}
+        {Object.entries(col3).map(([name, n]) => {
+          const color = OUT_COLOR[name] || C.muted
+          const pct = Math.round((n.count / total) * 100)
+          const cy = n.y + n.h / 2
+          return (
+            <g key={name}>
+              <rect x={XO} y={n.y} width={ALLUVIAL_W} height={Math.max(6, n.h)} fill={color} rx="1" opacity="0.88" />
+              <text x={XO - 5} y={cy + 3} fontSize="8.5" fill={color} textAnchor="end" fontFamily={FONT}>
+                {DISPLAY[name] ?? name}
+              </text>
+              <text x={XO - 5} y={cy + 13} fontSize="7" fill={C.dim} textAnchor="end" fontFamily={FONT}>
+                {pct}%
+              </text>
+            </g>
+          )
+        })}
+      </g>
     </svg>
   )
 }

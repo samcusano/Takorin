@@ -87,7 +87,7 @@ function PlantItem() {
     <span className="font-body flex-1">Overview</span>
     {activeCount > 0 && (
      <span className={`ml-auto text-label font-semibold px-1.5 py-0.5 ${
-      criticalCount > 0 ? 'bg-danger text-stone' : 'bg-warn/20 text-warn'
+      criticalCount > 0 ? 'bg-danger text-white' : 'bg-warn/20 text-warn'
      }`}>
       {activeCount}
      </span>

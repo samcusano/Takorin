@@ -5,7 +5,7 @@ import { useAppState } from '../context/AppState'
 import { riskColorClass, riskLabel, riskBgColor } from '../lib/utils'
 import {
   AlertTriangle, CheckCircle, Brain, Clock, Users,
-  Activity, CircleDot, ChevronDown, ChevronUp, ExternalLink, X,
+  Activity, CircleDot, ChevronDown, ChevronUp, ArrowRight, ExternalLink, X,
 } from 'lucide-react'
 import { interventionSummary, interventions } from '../data/interventions'
 import { FilterDropdown, SlidePanel, Btn } from '../components/UI'
@@ -698,7 +698,7 @@ export default function PlantOverview() {
             </span>
             {allFindings.length === 0 && (
               <span className="font-body text-ok text-label flex items-center gap-1">
-                <CheckCircle size={10} strokeWidth={2} />All lines clear
+                <CheckCircle size={16} strokeWidth={2} />All lines clear
               </span>
             )}
           </div>
@@ -707,10 +707,10 @@ export default function PlantOverview() {
             ? allFindings.map((f, i) => (
                 <button key={i} type="button"
                   onClick={() => setSelectedFinding(f)}
-                  className={`w-full text-left flex items-start gap-4 px-5 py-3.5 border-b border-rule2 border-l-4 transition-colors hover:bg-stone2 ${
-                    f.urgency === 'danger' ? 'border-l-danger bg-danger/[0.02] hover:bg-danger/[0.04]' : 'border-l-warn bg-warn/[0.01] hover:bg-warn/[0.03]'
+                  className={`w-full text-left flex items-start gap-4 px-5 py-3.5 border-b border-rule2 transition-colors hover:bg-stone2 ${
+                    f.urgency === 'danger' ? 'bg-danger/[0.05] hover:bg-danger/[0.1]' : 'bg-warn/[0.05] hover:bg-warn/[0.1]'
                   }`}>
-                  <AlertTriangle size={12}
+                  <AlertTriangle size={16}
                     className={`mt-0.5 flex-shrink-0 ${f.urgency === 'danger' ? 'text-danger' : 'text-warn'}`}
                     strokeWidth={1.75} />
                   <div className="flex-1 min-w-0">
@@ -752,7 +752,7 @@ export default function PlantOverview() {
                 setShiftActed(prev => ({ ...prev, [selectedFinding.id]: true }))
                 setSelectedFinding(null)
               }}>
-                Acknowledge
+                <CheckCircle size={11} strokeWidth={2} />Acknowledged
               </Btn>
             ) : (
               <span className="font-body text-ok text-label flex items-center gap-1.5 px-1">
@@ -760,7 +760,7 @@ export default function PlantOverview() {
               </span>
             )}
             <Btn variant="secondary" onClick={() => { navigate(`/shift?line=${selectedFinding.line.id}`); setSelectedFinding(null) }}>
-              Open in ShiftIQ
+              <ArrowRight size={11} strokeWidth={2} />
             </Btn>
           </div>
         }
