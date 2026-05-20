@@ -628,7 +628,7 @@ export default function Analytics() {
                     </div>
                     <div className="px-5 py-3 flex items-center justify-between">
                       <span className="font-body text-muted text-label">Confidence reflects how certain we are the action caused the outcome. Below 60% means the cause isn't clear.</span>
-                      <Link to="/impact" className="flex items-center gap-1 font-body text-muted text-label hover:text-ink transition-colors">
+                      <Link to="/outcomes" className="flex items-center gap-1 font-body text-muted text-label hover:text-ink transition-colors">
                         <ArrowRight size={10} />View ImpactLoop
                       </Link>
                     </div>

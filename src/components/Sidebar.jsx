@@ -74,7 +74,7 @@ function PlantItem() {
  ).length
  return (
   <NavLink
-   to="/plant"
+   to="/overview"
    className={({ isActive }) =>
     `flex items-center gap-3 px-4 py-2.5 transition-colors duration-100 border-l-2 ` +
     (isActive
@@ -255,7 +255,7 @@ function UserDropdown({ triggerRef, onClose, viewingRole, setViewingRole }) {
  }, [onClose, triggerRef])
 
  const roles = [
-  { id: 'director',         name: 'J. Crocker',  role: 'Plant Director',  route: '/plant' },
+  { id: 'director',         name: 'J. Crocker',  role: 'Plant Director',  route: '/overview' },
   { id: 'supervisor',       name: 'D. Kowalski', role: 'Supervisor · L4', route: '/shift' },
   { id: 'operator-reyes',   name: 'C. Reyes',    role: 'Operator · L1',   route: '/operator' },
   { id: 'operator-okonkwo', name: 'P. Okonkwo',  role: 'Operator · L2',   route: '/operator' },
@@ -405,7 +405,7 @@ export default function Sidebar() {
    <SideItem to="/shift"  id="shift"  icon={Activity} label="ShiftIQ"      badge="3" badgeType="alert" />
    <AgentItem count={agentPendingCount} />
    <div className="px-4 pt-4 pb-1 font-body text-micro text-sidebar-ghost tracking-widest">Causality</div>
-   <SideItem to="/impact" id="impact" icon={CircleDot} label="Outcomes" badge={null} />
+   <SideItem to="/outcomes" id="outcomes" icon={CircleDot} label="Outcomes" badge={null} />
    <div className="px-4 pt-4 pb-1 font-body text-micro text-sidebar-ghost tracking-widest">Activity</div>
    <button type="button" onClick={() => setNotifOpen(true)}
     className="flex items-center gap-3 px-4 py-2.5 w-full text-left transition-colors hover:bg-sidebar2 text-white/70">
@@ -425,7 +425,7 @@ export default function Sidebar() {
    <div className="px-4 pt-4 pb-1 font-body text-micro text-sidebar-ghost tracking-widest">Operations</div>
    {modules.map(m => <SideItem key={m.id} to={m.path} id={m.id} {...m} />)}
    <AgentItem count={agentPendingCount} />
-   <SideItem to="/impact" id="impact" icon={CircleDot} label="Outcomes" badge={null} />
+   <SideItem to="/outcomes" id="outcomes" icon={CircleDot} label="Outcomes" badge={null} />
 
    <button type="button" onClick={() => setPlatformExpanded(p => !p)}
     className="flex items-center justify-between w-full px-4 pt-4 pb-1 font-body text-micro text-sidebar-ghost tracking-widest hover:text-white/50 transition-colors">

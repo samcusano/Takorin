@@ -65,9 +65,10 @@ export default function App() {
  )}
  <Suspense fallback={<ScreenLoader />}>
  <Routes>
- <Route path="/" element={<Navigate to="/plant" replace />} />
- <Route path="/plant" element={<ErrorBoundary><PlantOverview /></ErrorBoundary>} />
- <Route path="/command" element={<Navigate to="/plant" replace />} />
+ <Route path="/" element={<Navigate to="/overview" replace />} />
+ <Route path="/overview" element={<ErrorBoundary><PlantOverview /></ErrorBoundary>} />
+ <Route path="/plant" element={<Navigate to="/overview" replace />} />
+ <Route path="/command" element={<Navigate to="/overview" replace />} />
  <Route path="/shift" element={<ErrorBoundary><ShiftIQ /></ErrorBoundary>} />
  <Route path="/handoff" element={<Navigate to="/shift" replace />} />
  <Route path="/supplier" element={<ErrorBoundary><SupplierIQ /></ErrorBoundary>} />
@@ -92,7 +93,8 @@ export default function App() {
  <Route path="/records"     element={<ErrorBoundary><RecordVault /></ErrorBoundary>} />
  <Route path="/delivery"    element={<ErrorBoundary><ValueChain /></ErrorBoundary>} />
  <Route path="/equipment"   element={<ErrorBoundary><EquipmentIntelligence /></ErrorBoundary>} />
- <Route path="/impact"      element={<ErrorBoundary><ImpactLoop /></ErrorBoundary>} />
+ <Route path="/outcomes"    element={<ErrorBoundary><ImpactLoop /></ErrorBoundary>} />
+ <Route path="/impact"      element={<Navigate to="/outcomes" replace />} />
  </Routes>
  </Suspense>
  </main>

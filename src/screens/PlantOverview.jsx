@@ -354,7 +354,7 @@ export default function PlantOverview() {
                 )
               })}
             </div>
-            <button type="button" onClick={() => navigate('/impact')}
+            <button type="button" onClick={() => navigate('/outcomes')}
               className="flex items-center gap-1 font-body text-muted text-label hover:text-ink transition-colors">
               <ExternalLink size={9} strokeWidth={2} />Full ImpactLoop view
             </button>

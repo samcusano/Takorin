@@ -46,7 +46,7 @@ function buildPageCells(pathname, { closedCases, nearMisses, activityLog }) {
   const totalConnectors = integrationSummary.total
 
   switch (pathname) {
-    case '/plant': {
+    case '/overview': {
       const lines = shiftData.lines || []
       const atRisk = lines.filter(l => l.score < 60).length
       const findings = shiftData.stats?.find(s => s.label?.toLowerCase().includes('finding'))?.value ?? '—'
@@ -147,7 +147,7 @@ function buildPageCells(pathname, { closedCases, nearMisses, activityLog }) {
         { label: 'Execute tier', value: String(executionSummary.agentsInExecuteTier), tone: 'muted' },
       ]
     }
-    case '/impact': {
+    case '/outcomes': {
       return [
         { label: 'Interventions', value: String(interventionSummary.total), tone: 'muted' },
         { label: 'Positive', value: String(interventionSummary.positive), tone: interventionSummary.positive > 0 ? 'ok' : 'muted' },

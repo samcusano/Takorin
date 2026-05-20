@@ -246,7 +246,7 @@ function LedgerRow({ pa, agent, onInvestigate, onApprove, onOverrideRequest, sel
           {pa._decided === 'approved' ? 'Approved' : 'Overridden'}
         </span>
         {pa._decided === 'approved' && navigate && (
-          <button type="button" onClick={() => navigate('/impact')}
+          <button type="button" onClick={() => navigate('/outcomes')}
             className="flex items-center gap-1 font-body text-label text-ochre hover:text-ink transition-colors flex-shrink-0"
             title="View outcome in ImpactLoop">
             <TrendingUp size={9} strokeWidth={2} />
@@ -1295,7 +1295,7 @@ export default function AgentControl() {
                         {pa._decided && (
                           <div className={`font-body text-label mt-0.5 ${pa._decided === 'approved' ? 'text-ok' : 'text-muted'}`}>
                             {pa._decided === 'approved' ? '✓ Approved' : '↩ Overridden'} ·{' '}
-                            <button type="button" onClick={() => navigate('/impact')} className="text-ochre hover:text-ink underline-offset-2">View in ImpactLoop</button>
+                            <button type="button" onClick={() => navigate('/outcomes')} className="text-ochre hover:text-ink underline-offset-2">View in ImpactLoop</button>
                           </div>
                         )}
                       </div>
