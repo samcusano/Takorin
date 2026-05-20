@@ -7,8 +7,8 @@ import ResourceAllocation from './ResourceAllocation'
 import { useFocusTrap, useExitAnimation, riskColorClass, riskLabel, riskBgColor } from '../lib/utils'
 import { shiftData, line6Data, wichitaData, denverData, haccpData, productionRate, crewHoursData } from '../data'
 import {
- StatusPill, StatCell, CaseCard, Layout,
- Btn, ConsequenceNotice, PageHead, ActionBanner, MetricCard,
+ StatusPill,
+ Btn, ConsequenceNotice, PageHead, ActionBanner,
  PersonAvatar, Modal, WaveformSparkline, AnimatedCheck, Spinner,
  VaulDrawer, HoldButton
 } from '../components/UI'

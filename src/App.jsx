@@ -68,7 +68,6 @@ export default function App() {
  <Route path="/" element={<Navigate to="/overview" replace />} />
  <Route path="/overview" element={<ErrorBoundary><PlantOverview /></ErrorBoundary>} />
  <Route path="/plant" element={<Navigate to="/overview" replace />} />
- <Route path="/command" element={<Navigate to="/overview" replace />} />
  <Route path="/shift" element={<ErrorBoundary><ShiftIQ /></ErrorBoundary>} />
  <Route path="/handoff" element={<Navigate to="/shift" replace />} />
  <Route path="/supplier" element={<ErrorBoundary><SupplierIQ /></ErrorBoundary>} />
@@ -85,7 +84,6 @@ export default function App() {
 
  <Route path="/batch"       element={<ErrorBoundary><BatchIntelligence /></ErrorBoundary>} />
  <Route path="/compliance"  element={<ErrorBoundary><CompliancePolicy /></ErrorBoundary>} />
- <Route path="/quality"     element={<Navigate to="/batch" replace />} />
  <Route path="/hierarchy"   element={<ErrorBoundary><ProcessHierarchy /></ErrorBoundary>} />
  <Route path="/integration" element={<ErrorBoundary><IntegrationHub /></ErrorBoundary>} />
  <Route path="/knowledge"   element={<ErrorBoundary><KnowledgeVault /></ErrorBoundary>} />

@@ -116,79 +116,6 @@ export function SceneHeader({
  )
 }
 
-// ── IntelCard — precision + narrative fused finding/recommendation card ────────
-// System voice (title) + narrative voice (description) + evidence + actions
-export function IntelCard({
- ordinal,              // "I." / "II." — optional ranking
- title,               // precise system voice title
- description,         // narrative interpretation — the human voice
- evidence,            // monospace system evidence string
- tone = 'warn',      // 'danger' | 'warn' | 'ok' | 'muted'
- done = false,        // actioned state
- consequenceMessage,  // message shown after action
- className = '',
- children,            // action buttons slot
-}) {
- const tc = toneColor(tone)
- return (
-  <div className={`mb-3 overflow-hidden ${className}`}
-   style={{
-    background: 'var(--color-stone-2)',
-    border: '1px solid var(--color-rule)',
-    borderLeft: `3px solid ${tc}`,
-    opacity: done ? 0.45 : 1,
-    transition: 'opacity 400ms ease',
-   }}>
-
-   {/* Header */}
-   <div className="flex items-start gap-4 px-4 pt-4 pb-3">
-    {ordinal && (
-     <span className="font-body font-bold flex-shrink-0" style={{ fontSize: 18, color: tc, lineHeight: 1, marginTop: 2 }}>
-      {ordinal}
-     </span>
-    )}
-    <div className="flex-1 min-w-0">
-     {/* System voice — precise, bold */}
-     <div className="font-display font-semibold text-ink text-base leading-snug mb-2">{title}</div>
-     {/* Narrative voice — interpretive, warm */}
-     {description && (
-      <p className="font-display text-body leading-relaxed" style={{ color: 'var(--color-context)' }}>{description}</p>
-     )}
-    </div>
-   </div>
-
-   {/* Evidence — monospace system voice */}
-   {evidence && (
-    <div className="px-4 py-2 border-t border-b border-rule2">
-     <span className="font-body text-micro text-muted">{evidence}</span>
-    </div>
-   )}
-
-   {/* Actions / consequence */}
-   {done ? (
-    <div className="flex items-center gap-2 px-4 py-2.5">
-     <Check size={11} color="var(--color-ok)" />
-     <span className="font-body text-micro text-ok">{consequenceMessage}</span>
-    </div>
-   ) : children ? (
-    <div className="flex items-center gap-2 px-4 py-2.5">{children}</div>
-   ) : null}
-  </div>
- )
-}
-
-// ── Signal chip — inline status dot in hero signal strip ──────────────────────
-export function SignalChip({ label, healthy = true, tone }) {
- const color = tone ? toneColor(tone) : (healthy ? 'var(--color-ok)' : 'var(--color-warn)')
- return (
-  <div className="flex items-center gap-1.5">
-   <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: color }} />
-   <span className="font-body text-micro" style={{ color: healthy && !tone ? 'var(--color-muted)' : color }}>
-    {label}
-   </span>
-  </div>
- )
-}
 
 // ── Status pill (unified across all modules)
 export function StatusPill({ tone, level, variant, status, children, icon, className = '' }) {
@@ -200,15 +127,6 @@ export function StatusPill({ tone, level, variant, status, children, icon, class
  {Icon && <Icon size={10} strokeWidth={2} className="flex-shrink-0" />}
  {label}
  </span>
- )
-}
-
-// ── Section label — monospace marker, V2 system voice
-export function SectionLabel({ children, className = '' }) {
- return (
-  <div className={`font-body text-micro text-muted tracking-widest ${className}`}>
-   {children}
-  </div>
  )
 }
 
@@ -347,25 +265,6 @@ export function Dot({ level = 'empty' }) {
  empty: 'bg-rule2/40',
  }[level]
  return <div className={`w-2 h-2 rounded-sm flex-shrink-0 ${cls}`} />
-}
-
-// ── Score bar — horizontal bar chart replacing ring gauges
-// Default color logic: higher pct = better (supplier quality scores).
-// For risk scores (higher = worse), pass an explicit color prop.
-export function ScoreRing({ pct = 0, size = 32, color }) {
- const defaultColor = pct >= 75 ? 'var(--color-ok)' : pct >= 60 ? 'var(--color-warn)' : 'var(--color-danger)'
- const c = color || defaultColor
- const barH = size <= 40 ? 3 : 5
- const numSize = size <= 40 ? 11 : Math.round(size * 0.26)
- const w = size <= 40 ? 56 : size * 2
- return (
- <div className="flex flex-col gap-1 flex-shrink-0" style={{ width: w }}>
- <span className="font-display font-bold leading-none" style={{ fontSize: numSize, color: c }}>{pct}</span>
- <div style={{ height: barH, background: 'var(--color-rule-2)' }}>
- <div style={{ height: '100%', width: `${pct}%`, background: c, transition: 'width var(--dur-data) var(--ease-enter)' }} />
- </div>
- </div>
-)
 }
 
 // ── Page header
