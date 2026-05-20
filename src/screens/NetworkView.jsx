@@ -92,7 +92,7 @@ function ExposureOverlay({ triggerRef, active, actions, onAction, onBulkAction, 
         {/* Card header */}
         <div className="flex items-baseline justify-between px-4 pt-3 pb-1.5">
          <span className="font-body font-semibold text-ink text-base">{e.supplier}</span>
-         <span className="font-mono text-muted text-label">Lot {e.lotId}</span>
+         <span className="font-body text-muted text-label">Lot {e.lotId}</span>
         </div>
         {/* Ingredient + units */}
         <div className="px-4 pb-2">

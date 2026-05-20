@@ -54,10 +54,10 @@ export function SceneHeader({
    {/* Module bar */}
    <div className="flex items-center justify-between px-6 pt-4 pb-0 relative">
     <div className="flex items-center gap-3">
-     <span className="font-body text-micro text-muted tracking-widest">{module}</span>
+     <span className="font-body text-micro text-muted">{module}</span>
      {context && <>
       <div className="w-px h-3 bg-rule flex-shrink-0" />
-      <span className="font-body text-micro text-muted tracking-wider">{context}</span>
+      <span className="font-body text-micro text-muted">{context}</span>
      </>}
     </div>
     {(live || timestamp) && (
@@ -74,14 +74,14 @@ export function SceneHeader({
      {/* Metric block */}
      {metric != null && (
       <div className="flex-shrink-0">
-       <div className="font-body font-bold leading-none tabular-nums"
-        style={{ fontSize: 80, color: mc, letterSpacing: '-0.03em', lineHeight: 1 }}>
+       <div className="font-body font-bold text-jumbo leading-none tabular-numser"
+        style={{ color: mc }}>
         {metric}
        </div>
        {metricLabel && (
         <div className="flex items-center gap-2 mt-2">
          <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: mc }} />
-         <span className="font-body text-micro tracking-widest" style={{ color: mc }}>{metricLabel}</span>
+         <span className="font-body text-micro" style={{ color: mc }}>{metricLabel}</span>
         </div>
        )}
       </div>
@@ -95,7 +95,7 @@ export function SceneHeader({
         <div className="flex items-center gap-5 mt-3">
          {meta.map(({ label, value, color: c }, i) => (
           <div key={i} className="flex items-center gap-1.5">
-           <span className="font-body text-micro text-muted tracking-wider">{label}</span>
+           <span className="font-body text-micro text-muted">{label}</span>
            <span className="font-body text-micro" style={{ color: c || 'var(--color-ochre)' }}>{value}</span>
           </div>
          ))}
@@ -158,9 +158,9 @@ export function StatCell({ label, value, sub, fill, tone = 'ok', badge }) {
  const toneBorder = { ok:'border-t-ok', warn:'border-t-warn', danger:'border-t-danger', ochre:'border-t-ochre' }[tone] || 'border-t-ok'
  return (
  <div className={`px-5 py-4 border-r border-rule2 last:border-r-0 border-t-2 ${toneBorder}`}>
- <div className="font-body text-micro text-muted tracking-widest mb-2">{label}</div>
+ <div className="font-body text-micro text-muted mb-2">{label}</div>
  <div className="flex items-center gap-2">
- <div className="font-body font-bold text-metric text-ink tracking-tight tabular-nums">{value}</div>
+ <div className="font-body font-bold text-metric text-ink tabular-nums">{value}</div>
  {badge && <StatusPill tone="muted" dot={false}>{badge}</StatusPill>}
  </div>
  {sub && <div className="font-body text-muted text-label mt-1">{sub}</div>}
@@ -210,7 +210,7 @@ export function SPRow({ label, sub, value, valueColor = 'text-ink' }) {
  <div className="font-body text-ink text-body font-medium">{label}</div>
  {sub && <div className="font-body text-muted text-label mt-0.5">{sub}</div>}
  </div>
- <div className={`font-body font-bold text-head leading-none tracking-tight ${valueColor}`}>{value}</div>
+ <div className={`font-body font-bold text-head leading-none ${valueColor}`}>{value}</div>
  </div>
  )
 }
@@ -316,8 +316,8 @@ export function Dot({ level = 'empty' }) {
 export function PageHead({ over, title, accent = 'var(--color-ochre)', meta = [], children }) {
  return (
  <div className="px-6 py-5 border-b border-rule2 bg-stone2 relative overflow-hidden" style={{ borderLeft: `3px solid ${accent}` }}>
- {over && <div className="font-body text-micro text-muted tracking-widest mb-2">{over}</div>}
- <div className="font-display font-bold text-page text-ink leading-tight tracking-tight">
+ {over && <div className="font-body text-micro text-muted mb-2">{over}</div>}
+ <div className="font-display font-bold text-page text-ink leading-tight">
  {title}
  {children && <span className="font-display font-normal" style={{ color: accent }}> {children}</span>}
  </div>
@@ -325,7 +325,7 @@ export function PageHead({ over, title, accent = 'var(--color-ochre)', meta = []
  <div className="flex flex-wrap gap-x-6 gap-y-1 mt-3">
  {meta.map(({ role, val }, i) => (
  <div key={i} className="flex gap-1.5 items-baseline">
- <span className="font-body text-micro text-muted tracking-wider">{role}</span>
+ <span className="font-body text-micro text-muted">{role}</span>
  <span className="font-display text-ink text-body font-medium">{val}</span>
  </div>
  ))}
@@ -392,7 +392,7 @@ export function MetricCard({ title, value, valueColor = 'text-ink', waveformData
  <div className="px-4 pt-4 pb-3 border-b border-rule2">
  <div className="flex items-baseline justify-between gap-2 mb-3">
  <span className="font-body font-medium text-muted text-label leading-snug flex-1">{title}</span>
- <span className={`font-body font-bold text-metric leading-none tracking-tight flex-shrink-0 ${valueColor}`}>{value}</span>
+ <span className={`font-body font-bold text-metric leading-none flex-shrink-0 ${valueColor}`}>{value}</span>
  </div>
  {waveformData && (
  <div className="mb-2.5">
@@ -976,7 +976,7 @@ export function SlidePanel({ title, subtitle, icon: Icon, accentColor, ariaLabel
      <div className="flex items-center gap-3 min-w-0">
       {Icon && <Icon size={22} strokeWidth={1.5} className="text-ochre flex-shrink-0" aria-hidden="true" />}
       <div className="min-w-0">
-       {subtitle && <div className="font-body text-micro text-muted tracking-widest mb-1">{subtitle}</div>}
+       {subtitle && <div className="font-body text-micro text-muted mb-1">{subtitle}</div>}
        <div className="font-display font-bold text-ink text-base leading-snug">{title}</div>
       </div>
      </div>

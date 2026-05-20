@@ -68,12 +68,11 @@
 
   body {
     margin: 0;
-    font-family: 'IBM Plex Mono', 'SF Mono', 'JetBrains Mono', ui-monospace, 'Menlo', 'Consolas', monospace;
+    font-family: 'IBM Plex Sans', system-ui, sans-serif;
     background: var(--color-stone);
     color: var(--color-ink);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    font-kerning: normal;
     line-height: 1.45;
   }
   button { cursor: pointer; }
@@ -114,7 +113,7 @@
 
   /* ── Display type — large numeric values ───────────────────────────────── */
   .display-num {
-    font-family: 'IBM Plex Mono', 'SF Mono', 'JetBrains Mono', ui-monospace, monospace;
+    font-family: 'IBM Plex Sans', system-ui, sans-serif;
     font-weight: 700;
     font-style: normal;
     letter-spacing: -0.03em;

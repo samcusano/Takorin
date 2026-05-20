@@ -84,7 +84,7 @@ function FindingCard({ f, index, onAct, onDelegate }) {
 
       {/* Header */}
       <div style={{ padding: '14px 16px 10px' }}>
-        <div className="font-display font-semibold text-ink" style={{ fontSize: 14, lineHeight: 1.35, marginBottom: 8 }}>
+        <div className="font-display font-semibold text-base text-ink leading-snug mb-2">
           {f.title}
         </div>
         <p className="font-display text-body leading-relaxed" style={{ margin: 0, color: P.clay }}>
@@ -168,7 +168,7 @@ function OperatorRow({ op, index, total }) {
         <span className="font-body text-label" style={{ minWidth: 26, textAlign: 'right', color: certC }}>{cert}%</span>
       </div>
       {op.flag && (
-        <span className="font-body text-label" style={{ fontSize: 9, color: P.amber, background: `${P.amber}18`, border: `1px solid ${P.amber}40`, padding: '2px 7px', letterSpacing: '0.08em', flexShrink: 0 }}>
+        <span className="font-body text-micro flex-shrink-0 px-1.5 py-0.5" style={{ color: P.amber, background: `${P.amber}18`, border: `1px solid ${P.amber}40` }}>
           CERT GAP
         </span>
       )}
@@ -300,7 +300,7 @@ export default function ShiftIQV2({ score = 78, lineLabel = 'Line 4 · AM Shift'
           {/* Header bar */}
           <div className="flex items-center justify-between" style={{ padding: '14px 24px 0', position: 'relative' }}>
             <div className="flex items-center gap-3">
-              <span className="font-body text-label" style={{ color: P.blue, letterSpacing: '0.06em' }}>{lineLabel}</span>
+              <span className="font-body text-label" style={{ color: P.blue }}>{lineLabel}</span>
               <div style={{ width: 1, height: 11, background: P.border }} />
               <span className="font-body text-label text-muted">{plant}</span>
             </div>
@@ -312,14 +312,14 @@ export default function ShiftIQV2({ score = 78, lineLabel = 'Line 4 · AM Shift'
 
           {/* Score + narrative */}
           <div className="flex items-center" style={{ gap: 32, padding: '18px 24px 16px', position: 'relative' }}>
-            {/* Score — display-num gives IBM Plex Mono at large size */}
+            {/* Score block */}
             <div style={{ flexShrink: 0 }}>
-              <div className="display-num" style={{ fontSize: 88, fontWeight: 700, lineHeight: 1, color: riskC }}>
+              <div className="display-num text-titan font-bold leading-none" style={{ color: riskC }}>
                 {score}
               </div>
               <div className="flex items-center gap-1.5 mt-2">
                 <div style={{ width: 5, height: 5, borderRadius: '50%', background: riskC }} />
-                <span className="font-body text-micro" style={{ color: riskC, letterSpacing: '0.1em' }}>{sLabel(score)}</span>
+                <span className="font-body text-micro" style={{ color: riskC }}>{sLabel(score)}</span>
                 <span className="font-body text-micro text-muted" style={{ marginLeft: 2 }}>· Risk score</span>
               </div>
             </div>
@@ -375,7 +375,7 @@ export default function ShiftIQV2({ score = 78, lineLabel = 'Line 4 · AM Shift'
 
             {/* Intelligence */}
             <div style={{ padding: '20px 24px 16px' }}>
-              <div className="font-body text-micro text-muted tracking-widest mb-3">
+              <div className="font-body text-micro text-muted mb-3">
                 Intelligence · {richFindings.length} findings
               </div>
               {richFindings.map((f, i) => (
@@ -390,7 +390,7 @@ export default function ShiftIQV2({ score = 78, lineLabel = 'Line 4 · AM Shift'
 
             {/* Crew */}
             <div style={{ padding: '18px 24px 16px' }}>
-              <div className="font-body text-micro text-muted tracking-widest mb-3">
+              <div className="font-body text-micro text-muted mb-3">
                 Crew · {crew.length} operators
               </div>
               <div style={{ border: `1px solid ${P.border}`, overflow: 'hidden' }}>
@@ -404,10 +404,10 @@ export default function ShiftIQV2({ score = 78, lineLabel = 'Line 4 · AM Shift'
 
             {/* Startup checklists */}
             <div style={{ padding: '18px 24px 24px' }}>
-              <div className="font-body text-micro text-muted tracking-widest mb-3">Startup checklists</div>
+              <div className="font-body text-micro text-muted mb-3">Startup checklists</div>
               <div className="flex items-center gap-5" style={{ padding: '14px 16px', background: P.surface, border: `1px solid ${P.border}` }}>
                 <div style={{ flexShrink: 0 }}>
-                  <span className="display-num" style={{ fontSize: 36, color: signedCount < 11 ? P.amber : P.sage }}>{signedCount}</span>
+                  <span className="display-num text-display" style={{ color: signedCount < 11 ? P.amber : P.sage }}>{signedCount}</span>
                   <span className="font-body text-body text-muted" style={{ marginLeft: 6 }}>/ 13</span>
                 </div>
                 <div style={{ flex: 1 }}>
@@ -417,7 +417,7 @@ export default function ShiftIQV2({ score = 78, lineLabel = 'Line 4 · AM Shift'
                   <span className="font-body text-label text-muted">{checklistPct}% complete · 4 overdue at T+42 min</span>
                 </div>
                 {!allergenSigned && (
-                  <span className="font-body text-label" style={{ fontSize: 10, color: P.rust, background: `${P.rust}14`, border: `1px solid ${P.rust}35`, padding: '4px 10px', letterSpacing: '0.06em', flexShrink: 0 }}>
+                  <span className="font-body text-micro flex-shrink-0 px-2.5 py-1" style={{ color: P.rust, background: `${P.rust}14`, border: `1px solid ${P.rust}35` }}>
                     ALLERGEN UNSIGNED
                   </span>
                 )}
@@ -431,7 +431,7 @@ export default function ShiftIQV2({ score = 78, lineLabel = 'Line 4 · AM Shift'
           {/* RIGHT: Timeline + Score breakdown */}
           <div style={{ width: 304, flexShrink: 0, overflowY: 'auto', background: P.bg }}>
             <div style={{ padding: '20px 20px 16px' }}>
-              <div className="font-body text-micro text-muted tracking-widest mb-3">Agent · Timeline</div>
+              <div className="font-body text-micro text-muted mb-3">Agent · Timeline</div>
               {agentEvents.map((ev, i) => (
                 <TimelineEntry key={i} ev={ev} index={i} total={agentEvents.length} />
               ))}

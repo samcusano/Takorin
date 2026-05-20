@@ -109,7 +109,7 @@ export function AlluvialDiagram({ interventions }) {
   const { col1, col2, col3, links1, links2, AGENT_COLOR, DEC_COLOR, OUT_COLOR, total } = buildAlluvialLayout(interventions)
   const PAD_T = 18
   const VH = ALLUVIAL_H + PAD_T + 4
-  const FONT = "'IBM Plex Mono', monospace"
+  const FONT = "'IBM Plex Sans'"
 
   return (
     <svg width="100%" viewBox={`0 0 420 ${VH}`} preserveAspectRatio="xMidYMid meet"
@@ -118,7 +118,7 @@ export function AlluvialDiagram({ interventions }) {
       {/* Column headers */}
       {[['AGENT', XA, 'start'], ['DECISION', XD, 'start'], ['OUTCOME', XO + ALLUVIAL_W, 'end']].map(([label, x, anchor]) => (
         <text key={label} x={x} y="10" fontSize="7" fill={C.dim} textAnchor={anchor}
-          fontFamily={FONT} letterSpacing="0.1em">{label}</text>
+          fontFamily={FONT}>{label}</text>
       ))}
 
       <g transform={`translate(0,${PAD_T})`}>
@@ -223,7 +223,7 @@ export function GanttChart({ forecast }) {
       {/* Time headers */}
       {TIME_SLOTS.map((slot, i) => (
         <text key={slot} x={labelW + i * colW + colW / 2} y={14} fontSize="8" fill={C.dim}
-          textAnchor="middle" fontFamily="'IBM Plex Mono', monospace">
+          textAnchor="middle" fontFamily="'IBM Plex Sans'">
           {slot}
         </text>
       ))}
@@ -236,7 +236,7 @@ export function GanttChart({ forecast }) {
       {/* Row labels */}
       {lines.map((line, li) => (
         <text key={line} x={labelW - 6} y={padT + li * rowH + rowH / 2 + 3.5}
-          fontSize="8.5" fill={C.muted} textAnchor="end" fontFamily="'IBM Plex Mono', monospace">
+          fontSize="8.5" fill={C.muted} textAnchor="end" fontFamily="'IBM Plex Sans'">
           {line}
         </text>
       ))}
@@ -260,11 +260,11 @@ export function GanttChart({ forecast }) {
               <rect x={x} y={y} width={3} height={h} fill={C.danger} rx="0" />
             )}
             <text x={x + (shift.urgent ? 7 : 4)} y={y + 10} fontSize="8.5" fill="var(--color-stone, #0B0F18)"
-              fontFamily="'IBM Plex Mono', monospace" fontWeight="600">
+              fontFamily="'IBM Plex Sans'" fontWeight="600">
               {sup}
             </text>
             <text x={x + (shift.urgent ? 7 : 4)} y={y + 20} fontSize="8" fill="var(--color-stone, #0B0F18)"
-              fontFamily="'IBM Plex Mono', monospace" opacity="0.75">
+              fontFamily="'IBM Plex Sans'" opacity="0.75">
               {shift.score} · {shift.signals?.find(s => s.endsWith(':danger'))?.split(':')[0] || 'Score'}
             </text>
           </g>
@@ -296,12 +296,12 @@ export function CalendarHeatmap({ log }) {
       {/* Day labels */}
       {days.map((d, i) => (
         <text key={i} x={padL + i * (cellW + gap) + cellW / 2} y={12} fontSize="8"
-          fill={C.dim} textAnchor="middle" fontFamily="'IBM Plex Mono', monospace">{d}</text>
+          fill={C.dim} textAnchor="middle" fontFamily="'IBM Plex Sans'">{d}</text>
       ))}
       {/* Week labels */}
       {[0, 1, 2, 3].map(w => (
         <text key={w} x={padL - 4} y={padT + w * (cellH + gap) + cellH / 2 + 3.5}
-          fontSize="7.5" fill={C.dim} textAnchor="end" fontFamily="'IBM Plex Mono', monospace">
+          fontSize="7.5" fill={C.dim} textAnchor="end" fontFamily="'IBM Plex Sans'">
           W{w + 1}
         </text>
       ))}
@@ -378,7 +378,7 @@ export function RadarChart({ crew }) {
             {lines.map((ln, li) => (
               <text key={li} x={lx} y={ly + li * 9 - (lines.length - 1) * 4.5}
                 fontSize="7.5" fill={C.muted} textAnchor={anchor} dominantBaseline="middle"
-                fontFamily="'IBM Plex Mono', monospace">
+                fontFamily="'IBM Plex Sans'">
                 {ln}
               </text>
             ))}
@@ -409,7 +409,7 @@ export function RadarChart({ crew }) {
           <g key={member.name} transform={`translate(4, ${svgH - 30 + mi * 8})`}>
             <line x1="0" y1="3" x2="10" y2="3" stroke={color} strokeWidth="1.5" />
             <text x="13" y="6" fontSize="7.5" fill={color}
-              fontFamily="'IBM Plex Mono', monospace">{shortName}</text>
+              fontFamily="'IBM Plex Sans'">{shortName}</text>
           </g>
         )
       })}
@@ -492,13 +492,13 @@ export function KnowledgeTreemap({ domains, enriched }) {
             )}
             {showLabel && (
               <text x={r.x + (r.active > 0 ? 6 : 4)} y={r.y + 13} fontSize="8.5" fill={fillColor}
-                fontFamily="'IBM Plex Mono', monospace" fontWeight="600">
+                fontFamily="'IBM Plex Sans'" fontWeight="600">
                 {shortLabel}
               </text>
             )}
             {showCount && (
               <text x={r.x + (r.active > 0 ? 6 : 4)} y={r.y + (showLabel ? 24 : 13)} fontSize="8"
-                fill={fillColor} fontFamily="'IBM Plex Mono', monospace" opacity="0.75">
+                fill={fillColor} fontFamily="'IBM Plex Sans'" opacity="0.75">
                 {r.value} · {r.avgConf}%
               </text>
             )}

@@ -486,7 +486,7 @@ export default function Analytics() {
             <Module title="Impact" badge="$312K protected · 47 interventions · Q2 2026" defaultOpen>
               <div className="bg-ok/[0.02] border-b border-rule2 px-5 py-4 flex items-baseline gap-6">
                 <div>
-                  <div className="font-body text-muted text-label tracking-[0.1em] mb-1">Value protected · Q2 2026</div>
+                  <div className="font-body text-muted text-label mb-1">Value protected · Q2 2026</div>
                   <div className="flex items-baseline gap-2">
                     <span className="display-num text-display leading-none text-ok">$312K</span>
                     <span className="font-body text-ok text-label">+$47K vs Q1</span>
@@ -501,7 +501,7 @@ export default function Analytics() {
                     const c = m.tone === 'ok' ? 'var(--color-ok)' : 'var(--color-warn)'
                     return (
                       <div key={m.label}>
-                        <div className="font-body text-muted text-label tracking-[0.08em] mb-1">{m.label}</div>
+                        <div className="font-body text-muted text-label mb-1">{m.label}</div>
                         <div className="display-num text-subhead leading-none mb-0.5" style={{ color: c }}>{m.value}</div>
                         <div className="font-body text-muted text-label mb-1.5">{m.sub}</div>
                         <div className="h-[3px] bg-rule2">
@@ -675,8 +675,8 @@ export default function Analytics() {
                   return (
                     <div key={g.id} className={`px-5 py-4 ${!onTrack ? 'bg-warn/[0.02]' : 'bg-stone'}`}>
                       <div className="flex items-start justify-between mb-1">
-                        <div className="font-body text-muted text-label tracking-[0.08em]">{g.label}</div>
-                        <span className="font-mono text-label text-muted tabular-nums">46d left</span>
+                        <div className="font-body text-muted text-label">{g.label}</div>
+                        <span className="font-body text-label text-muted tabular-nums">46d left</span>
                       </div>
                       <div className="display-num text-page font-bold leading-none mb-0.5" style={{ color: toneColor }}>
                         {g.current}{g.unit}
@@ -709,7 +709,7 @@ export default function Analytics() {
               <div className="grid px-5 py-2 bg-stone2 border-b border-rule2"
                 style={{ gridTemplateColumns: '1fr 1fr 56px 56px 160px' }}>
                 {['Metric', 'Percentile position (0–100)', 'Score', 'Rank', 'Delta'].map(h => (
-                  <div key={h} className="font-body text-muted text-label tracking-[0.08em]">{h}</div>
+                  <div key={h} className="font-body text-muted text-label">{h}</div>
                 ))}
               </div>
               {/* Shared percentile registry — all metrics on the same 0-100 axis */}
@@ -733,7 +733,7 @@ export default function Analytics() {
                       </div>
                     </div>
                     <div className="display-num text-base tabular-nums leading-none" style={{ color: toneColor }}>{b.score}</div>
-                    <div className="font-mono text-label text-muted tabular-nums">{b.percentile}th</div>
+                    <div className="font-body text-label text-muted tabular-nums">{b.percentile}th</div>
                     <div className="font-body text-label text-muted">{b.delta}</div>
                   </div>
                 )
@@ -749,7 +749,7 @@ export default function Analytics() {
               <div className="grid px-5 py-2 bg-stone2 border-b border-rule2"
                 style={{ gridTemplateColumns: '1fr 120px 80px 80px' }}>
                 {['Signal', 'Plants', 'Confidence', 'Status'].map(h => (
-                  <div key={h} className="font-body text-muted text-label tracking-[0.08em]">{h}</div>
+                  <div key={h} className="font-body text-muted text-label">{h}</div>
                 ))}
               </div>
               {/* Active signals */}
@@ -772,14 +772,14 @@ export default function Analytics() {
                       </div>
                       <div className="font-body text-muted text-label">{s.note}</div>
                     </div>
-                    <div className="font-mono text-label text-muted">{s.plants}</div>
+                    <div className="font-body text-label text-muted">{s.plants}</div>
                     <div>
                       {!s.locked && (
                         <div className="h-[3px] bg-rule2">
                           <div className="h-full" style={{ width: `${s.conf}%`, background: toneColor, opacity: 0.75 }} />
                         </div>
                       )}
-                      {!s.locked && <div className="font-mono text-label tabular-nums mt-0.5" style={{ color: toneColor }}>{s.conf}%</div>}
+                      {!s.locked && <div className="font-body text-label tabular-nums mt-0.5" style={{ color: toneColor }}>{s.conf}%</div>}
                     </div>
                     <div className="font-body text-label" style={{ color: toneColor }}>{s.status}</div>
                   </div>

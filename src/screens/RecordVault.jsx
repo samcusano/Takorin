@@ -98,7 +98,7 @@ function StepRow({ step }) {
             <span className="font-body text-muted text-label opacity-50">·</span>
             <span className="font-body text-muted text-label">{step.completedAt}</span>
             {step.sigHash && (
-              <span className="font-body text-ok text-label font-mono">e-sig {step.sigHash}</span>
+              <span className="font-body text-ok text-label font-body">e-sig {step.sigHash}</span>
             )}
           </div>
         )}

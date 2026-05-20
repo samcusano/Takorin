@@ -356,7 +356,7 @@ function QueueClusterRow({ cluster, resolved, selected, onSelect }) {
       }`}>
       {/* Cluster badge */}
       <div className="flex items-center gap-1.5 mb-1.5">
-        <span className={`font-body text-label px-1.5 py-px font-semibold tracking-wider ${
+        <span className={`font-body text-label px-1.5 py-px font-semibold ${
           allResolved ? 'bg-ok/10 text-ok' : 'bg-ochre/15 text-ochre'
         }`}>
           {allResolved ? 'Resolved' : 'High impact cluster'}
@@ -521,7 +521,7 @@ function WorkspacePanel({ item, isCluster, resolved, onResolve, onResolveCluster
         {/* Issue context */}
         <div>
           <div className="flex items-center gap-2 mb-2">
-            {isCluster && <span className="font-body text-label px-1.5 py-px bg-ochre/15 text-ochre font-semibold tracking-wider">Cluster</span>}
+            {isCluster && <span className="font-body text-label px-1.5 py-px bg-ochre/15 text-ochre font-semibold">Cluster</span>}
             <span className={`font-body text-label font-medium ${severityColor}`}>{severityLabel}</span>
             {item.detectedAgo && <span className="font-body text-muted text-label">· Detected {item.detectedAgo}</span>}
             {isResolved && <span className="font-body text-ok text-label flex items-center gap-1"><Check size={10} strokeWidth={2.5} />Resolved</span>}
@@ -572,7 +572,7 @@ function WorkspacePanel({ item, isCluster, resolved, onResolve, onResolveCluster
             <div className="border border-rule2 bg-stone2 px-4 py-3.5">
               <div className="flex items-start justify-between gap-3 mb-2">
                 <div className="font-body text-ink text-body leading-relaxed flex-1">{item.aiAssessment.text}</div>
-                <span className="font-mono text-label font-bold text-ochre flex-shrink-0 px-2 py-0.5 bg-ochre/10">
+                <span className="font-body text-label font-bold text-ochre flex-shrink-0 px-2 py-0.5 bg-ochre/10">
                   {item.aiAssessment.confidence}%
                 </span>
               </div>
@@ -589,7 +589,7 @@ function WorkspacePanel({ item, isCluster, resolved, onResolve, onResolveCluster
                 <div key={i} className="flex items-center gap-4 px-4 py-3">
                   <span className="display-num text-base font-bold text-muted/60 flex-shrink-0 w-4">{i + 1}</span>
                   <span className="font-body text-ink text-body flex-1">{step.step}</span>
-                  <span className="font-mono text-muted text-label flex-shrink-0">{step.duration}</span>
+                  <span className="font-body text-muted text-label flex-shrink-0">{step.duration}</span>
                 </div>
               ))}
               {item.estimatedMinutes && (

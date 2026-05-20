@@ -82,7 +82,7 @@ function LayoutGrid({ d, currentPlant, carryForwardItems, acknowledgedCount, car
    {/* ── Handoff summary stats ────────────────────────────────────── */}
    <div className="flex-shrink-0 flex divide-x divide-rule2 border-b border-rule2 bg-stone">
     <div className="px-5 py-3 min-w-0">
-     <div className="font-body text-micro text-muted tracking-widest mb-1">Carry-forward</div>
+     <div className="font-body text-micro text-muted mb-1">Carry-forward</div>
      <div className="flex items-baseline gap-2">
       <span className={`display-num text-metric leading-none ${criticalCount > 0 ? 'text-danger' : carryForwardCount > 0 ? 'text-warn' : 'text-ok'}`}>{carryForwardCount}</span>
       {criticalCount > 0 && <span className="font-body text-danger text-label">{criticalCount} critical</span>}
@@ -91,28 +91,28 @@ function LayoutGrid({ d, currentPlant, carryForwardItems, acknowledgedCount, car
      </div>
     </div>
     <div className="px-5 py-3 min-w-0">
-     <div className="font-body text-micro text-muted tracking-widest mb-1">Acknowledged</div>
+     <div className="font-body text-micro text-muted mb-1">Acknowledged</div>
      <div className="flex items-baseline gap-2">
       <span className={`display-num text-metric leading-none ${allAcknowledged ? 'text-ok' : 'text-muted'}`}>{acknowledgedCount}<span className="text-muted">/{carryForwardCount}</span></span>
       {allAcknowledged && <span className="font-body text-ok text-label">ready</span>}
      </div>
     </div>
     <div className="px-5 py-3 min-w-0">
-     <div className="font-body text-micro text-muted tracking-widest mb-1">Synthesis confidence</div>
+     <div className="font-body text-micro text-muted mb-1">Synthesis confidence</div>
      <div className="flex items-baseline gap-2">
       <span className="display-num text-metric leading-none text-ok">91%</span>
       <span className="font-body text-muted text-label">4 of 5 sources fresh</span>
      </div>
     </div>
     <div className="px-5 py-3 min-w-0">
-     <div className="font-body text-micro text-muted tracking-widest mb-1">Cert coverage</div>
+     <div className="font-body text-micro text-muted mb-1">Cert coverage</div>
      <div className="flex items-baseline gap-2">
       <span className="display-num text-metric leading-none text-warn">1 gap</span>
       <span className="font-body text-muted text-label">Sauce Dosing L2</span>
      </div>
     </div>
     <div className="px-5 py-3 min-w-0 flex-1">
-     <div className="font-body text-micro text-muted tracking-widest mb-1">Risk at handoff</div>
+     <div className="font-body text-micro text-muted mb-1">Risk at handoff</div>
      <div className="flex items-baseline gap-2">
       <span className="display-num text-metric leading-none text-danger">78</span>
       <span className="font-body text-danger text-label">at risk</span>
@@ -208,7 +208,7 @@ function LayoutGrid({ d, currentPlant, carryForwardItems, acknowledgedCount, car
      </div>
      <div className="border-b border-rule2">
       <div className="px-4 py-2 border-b border-rule2">
-       <span className="font-body text-micro text-muted tracking-widest">Operator briefing</span>
+       <span className="font-body text-micro text-muted">Operator briefing</span>
       </div>
       <div className="flex items-center gap-2.5 px-4 py-3 border-b border-rule2">
        <PersonAvatar name="M. Santos" size={26} />
@@ -229,7 +229,7 @@ function LayoutGrid({ d, currentPlant, carryForwardItems, acknowledgedCount, car
      </div>
      <div className="border-b border-rule2">
       <div className="px-4 py-2 border-b border-rule2">
-       <span className="font-body text-micro text-muted tracking-widest">Cert alerts</span>
+       <span className="font-body text-micro text-muted">Cert alerts</span>
       </div>
       {certExpiry.filter(c => c.tone !== 'ok').map((c, i) => (
        <div key={i} className={`flex gap-3 px-4 py-2.5 border-b border-rule2 last:border-b-0 ${c.tone === 'danger' ? 'bg-danger/[0.03]' : ''}`}>
@@ -243,7 +243,7 @@ function LayoutGrid({ d, currentPlant, carryForwardItems, acknowledgedCount, car
      </div>
      <div>
       <div className="px-4 py-2 border-b border-rule2">
-       <span className="font-body text-micro text-muted tracking-widest">Upcoming staffing</span>
+       <span className="font-body text-micro text-muted">Upcoming staffing</span>
       </div>
       {d.forecast.map((row, i) => <ForecastRow key={i} row={row} />)}
      </div>
@@ -281,7 +281,7 @@ function MachineStateHandoff() {
      Machine State Handoff · Robotic workforce · Wichita Plant
     </div>
     <div className="font-display font-bold text-page text-ink leading-none">
-     Shift boundary <span className="font-light text-ochre">14:00</span>
+     Shift boundary <span className="text-ochre">14:00</span>
     </div>
    </div>
 

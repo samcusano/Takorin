@@ -41,15 +41,9 @@ function sparkDirection(trend) {
   return 'flat'
 }
 
-function Mono({ children, size = 10, color, style = {} }) {
+function Mono({ children, color, style = {} }) {
   return (
-    <span style={{
-      fontFamily: "'SF Mono', 'JetBrains Mono', 'Menlo', 'Consolas', monospace",
-      fontSize: size,
-      color: color || P.dim,
-      letterSpacing: '0.04em',
-      ...style,
-    }}>
+    <span className="font-body text-micro" style={{ color: color || P.dim, ...style }}>
       {children}
     </span>
   )
@@ -86,34 +80,19 @@ export default function ShiftHero({
         <div style={{ display: 'flex', alignItems: 'center', gap: 32, padding: '20px 24px 16px', position: 'relative' }}>
           {/* Score block */}
           <div style={{ flexShrink: 0 }}>
-            <div style={{
-              fontFamily: "'Inter', 'Helvetica Neue', system-ui, sans-serif",
-              fontSize: 88,
-              fontWeight: 800,
-              lineHeight: 1,
-              color: riskC,
-              letterSpacing: '-0.03em',
-            }}>
+            <div className="font-body font-bold text-titan leading-noneer" style={{ color: riskC }}>
               {score}
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginTop: 8 }}>
               <div style={{ width: 5, height: 5, borderRadius: '50%', background: riskC }} />
-              <Mono size={10} color={riskC} style={{ letterSpacing: '0.1em' }}>{sLabel(score)}</Mono>
+              <Mono color={riskC}>{sLabel(score)}</Mono>
               <Mono size={10} color={P.dim} style={{ marginLeft: 2 }}>· {domainLabel}</Mono>
             </div>
           </div>
 
           {/* Vertical rule + statement */}
           <div style={{ borderLeft: `1px solid ${P.border}`, paddingLeft: 28, maxWidth: 400, flex: 1 }}>
-            <p style={{
-              fontFamily: "'Inter', system-ui, sans-serif",
-              fontSize: 15,
-              lineHeight: 1.6,
-              color: P.bone,
-              fontWeight: 400,
-              margin: 0,
-              marginBottom: 12,
-            }}>
+            <p className="font-display text-base text-ink leading-relaxed" style={{ margin: 0, marginBottom: 12 }}>
               {statement}
             </p>
             <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>

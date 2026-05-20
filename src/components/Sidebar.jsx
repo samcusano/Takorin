@@ -419,8 +419,8 @@ export default function Sidebar() {
   </svg>
   {!collapsed && (
    <div className="flex-1 min-w-0">
-    <div className="font-body font-bold text-ink text-label tracking-widest leading-none">Takorin</div>
-    <div className="font-body text-sidebar-ghost text-micro mt-1 tracking-wider">Total intelligence</div>
+    <div className="font-body font-bold text-ink text-label leading-none">Takorin</div>
+    <div className="font-body text-sidebar-ghost text-micro mt-1">Total intelligence</div>
    </div>
   )}
   {!collapsed && <div className="live-dot w-1.5 h-1.5 rounded-full bg-ok flex-shrink-0" />}
@@ -468,12 +468,12 @@ export default function Sidebar() {
  {/* ── Supervisor: 3 screens (ShiftIQ contains Handoff/Fleet/Allocation as tabs) */}
  {viewingRole === 'supervisor' && (
   <>
-   {!collapsed && <div className="px-4 pt-4 pb-1 font-body text-micro text-sidebar-ghost tracking-widest">Operational</div>}
+   {!collapsed && <div className="px-4 pt-4 pb-1 font-body text-micro text-sidebar-ghost">Operational</div>}
    <SideItem to="/shift"  id="shift"  icon={Activity} label="ShiftIQ"      badge="3" badgeType="alert" collapsed={collapsed} />
    <AgentItem count={agentPendingCount} collapsed={collapsed} />
-   {!collapsed && <div className="px-4 pt-4 pb-1 font-body text-micro text-sidebar-ghost tracking-widest">Causality</div>}
+   {!collapsed && <div className="px-4 pt-4 pb-1 font-body text-micro text-sidebar-ghost">Causality</div>}
    <SideItem to="/outcomes" id="outcomes" icon={CircleDot} label="Outcomes" badge={null} collapsed={collapsed} />
-   {!collapsed && <div className="px-4 pt-4 pb-1 font-body text-micro text-sidebar-ghost tracking-widest">Activity</div>}
+   {!collapsed && <div className="px-4 pt-4 pb-1 font-body text-micro text-sidebar-ghost">Activity</div>}
    {collapsed ? (
     <NavTooltip label="Notifications">
      <button type="button" onClick={() => setNotifOpen(true)}
@@ -498,14 +498,14 @@ export default function Sidebar() {
   <>
    <PlantItem collapsed={collapsed} />
 
-   {!collapsed && <div className="px-4 pt-4 pb-1 font-body text-micro text-sidebar-ghost tracking-widest">Operations</div>}
+   {!collapsed && <div className="px-4 pt-4 pb-1 font-body text-micro text-sidebar-ghost">Operations</div>}
    {modules.map(m => <SideItem key={m.id} to={m.path} id={m.id} {...m} collapsed={collapsed} />)}
    <AgentItem count={agentPendingCount} collapsed={collapsed} />
    <SideItem to="/outcomes" id="outcomes" icon={CircleDot} label="Outcomes" badge={null} collapsed={collapsed} />
 
    {!collapsed && (
     <button type="button" onClick={() => setPlatformExpanded(p => !p)}
-     className="flex items-center justify-between w-full px-4 pt-4 pb-1 font-body text-micro text-sidebar-ghost tracking-widest hover:text-white/50 transition-colors">
+     className="flex items-center justify-between w-full px-4 pt-4 pb-1 font-body text-micro text-sidebar-ghost hover:text-white/50 transition-colors">
      <span>Platform</span>
      <ChevronDown size={10} className={`transition-transform duration-200 ${platformExpanded ? 'rotate-180' : ''}`} />
     </button>
@@ -531,7 +531,7 @@ export default function Sidebar() {
     </>
    )}
 
-   {!collapsed && <div className="px-4 pt-4 pb-1 font-body text-micro text-sidebar-ghost tracking-widest">Activity</div>}
+   {!collapsed && <div className="px-4 pt-4 pb-1 font-body text-micro text-sidebar-ghost">Activity</div>}
    {collapsed ? (
     <NavTooltip label="Notifications">
      <button type="button" onClick={() => setNotifOpen(true)}

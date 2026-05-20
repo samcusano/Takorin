@@ -544,7 +544,7 @@ export default function PlantOverview() {
 
                 {/* Sticky domain header */}
                 <div className="sticky top-0 z-10 flex items-center gap-2.5 px-5 py-2 bg-stone border-b border-t border-rule2">
-                  <span className="font-body font-semibold text-ink text-label tracking-tight">{group.area}</span>
+                  <span className="font-body font-semibold text-ink text-label">{group.area}</span>
                   <span className={`font-body text-label px-1.5 py-0.5 font-medium ${
                     worstZone === 'risk'  ? 'bg-danger/[0.04] text-danger'
                     : worstZone === 'watch' ? 'bg-warn/[0.08] text-warn'
@@ -763,23 +763,23 @@ export default function PlantOverview() {
         <div className="space-y-4">
           {selectedFinding.desc && (
             <div>
-              <div className="font-body text-micro text-muted tracking-widest mb-1.5">Finding</div>
+              <div className="font-body text-micro text-muted mb-1.5">Finding</div>
               <p className="font-display text-body text-ink leading-relaxed">{selectedFinding.desc}</p>
             </div>
           )}
           {selectedFinding.evidence && (
             <div>
-              <div className="font-body text-micro text-muted tracking-widest mb-1.5">Evidence</div>
+              <div className="font-body text-micro text-muted mb-1.5">Evidence</div>
               <div className="font-body text-label text-muted bg-stone2 px-3 py-2.5 border-l-2 border-l-rule">{selectedFinding.evidence}</div>
             </div>
           )}
           <div>
-            <div className="font-body text-micro text-muted tracking-widest mb-1.5">Current owner</div>
+            <div className="font-body text-micro text-muted mb-1.5">Current owner</div>
             <div className="font-body text-ink text-body">{selectedFinding.meta.supervisor}</div>
           </div>
           {selectedFinding.recommendedAction && (
             <div>
-              <div className="font-body text-micro text-muted tracking-widest mb-1.5">Recommended action</div>
+              <div className="font-body text-micro text-muted mb-1.5">Recommended action</div>
               <p className="font-display text-body text-ink leading-relaxed">{selectedFinding.recommendedAction}</p>
             </div>
           )}

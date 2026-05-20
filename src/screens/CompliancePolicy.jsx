@@ -14,7 +14,7 @@ function SectionHeader({ label, count, accent = 'bg-rule2' }) {
   return (
     <div className="flex items-center gap-3 px-5 py-2.5 border-b border-rule2">
       <div className={`w-0.5 h-3.5 flex-shrink-0 rounded-sm ${accent}`} />
-      <span className="font-body text-micro text-muted tracking-widest">{label}</span>
+      <span className="font-body text-micro text-muted">{label}</span>
       <div className="flex-1 h-px bg-rule2" />
       {count != null && <span className="font-body text-muted text-label">{count}</span>}
     </div>
@@ -31,7 +31,7 @@ function FrameworkRow({ f }) {
       <div className="flex-1 min-w-0">
         <div className="flex items-baseline gap-2 flex-wrap mb-0.5">
           <span className="font-body font-medium text-ink text-body">{f.name}</span>
-          <span className="font-body text-micro text-muted bg-stone3 px-1.5 py-0.5 leading-none tracking-wide">{f.code}</span>
+          <span className="font-body text-micro text-muted bg-stone3 px-1.5 py-0.5 leading-none">{f.code}</span>
         </div>
         <div className="font-body text-muted text-label leading-snug">{f.description}</div>
       </div>
@@ -50,7 +50,7 @@ function EvidenceRow({ e }) {
         <div className="font-body text-muted text-label mt-0.5 leading-snug">{e.requirement}</div>
       </div>
       {e.required
-        ? <span className="font-body text-micro text-ok bg-ok/[0.08] px-1.5 py-0.5 flex-shrink-0 tracking-widest whitespace-nowrap mt-0.5">REQUIRED</span>
+        ? <span className="font-body text-micro text-ok bg-ok/[0.08] px-1.5 py-0.5 flex-shrink-0 whitespace-nowrap mt-0.5">REQUIRED</span>
         : <span className="font-body text-micro text-muted bg-stone3 px-1.5 py-0.5 flex-shrink-0 mt-0.5">Optional</span>
       }
     </div>
@@ -82,7 +82,7 @@ function EscalationFlow({ steps }) {
             <div className="flex-1 min-w-0">
               <div className={`font-body font-medium text-label ${t.threshold}`}>{s.threshold}</div>
               <div className="font-body text-muted text-label mt-0.5 leading-snug">{s.action}</div>
-              <div className="font-body text-micro text-muted tracking-wide mt-0.5">{s.channel}</div>
+              <div className="font-body text-micro text-muted mt-0.5">{s.channel}</div>
             </div>
           </div>
         )
@@ -162,7 +162,7 @@ export default function CompliancePolicy() {
                 }`}>
                 <div className="flex items-center gap-1.5 mb-1.5">
                   <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${dotColor}`} />
-                  <span className={`font-body text-micro tracking-widest ${statusColor}`}>{STATUS_LABEL[p.status]}</span>
+                  <span className={`font-body text-micro ${statusColor}`}>{STATUS_LABEL[p.status]}</span>
                 </div>
                 <div className="font-display font-bold text-ink text-base leading-snug mb-0.5">{p.name}</div>
                 <div className="font-body text-muted text-label mb-2">{p.jurisdiction}</div>
@@ -182,7 +182,7 @@ export default function CompliancePolicy() {
 
         {/* Export markets */}
         <div className="flex-shrink-0 px-5 py-3 border-t border-rule2 bg-stone2">
-          <div className="font-body text-micro text-muted tracking-widest mb-1.5">EXPORT MARKETS</div>
+          <div className="font-body text-micro text-muted mb-1.5">EXPORT MARKETS</div>
           <div className="flex flex-wrap gap-1">
             {multiRegulatoryCoverage.currentExportMarkets.map(m => (
               <span key={m} className="font-body text-muted text-label bg-stone3 px-1.5 py-0.5">{m}</span>
@@ -232,7 +232,7 @@ export default function CompliancePolicy() {
                 <div key={t.id} className="flex items-center gap-3 px-5 py-3 border-b border-rule2 last:border-0 hover:bg-stone2 transition-colors">
                   <div className="flex-1 min-w-0">
                     <div className="font-body font-medium text-ink text-body mb-1">{t.name}</div>
-                    <span className="font-body text-micro text-muted bg-stone3 px-1.5 py-0.5 tracking-wide">{t.format}</span>
+                    <span className="font-body text-micro text-muted bg-stone3 px-1.5 py-0.5">{t.format}</span>
                   </div>
                   <span className="font-body text-muted text-label flex-shrink-0">
                     {t.lastGenerated ? `Last: ${t.lastGenerated}` : 'Never generated'}

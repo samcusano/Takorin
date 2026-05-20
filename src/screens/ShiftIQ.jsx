@@ -719,7 +719,7 @@ function PrepareView({ forecast = [] }) {
   <div className="flex flex-col flex-1 overflow-hidden content-reveal">
    {/* Gantt — upcoming shift forecast */}
    <div className="flex-shrink-0 px-5 py-4 border-b border-rule2">
-    <div className="font-body text-micro text-muted tracking-widest mb-3">Upcoming shift forecast</div>
+    <div className="font-body text-micro text-muted mb-3">Upcoming shift forecast</div>
     <GanttChart forecast={forecast} />
    </div>
    {/* Action items — supervisory prep tasks */}

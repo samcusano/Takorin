@@ -58,7 +58,7 @@ function CoaPanel({ lot, onClose }) {
 
       {/* ── Lot identity ─────────────────────────────────────────────── */}
       <div>
-        <div className="font-body text-muted text-label tracking-widest mb-3">Lot details</div>
+        <div className="font-body text-muted text-label mb-3">Lot details</div>
         <div className="space-y-3">
           {[
             { label: 'Ingredient',  value: lot.ing               },
@@ -78,7 +78,7 @@ function CoaPanel({ lot, onClose }) {
       {/* ── Shelf life bar ───────────────────────────────────────────── */}
       <div>
         <div className="flex items-baseline justify-between mb-2">
-          <span className="font-body text-muted text-label tracking-widest">Shelf life</span>
+          <span className="font-body text-muted text-label">Shelf life</span>
           <span className={`display-num text-head font-bold leading-none ${shelfText}`}>{lot.shelf}<span className="font-body text-label font-normal text-muted ml-1">days</span></span>
         </div>
         <div className="h-2 bg-rule2 rounded-full overflow-hidden mb-1">
@@ -89,7 +89,7 @@ function CoaPanel({ lot, onClose }) {
 
       {/* ── Lab results ──────────────────────────────────────────────── */}
       <div>
-        <div className="font-body text-muted text-label tracking-widest mb-3">
+        <div className="font-body text-muted text-label mb-3">
           Lab results{coaPass ? ' · Apr 12, 2026' : ' · Pending'}
         </div>
         {coaPass ? (
@@ -429,7 +429,7 @@ export default function SupplierIQ() {
         {/* ── Supplier standings ── */}
         <div className="border-b border-rule2">
           <div className="flex items-center justify-between px-4 py-2.5 bg-stone2 border-b border-rule2">
-            <span className="font-body text-label tracking-widest text-muted">SUPPLIER STANDINGS</span>
+            <span className="font-body text-label text-muted">SUPPLIER STANDINGS</span>
             <span className="font-body text-label text-muted">5 active · by score</span>
           </div>
 

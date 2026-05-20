@@ -47,7 +47,7 @@ function CaseDetailPanel({ caseData, onClose }) {
  <div className="flex items-start justify-between px-4 py-4 border-b border-rule2 bg-stone2 flex-shrink-0">
  <div>
  <div className="font-body text-label text-muted mb-1">{caseData.capaId}</div>
- <div className="font-display text-base font-black text-ink">{caseData.title}</div>
+ <div className="font-display text-base font-bold text-ink">{caseData.title}</div>
  </div>
  <button type="button" onClick={() => exit(onClose)} aria-label="Close case detail" className="p-1 text-muted hover:text-ink transition-colors duration-100 ease-standard flex-shrink-0">
  <X size={14} strokeWidth={2} aria-hidden="true" />
@@ -203,7 +203,7 @@ function PriorityQueueRow({ c, isSelected, onSelect, isEscalated, isResolved }) 
   )}
  </div>
  {score > 0 && !isResolved && !isEscalated && (
-  <div className={`display-num text-head font-black flex-shrink-0 tabular-nums leading-none mt-0.5 ${
+  <div className={`display-num text-head font-bold flex-shrink-0 tabular-nums leading-none mt-0.5 ${
    score >= 80 ? 'text-danger' : score >= 55 ? 'text-warn' : 'text-muted/60'
   }`}>
    {score}
@@ -330,16 +330,16 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
      <span className="font-body text-muted text-label">{c.capaId}</span>
      <StatusPill tone={c.badgeColor === 'text-danger' ? 'danger' : c.badgeColor === 'text-ok' ? 'ok' : 'warn'}>{c.badge}</StatusPill>
     </div>
-    <div className="font-display text-head font-black text-ink leading-tight">{c.title}</div>
+    <div className="font-display text-head font-bold text-ink leading-tight">{c.title}</div>
     <div className="font-body text-muted text-label mt-0.5">
      {c.assigned} · {c.due}
     </div>
    </div>
    {/* Ghost score watermark */}
    {score > 0 && (
-    <div className={`display-num font-black tabular-nums leading-none flex-shrink-0 select-none ${
+    <div className={`display-num font-bold text-display tabular-nums leading-none flex-shrink-0 select-none ${
      score >= 80 ? 'text-danger/20' : score >= 55 ? 'text-warn/20' : 'text-muted/15'
-    }`} style={{ fontSize: 40 }}>
+    }`}>
      {score}
     </div>
    )}
@@ -381,7 +381,7 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
  {/* ── Recommended action (the operative section) ── */}
  {!isClosed && !actionTaken && (
  <div className={`px-4 py-4 border-b border-rule2 ${isBlocking ? 'bg-danger/[0.025]' : c.type === 'ca' ? 'bg-ok/[0.02]' : 'bg-stone2'}`}>
- <div className="font-body text-muted text-label tracking-widest mb-3">RECOMMENDED ACTION</div>
+ <div className="font-body text-muted text-label mb-3">RECOMMENDED ACTION</div>
 
  {/* Two-column impact context — tinted by outcome */}
  {(c.expectedImpact || c.riskIfIgnored) && (
@@ -764,7 +764,7 @@ export default function CapaEngine() {
    </div>
    {/* FDA inspection countdown */}
    <div className="flex-shrink-0 text-right border-l border-rule2 pl-5">
-    <div className="display-num font-black text-warn leading-none" style={{ fontSize: 28 }}>18</div>
+    <div className="display-num font-bold text-metric text-warn leading-none">18</div>
     <div className="font-body text-muted text-label mt-0.5 whitespace-nowrap">days to FDA inspection</div>
    </div>
    <div className="flex gap-2 flex-shrink-0">

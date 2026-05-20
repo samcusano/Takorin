@@ -26,12 +26,8 @@ export default {
         sidebar: { DEFAULT: '#080D16', 2: '#0E1520', 3: '#152030', border: '#1C2A40', ghost: '#6A88A8' },
       },
       fontFamily: {
-        // System / data voice — monospace for all structured information
-        body:    ["'IBM Plex Mono'", "'SF Mono'", "'JetBrains Mono'", 'ui-monospace', "'Menlo'", "'Consolas'", 'monospace'],
-        // Narrative / context voice — IBM Plex Sans (designed to pair with IBM Plex Mono)
-        display: ["'IBM Plex Sans'", "'Inter'", 'system-ui', 'sans-serif'],
-        // Explicit alias
-        mono:    ["'IBM Plex Mono'", "'SF Mono'", "'JetBrains Mono'", 'ui-monospace', "'Menlo'", "'Consolas'", 'monospace'],
+        body:    ["'IBM Plex Sans'", 'system-ui', 'sans-serif'],
+        display: ["'IBM Plex Sans'", 'system-ui', 'sans-serif'],
       },
       fontSize: {
         // ── UI text scale ──────────────────────────────────────────────────
@@ -48,6 +44,9 @@ export default {
         display: ['40px', { lineHeight: '1' }],
         score:   ['48px', { lineHeight: '1' }],
         hero:    ['64px', { lineHeight: '1' }],
+        // ── Viewport-dominating numerals ───────────────────────────────────
+        jumbo:   ['80px', { lineHeight: '1' }],
+        titan:   ['88px', { lineHeight: '1' }],
       },
       transitionDuration: {
         '50':  '50ms',
