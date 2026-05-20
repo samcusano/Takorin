@@ -44,26 +44,40 @@ function CarryForwardDetailPanel({ item, onClose }) {
 }
 
 
+// ── Section block — accent bar + bold label header ───────────────────────────
+function SectionBlock({ label, accent = 'muted', children }) {
+ const bar = { danger: 'bg-danger', warn: 'bg-warn', ok: 'bg-ok', ochre: 'bg-ochre', muted: 'bg-rule2' }[accent] || 'bg-rule2'
+ return (
+  <div className="border-b border-rule2 last:border-b-0">
+   <div className="flex items-center gap-2.5 px-4 py-2 border-b border-rule2">
+    <div className={`w-[3px] h-3.5 flex-shrink-0 ${bar}`} />
+    <span className="font-body font-semibold text-micro text-muted uppercase">{label}</span>
+   </div>
+   {children}
+  </div>
+ )
+}
+
 function ForecastRow({ row }) {
- const scoreColor = row.score >= 75 ? 'text-danger' : row.score >= 60 ? 'text-warn' : 'text-ok'
- const hasConflict = row.urgent
+ const sc = row.score >= 75 ? 'text-danger' : row.score >= 60 ? 'text-warn' : 'text-ok'
+ const bc = row.score >= 75 ? 'border-l-danger' : row.score >= 60 ? 'border-l-warn' : 'border-l-ok'
  const signals = (row.signals || []).map(s => {
   const [label, tone] = s.split(':')
   return { label, tone }
  })
  return (
-  <div className={`flex border-b border-rule2 last:border-b-0 min-h-[46px] ${hasConflict ? 'bg-danger/[0.03]' : ''}`}>
-   <div className="w-[72px] flex-shrink-0 px-3 py-2.5 border-r border-rule2 font-body text-muted text-label leading-relaxed whitespace-pre-line">{row.time}</div>
-   <div className={`w-10 flex-shrink-0 px-2 pt-2.5 display-num text-head ${scoreColor}`}>{row.score}</div>
-   <div className="flex-1 px-3 py-2.5">
-    <div className="font-body font-medium text-ink text-body mb-1">{row.name}</div>
-    <div className="flex gap-1.5 flex-wrap mb-1">
-     {signals.map((s, i) => {
-      const cls = s.tone === 'ok' ? 'text-ok bg-ok/10' : (s.tone === 'bad' || s.tone === 'danger') ? 'text-danger bg-danger/[0.04]' : 'text-warn bg-warn/10'
-      return <span key={i} className={`font-body text-label px-1.5 py-px ${cls}`}>{s.label}</span>
-     })}
-    </div>
-    {row.action && <p className={`font-body text-label ${hasConflict ? 'text-warn' : 'text-muted'}`}>{row.action}</p>}
+  <div className={`flex items-center gap-4 px-4 py-3 border-b border-rule2 last:border-b-0 border-l-2 ${bc} ${row.urgent ? 'bg-danger/[0.03]' : ''}`}>
+   <div className={`display-num text-head leading-none flex-shrink-0 w-8 tabular-nums ${sc}`}>{row.score}</div>
+   <div className="flex-1 min-w-0">
+    <div className="font-body font-medium text-ink text-body leading-snug">{row.name}</div>
+    <div className="font-body text-muted text-micro mt-0.5">{row.time.replace('\n', ' ')}</div>
+    {row.action && <div className={`font-body text-micro mt-1 ${row.urgent ? 'text-warn' : 'text-muted'}`}>{row.action}</div>}
+   </div>
+   <div className="flex flex-col gap-1 items-end flex-shrink-0">
+    {signals.map((s, i) => {
+     const cls = s.tone === 'ok' ? 'text-ok bg-ok/10' : (s.tone === 'bad' || s.tone === 'danger') ? 'text-danger bg-danger/[0.06]' : 'text-warn bg-warn/10'
+     return <span key={i} className={`font-body text-micro px-1.5 py-px flex-shrink-0 ${cls}`}>{s.label}</span>
+    })}
    </div>
   </div>
  )
@@ -206,47 +220,49 @@ function LayoutGrid({ d, currentPlant, carryForwardItems, acknowledgedCount, car
        </ul>
       </div>
      </div>
-     <div className="border-b border-rule2">
-      <div className="px-4 py-2 border-b border-rule2">
-       <span className="font-body text-micro text-muted">Operator briefing</span>
-      </div>
-      <div className="flex items-center gap-2.5 px-4 py-3 border-b border-rule2">
-       <PersonAvatar name="M. Santos" size={26} />
-       <div>
-        <div className="font-body font-medium text-ink text-body">M. Santos — Incoming PM supervisor</div>
-        <div className="font-body text-muted text-label">Line 4 · 14:00–22:00</div>
+     {/* ── Operator briefing ──────────────────────────── */}
+     <SectionBlock label="Operator briefing" accent="ochre">
+      <div className="flex items-center gap-4 px-4 py-3 border-b border-rule2">
+       <PersonAvatar name="M. Santos" size={40} />
+       <div className="flex-1 min-w-0">
+        <div className="font-body font-bold text-head text-ink leading-tight">M. Santos</div>
+        <div className="font-body text-micro text-muted mt-1">Incoming PM supervisor · Line 4 · 14:00–22:00</div>
        </div>
       </div>
       {haccpData.ccps.map((ccp, i) => (
-       <div key={i} className="flex gap-3 px-4 py-2.5 border-b border-rule2 last:border-b-0">
-        <AlertTriangle size={12} strokeWidth={2} className="text-warn flex-shrink-0 mt-0.5" />
-        <div>
-         <div className="font-body font-medium text-ink text-body">{ccp.station} · {ccp.ccp}</div>
-         <div className="font-body text-muted text-label">{ccp.limit}</div>
+       <div key={i} className="flex items-start gap-3 px-4 py-2.5 border-b border-rule2 last:border-b-0 border-l-2 border-l-warn">
+        <div className="font-body font-bold text-base text-warn flex-shrink-0 w-4 leading-tight tabular-nums mt-px">{i + 1}</div>
+        <div className="flex-1 min-w-0">
+         <div className="font-body font-semibold text-body text-ink leading-snug">
+          {ccp.station} <span className="font-normal text-muted">· {ccp.ccp}</span>
+         </div>
+         <div className="font-body text-micro text-muted mt-0.5">{ccp.limit}</div>
         </div>
        </div>
       ))}
-     </div>
-     <div className="border-b border-rule2">
-      <div className="px-4 py-2 border-b border-rule2">
-       <span className="font-body text-micro text-muted">Cert alerts</span>
-      </div>
+     </SectionBlock>
+
+     {/* ── Cert alerts ────────────────────────────────── */}
+     <SectionBlock label="Cert alerts" accent={certExpiry.filter(c => c.tone !== 'ok').some(c => c.tone === 'danger') ? 'danger' : 'warn'}>
       {certExpiry.filter(c => c.tone !== 'ok').map((c, i) => (
-       <div key={i} className={`flex gap-3 px-4 py-2.5 border-b border-rule2 last:border-b-0 ${c.tone === 'danger' ? 'bg-danger/[0.03]' : ''}`}>
-        <Clock size={12} strokeWidth={2} className={`flex-shrink-0 mt-0.5 ${c.tone === 'danger' ? 'text-danger' : 'text-warn'}`} />
-        <div>
-         <div className={`font-body font-medium text-body ${c.tone === 'danger' ? 'text-danger' : 'text-ink'}`}>{c.name} · {c.cert}</div>
-         <div className={`font-body text-label ${c.tone === 'danger' ? 'text-danger/80' : 'text-muted'}`}>{c.note}</div>
+       <div key={i} className={`flex items-center gap-5 px-4 py-3 border-b border-rule2 last:border-b-0 border-l-2 ${c.tone === 'danger' ? 'border-l-danger bg-danger/[0.03]' : 'border-l-warn'}`}>
+        <div className="flex-shrink-0 w-12">
+         <div className={`display-num text-head leading-none tabular-nums ${c.tone === 'danger' ? 'text-danger' : 'text-warn'}`}>{c.expiresIn}</div>
+         <div className="font-body text-micro text-muted mt-0.5">days</div>
+        </div>
+        <div className="flex-1 min-w-0">
+         <div className={`font-body font-semibold text-body ${c.tone === 'danger' ? 'text-danger' : 'text-ink'}`}>{c.name}</div>
+         <div className="font-body text-label text-muted">{c.cert}</div>
+         {c.note && <div className={`font-body text-micro mt-0.5 ${c.tone === 'danger' ? 'text-danger/70' : 'text-muted'}`}>{c.note}</div>}
         </div>
        </div>
       ))}
-     </div>
-     <div>
-      <div className="px-4 py-2 border-b border-rule2">
-       <span className="font-body text-micro text-muted">Upcoming staffing</span>
-      </div>
+     </SectionBlock>
+
+     {/* ── Upcoming staffing ──────────────────────────── */}
+     <SectionBlock label="Upcoming staffing" accent="muted">
       {d.forecast.map((row, i) => <ForecastRow key={i} row={row} />)}
-     </div>
+     </SectionBlock>
     </div>
 
    </div>
