@@ -272,19 +272,25 @@ export function Tabs({ tabs, active, onChange, flush = false, className = '' }) 
  )
 }
 
-// ── SegmentedControl — filled binary/multi view toggle ────────────────────────
-// options: [{ value, label }]
+// ── SegmentedControl — raised-card view toggle ───────────────────────────────
+// options: [{ value, label, icon? }]
+// Active segment sits on a bg-stone2 card elevated from the bg-stone3 tray.
 export function SegmentedControl({ options, value, onChange }) {
  return (
-  <div className="flex items-stretch overflow-hidden">
-   {options.map(o => (
-    <button key={o.value} type="button" onClick={() => onChange(o.value)}
-     className={`font-body text-label px-3 py-1 transition-colors ${
-      value === o.value ? 'bg-ink text-stone' : 'text-muted hover:text-muted'
-     }`}>
-     {o.label}
-    </button>
-   ))}
+  <div className="inline-flex items-stretch bg-stone3 p-[3px] gap-px flex-shrink-0">
+   {options.map(o => {
+    const Icon = o.icon
+    const active = value === o.value
+    return (
+     <button key={o.value} type="button" onClick={() => onChange(o.value)}
+      className={`inline-flex items-center gap-1.5 font-body text-label px-3 py-1.5 transition-colors ${
+       active ? 'bg-stone4 text-ink' : 'text-muted hover:text-muted'
+      }`}>
+      {Icon && <Icon size={12} strokeWidth={1.75} className="flex-shrink-0" />}
+      {o.label}
+     </button>
+    )
+   })}
   </div>
  )
 }

@@ -86,6 +86,20 @@
 @layer utilities {
   .tabular-nums { font-variant-numeric: tabular-nums; }
 
+  /* ── Surface backgrounds — numeric keys in Tailwind config generate
+     bg-stone-2 (hyphenated) but the codebase uses bg-stone2 (no hyphen).
+     These explicit rules bridge that gap. ──────────────────────────────── */
+  .bg-stone2  { background-color: var(--color-stone-2); }
+  .bg-stone3  { background-color: var(--color-stone-3); }
+  .bg-stone4  { background-color: var(--color-stone-4); }
+  .bg-sidebar2 { background-color: var(--color-sidebar-2, #0E1520); }
+  .bg-sidebar3 { background-color: var(--color-sidebar-3, #152030); }
+  .text-ink2  { color: var(--color-ink-2); }
+  .border-rule2 { border-color: var(--color-rule-2); }
+  .hover\:bg-stone2:hover  { background-color: var(--color-stone-2); }
+  .hover\:bg-stone3:hover  { background-color: var(--color-stone-3); }
+  .hover\:bg-stone4:hover  { background-color: var(--color-stone-4); }
+
   /* ── Hatch pattern — dark-mode version, subtle blue-tinted diagonal ─────── */
   .bg-rule2 {
     background-color: var(--color-stone);
