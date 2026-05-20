@@ -886,8 +886,8 @@ function FleetStrip({ agents }) {
         const color = !agent.enabled ? 'text-muted' : confVal >= 85 ? 'text-ok' : confVal >= 65 ? 'text-warn' : 'text-danger'
         return (
           <div key={agent.id}
-            className={`flex flex-col justify-center px-3 py-2 border-r border-rule2 last:border-r-0 flex-shrink-0 min-w-[88px] ${hasPending ? 'bg-warn/[0.04]' : ''}`}>
-            <div className="flex items-center gap-1.5 mb-0.5">
+            className={`flex flex-col justify-center px-3 py-2.5 border-r border-rule2 last:border-r-0 flex-shrink-0 min-w-[96px] ${hasPending ? 'bg-warn/[0.04]' : ''}`}>
+            <div className="flex items-center gap-1.5 mb-1">
               <span className={`relative flex h-1.5 w-1.5 flex-shrink-0`}>
                 {agent.enabled && confVal >= conf && <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-ok opacity-40" />}
                 <span className={`relative inline-flex rounded-full h-1.5 w-1.5 ${!agent.enabled ? 'bg-muted' : confVal >= 85 ? 'bg-ok' : confVal >= 65 ? 'bg-warn' : 'bg-danger'}`} />
@@ -896,10 +896,10 @@ function FleetStrip({ agents }) {
               {isStale && <AlertTriangle size={9} className="text-danger flex-shrink-0" />}
               {hasPending && <span className="h-1 w-1 rounded-full bg-warn flex-shrink-0" />}
             </div>
-            <div className="font-body text-muted text-label leading-none mb-0.5 truncate" style={{ maxWidth: 72 }}>
+            <div className="font-body text-muted text-label leading-none mb-1 truncate" style={{ maxWidth: 80 }}>
               {agent.name.split(' ')[0]}
             </div>
-            <div className={`display-num text-label leading-none ${color}`}>
+            <div className={`display-num text-body leading-none font-bold ${color}`}>
               {agent.enabled ? `${confVal}%` : 'Off'}
             </div>
             {isAuto && agent.enabled && <div className="font-body text-micro text-ok mt-0.5">auto</div>}
@@ -923,45 +923,45 @@ function AgentTierStrip({ tier0Count, tier1Items, tier2Items, tier3Items, expand
   return (
     <div className="flex-shrink-0 flex items-stretch border-b border-rule2 bg-stone2 overflow-x-auto">
       {/* Tier 0 — fully autonomous */}
-      <div className="flex items-center gap-2.5 px-4 py-2 border-r border-rule2 flex-shrink-0">
+      <div className="flex items-center gap-2.5 px-4 py-3 border-r border-rule2 flex-shrink-0">
         <div className="w-1.5 h-1.5 rounded-full bg-ok flex-shrink-0" />
         <div>
-          <div className="font-body text-muted text-micro mb-0.5">Tier 0</div>
-          <div className="font-body text-ink text-label font-medium">{tier0Count} auto</div>
+          <div className="font-body text-muted text-label tracking-widest mb-0.5">TIER 0</div>
+          <div className="font-body text-ink text-body font-medium">{tier0Count} auto</div>
         </div>
       </div>
       {/* Tier 1 — notify only (expandable) */}
       <button type="button" onClick={onToggleTier1}
-        className={`flex items-center gap-2.5 px-4 py-2 border-r border-rule2 flex-shrink-0 hover:bg-stone3 transition-colors text-left ${expandTier1 ? 'bg-stone3' : ''}`}>
+        className={`flex items-center gap-2.5 px-4 py-3 border-r border-rule2 flex-shrink-0 hover:bg-stone3 transition-colors text-left ${expandTier1 ? 'bg-stone3' : ''}`}>
         <div className="w-1.5 h-1.5 rounded-full bg-ochre flex-shrink-0" />
         <div>
-          <div className="font-body text-muted text-micro mb-0.5">Tier 1 · Notified</div>
-          <div className="font-body text-ink text-label font-medium">{tier1Items.length} informed</div>
+          <div className="font-body text-muted text-label tracking-widest mb-0.5">TIER 1</div>
+          <div className="font-body text-ink text-body font-medium">{tier1Items.length} informed</div>
         </div>
         <ChevronDown size={9} className={`text-muted flex-shrink-0 transition-transform ${expandTier1 ? 'rotate-180' : ''}`} />
       </button>
       {/* Tier 2 — budgeted approval with shift budget bar */}
-      <div className="flex items-center gap-3 px-4 py-2 border-r border-rule2 flex-1 min-w-[180px]">
+      <div className="flex items-center gap-3 px-4 py-3 border-r border-rule2 flex-1 min-w-[180px]">
         <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${tier2Undecided > TIER2_BUDGET ? 'bg-danger' : 'bg-warn'}`} />
         <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between gap-2 mb-1">
-            <div className="font-body text-muted text-micro">Tier 2 · Your review</div>
-            <div className={`font-body text-label tabular-nums font-medium ${tier2Undecided > TIER2_BUDGET ? 'text-danger' : 'text-muted'}`}>
+          <div className="flex items-center justify-between gap-2 mb-1.5">
+            <div className="font-body text-muted text-label tracking-widest">TIER 2</div>
+            <div className={`font-body text-body tabular-nums font-medium ${tier2Undecided > TIER2_BUDGET ? 'text-danger' : 'text-muted'}`}>
               {tier2Undecided}/{TIER2_BUDGET}
               {tier2Undecided > TIER2_BUDGET && ' — over budget'}
             </div>
           </div>
-          <div className="h-1 bg-rule2 overflow-hidden">
+          <div className="h-1.5 bg-rule2 overflow-hidden">
             <div className={`h-full transition-[width] ${tier2BarColor}`} style={{ width: `${tier2Pct}%` }} />
           </div>
         </div>
       </div>
       {/* Tier 3 — compliance lock */}
-      <div className={`flex items-center gap-2.5 px-4 py-2 flex-shrink-0 ${tier3Undecided > 0 ? 'bg-danger/[0.04]' : ''}`}>
-        <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${tier3Undecided > 0 ? 'bg-danger animate-pulse' : 'bg-muted'}`} />
+      <div className={`flex items-center gap-2.5 px-4 py-3 flex-shrink-0 border-l-2 ${tier3Undecided > 0 ? 'bg-danger/[0.05] border-l-danger' : 'border-l-transparent'}`}>
+        <div className={`w-2 h-2 rounded-full flex-shrink-0 ${tier3Undecided > 0 ? 'bg-danger animate-pulse' : 'bg-muted'}`} />
         <div>
-          <div className="font-body text-muted text-micro mb-0.5">Tier 3 · Locked</div>
-          <div className={`font-body text-label font-medium ${tier3Undecided > 0 ? 'text-danger' : 'text-muted'}`}>
+          <div className="font-body text-muted text-label tracking-widest mb-0.5">TIER 3</div>
+          <div className={`font-body text-body font-medium ${tier3Undecided > 0 ? 'text-danger' : 'text-muted'}`}>
             {tier3Undecided > 0 ? `${tier3Undecided} pending` : tier3Items.length > 0 ? `${tier3Items.length} reviewed` : 'None'}
           </div>
         </div>
@@ -1098,10 +1098,12 @@ export default function AgentControl() {
       {/* ── System confidence header ─────────────────────────────────── */}
       <div className="flex-shrink-0 flex items-stretch border-b border-rule2 bg-stone">
         <div className="px-5 py-3 border-r border-rule2 flex-shrink-0">
-          <div className="font-body text-muted text-label mb-0.5">Agent Control · Salina</div>
-          <div className={`display-num text-subhead leading-none ${confColor}`}>
-            {systemConfidence ?? 79}%
-            <span className="font-body font-normal text-muted text-label ml-1.5">system confidence</span>
+          <div className="font-body text-muted text-label mb-1">Agent Control · Salina</div>
+          <div className="flex items-baseline gap-2">
+            <div className={`display-num text-score leading-none ${confColor}`}>
+              {systemConfidence ?? 79}%
+            </div>
+            <span className="font-body font-normal text-muted text-label">system confidence</span>
           </div>
         </div>
         <div className="flex items-stretch overflow-x-auto flex-1">
@@ -1188,7 +1190,7 @@ export default function AgentControl() {
         {(
           <div className="flex flex-1 min-h-0 overflow-hidden">
             {/* Left: compact selection list with checkboxes */}
-            <div className="w-[40%] flex-shrink-0 border-r border-rule2 flex flex-col overflow-hidden">
+            <div className="w-[280px] flex-shrink-0 border-r border-rule2 flex flex-col overflow-hidden">
               <div className="flex-1 overflow-y-auto">
                 {undecidedCount === 0 && pending.every(p => p._decided) ? (
                   <div className="flex items-center gap-2 px-4 py-5">
@@ -1205,8 +1207,12 @@ export default function AgentControl() {
                       const isChecked = splitChecked.has(pa._key)
                       return (
                         <div key={pa._key}
-                          className={`flex items-center border-l-4 transition-colors ${
-                            isFocused ? `${cfg.border} ${cfg.borderW} bg-stone2` : `border-l-transparent ${cfg.borderW}`
+                          className={`flex items-center border-l-[3px] transition-colors ${
+                            isFocused
+                              ? `${cfg.border} bg-stone2`
+                              : pa._meta.consequence === 'critical' && !pa._decided ? 'border-l-danger/40'
+                              : pa._meta.consequence === 'high' && !pa._decided ? 'border-l-warn/40'
+                              : 'border-l-transparent'
                           } ${pa._decided ? 'opacity-40' : ''}`}>
                           {/* Checkbox */}
                           {!pa._decided && (
@@ -1218,13 +1224,13 @@ export default function AgentControl() {
                           )}
                           <button type="button"
                             onClick={() => setSplitFocused(isFocused ? null : pa._key)}
-                            className="flex-1 min-w-0 flex items-center gap-3 px-3 py-3.5 hover:bg-stone2/50 transition-colors text-left">
-                            <div className={`h-2 w-2 rounded-full flex-shrink-0 ${
-                              pa._meta.consequence === 'critical' ? 'bg-danger' : pa._meta.consequence === 'high' ? 'bg-warn' : 'bg-muted'
+                            className="flex-1 min-w-0 flex items-center gap-3 px-3 py-4 hover:bg-stone2/50 transition-colors text-left">
+                            <div className={`h-2.5 w-2.5 rounded-full flex-shrink-0 flex-shrink-0 ${
+                              pa._meta.consequence === 'critical' ? 'bg-danger' : pa._meta.consequence === 'high' ? 'bg-warn' : 'bg-muted/50'
                             }`} />
                             <div className="flex-1 min-w-0">
                               <div className="font-body text-muted text-label truncate">{agent.name}</div>
-                              <div className={`font-body font-medium text-label leading-snug ${pa._decided ? 'text-muted' : 'text-ink'}`}>
+                              <div className={`font-body font-medium text-body leading-snug ${pa._decided ? 'text-muted' : 'text-ink'}`}>
                                 {pa._meta.verbFirst}
                               </div>
                             </div>
@@ -1278,8 +1284,8 @@ export default function AgentControl() {
                   <>
                     {/* Sticky header */}
                     <div className="flex-shrink-0 flex items-start gap-4 px-6 py-4 border-b border-rule2 bg-stone">
-                      <div className={`w-9 h-9 flex items-center justify-center flex-shrink-0 border-l-4 ${cfg.border} bg-stone2`}>
-                        <Icon size={14} className="text-muted" />
+                      <div className={`w-12 h-12 flex items-center justify-center flex-shrink-0 border-l-[3px] ${cfg.border} bg-stone2`}>
+                        <Icon size={16} className="text-muted" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="font-body text-muted text-label mb-0.5">{agent.name} · {cfg.label} consequence</div>
@@ -1302,8 +1308,8 @@ export default function AgentControl() {
                           : null
                         return (
                           <div className="text-right flex-shrink-0">
-                            <div className="flex items-center gap-1.5 justify-end">
-                              <div className={`display-num text-title tabular-nums leading-none ${confColor}`}>{pa.confidence}%</div>
+                            <div className="flex items-baseline gap-1.5 justify-end">
+                              <div className={`display-num text-metric tabular-nums leading-none ${confColor}`}>{pa.confidence}%</div>
                               <div className="font-body text-muted text-label">conf</div>
                             </div>
                             {modelLabel && (

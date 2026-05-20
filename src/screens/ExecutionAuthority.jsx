@@ -167,7 +167,7 @@ export default function ExecutionAuthority() {
     <div className="flex h-full overflow-hidden content-reveal">
 
       {/* Left: tier panel */}
-      <div className="w-[260px] flex-shrink-0 border-r border-rule2 flex flex-col bg-stone">
+      <div className="w-[280px] flex-shrink-0 border-r border-rule2 flex flex-col bg-stone">
         <div className="flex-shrink-0 px-5 py-4 border-b border-rule2 bg-stone2">
           <div className="font-display font-bold text-ink text-head leading-none">Execution Authority</div>
           <div className="flex items-center gap-2 mt-2">
@@ -192,9 +192,6 @@ export default function ExecutionAuthority() {
         </div>
 
         {/* Tiers */}
-        <div className="flex-shrink-0 px-4 py-2 border-b border-rule2 bg-stone2">
-          <div className="font-body text-muted text-label">Authorization levels</div>
-        </div>
         <div className="flex-1 overflow-y-auto">
           <button type="button" onClick={() => { setSelectedTier(null); setSelectedId(null) }}
             className={`w-full text-left px-4 py-2.5 border-b border-rule2 border-l-4 transition-colors ${!selectedTier ? 'border-l-ochre bg-stone2' : 'border-l-transparent hover:bg-stone2/50'}`}>

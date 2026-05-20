@@ -325,7 +325,7 @@ export default function EquipmentIntelligence() {
       <div className="flex flex-1 overflow-hidden">
 
       {/* Left: equipment list */}
-      <div className="w-[260px] flex-shrink-0 border-r border-rule2 flex flex-col bg-stone">
+      <div className="w-[280px] flex-shrink-0 border-r border-rule2 flex flex-col bg-stone">
         <div className="flex-shrink-0 px-5 py-4 border-b border-rule2 bg-stone2">
           <div className="font-display font-bold text-ink text-head leading-none">Equipment Intelligence</div>
           <div className="font-body text-muted text-label mt-1">Health · Recipe · Run history</div>

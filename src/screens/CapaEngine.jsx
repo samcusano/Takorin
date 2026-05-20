@@ -651,7 +651,7 @@ function LayoutQueue({ visibleCases, blockingEvidenceUploaded, setBlockingEviden
  <div className="flex flex-1 min-h-0 overflow-hidden">
 
  {/* Left: priority queue */}
- <div className="w-[300px] flex-shrink-0 border-r border-rule2 flex flex-col bg-stone overflow-hidden">
+ <div className="w-[280px] flex-shrink-0 border-r border-rule2 flex flex-col bg-stone overflow-hidden">
 
  {/* Search */}
  <div className="px-3 py-2 border-b border-rule2 flex-shrink-0">

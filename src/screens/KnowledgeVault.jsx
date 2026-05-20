@@ -241,7 +241,7 @@ function OperationalMemoryVault() {
     <div className="flex h-full overflow-hidden content-reveal">
 
       {/* Left: domain sidebar */}
-      <div className="w-[200px] flex-shrink-0 border-r border-rule2 flex flex-col bg-stone overflow-hidden">
+      <div className="w-[280px] flex-shrink-0 border-r border-rule2 flex flex-col bg-stone overflow-hidden">
         {/* Memory domains */}
         <div className="flex-1 overflow-y-auto divide-y divide-rule2">
           {DOMAINS.map(d => {
@@ -326,7 +326,7 @@ function OperationalMemoryVault() {
             </div>
             <div className="flex flex-1 min-h-0 overflow-hidden">
               {/* Batch list */}
-              <div className="w-[260px] flex-shrink-0 border-r border-rule2 overflow-y-auto">
+              <div className="w-[280px] flex-shrink-0 border-r border-rule2 overflow-y-auto">
                 {processMemory.map(m => {
                   const oc = { exceptional: 'text-ok', excellent: 'text-ok', underperformed: 'text-danger' }[m.outcome] ?? 'text-muted'
                   return (
@@ -586,7 +586,7 @@ function DeepReference({ variant, setVariant }) {
   return (
     <div className="flex h-full overflow-hidden content-reveal">
       {/* Left: domain nav */}
-      <div className="w-[200px] flex-shrink-0 border-r border-rule2 flex flex-col bg-stone">
+      <div className="w-[280px] flex-shrink-0 border-r border-rule2 flex flex-col bg-stone">
         <div className="flex-shrink-0 flex items-center justify-between px-4 py-3 border-b border-rule2 bg-stone2">
           <div className="flex items-stretch overflow-hidden">
             {['A', 'B', 'C'].map(v => (

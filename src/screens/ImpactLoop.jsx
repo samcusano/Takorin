@@ -307,7 +307,7 @@ export default function ImpactLoop() {
     <div className="flex h-full overflow-hidden content-reveal">
 
       {/* ── Left: list + filters ──────────────────────────────────────── */}
-      <div className="w-[360px] flex-shrink-0 border-r border-rule2 flex flex-col bg-stone">
+      <div className="w-[280px] flex-shrink-0 border-r border-rule2 flex flex-col bg-stone">
 
         {/* Summary stats — 2×2 grid */}
         <div className="flex-shrink-0 grid grid-cols-2 gap-px bg-rule2 border-b border-rule2">
