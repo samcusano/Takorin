@@ -105,6 +105,15 @@ export function AppStateProvider({ children }) {
   logActivity({ actor, action: `Override rationale: "${rationale}"`, item: actionId, type: 'compliance' })
  }
 
+ const [sidebarCollapsed, setSidebarCollapsed] = useState(
+  () => typeof localStorage !== 'undefined' && localStorage.getItem('takorin-sidebar') === 'collapsed'
+ )
+ const toggleSidebar = () => setSidebarCollapsed(p => {
+  const next = !p
+  localStorage.setItem('takorin-sidebar', next ? 'collapsed' : 'expanded')
+  return next
+ })
+
  const [currentPlant, _setCurrentPlant] = useState(PLANTS.sl)
  const setCurrentPlant = (p) => { _setCurrentPlant(p); setWorkerModeState(p.workerMode) }
  const setWorkerMode = (m) => setWorkerModeState(m)
@@ -165,6 +174,7 @@ export function AppStateProvider({ children }) {
  pilotExpanded, setPilotExpanded,
  handoffAccepted, setHandoffAccepted,
  agentDecidedKeys, markAgentDecided,
+ sidebarCollapsed, toggleSidebar,
  }}>
  {children}
  </Ctx.Provider>

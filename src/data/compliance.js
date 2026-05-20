@@ -46,21 +46,21 @@ export const compliancePolicies = [
     bg: 'bg-stone2',
     border: 'border-l-rule2',
     frameworks: [
-      { id: 'gb2760',   name: 'GB 2760-2024',  code: 'GB 2760',   status: 'inactive', description: 'General Standard for Use of Food Additives — effective Feb 2025' },
-      { id: 'gb22000',  name: 'ISO 22000 / GB', code: 'GB/T 22000',status: 'inactive', description: 'Food safety management systems — Chinese national adoption' },
-      { id: 'fsl42',    name: 'Food Safety Law', code: 'Art. 42',  status: 'inactive', description: 'Mandatory lot-level traceability per China FSL Article 42' },
-      { id: 'samr',     name: 'SAMR Registration', code: 'SAMR',  status: 'inactive', description: 'State Administration for Market Regulation — production license' },
+      { id: 'gb2760',  name: 'GB 2760-2024',     code: 'GB 2760',    status: 'inactive', description: 'General Standard for Use of Food Additives — effective Feb 2025' },
+      { id: 'gb22000', name: 'ISO 22000 / GB',    code: 'GB/T 22000', status: 'inactive', description: 'Food safety management systems — Chinese national adoption' },
+      { id: 'fsl42',   name: 'Food Safety Law',   code: 'Art. 42',    status: 'inactive', description: 'Mandatory lot-level traceability per China FSL Article 42' },
+      { id: 'samr',    name: 'SAMR Registration', code: 'SAMR',       status: 'inactive', description: 'State Administration for Market Regulation — production license' },
     ],
     evidenceRequirements: [
-      { domain: 'CAPA closure',      requirement: 'Paper + digital (dual requirement)', required: true  },
-      { domain: 'Checklist signing',  requirement: 'Physical signature + digital scan', required: true },
-      { domain: 'Lot traceability',   requirement: 'QR code-based digital traceability', required: true },
-      { domain: 'Supplier COA',       requirement: 'GB-certified laboratory',           required: true  },
-      { domain: 'Annual inspection',  requirement: 'SAMR production license renewal',   required: true },
+      { domain: 'CAPA closure',     requirement: 'Paper + digital (dual requirement)',    required: true },
+      { domain: 'Checklist signing', requirement: 'Physical signature + digital scan',    required: true },
+      { domain: 'Lot traceability', requirement: 'QR code-based digital traceability',    required: true },
+      { domain: 'Supplier COA',     requirement: 'GB-certified laboratory',               required: true },
+      { domain: 'Annual inspection', requirement: 'SAMR production license renewal',      required: true },
     ],
     escalationLogic: [
-      { threshold: '48h overdue', action: 'Notify factory manager', channel: 'In-app + WeChat Work' },
-      { threshold: '72h overdue', action: 'Escalate to compliance officer + SAMR draft', channel: 'All channels' },
+      { threshold: '48h overdue',  action: 'Notify factory manager',                        channel: 'In-app + WeChat Work' },
+      { threshold: '72h overdue',  action: 'Escalate to compliance officer + SAMR draft',   channel: 'All channels' },
     ],
     reportingTemplates: [
       { id: 'samr-annual', name: 'SAMR Annual Production Report', format: 'Structured XML (SAMR portal)', lastGenerated: null },
@@ -79,9 +79,9 @@ export const compliancePolicies = [
     bg: 'bg-ochre/[0.04]',
     border: 'border-l-ochre',
     frameworks: [
-      { id: 'ifs8',   name: 'IFS Food 8',        code: 'IFS v8.0', status: 'monitoring', description: 'International Featured Standards — food safety and quality' },
-      { id: 'ec852',  name: 'EC 852/2004',        code: 'EC 852',   status: 'monitoring', description: 'EU hygiene regulation for foodstuffs' },
-      { id: 'efsa',   name: 'EFSA Traceability',  code: 'Reg. 178', status: 'monitoring', description: 'Farm-to-fork traceability mandate (Article 18)' },
+      { id: 'ifs8',  name: 'IFS Food 8',       code: 'IFS v8.0', status: 'monitoring', description: 'International Featured Standards — food safety and quality' },
+      { id: 'ec852', name: 'EC 852/2004',       code: 'EC 852',   status: 'monitoring', description: 'EU hygiene regulation for foodstuffs' },
+      { id: 'efsa',  name: 'EFSA Traceability', code: 'Reg. 178', status: 'monitoring', description: 'Farm-to-fork traceability mandate (Article 18)' },
     ],
     evidenceRequirements: [
       { domain: 'CAPA closure',     requirement: 'CAPA report + root cause analysis', required: true },
@@ -89,8 +89,8 @@ export const compliancePolicies = [
       { domain: 'Lot traceability', requirement: 'One-up / one-down traceability',    required: true },
     ],
     escalationLogic: [
-      { threshold: '24h overdue', action: 'Notify QA lead', channel: 'In-app + email' },
-      { threshold: '7 days overdue', action: 'IFS corrective action protocol initiated', channel: 'All channels' },
+      { threshold: '24h overdue',    action: 'Notify QA lead',                             channel: 'In-app + email' },
+      { threshold: '7 days overdue', action: 'IFS corrective action protocol initiated',   channel: 'All channels' },
     ],
     reportingTemplates: [
       { id: 'ifs-audit', name: 'IFS Pre-Audit Package', format: 'PDF', lastGenerated: null },
@@ -112,9 +112,9 @@ export const compliancePolicies = [
       { id: 'iso9001',  name: 'ISO 9001:2015',  code: 'ISO 9001',  status: 'monitoring', description: 'Quality management system — process control' },
     ],
     evidenceRequirements: [
-      { domain: 'CAPA closure',      requirement: 'Effectiveness verification required', required: true },
-      { domain: 'Internal audit',    requirement: 'Annual management review',            required: true },
-      { domain: 'Supplier control',  requirement: 'Approved supplier list + audit',      required: true },
+      { domain: 'CAPA closure',     requirement: 'Effectiveness verification required', required: true },
+      { domain: 'Internal audit',   requirement: 'Annual management review',            required: true },
+      { domain: 'Supplier control', requirement: 'Approved supplier list + audit',      required: true },
     ],
     escalationLogic: [
       { threshold: '48h overdue', action: 'Notify quality manager', channel: 'In-app + email' },

@@ -30,15 +30,62 @@ function NavBadge({ badge, badgeType }) {
  return <StatusPill tone="alert" dot={false} className="ml-auto">{badge}</StatusPill>
 }
 
-function SideItem({ to, icon: Icon, label, badge, badgeType, disabled, id, onDisabledClick }) {
- if (disabled) return (
- <button type="button"
- onClick={() => onDisabledClick?.(label)}
- className="flex items-center gap-3 px-4 py-2.5 text-label opacity-40 cursor-not-allowed select-none w-full text-left"
- >
- <Icon size={15} strokeWidth={1.75} className="flex-shrink-0" />
- <span className="font-body text-base">{label}</span>
- </button>
+// Tooltip shown to the right of an icon when the sidebar is collapsed.
+// Uses position:fixed so it escapes the sidebar's overflow:hidden.
+function NavTooltip({ label, children }) {
+ const ref = useRef(null)
+ const [pos, setPos] = useState(null)
+ return (
+  <div ref={ref}
+   onMouseEnter={() => {
+    if (ref.current) {
+     const r = ref.current.getBoundingClientRect()
+     setPos({ top: r.top + r.height / 2, left: r.right })
+    }
+   }}
+   onMouseLeave={() => setPos(null)}
+  >
+   {children}
+   {pos && (
+    <div className="fixed pointer-events-none z-[200]"
+     style={{ top: pos.top, left: pos.left + 10, transform: 'translateY(-50%)' }}>
+     <span className="block bg-sidebar border border-sidebar-border shadow-raise px-2.5 py-1.5 font-body text-label text-white/80 whitespace-nowrap">
+      {label}
+     </span>
+    </div>
+   )}
+  </div>
+ )
+}
+
+function SideItem({ to, icon: Icon, label, badge, badgeType, disabled, id, onDisabledClick, collapsed }) {
+ if (disabled) {
+  if (collapsed) return (
+   <NavTooltip label={`${label} — not available`}>
+    <button type="button" onClick={() => onDisabledClick?.(label)}
+     className="flex items-center justify-center h-10 w-full opacity-40 cursor-not-allowed">
+     <Icon size={15} strokeWidth={1.75} />
+    </button>
+   </NavTooltip>
+  )
+  return (
+   <button type="button" onClick={() => onDisabledClick?.(label)}
+    className="flex items-center gap-3 px-4 py-2.5 text-label opacity-40 cursor-not-allowed select-none w-full text-left">
+    <Icon size={15} strokeWidth={1.75} className="flex-shrink-0" />
+    <span className="font-body text-base">{label}</span>
+   </button>
+  )
+ }
+ if (collapsed) return (
+  <NavTooltip label={label}>
+   <NavLink to={to}
+    className={({ isActive }) =>
+     `flex items-center justify-center h-10 w-full transition-colors duration-100 border-l-2 ` +
+     (isActive ? `border-ochre bg-ochre/10 text-white` : `border-transparent text-white/50 hover:bg-sidebar-2 hover:text-white`)
+    }>
+    {() => <Icon size={15} strokeWidth={1.75} />}
+   </NavLink>
+  </NavTooltip>
  )
  return (
  <NavLink
@@ -51,11 +98,7 @@ function SideItem({ to, icon: Icon, label, badge, badgeType, disabled, id, onDis
  }
  >
  {({ isActive }) => (<>
- <Icon
- size={15}
- strokeWidth={1.75}
- className="flex-shrink-0"
- />
+ <Icon size={15} strokeWidth={1.75} className="flex-shrink-0" />
  <span className="font-body text-base">{label}</span>
  <NavBadge badge={badge} badgeType={badgeType} />
  </>)}
@@ -63,7 +106,7 @@ function SideItem({ to, icon: Icon, label, badge, badgeType, disabled, id, onDis
  )
 }
 
-function PlantItem() {
+function PlantItem({ collapsed }) {
  const { commandAcknowledged } = useAppState() || {}
  const acknowledged = commandAcknowledged || new Set()
  const activeCount = commandData.items.filter(
@@ -72,6 +115,17 @@ function PlantItem() {
  const criticalCount = commandData.items.filter(
   i => !acknowledged.has(i.id) && i.urgency === 'danger'
  ).length
+ if (collapsed) return (
+  <NavTooltip label={`Overview${activeCount > 0 ? ` (${activeCount})` : ''}`}>
+   <NavLink to="/overview"
+    className={({ isActive }) =>
+     `flex items-center justify-center h-10 w-full border-l-2 transition-colors duration-100 ` +
+     (isActive ? `border-ochre bg-ochre/10 text-white` : `border-transparent text-white/50 hover:bg-sidebar-2 hover:text-white`)
+    }>
+    {() => <LayoutGrid size={15} strokeWidth={1.75} />}
+   </NavLink>
+  </NavTooltip>
+ )
  return (
   <NavLink
    to="/overview"
@@ -298,7 +352,18 @@ const WORKER_MODE_COLORS = { human: 'text-ok', robot: 'text-ochre', hybrid: 'tex
 
 const STATIC_AGENT_TOTAL = agentConfigData.agents.reduce((n, a) => n + (a.pendingActions?.length ?? 0), 0)
 
-function AgentItem({ count }) {
+function AgentItem({ count, collapsed }) {
+ if (collapsed) return (
+  <NavTooltip label={`Agents${count > 0 ? ` (${count})` : ''}`}>
+   <NavLink to="/agents"
+    className={({ isActive }) =>
+     `flex items-center justify-center h-10 w-full border-l-2 transition-colors ` +
+     (isActive ? `border-l-danger bg-sidebar2 text-white` : `border-l-transparent text-white/50 hover:bg-sidebar2 hover:text-white`)
+    }>
+    {() => <Cpu size={15} strokeWidth={1.75} />}
+   </NavLink>
+  </NavTooltip>
+ )
  return (
   <NavLink to="/agents"
    className={({ isActive }) =>
@@ -319,7 +384,8 @@ export default function Sidebar() {
  const [notifOpen, setNotifOpen] = useState(false)
  const [platformExpanded, setPlatformExpanded] = useState(true)
  const [toast, setToast] = useState(null)
- const { blockingEvidenceUploaded, allergenOverride, checklistSigned, nearMisses, maintenanceTickets, viewingRole, setViewingRole, currentPlant, setCurrentPlant, workerMode, agentDecidedKeys } = useAppState() || {}
+ const { blockingEvidenceUploaded, allergenOverride, checklistSigned, nearMisses, maintenanceTickets, viewingRole, setViewingRole, currentPlant, setCurrentPlant, workerMode, agentDecidedKeys, sidebarCollapsed, toggleSidebar } = useAppState() || {}
+ const collapsed = !!sidebarCollapsed
  const agentPendingCount = Math.max(0, STATIC_AGENT_TOTAL - (agentDecidedKeys?.size ?? 0))
 
  const allergenSigned = checklistSigned?.['allergen'] || !!allergenOverride
@@ -336,31 +402,32 @@ export default function Sidebar() {
  }
 
  return (
- <aside className="
- fixed inset-y-0 left-0 z-30
- w-[240px] flex flex-col
- bg-sidebar border-r border-sidebar-border
- transition-transform duration-200 ease-spring
- ">
- {/* Brand */}
- <div className="flex items-center gap-3 px-4 py-3.5 border-b border-sidebar-border bg-sidebar2">
- <svg width="18" height="18" viewBox="0 0 22 22" aria-hidden="true">
- <path d="M11 2 L20 11 L11 20 L2 11 Z" fill="none" stroke="var(--color-ochre)" strokeWidth="1.3"/>
- <path d="M8 13 L14 13 L14 7 Z" fill="var(--color-ochre)"/>
- </svg>
- <div className="flex-1 min-w-0">
- <div className="font-body font-bold text-ink text-label tracking-widest leading-none">
- Takorin
- </div>
- <div className="font-body text-sidebar-ghost text-micro mt-1 tracking-wider">
- Total intelligence
- </div>
- </div>
- <div className="live-dot w-1.5 h-1.5 rounded-full bg-ok flex-shrink-0" />
- </div>
-
- {/* Facility */}
+ <aside
+  className="fixed inset-y-0 left-0 z-30 flex flex-col bg-sidebar border-r border-sidebar-border overflow-hidden"
+  style={{ width: collapsed ? 48 : 240, transition: 'width 200ms cubic-bezier(0.16, 1, 0.3, 1)' }}
+ >
+ {/* Brand — click to toggle collapse */}
  <button
+  type="button"
+  onClick={toggleSidebar}
+  className={`flex items-center border-b border-sidebar-border bg-sidebar2 hover:bg-sidebar-3 transition-colors flex-shrink-0 ${collapsed ? 'justify-center px-0 py-3.5' : 'gap-3 px-4 py-3.5'}`}
+  aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+ >
+  <svg width="18" height="18" viewBox="0 0 22 22" aria-hidden="true" className="flex-shrink-0">
+   <path d="M11 2 L20 11 L11 20 L2 11 Z" fill="none" stroke="var(--color-ochre)" strokeWidth="1.3"/>
+   <path d="M8 13 L14 13 L14 7 Z" fill="var(--color-ochre)"/>
+  </svg>
+  {!collapsed && (
+   <div className="flex-1 min-w-0">
+    <div className="font-body font-bold text-ink text-label tracking-widest leading-none">Takorin</div>
+    <div className="font-body text-sidebar-ghost text-micro mt-1 tracking-wider">Total intelligence</div>
+   </div>
+  )}
+  {!collapsed && <div className="live-dot w-1.5 h-1.5 rounded-full bg-ok flex-shrink-0" />}
+ </button>
+
+ {/* Facility — hidden when collapsed */}
+ {!collapsed && <button
   ref={plantTriggerRef}
   type="button"
   onClick={() => setPlantOpen(p => !p)}
@@ -377,7 +444,7 @@ export default function Sidebar() {
   size={13}
   className={`text-white/50 flex-shrink-0 transition-transform duration-200 ease-spring ${plantOpen ? 'rotate-180' : ''}`}
   />
- </button>
+ </button>}
 
  {/* Plant dropdown — floats right of the sidebar */}
  {plantOpen && (
@@ -395,24 +462,33 @@ export default function Sidebar() {
 
  {/* ── Operator: 1 screen ─────────────────────────────────────── */}
  {(viewingRole === 'operator-reyes' || viewingRole === 'operator-okonkwo') && (
-  <SideItem to="/operator" id="operator" icon={User} label="My Station" badge={null} />
+  <SideItem to="/operator" id="operator" icon={User} label="My Station" badge={null} collapsed={collapsed} />
  )}
 
  {/* ── Supervisor: 3 screens (ShiftIQ contains Handoff/Fleet/Allocation as tabs) */}
  {viewingRole === 'supervisor' && (
   <>
-   <div className="px-4 pt-4 pb-1 font-body text-micro text-sidebar-ghost tracking-widest">Operational</div>
-   <SideItem to="/shift"  id="shift"  icon={Activity} label="ShiftIQ"      badge="3" badgeType="alert" />
-   <AgentItem count={agentPendingCount} />
-   <div className="px-4 pt-4 pb-1 font-body text-micro text-sidebar-ghost tracking-widest">Causality</div>
-   <SideItem to="/outcomes" id="outcomes" icon={CircleDot} label="Outcomes" badge={null} />
-   <div className="px-4 pt-4 pb-1 font-body text-micro text-sidebar-ghost tracking-widest">Activity</div>
-   <button type="button" onClick={() => setNotifOpen(true)}
-    className="flex items-center gap-3 px-4 py-2.5 w-full text-left transition-colors hover:bg-sidebar2 text-white/70">
-    <Bell size={15} strokeWidth={1.75} className="flex-shrink-0" />
-    <span className="font-body text-base">Notifications</span>
-    <StatusPill tone="alert" dot={false} className="ml-auto">4</StatusPill>
-   </button>
+   {!collapsed && <div className="px-4 pt-4 pb-1 font-body text-micro text-sidebar-ghost tracking-widest">Operational</div>}
+   <SideItem to="/shift"  id="shift"  icon={Activity} label="ShiftIQ"      badge="3" badgeType="alert" collapsed={collapsed} />
+   <AgentItem count={agentPendingCount} collapsed={collapsed} />
+   {!collapsed && <div className="px-4 pt-4 pb-1 font-body text-micro text-sidebar-ghost tracking-widest">Causality</div>}
+   <SideItem to="/outcomes" id="outcomes" icon={CircleDot} label="Outcomes" badge={null} collapsed={collapsed} />
+   {!collapsed && <div className="px-4 pt-4 pb-1 font-body text-micro text-sidebar-ghost tracking-widest">Activity</div>}
+   {collapsed ? (
+    <NavTooltip label="Notifications">
+     <button type="button" onClick={() => setNotifOpen(true)}
+      className="flex items-center justify-center h-10 w-full text-white/50 hover:bg-sidebar2 hover:text-white transition-colors">
+      <Bell size={15} strokeWidth={1.75} />
+     </button>
+    </NavTooltip>
+   ) : (
+    <button type="button" onClick={() => setNotifOpen(true)}
+     className="flex items-center gap-3 px-4 py-2.5 w-full text-left transition-colors hover:bg-sidebar2 text-white/70">
+     <Bell size={15} strokeWidth={1.75} className="flex-shrink-0" />
+     <span className="font-body text-base">Notifications</span>
+     <StatusPill tone="alert" dot={false} className="ml-auto">4</StatusPill>
+    </button>
+   )}
    {notifOpen && <NotificationCenter onClose={() => setNotifOpen(false)} />}
   </>
  )}
@@ -420,54 +496,65 @@ export default function Sidebar() {
  {/* ── Director: full intelligence graph ───────────────────────── */}
  {(viewingRole === 'director' || !viewingRole) && (
   <>
-   <PlantItem />
+   <PlantItem collapsed={collapsed} />
 
-   <div className="px-4 pt-4 pb-1 font-body text-micro text-sidebar-ghost tracking-widest">Operations</div>
-   {modules.map(m => <SideItem key={m.id} to={m.path} id={m.id} {...m} />)}
-   <AgentItem count={agentPendingCount} />
-   <SideItem to="/outcomes" id="outcomes" icon={CircleDot} label="Outcomes" badge={null} />
+   {!collapsed && <div className="px-4 pt-4 pb-1 font-body text-micro text-sidebar-ghost tracking-widest">Operations</div>}
+   {modules.map(m => <SideItem key={m.id} to={m.path} id={m.id} {...m} collapsed={collapsed} />)}
+   <AgentItem count={agentPendingCount} collapsed={collapsed} />
+   <SideItem to="/outcomes" id="outcomes" icon={CircleDot} label="Outcomes" badge={null} collapsed={collapsed} />
 
-   <button type="button" onClick={() => setPlatformExpanded(p => !p)}
-    className="flex items-center justify-between w-full px-4 pt-4 pb-1 font-body text-micro text-sidebar-ghost tracking-widest hover:text-white/50 transition-colors">
-    <span>Platform</span>
-    <ChevronDown size={10} className={`transition-transform duration-200 ${platformExpanded ? 'rotate-180' : ''}`} />
-   </button>
-   {platformExpanded && (
+   {!collapsed && (
+    <button type="button" onClick={() => setPlatformExpanded(p => !p)}
+     className="flex items-center justify-between w-full px-4 pt-4 pb-1 font-body text-micro text-sidebar-ghost tracking-widest hover:text-white/50 transition-colors">
+     <span>Platform</span>
+     <ChevronDown size={10} className={`transition-transform duration-200 ${platformExpanded ? 'rotate-180' : ''}`} />
+    </button>
+   )}
+   {(collapsed || platformExpanded) && (
     <>
-     <SideItem to="/batch"       id="batch"       icon={FlaskConical}    label="Batches"      badge={null} />
-     <SideItem to="/compliance"  id="compliance"  icon={Scale}           label="Compliance"   badge={null} />
-     <SideItem to="/hierarchy"   id="hierarchy"   icon={LayoutDashboard} label="Site"         badge={null} />
-     <SideItem to="/knowledge"   id="knowledge"   icon={BookOpen}        label="Knowledge"    badge={null} />
-     <SideItem to="/execution"   id="execution"   icon={Workflow}        label="Execution"    badge={null} />
+     <SideItem to="/batch"       id="batch"       icon={FlaskConical}    label="Batches"      badge={null} collapsed={collapsed} />
+     <SideItem to="/compliance"  id="compliance"  icon={Scale}           label="Compliance"   badge={null} collapsed={collapsed} />
+     <SideItem to="/hierarchy"   id="hierarchy"   icon={LayoutDashboard} label="Site"         badge={null} collapsed={collapsed} />
+     <SideItem to="/knowledge"   id="knowledge"   icon={BookOpen}        label="Knowledge"    badge={null} collapsed={collapsed} />
+     <SideItem to="/execution"   id="execution"   icon={Workflow}        label="Execution"    badge={null} collapsed={collapsed} />
      {currentPlant?.sector === 'pharma' && (
-      <SideItem to="/records"   id="records"    icon={FileLock2}  label="Records"     badge={null} />
+      <SideItem to="/records"   id="records"    icon={FileLock2}  label="Records"     badge={null} collapsed={collapsed} />
      )}
      {(currentPlant?.sector === 'electronics' || currentPlant?.sector === 'semiconductor') && (
-      <SideItem to="/delivery"  id="delivery"   icon={TrendingUp} label="Value Chain" badge={null} />
+      <SideItem to="/delivery"  id="delivery"   icon={TrendingUp} label="Value Chain" badge={null} collapsed={collapsed} />
      )}
      {currentPlant?.sector !== 'pharma' && (
-      <SideItem to="/equipment" id="equipment"  icon={ScanLine}   label="Equipment"   badge={null} />
+      <SideItem to="/equipment" id="equipment"  icon={ScanLine}   label="Equipment"   badge={null} collapsed={collapsed} />
      )}
-     <SideItem to="/integration" id="integration" icon={Network} label="Integrations" badge={null} />
-     <SideItem to="/readiness"   id="readiness"   icon={Gauge}   label="Readiness"    badge={null} />
+     <SideItem to="/integration" id="integration" icon={Network} label="Integrations" badge={null} collapsed={collapsed} />
+     <SideItem to="/readiness"   id="readiness"   icon={Gauge}   label="Readiness"    badge={null} collapsed={collapsed} />
     </>
    )}
 
-   <div className="px-4 pt-4 pb-1 font-body text-micro text-sidebar-ghost tracking-widest">Activity</div>
-   <button type="button" onClick={() => setNotifOpen(true)}
-    className="flex items-center gap-3 px-4 py-2.5 w-full text-left transition-colors hover:bg-sidebar2 text-white/70">
-    <Bell size={15} strokeWidth={1.75} className="flex-shrink-0" />
-    <span className="font-body text-base">Notifications</span>
-    <StatusPill tone="alert" dot={false} className="ml-auto">4</StatusPill>
-   </button>
+   {!collapsed && <div className="px-4 pt-4 pb-1 font-body text-micro text-sidebar-ghost tracking-widest">Activity</div>}
+   {collapsed ? (
+    <NavTooltip label="Notifications">
+     <button type="button" onClick={() => setNotifOpen(true)}
+      className="flex items-center justify-center h-10 w-full text-white/50 hover:bg-sidebar2 hover:text-white transition-colors">
+      <Bell size={15} strokeWidth={1.75} />
+     </button>
+    </NavTooltip>
+   ) : (
+    <button type="button" onClick={() => setNotifOpen(true)}
+     className="flex items-center gap-3 px-4 py-2.5 w-full text-left transition-colors hover:bg-sidebar2 text-white/70">
+     <Bell size={15} strokeWidth={1.75} className="flex-shrink-0" />
+     <span className="font-body text-base">Notifications</span>
+     <StatusPill tone="alert" dot={false} className="ml-auto">4</StatusPill>
+    </button>
+   )}
    {notifOpen && <NotificationCenter onClose={() => setNotifOpen(false)} />}
   </>
  )}
 
  </nav>
 
- {/* Worker mode + Compliance */}
- <div className="px-4 py-2.5 border-t border-sidebar-border">
+ {/* Worker mode + Compliance — hidden when collapsed */}
+ {!collapsed && <div className="px-4 py-2.5 border-t border-sidebar-border">
  <div className="flex items-center justify-between mb-1.5">
   <span className="font-body text-white/50 text-label">Workforce</span>
   <span className={`font-body font-medium text-label ${WORKER_MODE_COLORS[workerMode || 'human']}`}>
@@ -485,10 +572,10 @@ export default function Sidebar() {
  {complianceState === 'attention' && 'Allergen changeover log unsigned · Line 4'}
  {complianceState === 'clear' && 'No blocking compliance items · 18d to FDA inspection'}
  </div>
- </div>
+ </div>}
 
- {/* User */}
- <button
+ {/* User — hidden when collapsed */}
+ {!collapsed && <button
   ref={userTriggerRef}
   type="button"
   onClick={() => setUserOpen(p => !p)}
@@ -502,8 +589,8 @@ export default function Sidebar() {
   </div>
   </div>
   <ChevronDown size={13} className={`text-white/50 flex-shrink-0 transition-transform duration-200 ease-spring ${userOpen ? 'rotate-180' : ''}`} />
- </button>
- {userOpen && (
+ </button>}
+ {!collapsed && userOpen && (
   <UserDropdown
    triggerRef={userTriggerRef}
    onClose={() => setUserOpen(false)}
