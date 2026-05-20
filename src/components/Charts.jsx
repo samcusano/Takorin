@@ -12,6 +12,7 @@ const C = {
   rule2:  'var(--color-stone-2)',
   dim:    '#4A5D74',
 }
+const FONT = "'IBM Plex Sans'"
 
 // ── 1. ALLUVIAL DIAGRAM ───────────────────────────────────────────────────────
 // Agent → Decision → Outcome categorical flow for ImpactLoop.
@@ -109,7 +110,6 @@ export function AlluvialDiagram({ interventions }) {
   const { col1, col2, col3, links1, links2, AGENT_COLOR, DEC_COLOR, OUT_COLOR, total } = buildAlluvialLayout(interventions)
   const PAD_T = 18
   const VH = ALLUVIAL_H + PAD_T + 4
-  const FONT = "'IBM Plex Sans'"
 
   return (
     <svg width="100%" viewBox={`0 0 420 ${VH}`} preserveAspectRatio="xMidYMid meet"
@@ -184,92 +184,124 @@ export function AlluvialDiagram({ interventions }) {
   )
 }
 
-// ── 2. GANTT CHART ────────────────────────────────────────────────────────────
-// Shift schedule visualization for ShiftIQ Prepare tab
+// ── 2. SHIFT TIMELINE CHART ───────────────────────────────────────────────────
+// Horizontal bar timeline for ShiftIQ Prepare tab.
+// Each shift = thin bar with endpoint dots, staggered rows, vertical "now" line.
 
 export function GanttChart({ forecast }) {
   if (!forecast?.length) return null
 
-  // Assign each forecast entry to a time slot and line row
-  const TIME_SLOTS = ['Today 14:00', 'Tomorrow 06:00', 'Tomorrow 14:00']
-  const LINE_ORDER = ['Line 4', 'Line 6', 'Line 3']
-
-  // Parse line from name like "Line 4 · PM — M. Santos"
-  const getLine = (name) => {
-    const m = name.match(/Line (\d+)/)
-    return m ? `Line ${m[1]}` : 'Other'
+  // Hours offset from "Today 14:00" (T=0). Each shift is 8 h.
+  const slotH  = (t) => {
+    const s = t.replace('\n', ' ')
+    if (s.includes('Today')) return 0
+    if (s.includes('06'))    return 16
+    return 24
   }
-  const getSlot = (time) => {
-    const t = time.replace('\n', ' ')
-    if (t.includes('Today')) return 0
-    if (t.includes('Tomorrow') && t.includes('06')) return 1
-    return 2
-  }
-  const getSupervisor = (name) => name.split('—')[1]?.trim() || ''
+  const SHIFT_H   = 8
+  const TOTAL_H   = 34   // axis span: T+0 → T+34
+  const NOW_H     = 1.5  // "now" = 1.5 h into current shift
+  const scoreC    = (s) => s >= 75 ? C.danger : s >= 55 ? C.warn : C.ok
+  const supName   = (n) => n.split('—')[1]?.trim() || ''
+  const lineName  = (n) => { const m = n.match(/Line (\d+)/); return m ? `Line ${m[1]}` : '' }
 
-  const lines = [...new Set(forecast.map(f => getLine(f.name)).filter(l => LINE_ORDER.includes(l)))]
-    .sort((a, b) => LINE_ORDER.indexOf(a) - LINE_ORDER.indexOf(b))
+  const W = 500, padL = 58, padR = 10, padT = 26, padB = 30
+  const cW = W - padL - padR
+  const ROW_H = 22
+  const H = padT + forecast.length * ROW_H + padB
 
-  const svgW = 480, labelW = 56, rowH = 30, padT = 24, gap = 2
-  const colW = (svgW - labelW) / TIME_SLOTS.length
-  const svgH = padT + lines.length * rowH + 4
+  const toX = (h) => padL + (h / TOTAL_H) * cW
+  const NOW_X = toX(NOW_H)
 
-  const scoreColor = (s) => s >= 75 ? C.danger : s >= 55 ? C.warn : C.ok
-  const scoreOpacity = (s) => s >= 75 ? 0.9 : s >= 55 ? 0.8 : 0.75
+  const TICKS = [
+    { h: 0,  label: '14:00', sub: 'Today' },
+    { h: 8,  label: '22:00', sub: '' },
+    { h: 16, label: '06:00', sub: 'Tomorrow' },
+    { h: 24, label: '14:00', sub: '' },
+    { h: 32, label: '22:00', sub: '' },
+  ]
 
   return (
-    <svg width="100%" viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="xMidYMid meet"
-      role="img" aria-label="Shift schedule Gantt">
-      {/* Time headers */}
-      {TIME_SLOTS.map((slot, i) => (
-        <text key={slot} x={labelW + i * colW + colW / 2} y={14} fontSize="8" fill={C.dim}
-          textAnchor="middle" fontFamily="'IBM Plex Sans'">
-          {slot}
-        </text>
-      ))}
-      {/* Grid lines */}
-      {TIME_SLOTS.map((_, i) => (
-        <line key={i} x1={labelW + i * colW} x2={labelW + i * colW} y1={padT} y2={svgH}
-          stroke="var(--color-rule-2, #1A2335)" strokeWidth="0.5" />
+    <svg width="100%" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet"
+      role="img" aria-label="Shift forecast timeline">
+
+      {/* Background grid lines */}
+      {TICKS.map(({ h }) => (
+        <line key={h} x1={toX(h)} x2={toX(h)} y1={padT - 10} y2={H - padB}
+          stroke="var(--color-rule-2)" strokeWidth="0.5" />
       ))}
 
-      {/* Row labels */}
-      {lines.map((line, li) => (
-        <text key={line} x={labelW - 6} y={padT + li * rowH + rowH / 2 + 3.5}
-          fontSize="8.5" fill={C.muted} textAnchor="end" fontFamily="'IBM Plex Sans'">
-          {line}
-        </text>
-      ))}
+      {/* "Now" marker */}
+      <line x1={NOW_X} x2={NOW_X} y1={padT - 14} y2={H - padB}
+        stroke={C.ochre} strokeWidth="1" opacity="0.55" />
+      <circle cx={NOW_X} cy={padT - 14} r="2.5" fill={C.ochre} opacity="0.7" />
 
       {/* Shift bars */}
       {forecast.map((shift, i) => {
-        const line = getLine(shift.name)
-        const slot = getSlot(shift.time)
-        const li = lines.indexOf(line)
-        if (li < 0 || slot < 0) return null
-        const x = labelW + slot * colW + gap
-        const y = padT + li * rowH + gap
-        const w = colW - gap * 2
-        const h = rowH - gap * 2
-        const color = scoreColor(shift.score)
-        const sup = getSupervisor(shift.name)
+        const cy   = padT + i * ROW_H + ROW_H / 2
+        const x1   = toX(slotH(shift.time))
+        const x2   = toX(slotH(shift.time) + SHIFT_H)
+        const col  = scoreC(shift.score)
+        const line = lineName(shift.name)
+        const sup  = supName(shift.name)
+
         return (
           <g key={i}>
-            <rect x={x} y={y} width={w} height={h} fill={color} opacity={scoreOpacity(shift.score)} rx="1" />
+            {/* Row label */}
+            <text x={padL - 6} y={cy + 3.5} fontSize="8" fill={C.muted}
+              textAnchor="end" fontFamily={FONT}>{line}</text>
+
+            {/* Bar */}
+            <line x1={x1} x2={x2} y1={cy} y2={cy}
+              stroke={col} strokeWidth="1.5" opacity="0.8" />
+
+            {/* Endpoint dots */}
+            <circle cx={x1} cy={cy} r="3.5" fill={col} opacity="0.9" />
+            <circle cx={x2} cy={cy} r="3.5" fill={col} opacity="0.9" />
+
+            {/* Score near start */}
+            <text x={x1 + 7} y={cy - 5} fontSize="7" fill={col}
+              fontFamily={FONT} opacity="0.9">{shift.score}</text>
+
+            {/* Supervisor near end */}
+            <text x={x2 + 7} y={cy + 3.5} fontSize="7.5" fill={C.muted}
+              fontFamily={FONT}>{sup}</text>
+
+            {/* Urgent mid-dot */}
             {shift.urgent && (
-              <rect x={x} y={y} width={3} height={h} fill={C.danger} rx="0" />
+              <circle cx={(x1 + x2) / 2} cy={cy} r="3"
+                fill={C.danger} opacity="0.95" />
             )}
-            <text x={x + (shift.urgent ? 7 : 4)} y={y + 10} fontSize="8.5" fill="var(--color-stone, #0B0F18)"
-              fontFamily="'IBM Plex Sans'" fontWeight="600">
-              {sup}
-            </text>
-            <text x={x + (shift.urgent ? 7 : 4)} y={y + 20} fontSize="8" fill="var(--color-stone, #0B0F18)"
-              fontFamily="'IBM Plex Sans'" opacity="0.75">
-              {shift.score} · {shift.signals?.find(s => s.endsWith(':danger'))?.split(':')[0] || 'Score'}
-            </text>
           </g>
         )
       })}
+
+      {/* Time axis */}
+      <line x1={padL} x2={W - padR} y1={H - padB} y2={H - padB}
+        stroke="var(--color-rule-2)" strokeWidth="0.5" />
+      {TICKS.map(({ h, label, sub }) => {
+        const x = toX(h)
+        return (
+          <g key={h}>
+            <line x1={x} x2={x} y1={H - padB} y2={H - padB + 4}
+              stroke={C.dim} strokeWidth="0.5" />
+            <text x={x} y={H - padB + 12} fontSize="7.5" fill={C.dim}
+              textAnchor="middle" fontFamily={FONT}>{label}</text>
+            {sub && (
+              <text x={x} y={H - padB + 21} fontSize="6.5" fill={C.dim}
+                textAnchor="middle" fontFamily={FONT} opacity="0.6">{sub}</text>
+            )}
+          </g>
+        )
+      })}
+
+      {/* Legend */}
+      {[[C.danger, 'High risk'], [C.warn, 'Watch'], [C.ok, 'Clear'], [C.ochre, 'Now']].map(([col, lbl], i) => (
+        <g key={lbl} transform={`translate(${padL + i * 72}, ${H - 4})`}>
+          <circle cx="3.5" cy="0" r="3" fill={col} opacity="0.85" />
+          <text x="9" y="3.5" fontSize="7" fill={C.dim} fontFamily={FONT}>{lbl}</text>
+        </g>
+      ))}
     </svg>
   )
 }
