@@ -326,21 +326,6 @@ export default function EquipmentIntelligence() {
 
       {/* Left: equipment list */}
       <div className="w-[280px] flex-shrink-0 border-r border-rule2 flex flex-col bg-stone">
-        <div className="flex-shrink-0 px-5 py-4 border-b border-rule2 bg-stone2">
-          <div className="font-display font-bold text-ink text-head leading-none">Equipment Intelligence</div>
-          <div className="font-body text-muted text-label mt-1">Health · Recipe · Run history</div>
-          <div className="flex items-center gap-3 mt-2">
-            <span className="font-body text-ok text-label">{equipment.filter(e => e.status === 'active').length} active</span>
-            {maintenance.length > 0 && (
-              <span className="font-body text-warn text-label">{maintenance.length} in maintenance</span>
-            )}
-            {warnings.length > 0 && (
-              <span className="flex items-center gap-0.5 font-body text-warn text-label">
-                <AlertTriangle size={8} strokeWidth={2} />{warnings.length} process variance
-              </span>
-            )}
-          </div>
-        </div>
 
         <div className="flex-1 overflow-y-auto">
           {equipment.map(eq => (

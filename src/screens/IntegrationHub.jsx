@@ -238,7 +238,6 @@ export default function IntegrationHub() {
 
         {/* Header */}
         <div className="flex-shrink-0 px-5 py-4 border-b border-rule2 bg-stone2">
-          <div className="font-display font-bold text-ink text-head leading-none mb-2">Integration Hub</div>
           <div className="flex items-center gap-2">
             <span className={`display-num text-title ${integrationSummary.active >= 30 ? 'text-ok' : 'text-warn'}`}>
               {integrationSummary.active}

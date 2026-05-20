@@ -305,13 +305,6 @@ export default function BatchIntelligence() {
 
       {/* ── Left: batch list ────────────────────────────────────── */}
       <div className="w-[280px] flex-shrink-0 border-r border-rule2 flex flex-col bg-stone">
-        <div className="flex-shrink-0 px-4 py-3 border-b border-rule2 bg-stone2">
-          <div className="font-body text-micro text-muted tracking-widest mb-1">Batch queue</div>
-          <div className="flex items-center gap-3">
-            <span className="font-body text-label text-muted">{batchSummary.active} active</span>
-            <span className="font-body text-label text-ok">{batchSummary.complete} complete</span>
-          </div>
-        </div>
         <div className="flex-1 overflow-y-auto divide-y divide-rule2">
           {batches.map(b => {
             const isSelected = b.id === selectedId

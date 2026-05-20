@@ -207,8 +207,9 @@ function EmergencyChip({ overrideWindowMin }) {
   const mins = Math.floor(remaining / 60)
   const secs = remaining % 60
   return (
-    <span className="font-body text-label text-danger bg-danger/[0.04] px-1.5 py-0.5 tabular-nums flex-shrink-0 whitespace-nowrap font-medium">
-      ⚡ {remaining > 0 ? `${mins}:${String(secs).padStart(2, '0')}` : 'Auto-confirmed'}
+    <span className="inline-flex items-center gap-1.5 font-body font-semibold text-label text-danger bg-danger/15 px-2 py-0.5 tabular-nums flex-shrink-0 whitespace-nowrap">
+      <span className="w-1.5 h-1.5 rounded-full bg-danger inline-block flex-shrink-0 animate-pulse" />
+      {remaining > 0 ? `${mins}:${String(secs).padStart(2, '0')}` : 'Auto-confirmed'}
     </span>
   )
 }
@@ -631,8 +632,7 @@ function DecisionReplay({ pa, agent }) {
 
                 {/* Expanded detail for active step */}
                 {isActive && s.items?.length > 0 && (
-                  <div className="mb-2 px-3 py-3 bg-stone2 border-l-2 border-l-ochre slide-in">
-                    <div className="font-body text-muted text-label mb-2">Step detail</div>
+                  <div className="mb-2 px-3 py-3 bg-stone2 slide-in">
                     <div className="space-y-1.5">
                       {s.items.filter(it => it?.text).map((it, j) => (
                         <div key={j} className="flex items-start gap-2">
@@ -1225,24 +1225,26 @@ export default function AgentControl() {
                           <button type="button"
                             onClick={() => setSplitFocused(isFocused ? null : pa._key)}
                             className="flex-1 min-w-0 flex items-center gap-3 px-3 py-4 hover:bg-stone2/50 transition-colors text-left">
-                            <div className={`h-2.5 w-2.5 rounded-full flex-shrink-0 flex-shrink-0 ${
-                              pa._meta.consequence === 'critical' ? 'bg-danger' : pa._meta.consequence === 'high' ? 'bg-warn' : 'bg-muted/50'
-                            }`} />
                             <div className="flex-1 min-w-0">
                               <div className="font-body text-muted text-label truncate">{agent.name}</div>
-                              <div className={`font-body font-medium text-body leading-snug ${pa._decided ? 'text-muted' : 'text-ink'}`}>
+                              <div className={`font-body font-medium text-body leading-snug truncate ${pa._decided ? 'text-muted' : 'text-ink'}`}>
                                 {pa._meta.verbFirst}
                               </div>
+                              {pa._decided ? (
+                                <span className={`font-body text-label ${pa._decided === 'approved' ? 'text-ok' : 'text-muted'}`}>
+                                  {pa._decided === 'approved' ? 'Approved' : 'Overridden'}
+                                </span>
+                              ) : pa._meta.showExpiry ? (
+                                <span className={`inline-flex items-center gap-1.5 font-body font-semibold text-label px-2 py-0.5 whitespace-nowrap mt-0.5 ${
+                                  pa._meta.consequence === 'critical' ? 'bg-danger/15 text-danger' : 'bg-warn/10 text-warn'
+                                }`}>
+                                  <span className={`w-1.5 h-1.5 rounded-full inline-block flex-shrink-0 ${
+                                    pa._meta.consequence === 'critical' ? 'bg-danger animate-pulse' : 'bg-warn'
+                                  }`} />
+                                  {pa._meta.expiresLabel}
+                                </span>
+                              ) : null}
                             </div>
-                            {pa._decided ? (
-                              <span className={`font-body text-label flex-shrink-0 ${pa._decided === 'approved' ? 'text-ok' : 'text-muted'}`}>
-                                {pa._decided === 'approved' ? 'Approved' : 'Overridden'}
-                              </span>
-                            ) : pa._meta.showExpiry ? (
-                              <span className={`inline-flex items-center font-body text-label px-1.5 py-0.5 flex-shrink-0 whitespace-nowrap ${
-                                pa._meta.consequence === 'critical' ? 'bg-danger/[0.08] text-danger' : 'bg-warn/[0.08] text-warn'
-                              }`}>{pa._meta.expiresLabel}</span>
-                            ) : null}
                           </button>
                         </div>
                       )
@@ -1342,7 +1344,7 @@ export default function AgentControl() {
                       ) : (
                       <div className="px-6 py-5 space-y-5">
                       {pa.rationale && (
-                        <div className="px-4 py-3 bg-stone2 border-l-4 border-l-ochre">
+                        <div className="px-4 py-3 bg-stone2">
                           <div className="font-body text-muted text-label mb-1">AI rationale</div>
                           <p className="font-body text-ink text-body leading-relaxed">{pa.rationale}</p>
                         </div>
