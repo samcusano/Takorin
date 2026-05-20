@@ -5,7 +5,7 @@ import { openCases, benchmarks } from '../data/capa.js'
 import { goalsData, facility, agentConfigData } from '../data'
 import { interventionSummary, interventions } from '../data/interventions'
 import { ChevronDown, ChevronUp, Download, Lock, ArrowRight, Check } from 'lucide-react'
-import { FilterDropdown, MultiFilterDropdown } from '../components/UI'
+import { FilterDropdown, MultiFilterDropdown, StatusPill } from '../components/UI'
 
 // ── Bullet chart for Q2 Goals ─────────────────────────────────────────────────
 function BulletChart({ current, target, direction, unit }) {
@@ -424,21 +424,17 @@ export default function Analytics() {
               </div>
               <div className="h-10 w-px bg-rule2" />
               <div>
-                <span className={`font-body text-label font-medium px-2.5 py-1 flex items-center gap-1.5 ${
-                  atTarget ? 'bg-ok/10 text-ok' : 'bg-warn/10 text-warn'
-                }`}>
+                <StatusPill tone={atTarget ? 'ok' : 'warn'}>
                   {atTarget
-                    ? <><Check size={10} strokeWidth={2.5} />At target ({attr.target}%)</>
+                    ? `At target (${attr.target}%)`
                     : `${+(attr.target - attr.actual).toFixed(1)}pp below ${attr.target}% target`}
-                </span>
+                </StatusPill>
               </div>
               <div className="flex items-center gap-2 flex-wrap ml-auto">
                 {topDrivers.map(d => (
-                  <span key={d.id} className={`font-body text-label font-medium px-2 py-0.5 ${
-                    d.delta >= 0 ? 'bg-ok/10 text-ok' : 'bg-danger/[0.04] text-danger'
-                  }`}>
+                  <StatusPill key={d.id} tone={d.delta >= 0 ? 'ok' : 'danger'}>
                     {d.delta >= 0 ? '+' : ''}{d.delta}pp {d.short}
-                  </span>
+                  </StatusPill>
                 ))}
               </div>
             </div>

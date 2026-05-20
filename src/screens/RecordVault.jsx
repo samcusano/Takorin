@@ -1,12 +1,13 @@
 import { useState } from 'react'
 import { batchRecords, deviations } from '../data/records'
 import { Lock, CheckCircle2, XCircle, Clock, FileCheck2, AlertTriangle, Shield } from 'lucide-react'
+import { StatusPill, SectionHeader, Tabs, Btn } from '../components/UI'
 
 const STATUS_CFG = {
-  'in-progress': { label: 'In progress', dot: 'bg-ochre', badge: 'bg-ochre/10 text-ochre' },
-  'pending-qp':  { label: 'Pending QP',  dot: 'bg-warn',  badge: 'bg-warn/10 text-warn' },
-  'released':    { label: 'Released',    dot: 'bg-ok',    badge: 'bg-ok/10 text-ok' },
-  'rejected':    { label: 'Rejected',    dot: 'bg-danger',badge: 'bg-danger/[0.04] text-danger' },
+  'in-progress': { label: 'In progress', dot: 'bg-ochre', tone: 'ochre' },
+  'pending-qp':  { label: 'Pending QP',  dot: 'bg-warn',  tone: 'warn' },
+  'released':    { label: 'Released',    dot: 'bg-ok',    tone: 'ok' },
+  'rejected':    { label: 'Rejected',    dot: 'bg-danger', tone: 'danger' },
 }
 
 const HP_CFG = {
@@ -29,7 +30,7 @@ function RecordCard({ rec, selected, onClick }) {
           <div className="font-body font-medium text-ink text-label leading-snug">{rec.batchId}</div>
           <div className="font-body text-muted text-label mt-0.5">{rec.product}</div>
         </div>
-        <span className={`font-body text-label px-1.5 py-0.5 flex-shrink-0 ${cfg.badge}`}>{cfg.label}</span>
+        <StatusPill tone={cfg.tone} className="flex-shrink-0">{cfg.label}</StatusPill>
       </div>
       {/* Completeness bar */}
       <div className="flex items-center gap-2 mt-2">
@@ -126,7 +127,7 @@ function RecordDetail({ rec }) {
       {/* Header */}
       <div className="flex-shrink-0 px-6 py-4 border-b border-rule2">
         <div className="flex items-center gap-2 mb-2">
-          <span className={`font-body text-label px-1.5 py-0.5 ${cfg.badge}`}>{cfg.label}</span>
+          <StatusPill tone={cfg.tone}>{cfg.label}</StatusPill>
           {rec.regulations.map(r => (
             <span key={r} className="font-body text-label px-1.5 py-0.5 bg-stone3 text-muted">{r}</span>
           ))}
@@ -140,27 +141,17 @@ function RecordDetail({ rec }) {
       </div>
 
       {/* Tabs */}
-      <div className="flex-shrink-0 flex border-b border-rule2 bg-stone2">
-        {[
-          { id: 'bmr', label: 'BMR Steps' },
-          { id: 'holds', label: 'Hold Points' },
+      <Tabs
+        className="flex-shrink-0 bg-stone2"
+        tabs={[
+          { id: 'bmr',   label: 'BMR Steps' },
+          { id: 'holds', label: 'Hold Points', dot: rec.holdPoints.some(h => h.status === 'active') },
           { id: 'audit', label: 'Audit Trail' },
-          { id: 'qp', label: 'QP Disposition' },
-        ].map(t => (
-          <button key={t.id} type="button" onClick={() => setTab(t.id)}
-            className={`px-4 py-2.5 font-body text-label border-b-2 transition-colors ${
-              tab === t.id ? 'border-ochre text-ink' : 'border-transparent text-muted hover:text-muted'
-            }`}>
-            {t.label}
-            {t.id === 'holds' && rec.holdPoints.some(h => h.status === 'active') && (
-              <span className="ml-1.5 w-1.5 h-1.5 rounded-full bg-warn inline-block" />
-            )}
-            {t.id === 'qp' && rec.qpDisposition?.status === 'under-review' && (
-              <span className="ml-1.5 w-1.5 h-1.5 rounded-full bg-ochre inline-block" />
-            )}
-          </button>
-        ))}
-      </div>
+          { id: 'qp',    label: 'QP Disposition', dot: rec.qpDisposition?.status === 'under-review' },
+        ]}
+        active={tab}
+        onChange={setTab}
+      />
 
       <div className="flex-1 overflow-y-auto">
 
@@ -185,9 +176,7 @@ function RecordDetail({ rec }) {
         {/* Hold Points tab */}
         {tab === 'holds' && (
           <div>
-            <div className="px-4 py-3 border-b border-rule2 bg-stone2">
-              <p className="font-body text-muted text-label leading-snug">Hold points are regulatory gates. Production cannot proceed to the next stage until the hold is cleared by an authorized signatory. Hold points cannot be bypassed without a formal deviation and QP disposition.</p>
-            </div>
+            <SectionHeader sub="Hold points are regulatory gates. Production cannot proceed to the next stage until the hold is cleared by an authorized signatory. Hold points cannot be bypassed without a formal deviation and QP disposition." />
             {rec.holdPoints.map(hp => <HoldPointRow key={hp.id} hp={hp} />)}
           </div>
         )}
@@ -195,9 +184,7 @@ function RecordDetail({ rec }) {
         {/* Audit Trail tab */}
         {tab === 'audit' && (
           <div>
-            <div className="px-4 py-3 border-b border-rule2 bg-stone2">
-              <p className="font-body text-muted text-label leading-snug">All entries are attributable, contemporaneous, and tamper-evident per 21 CFR Part 11. Records cannot be deleted or modified.</p>
-            </div>
+            <SectionHeader sub="All entries are attributable, contemporaneous, and tamper-evident per 21 CFR Part 11. Records cannot be deleted or modified." />
             {rec.auditTrail.map((entry, i) => (
               <div key={i} className="flex items-start gap-3 px-4 py-2.5 border-b border-rule2">
                 <div className="flex-shrink-0 w-1.5 h-1.5 rounded-full bg-rule2 mt-1.5" />
@@ -303,9 +290,7 @@ export default function RecordVault() {
 
       {/* Right: record detail */}
       <div className="flex-1 flex flex-col overflow-hidden bg-stone">
-        <div className="flex-shrink-0 px-5 py-2.5 border-b border-rule2 bg-stone2">
-          <span className="font-body text-muted text-label">Batch Manufacturing Record</span>
-        </div>
+        <SectionHeader sub="Batch Manufacturing Record" />
         <RecordDetail rec={selectedRecord} />
       </div>
     </div>

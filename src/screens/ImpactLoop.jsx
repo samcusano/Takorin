@@ -2,13 +2,13 @@ import { useState } from 'react'
 import { interventions, interventionSummary, kpiTargets } from '../data/interventions'
 import { AlertTriangle, CheckCircle2, XCircle, ArrowRight, RotateCcw, AlertCircle, TrendingUp, TrendingDown } from 'lucide-react'
 import { AlluvialDiagram } from '../components/Charts'
-import { SegmentedControl } from '../components/UI'
+import { SegmentedControl, StatusPill } from '../components/UI'
 
 const OUTCOME_CFG = {
-  positive: { label: 'Positive',  dot: 'bg-ok',     badge: 'bg-ok/10 text-ok',             border: 'border-l-ok',     chip: 'bg-ok/10 text-ok'     },
-  negative: { label: 'Negative',  dot: 'bg-danger',  badge: 'bg-danger/[0.04] text-danger', border: 'border-l-danger', chip: 'bg-danger/[0.04] text-danger' },
-  unclear:  { label: 'Unclear',   dot: 'bg-ochre',   badge: 'bg-ochre/10 text-ochre',    border: 'border-l-ochre',  chip: 'bg-ochre/10 text-ochre'   },
-  harmful:  { label: 'Harmful',   dot: 'bg-danger',  badge: 'bg-danger/[0.04] text-danger', border: 'border-l-danger', chip: 'bg-danger/[0.04] text-danger' },
+  positive: { label: 'Positive',  tone: 'ok',     dot: 'bg-ok',     border: 'border-l-ok',     chip: 'bg-ok/10 text-ok'     },
+  negative: { label: 'Negative',  tone: 'danger', dot: 'bg-danger', border: 'border-l-danger', chip: 'bg-danger/[0.04] text-danger' },
+  unclear:  { label: 'Unclear',   tone: 'ochre',  dot: 'bg-ochre',  border: 'border-l-ochre',  chip: 'bg-ochre/10 text-ochre'   },
+  harmful:  { label: 'Harmful',   tone: 'danger', dot: 'bg-danger', border: 'border-l-danger', chip: 'bg-danger/[0.04] text-danger' },
 }
 
 const DECISION_CFG = {
@@ -109,7 +109,7 @@ function InterventionCard({ entry, selected, onClick }) {
       }`}>
       <div className="flex items-start gap-2 mb-2">
         <div className="flex-1 min-w-0">
-          <span className={`inline-flex items-center font-body text-label px-1.5 py-0.5 mb-1.5 ${oc.badge}`}>{oc.label}</span>
+          <StatusPill tone={oc.tone} className="mb-1.5">{oc.label}</StatusPill>
           <div className="font-display font-medium text-ink text-base leading-snug mb-0.5">{entry.action}</div>
           <div className="font-body text-muted text-label">{entry.recommendedLabel}</div>
         </div>
@@ -150,7 +150,7 @@ function InterventionDetail({ entry }) {
     <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
       <div>
         <div className="flex items-center gap-2 mb-2">
-          <span className={`font-body text-label px-1.5 py-0.5 ${oc.badge}`}>{oc.label}</span>
+          <StatusPill tone={oc.tone}>{oc.label}</StatusPill>
           <span className="font-body text-muted text-label">{entry.agent} · {entry.agentTier} tier</span>
           {entry.wasReversed && (
             <span className="flex items-center gap-1 font-body text-muted text-label ml-auto">

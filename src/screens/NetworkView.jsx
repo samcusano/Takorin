@@ -5,7 +5,7 @@ import {
 } from 'lucide-react'
 import { networkData } from '../data'
 import { useAppState } from '../context/AppState'
-import { ActionBanner, Btn, HoldButton } from '../components/UI'
+import { ActionBanner, Btn, HoldButton, StatusPill } from '../components/UI'
 import { useFocusTrap } from '../lib/utils'
 
 // ── Intelligence signals ───────────────────────────────────────────────────────
@@ -103,9 +103,7 @@ function ExposureOverlay({ triggerRef, active, actions, onAction, onBulkAction, 
         {/* Plant chips + note + FSMA */}
         <div className="flex items-center gap-2 px-4 pb-3 flex-wrap">
          {e.affectedPlants.map(id => (
-          <span key={id} className={`font-body text-label font-medium px-1.5 py-0.5 ${
-           isCross ? 'bg-danger/[0.04] text-danger' : 'bg-warn/10 text-warn'
-          }`}>{PLANT_CODE[id] || id}</span>
+          <StatusPill key={id} tone={isCross ? 'danger' : 'warn'}>{PLANT_CODE[id] || id}</StatusPill>
          ))}
          {e.note && (
           <span className={`font-body text-label ${isCross ? 'text-danger/70' : 'text-warn/70'}`}>
@@ -259,9 +257,7 @@ function SupplierRegistry({ rows }) {
        {/* Exposure Count */}
        <div className="flex justify-center">
         {s.activeExposureCount > 0 ? (
-         <span className="font-body text-danger text-label font-medium px-2 py-0.5 bg-danger/[0.04] whitespace-nowrap">
-          {s.activeExposureCount} active
-         </span>
+         <StatusPill tone="danger">{s.activeExposureCount} active</StatusPill>
         ) : (
          <span className="font-body text-muted text-label">—</span>
         )}

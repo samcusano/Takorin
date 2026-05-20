@@ -1,12 +1,13 @@
 import { useState } from 'react'
 import { deliverySummary, orders, demandForecast, carbonBreakdown, skuVolatility } from '../data/delivery'
 import { TrendingUp, TrendingDown, Leaf, Package, AlertTriangle, CheckCircle2 } from 'lucide-react'
+import { StatusPill, SectionHeader, Tabs } from '../components/UI'
 
 const STATUS_CFG = {
-  'scheduled':     { label: 'Scheduled',     dot: 'bg-muted',  badge: 'bg-stone3 text-muted' },
-  'in-production': { label: 'In production', dot: 'bg-ochre',  badge: 'bg-ochre/10 text-ochre' },
-  'finishing':     { label: 'Finishing',     dot: 'bg-warn',   badge: 'bg-warn/10 text-warn' },
-  'shipped':       { label: 'Shipped',       dot: 'bg-ok',     badge: 'bg-ok/10 text-ok' },
+  'scheduled':     { label: 'Scheduled',     dot: 'bg-muted',  tone: 'muted' },
+  'in-production': { label: 'In production', dot: 'bg-ochre',  tone: 'ochre' },
+  'finishing':     { label: 'Finishing',     dot: 'bg-warn',   tone: 'warn' },
+  'shipped':       { label: 'Shipped',       dot: 'bg-ok',     tone: 'ok' },
 }
 
 function MiniDemandChart() {
@@ -59,7 +60,7 @@ function OrderRow({ order, selected, onClick }) {
           </div>
           <div className="font-body text-muted text-label">{order.customer} · {order.skuLabel}</div>
         </div>
-        <span className={`font-body text-label px-1.5 py-0.5 flex-shrink-0 ${cfg.badge}`}>{cfg.label}</span>
+        <StatusPill tone={cfg.tone} className="flex-shrink-0">{cfg.label}</StatusPill>
       </div>
       <div className="flex items-center gap-3">
         <div className="flex items-center gap-1">
@@ -100,7 +101,7 @@ function OrderDetail({ order }) {
       {/* Header */}
       <div>
         <div className="flex items-center gap-2 mb-2">
-          <span className={`font-body text-label px-1.5 py-0.5 ${cfg.badge}`}>{cfg.label}</span>
+          <StatusPill tone={cfg.tone}>{cfg.label}</StatusPill>
           {!order.onTrack && (
             <span className="flex items-center gap-1 font-body text-warn text-label">
               <AlertTriangle size={9} strokeWidth={2} />
@@ -243,9 +244,7 @@ export default function ValueChain() {
 
         {/* SKU volatility */}
         <div className="flex-1 overflow-y-auto">
-          <div className="px-4 py-2 border-b border-rule2 bg-stone2">
-            <div className="font-body text-muted text-label">SKU demand trend</div>
-          </div>
+          <SectionHeader sub="SKU demand trend" />
           {skuVolatility.map(s => (
             <div key={s.sku} className="flex items-center justify-between px-4 py-2.5 border-b border-rule2">
               <div>
@@ -265,28 +264,21 @@ export default function ValueChain() {
 
       {/* Center: order pipeline */}
       <div className="w-[360px] flex-shrink-0 border-r border-rule2 flex flex-col">
-        <div className="flex-shrink-0 px-4 py-2.5 border-b border-rule2 bg-stone2 flex items-center justify-between">
-          <span className="font-body text-muted text-label">
-            Orders · {filtered.length}
-            {deliverySummary.lateOrders > 0 && (
-              <span className="ml-2 text-warn">{deliverySummary.lateOrders} late</span>
-            )}
-          </span>
-        </div>
+        <SectionHeader
+          sub={`Orders · ${filtered.length}`}
+          badge={deliverySummary.lateOrders > 0 ? <StatusPill tone="warn">{deliverySummary.lateOrders} late</StatusPill> : null}
+        />
 
         {/* Status filter */}
-        <div className="flex-shrink-0 flex border-b border-rule2 bg-stone overflow-x-auto">
-          <button type="button" onClick={() => setFilterStatus(null)}
-            className={`px-3 py-2 font-body text-label border-b-2 whitespace-nowrap transition-colors ${
-              !filterStatus ? 'border-ochre text-ink' : 'border-transparent text-muted hover:text-muted'
-            }`}>All</button>
-          {Object.entries(STATUS_CFG).map(([k, v]) => (
-            <button key={k} type="button" onClick={() => setFilterStatus(k)}
-              className={`px-3 py-2 font-body text-label border-b-2 whitespace-nowrap transition-colors ${
-                filterStatus === k ? 'border-ochre text-ink' : 'border-transparent text-muted hover:text-muted'
-              }`}>{v.label}</button>
-          ))}
-        </div>
+        <Tabs
+          className="flex-shrink-0 bg-stone overflow-x-auto"
+          tabs={[
+            { id: '__all__', label: 'All' },
+            ...Object.entries(STATUS_CFG).map(([k, v]) => ({ id: k, label: v.label })),
+          ]}
+          active={filterStatus ?? '__all__'}
+          onChange={(id) => setFilterStatus(id === '__all__' ? null : id)}
+        />
 
         <div className="flex-1 overflow-y-auto">
           {filtered.map(o => (
@@ -307,9 +299,7 @@ export default function ValueChain() {
 
       {/* Right: order detail */}
       <div className="flex-1 flex flex-col overflow-hidden bg-stone">
-        <div className="flex-shrink-0 px-5 py-2.5 border-b border-rule2 bg-stone2">
-          <span className="font-body text-muted text-label">Order detail</span>
-        </div>
+        <SectionHeader sub="Order detail" />
         <OrderDetail order={selectedOrder} />
       </div>
     </div>

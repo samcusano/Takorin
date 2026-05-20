@@ -19,18 +19,18 @@ const DOMAINS = [
   { id: 'sensory-drift',        label: 'Sensory Drift',        icon: Waves,         color: 'text-ochre',  bg: 'bg-ochre/[0.05]',  border: 'border-l-ochre',  badge: 'bg-ochre/10 text-ochre'  },
   { id: 'supplier-deviation',   label: 'Supplier Deviation',   icon: Truck,         color: 'text-warn',   bg: 'bg-warn/[0.04]',   border: 'border-l-warn',   badge: 'bg-warn/10 text-warn'    },
   { id: 'yield-loss',           label: 'Yield Loss',           icon: TrendingDown,  color: 'text-warn',   bg: 'bg-warn/[0.04]',   border: 'border-l-warn',   badge: 'bg-warn/10 text-warn'    },
-  { id: 'capa-patterns',        label: 'CAPA Patterns',        icon: ClipboardCheck,color: 'text-muted',  bg: '',                  border: 'border-l-rule2',  badge: 'bg-stone3 text-muted'    },
-  { id: 'shift-recovery',       label: 'Shift Recovery',       icon: RotateCcw,     color: 'text-muted',  bg: '',                  border: 'border-l-rule2',  badge: 'bg-stone3 text-muted'    },
+  { id: 'capa-patterns',        label: 'CAPA Patterns',        icon: ClipboardCheck,color: 'text-muted',  bg: '',                  border: 'border-l-muted',  badge: 'bg-stone3 text-muted'    },
+  { id: 'shift-recovery',       label: 'Shift Recovery',       icon: RotateCcw,     color: 'text-muted',  bg: '',                  border: 'border-l-muted',  badge: 'bg-stone3 text-muted'    },
   { id: 'regulatory-findings',  label: 'Regulatory Findings',  icon: Shield,        color: 'text-danger', bg: 'bg-danger/[0.04]', border: 'border-l-danger', badge: 'bg-danger/[0.04] text-danger' },
 ]
 
 const MEMORY_TYPES = [
-  { id: 'variance',     label: 'Variance memory',    dot: 'bg-warn'   },
-  { id: 'intervention', label: 'Intervention memory', dot: 'bg-ok'    },
-  { id: 'sensory',      label: 'Sensory memory',     dot: 'bg-ochre'  },
-  { id: 'seasonal',     label: 'Seasonal memory',    dot: 'bg-muted'  },
-  { id: 'judgment',     label: 'Operator judgment',  dot: 'bg-ink'    },
-  { id: 'causality',    label: 'Process causality',  dot: 'bg-muted'  },
+  { id: 'variance',     label: 'Variance memory',    dot: 'bg-warn',   border: 'border-l-warn'   },
+  { id: 'intervention', label: 'Intervention memory', dot: 'bg-ok',    border: 'border-l-ok'     },
+  { id: 'sensory',      label: 'Sensory memory',     dot: 'bg-ochre',  border: 'border-l-ochre'  },
+  { id: 'seasonal',     label: 'Seasonal memory',    dot: 'bg-muted',  border: 'border-l-muted'  },
+  { id: 'judgment',     label: 'Operator judgment',  dot: 'bg-ink',    border: 'border-l-ink'    },
+  { id: 'causality',    label: 'Process causality',  dot: 'bg-muted',  border: 'border-l-muted'  },
 ]
 
 const RECALL_MODES = [
@@ -174,7 +174,7 @@ function EntryDetail({ entry }) {
           ].map(({ label, val }) => (
             <div key={label} className="bg-stone px-3 py-2.5">
               <div className="font-body text-muted text-label mb-0.5">{label}</div>
-              <div className="font-body font-medium text-ink text-body">{val}</div>
+              <div className="display-num text-base">{val}</div>
             </div>
           ))}
         </div>
@@ -189,13 +189,13 @@ function EntryDetail({ entry }) {
           </div>
         )}
         {entry.institutionalRisk && (
-          <div className={`px-4 py-3 border ${
-            entry.institutionalRisk.startsWith('HIGH')   ? 'border-danger/30 bg-danger/[0.03]' :
-            entry.institutionalRisk.startsWith('MEDIUM') ? 'bg-warn/[0.02]'     :
-            'border-rule2'
+          <div className={`px-4 py-3 border-l-2 ${
+            entry.institutionalRisk.startsWith('HIGH')   ? 'border-l-danger bg-danger/[0.04]' :
+            entry.institutionalRisk.startsWith('MEDIUM') ? 'border-l-warn bg-warn/[0.03]'     :
+            'border-l-muted bg-stone2'
           }`}>
-            <div className="font-body text-muted text-label mb-0.5">Institutional risk</div>
-            <p className="font-body text-muted text-label leading-snug">{entry.institutionalRisk}</p>
+            <div className="font-body text-muted text-micro mb-1">Institutional risk</div>
+            <p className={`font-body text-body leading-snug ${entry.institutionalRisk.startsWith('HIGH') ? 'text-danger/80' : entry.institutionalRisk.startsWith('MEDIUM') ? 'text-warn/80' : 'text-muted'}`}>{entry.institutionalRisk}</p>
           </div>
         )}
         {entry.tags?.length > 0 && (
@@ -251,20 +251,20 @@ function OperationalMemoryVault() {
             return (
               <button key={d.id} type="button"
                 onClick={() => { setActiveDomain(d.id); setShowMemory(false) }}
-                className={`w-full text-left px-4 py-3 border-l-2 transition-colors ${
-                  isActive ? `bg-stone2 border-l-ochre` : 'border-l-transparent hover:bg-stone2/50'
+                className={`w-full text-left px-4 py-3.5 border-l-2 transition-colors ${
+                  isActive ? `bg-stone2 ${d.border}` : 'border-l-transparent hover:bg-stone2/50'
                 }`}>
                 <div className="flex items-center justify-between gap-2 mb-0.5">
-                  <div className="flex items-center gap-1.5">
-                    <Icon size={10} className={isActive ? 'text-ink' : 'text-muted'} strokeWidth={1.75} />
-                    <span className={`font-body font-medium text-label leading-snug ${isActive ? 'text-ink' : 'text-muted'}`}>{d.label}</span>
+                  <div className="flex items-center gap-2">
+                    <Icon size={13} className={isActive ? d.color : 'text-muted'} strokeWidth={1.75} />
+                    <span className={`font-body font-medium text-body leading-snug ${isActive ? 'text-ink' : 'text-muted'}`}>{d.label}</span>
                   </div>
-                  <span className="font-body text-muted text-label">{dc?.count ?? 0}</span>
+                  <span className={`display-num text-base ${isActive ? 'text-muted' : 'text-muted/50'}`}>{dc?.count ?? 0}</span>
                 </div>
                 {dc?.activeCount > 0 && (
-                  <div className="flex items-center gap-1 mt-0.5">
-                    <span className="w-1 h-1 rounded-full bg-danger flex-shrink-0" />
-                    <span className="font-body text-danger text-label">{dc.activeCount} active</span>
+                  <div className="flex items-center gap-1.5 mt-1">
+                    <span className="live-dot w-1.5 h-1.5 rounded-full bg-danger flex-shrink-0" />
+                    <span className="font-body text-danger text-label">{dc.activeCount} active now</span>
                   </div>
                 )}
               </button>
@@ -274,7 +274,7 @@ function OperationalMemoryVault() {
 
         {/* Process Memory */}
         <button type="button"
-          onClick={() => { setShowMemory(true); setRecallMode(null); setMemTypeFilter(null) }}
+          onClick={() => { setShowMemory(true) }}
           className={`flex-shrink-0 flex items-center gap-2 px-4 py-3.5 border-t border-rule2 transition-colors border-l-2 ${
             showMemory ? 'bg-stone2 border-l-ochre' : 'border-l-transparent hover:bg-stone2/50'
           }`}>
@@ -328,19 +328,19 @@ function OperationalMemoryVault() {
               {/* Batch list */}
               <div className="w-[280px] flex-shrink-0 border-r border-rule2 overflow-y-auto">
                 {processMemory.map(m => {
-                  const oc = { exceptional: 'text-ok', excellent: 'text-ok', underperformed: 'text-danger' }[m.outcome] ?? 'text-muted'
+                  const ocColor = { exceptional: 'text-ok', excellent: 'text-ok', underperformed: 'text-danger' }[m.outcome] ?? 'text-muted'
+                  const border = m.outcome === 'underperformed' ? 'border-l-danger' : m.grade === 'Premium' ? 'border-l-ochre' : 'border-l-muted'
                   return (
                     <button key={m.id} type="button" onClick={() => setSlideEntry({ _pm: true, ...m })}
-                      className="w-full text-left px-4 py-3.5 border-b border-rule2 transition-colors border-l-4 border-l-transparent hover:bg-stone2/50 hover:border-l-ochre">
+                      className={`w-full text-left px-4 py-4 border-b border-rule2 transition-colors border-l-4 ${border} hover:bg-stone2/50`}>
                       <div className="flex items-baseline justify-between mb-1">
-                        <span className="font-body font-medium text-ink text-body">{m.batchId}</span>
-                        <span className={`font-display font-bold text-base ${m.grade === 'Premium' ? 'text-ochre' : 'text-muted'}`}>{m.grade}</span>
+                        <span className="font-body font-bold text-ink text-body">{m.batchId}</span>
+                        <span className={`display-num text-base ${m.grade === 'Premium' ? 'text-ochre' : 'text-muted'}`}>{m.grade}</span>
                       </div>
-                      <div className="font-body text-muted text-label">{m.sku}</div>
-                      <div className="flex items-center gap-2 mt-1">
-                        <span className="font-body text-muted text-label">Aroma {m.finalAromaScore}</span>
-                        <span className="font-body text-muted text-label">·</span>
-                        <span className={`font-body text-label capitalize ${oc}`}>{m.outcome}</span>
+                      <div className="font-body text-muted text-micro mb-1.5">{m.sku}</div>
+                      <div className="flex items-center gap-3">
+                        <span className="font-body text-muted text-label">Aroma <span className="display-num text-base text-ink">{m.finalAromaScore}</span></span>
+                        <span className={`font-body text-label capitalize font-medium ${ocColor}`}>{m.outcome}</span>
                       </div>
                     </button>
                   )
@@ -354,21 +354,26 @@ function OperationalMemoryVault() {
         ) : (
           <>
             {/* Domain header */}
-            <div className="flex-shrink-0 border-b border-rule2 bg-stone">
-              <div className={`px-5 py-3 border-b border-rule2 ${domain?.bg ?? ''}`}>
-                <div className="flex items-center gap-2 mb-0.5">
-                  {domain && <domain.icon size={12} className={domain.color} strokeWidth={1.75} />}
-                  <span className="font-display font-bold text-ink text-base">{domain?.label}</span>
-                  <span className="font-body text-muted text-label ml-1">{entries.length} entries</span>
+            <div className={`flex-shrink-0 border-b border-rule2 border-l-4 ${domain?.border ?? 'border-l-rule2'} ${domain?.bg ?? ''}`}>
+              <div className="flex items-start justify-between gap-4 px-5 py-4">
+                <div className="flex items-start gap-3">
+                  {domain && <domain.icon size={18} className={`${domain.color} flex-shrink-0 mt-0.5`} strokeWidth={1.5} />}
+                  <div>
+                    <div className="font-display font-bold text-ink text-subhead leading-none mb-1">{domain?.label}</div>
+                    <div className="font-body text-muted text-body leading-relaxed">
+                      {activeDomain === 'active-deviations'   ? 'Currently active process anomalies with open causal threads' :
+                       activeDomain === 'sensory-drift'        ? 'Expert sensory observations, aroma and flavor deviation patterns' :
+                       activeDomain === 'supplier-deviation'   ? 'Raw material variance records and supplier quality patterns' :
+                       activeDomain === 'yield-loss'           ? 'Grade degradation, yield shortfalls, and quality ceiling events' :
+                       activeDomain === 'capa-patterns'        ? 'Corrective action precedents and failure pattern library' :
+                       activeDomain === 'shift-recovery'       ? 'Process recovery protocols and seasonal adjustment memory' :
+                       'Regulatory audit findings, compliance events, inspection records'}
+                    </div>
+                  </div>
                 </div>
-                <div className="font-body text-muted text-label">
-                  {activeDomain === 'active-deviations'   ? 'Currently active process anomalies with open causal threads' :
-                   activeDomain === 'sensory-drift'        ? 'Expert sensory observations, aroma and flavor deviation patterns' :
-                   activeDomain === 'supplier-deviation'   ? 'Raw material variance records and supplier quality patterns' :
-                   activeDomain === 'yield-loss'           ? 'Grade degradation, yield shortfalls, and quality ceiling events' :
-                   activeDomain === 'capa-patterns'        ? 'Corrective action precedents and failure pattern library' :
-                   activeDomain === 'shift-recovery'       ? 'Process recovery protocols and seasonal adjustment memory' :
-                   'Regulatory audit findings, compliance events, inspection records'}
+                <div className="flex-shrink-0 text-right">
+                  <div className="display-num text-metric leading-none text-muted">{entries.length}</div>
+                  <div className="font-body text-micro text-muted mt-0.5">entries</div>
                 </div>
               </div>
             </div>
@@ -383,10 +388,10 @@ function OperationalMemoryVault() {
                 grouped.map(group => (
                   <div key={group.id}>
                     {/* Memory type section header */}
-                    <div className="flex items-center gap-2 px-5 py-2 bg-stone2 border-b border-rule2 sticky top-0">
-                      <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${group.dot}`} />
-                      <span className="font-body text-muted text-label">{group.label}</span>
-                      <span className="font-body text-muted/50 text-label ml-1">{group.entries.length}</span>
+                    <div className={`flex items-center gap-3 px-5 py-2.5 bg-stone3 border-b border-rule2 border-l-2 ${group.border} sticky top-0`}>
+                      <span className={`w-2 h-2 rounded-full flex-shrink-0 ${group.dot}`} />
+                      <span className="font-body font-bold text-ink text-body flex-1">{group.label}</span>
+                      <span className="display-num text-base text-muted">{group.entries.length}</span>
                     </div>
                     <div className="px-3 py-3 space-y-2.5">
                       {group.entries.map(e => {
@@ -397,13 +402,13 @@ function OperationalMemoryVault() {
                         const recallC  = RECALL_COLOR[e._recallMode] ?? RECALL_COLOR.condition
                         return (
                           <article key={e.id}
-                            className="bg-stone border border-rule overflow-hidden">
+                            className="bg-stone border border-rule2 overflow-hidden">
                             {/* Urgency accent bar */}
-                            <div className={`h-[3px] w-full ${topBar}`} />
+                            <div className={`h-[5px] w-full ${topBar}`} />
                             <button type="button" onClick={() => setSlideEntry(e)}
-                              className="w-full text-left px-4 pt-3 pb-4 hover:bg-stone2/30 transition-colors">
-                              {/* Header: chips + confidence */}
-                              <div className="flex items-start justify-between gap-3 mb-2">
+                              className="w-full text-left px-4 pt-3 pb-4 hover:bg-stone2/60 transition-colors">
+                              {/* Header: chips + confidence (dominant) */}
+                              <div className="flex items-start justify-between gap-3 mb-2.5">
                                 <div className="flex items-center gap-1.5 flex-wrap">
                                   {risk && (
                                     <StatusPill tone={riskKey === 'HIGH' ? 'danger' : riskKey === 'MEDIUM' ? 'warn' : 'ok'}>
@@ -415,21 +420,23 @@ function OperationalMemoryVault() {
                                     {e._recallMode}
                                   </span>
                                   {e.activeBatches?.length > 0 && (
-                                    <span className="font-body text-danger text-label font-medium">active</span>
+                                    <span className="inline-flex items-center gap-1 font-body text-danger text-label font-semibold">
+                                      <span className="live-dot w-1.5 h-1.5 rounded-full bg-danger flex-shrink-0" />active
+                                    </span>
                                   )}
                                 </div>
-                                <div className={`display-num text-title leading-none flex-shrink-0 ${confColor}`}>{e.confidence}%</div>
+                                <div className={`display-num text-page leading-none flex-shrink-0 ${confColor}`}>{e.confidence}%</div>
                               </div>
                               {/* Body: title + preview */}
-                              <div className="font-body font-medium text-ink text-body leading-snug mb-1.5">{e.title}</div>
+                              <div className="font-display font-semibold text-ink text-base leading-snug mb-1.5">{e.title}</div>
                               <div className="font-body text-muted text-label leading-snug line-clamp-2">{e.body?.slice(0, 110)}…</div>
                               {/* Footer: author + evidence + tags */}
-                              <div className="flex items-center gap-2 mt-3 pt-2.5 border-t border-rule2/60 flex-wrap">
+                              <div className="flex items-center gap-2 mt-3 pt-2.5 border-t border-rule2 flex-wrap">
                                 <span className="font-body text-muted text-label">{e.author.name}</span>
                                 <span className="font-body text-muted/40">·</span>
                                 <span className="font-body text-muted text-label">{e.evidenceBase.batchCount ?? '—'} batches</span>
                                 {e.tags?.slice(0, 2).map(tag => (
-                                  <span key={tag} className="font-body text-muted/60 text-label px-1.5 py-0.5 bg-stone3">{tag}</span>
+                                  <span key={tag} className="font-body text-muted/60 text-micro px-1.5 py-0.5 bg-stone3">{tag}</span>
                                 ))}
                               </div>
                             </button>
@@ -460,7 +467,7 @@ function OperationalMemoryVault() {
               {[{ label: 'Aroma', val: String(slideEntry.finalAromaScore) }, { label: 'EBC', val: String(slideEntry.finalEBC) }, { label: 'Amino N', val: slideEntry.finalAminoNitrogen }].map(({ label, val }) => (
                 <div key={label} className="bg-stone px-3 py-2.5">
                   <div className="font-body text-muted text-label mb-0.5">{label}</div>
-                  <div className="font-body font-medium text-ink text-body">{val}</div>
+                  <div className="display-num text-base">{val}</div>
                 </div>
               ))}
             </div>
@@ -469,7 +476,7 @@ function OperationalMemoryVault() {
               <div className="divide-y divide-rule2">
                 {slideEntry.keySignals?.map((s, i) => (
                   <div key={i} className="flex items-start gap-3 px-4 py-2.5">
-                    <span className="font-body text-muted text-label w-10 flex-shrink-0 pt-0.5">Day {s.day}</span>
+                    <span className="display-num text-base text-muted w-10 flex-shrink-0 pt-0.5">Day {s.day}</span>
                     <div className="flex-1">
                       <div className="font-body font-medium text-ink text-label">{s.signal}</div>
                       <div className="font-body text-muted text-label">→ {s.outcome}</div>

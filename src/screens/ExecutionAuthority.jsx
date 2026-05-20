@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { executionLog, executionSummary, autonomyTiers, rollbackLog } from '../data/execution'
 import { CheckCircle2, AlertTriangle, Clock, RotateCcw, Zap, Eye, MessageSquare, Shield, ArrowRight } from 'lucide-react'
-import { SlidePanel } from '../components/UI'
+import { SlidePanel, StatusPill } from '../components/UI'
 
 const TIER_ICONS = { observe: Eye, recommend: MessageSquare, execute: Zap, govern: Shield }
 
@@ -51,7 +51,7 @@ function LogRow({ entry, selected, onClick }) {
         selected ? 'bg-stone2' : 'hover:bg-stone2/50'
       }`}>
       <div className="mb-1">
-        <span className={`inline-flex items-center font-body text-label px-1.5 py-0.5 mb-1.5 ${out.cls}`}>{out.label}</span>
+        <StatusPill tone={entry.outcome === 'success' ? 'ok' : entry.outcome === 'escalated' ? 'warn' : entry.outcome === 'pending' ? 'ochre' : 'muted'} className="mb-1.5">{out.label}</StatusPill>
         <p className="font-display font-medium text-ink text-base leading-snug mb-0.5">{entry.action}</p>
         <div className="flex items-center gap-2">
           <span className="font-body text-muted text-label">{entry.agent}</span>
@@ -85,7 +85,7 @@ function ActionDetail({ entry }) {
         <div className="flex items-center gap-2 mb-2">
           <TierIcon size={10} strokeWidth={2} className="text-muted" />
           <span className="font-body text-muted text-label capitalize">{entry.tier} tier</span>
-          <span className={`ml-auto font-body text-label px-1.5 py-0.5 ${out.cls}`}>{out.label}</span>
+          <StatusPill tone={entry.outcome === 'success' ? 'ok' : entry.outcome === 'escalated' ? 'warn' : entry.outcome === 'pending' ? 'ochre' : 'muted'} className="ml-auto">{out.label}</StatusPill>
         </div>
         <div className="font-display font-bold text-ink text-head leading-tight mb-1">{entry.action}</div>
         <div className="font-body text-muted text-label">{entry.agent} · {entry.timeLabel}</div>
@@ -109,7 +109,7 @@ function ActionDetail({ entry }) {
         ].map(({ label, val, tone }) => (
           <div key={label} className="bg-stone px-3 py-2.5">
             <div className="font-body text-muted text-label mb-0.5">{label}</div>
-            <div className={`font-body font-medium text-body ${tone}`}>{val}</div>
+            <div className={`display-num text-base ${tone}`}>{val}</div>
           </div>
         ))}
       </div>
@@ -120,7 +120,7 @@ function ActionDetail({ entry }) {
           <ArrowRight size={12} className={entry.impact.positive ? 'text-ok' : 'text-warn'} strokeWidth={2} />
           <div>
             <div className="font-body text-muted text-label">{entry.impact.metric}</div>
-            <div className={`font-body font-medium text-base ${entry.impact.positive ? 'text-ok' : 'text-warn'}`}>{entry.impact.delta}</div>
+            <div className={`display-num text-base font-bold ${entry.impact.positive ? 'text-ok' : 'text-warn'}`}>{entry.impact.delta}</div>
           </div>
         </div>
       )}
@@ -145,7 +145,7 @@ function ActionDetail({ entry }) {
           <div className="flex items-center gap-2 mt-2">
             <span className="font-body text-muted text-label">{rb.timestamp.replace('T', ' ').substring(0, 16)}</span>
             <span className="font-body text-muted text-label opacity-50">·</span>
-            <span className="font-body text-label px-1.5 py-0.5 bg-ok/10 text-ok">Complete</span>
+            <StatusPill tone="ok">Complete</StatusPill>
           </div>
         </div>
       )}
@@ -170,7 +170,7 @@ export default function ExecutionAuthority() {
       <div className="w-[280px] flex-shrink-0 border-r border-rule2 flex flex-col bg-stone">
         <div className="flex-shrink-0 px-5 py-4 border-b border-rule2 bg-stone2">
           <div className="flex items-center gap-2 mt-2">
-            <span className={`display-num text-title text-ok`}>{executionSummary.totalActions}</span>
+            <span className={`display-num text-display text-ok`}>{executionSummary.totalActions}</span>
             <span className="font-body text-muted text-label">autonomous actions · 30d</span>
           </div>
         </div>
@@ -185,7 +185,7 @@ export default function ExecutionAuthority() {
           ].map(({ label, val, tone }) => (
             <div key={label} className="bg-stone px-3 py-2">
               <div className="font-body text-muted text-micro mb-0.5">{label}</div>
-              <div className={`font-body font-medium text-body ${tone}`}>{val}</div>
+              <div className={`display-num text-head ${tone}`}>{val}</div>
             </div>
           ))}
         </div>

@@ -7,7 +7,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { processHierarchy } from '../data/hierarchy'
 import { AlertTriangle, ChevronRight, ChevronDown, ArrowRight, ArrowDown, Activity, Zap, TrendingDown, Info } from 'lucide-react'
-import { SlidePanel, SegmentedControl } from '../components/UI'
+import { SlidePanel, SegmentedControl, SectionHeader, Tabs } from '../components/UI'
 import ShiftHero from '../components/ShiftHero'
 
 const scoreColor  = (s) => s >= 90 ? 'text-ok'     : s >= 80 ? 'text-ochre'   : s >= 70 ? 'text-warn'   : 'text-danger'
@@ -394,9 +394,7 @@ function CausalPanel({ zone, building }) {
         {/* Vessels */}
         {allVessels.length > 0 && (
           <div className="border-b border-rule2">
-            <div className="px-5 py-2.5 bg-stone2 border-b border-rule2">
-              <span className="font-body text-muted text-label">{allVessels.length} vessels</span>
-            </div>
+            <SectionHeader label={`${allVessels.length} vessels`} />
             <VesselGrid vessels={allVessels} />
           </div>
         )}
@@ -674,16 +672,12 @@ function StateFieldView({ site, variant, onVariantChange }) {
           maxWidth="480px"
         >
           {/* Tab toggle */}
-          <div className="flex gap-1 border border-rule2 p-0.5 mb-1">
-            {[{ id: 'context', label: 'Causal context' }, { id: 'reasoning', label: 'Reasoning' }].map(t => (
-              <button key={t.id} type="button" onClick={() => setRightTab(t.id)}
-                className={`flex-1 font-body text-label py-1 transition-colors ${
-                  rightTab === t.id ? 'bg-stone3 text-ink' : 'text-muted hover:text-ink'
-                }`}>
-                {t.label}
-              </button>
-            ))}
-          </div>
+          <Tabs
+            tabs={[{ id: 'context', label: 'Causal context' }, { id: 'reasoning', label: 'Reasoning' }]}
+            active={rightTab}
+            onChange={setRightTab}
+            flush
+          />
           {rightTab === 'reasoning'
             ? <ReasoningPanel zone={selectedZone} building={selectedBuilding} />
             : <CausalPanel zone={selectedZone} building={selectedBuilding} />
@@ -747,11 +741,7 @@ export default function ProcessHierarchy() {
       <div className="flex-1 overflow-y-auto">
         {!selectedBuilding && (
           <div>
-            <div className="px-5 py-2.5 border-b border-rule2 bg-stone2 flex items-center gap-2">
-              <span className="font-body text-muted text-label">{site.code} · {site.location}</span>
-              <span className="font-body text-muted">·</span>
-              <span className="font-body text-muted text-label">{site.vessels} vessels · {site.workers.toLocaleString()} workers</span>
-            </div>
+            <SectionHeader label={`${site.code} · ${site.location}`} sub={`${site.vessels} vessels · ${site.workers.toLocaleString()} workers`} />
             <div className="divide-y divide-rule2">
               {site.buildings.map(b => {
                 // Derive stage mix across all zones in this building
@@ -814,11 +804,7 @@ export default function ProcessHierarchy() {
         )}
         {selectedBuilding && !selectedZone && (
           <div>
-            <div className="px-5 py-3 border-b border-rule2 bg-stone2 flex items-center gap-3">
-              <span className="font-display font-bold text-ink text-body">{selectedBuilding.name}</span>
-              <span className="font-body text-muted text-label">{selectedBuilding.label}</span>
-              <span className="font-body text-muted text-label ml-auto">{selectedBuilding.zones?.length} zones</span>
-            </div>
+            <SectionHeader label={selectedBuilding.name} sub={selectedBuilding.label} badge={<span className="font-body text-muted text-label">{selectedBuilding.zones?.length} zones</span>} />
             <div className="divide-y divide-rule2">
               {(selectedBuilding.zones ?? []).map(z => {
                 const stats = getZoneStats(z)
@@ -961,10 +947,7 @@ export default function ProcessHierarchy() {
         )}
         {selectedProcess && (
           <div>
-            <div className="px-5 py-3 border-b border-rule2 bg-stone2 flex items-center gap-3">
-              <span className="font-display font-bold text-ink text-body">{selectedProcess.name}</span>
-              <span className="font-body text-muted text-label">{selectedProcess.sku}</span>
-            </div>
+            <SectionHeader label={selectedProcess.name} sub={selectedProcess.sku} />
             <VesselGrid vessels={selectedProcess.vessels ?? []} />
             <div className="px-5 py-6 font-body text-muted text-label">Select a vessel to open its batch intelligence record.</div>
           </div>

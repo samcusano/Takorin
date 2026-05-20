@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { connectors, integrationSummary, semanticConflicts, integrationCategories } from '../data/integrations'
 import { AlertTriangle, CheckCircle, Zap, Radio, Search, X } from 'lucide-react'
-import { SlidePanel } from '../components/UI'
+import { SlidePanel, Tabs, StatusPill, Btn } from '../components/UI'
 
 const STATUS_CFG = {
   active:    { label: 'Active',      dot: 'bg-ok',     text: 'text-ok',     badge: 'bg-ok/10 text-ok' },
@@ -39,7 +39,7 @@ function ConnectorCard({ c, selected, onClick }) {
       {c.status === 'active' && (
         <div className="flex items-center gap-2">
           {c.quality != null && (
-            <div className="h-0.5 bg-rule2 flex-1">
+            <div className="h-1.5 bg-rule2 flex-1">
               <div className={`h-full ${c.quality >= 95 ? 'bg-ok' : c.quality >= 85 ? 'bg-ochre' : 'bg-warn'}`}
                 style={{ width: `${c.quality}%` }} />
             </div>
@@ -49,6 +49,9 @@ function ConnectorCard({ c, selected, onClick }) {
           </span>
           {c.streaming && <Zap size={8} className="text-ok flex-shrink-0" strokeWidth={2} />}
         </div>
+      )}
+      {(c.status === 'available' || c.status === 'soon') && (
+        <StatusPill tone={c.status === 'available' ? 'muted' : 'ochre'}>{cfg.label}</StatusPill>
       )}
     </button>
   )
@@ -64,7 +67,7 @@ function ConnectorDetail({ c }) {
             {c.status === 'active' && c.streaming && <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-ok opacity-40" />}
             <span className={`relative inline-flex rounded-full h-2 w-2 ${cfg.dot}`} />
           </div>
-          <span className={`font-body text-label px-1.5 py-0.5 ${cfg.badge}`}>{cfg.label}</span>
+          <StatusPill tone={c.status === 'active' ? 'ok' : c.status === 'available' ? 'muted' : 'ochre'}>{cfg.label}</StatusPill>
           {c.streaming && <span className="font-body text-ok text-label flex items-center gap-1"><Radio size={9} strokeWidth={2} />Streaming</span>}
         </div>
         <div className="font-display font-bold text-ink text-subhead leading-none mb-1">{c.name}</div>
@@ -83,7 +86,7 @@ function ConnectorDetail({ c }) {
           ].map(({ label, val, tone }) => (
             <div key={label} className="bg-stone px-3 py-2.5">
               <div className="font-body text-muted text-label mb-0.5">{label}</div>
-              <div className={`font-body font-medium text-body ${tone}`}>{val}</div>
+              <div className={`display-num text-base ${tone}`}>{val}</div>
             </div>
           ))}
         </div>
@@ -134,10 +137,7 @@ function ConflictsPanel({ resolved, onResolve }) {
                 <div className="font-body text-muted text-label">{sc.sources.join(' · ')}</div>
               </div>
               {sc.autoEligible && (
-                <button type="button" onClick={() => onResolve(sc.id)}
-                  className="font-body font-medium text-label px-2.5 py-1 bg-ok/10 text-ok hover:bg-ok/20 transition-colors flex-shrink-0">
-                  Auto-resolve
-                </button>
+                <Btn variant="secondary" onClick={() => onResolve(sc.id)} className="flex-shrink-0 !py-1 !min-h-0">Auto-resolve</Btn>
               )}
             </div>
 
@@ -239,7 +239,7 @@ export default function IntegrationHub() {
         {/* Header */}
         <div className="flex-shrink-0 px-5 py-4 border-b border-rule2 bg-stone2">
           <div className="flex items-center gap-2">
-            <span className={`display-num text-title ${integrationSummary.active >= 30 ? 'text-ok' : 'text-warn'}`}>
+            <span className={`display-num text-display ${integrationSummary.active >= 30 ? 'text-ok' : 'text-warn'}`}>
               {integrationSummary.active}
             </span>
             <span className="font-body text-muted text-label">of {integrationSummary.total} active</span>
@@ -312,25 +312,14 @@ export default function IntegrationHub() {
       <div className="flex-1 flex flex-col overflow-hidden">
 
         {/* Tab bar */}
-        <div className="flex-shrink-0 border-b border-rule2 bg-stone2 flex">
-          <button type="button" onClick={() => setActiveTab('sources')}
-            className={`px-4 py-2.5 font-body text-label font-medium transition-colors border-b-2 ${
-              activeTab === 'sources' ? 'text-ink border-ochre' : 'text-muted border-transparent hover:text-ink'
-            }`}>
-            Sources · {integrationSummary.total}
-          </button>
-          <button type="button" onClick={() => setActiveTab('conflicts')}
-            className={`px-4 py-2.5 font-body text-label font-medium transition-colors border-b-2 flex items-center gap-1.5 ${
-              activeTab === 'conflicts' ? 'text-ink border-ochre' : 'text-muted border-transparent hover:text-ink'
-            }`}>
-            Conflicts
-            {unresolvedCount > 0 && (
-              <span className={`font-body text-label px-1.5 py-px ${activeTab === 'conflicts' ? 'bg-warn/20 text-warn' : 'bg-warn/10 text-warn'}`}>
-                {unresolvedCount}
-              </span>
-            )}
-          </button>
-        </div>
+        <Tabs
+          tabs={[
+            { id: 'sources', label: `Sources · ${integrationSummary.total}` },
+            { id: 'conflicts', label: 'Conflicts', badge: unresolvedCount > 0 ? unresolvedCount : 0, dot: unresolvedCount > 0 },
+          ]}
+          active={activeTab}
+          onChange={setActiveTab}
+        />
 
         {activeTab === 'sources' ? (
           <>

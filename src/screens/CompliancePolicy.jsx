@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { compliancePolicies, multiRegulatoryCoverage } from '../data/compliance'
 import { AlertTriangle } from 'lucide-react'
-import { SceneHeader } from '../components/UI'
+import { SceneHeader, StatusPill, Btn } from '../components/UI'
 
 const STATUS_LABEL  = { active: 'Active', inactive: 'Inactive', monitoring: 'Monitoring' }
 const STATUS_COLOR  = { active: 'text-ok', inactive: 'text-muted', monitoring: 'text-ochre' }
@@ -14,7 +14,7 @@ function SectionHeader({ label, count, accent = 'bg-rule2' }) {
   return (
     <div className="flex items-center gap-3 px-5 py-2.5 border-b border-rule2">
       <div className={`w-0.5 h-3.5 flex-shrink-0 rounded-sm ${accent}`} />
-      <span className="font-body text-micro text-muted">{label}</span>
+      <span className="font-body text-label font-semibold text-muted">{label}</span>
       <div className="flex-1 h-px bg-rule2" />
       {count != null && <span className="font-body text-muted text-label">{count}</span>}
     </div>
@@ -35,7 +35,7 @@ function FrameworkRow({ f }) {
         </div>
         <div className="font-body text-muted text-label leading-snug">{f.description}</div>
       </div>
-      <span className={`font-body text-label flex-shrink-0 ${color}`}>{STATUS_LABEL[f.status] ?? f.status}</span>
+      <StatusPill tone={f.status === 'active' ? 'ok' : f.status === 'inactive' ? 'muted' : 'ochre'} className="flex-shrink-0">{STATUS_LABEL[f.status] ?? f.status}</StatusPill>
     </div>
   )
 }
@@ -50,8 +50,8 @@ function EvidenceRow({ e }) {
         <div className="font-body text-muted text-label mt-0.5 leading-snug">{e.requirement}</div>
       </div>
       {e.required
-        ? <span className="font-body text-micro text-ok bg-ok/[0.08] px-1.5 py-0.5 flex-shrink-0 whitespace-nowrap mt-0.5">REQUIRED</span>
-        : <span className="font-body text-micro text-muted bg-stone3 px-1.5 py-0.5 flex-shrink-0 mt-0.5">Optional</span>
+        ? <StatusPill tone="ok" className="flex-shrink-0 whitespace-nowrap mt-0.5">REQUIRED</StatusPill>
+        : <StatusPill tone="muted" className="flex-shrink-0 mt-0.5">Optional</StatusPill>
       }
     </div>
   )
@@ -237,10 +237,7 @@ export default function CompliancePolicy() {
                   <span className="font-body text-muted text-label flex-shrink-0">
                     {t.lastGenerated ? `Last: ${t.lastGenerated}` : 'Never generated'}
                   </span>
-                  <button type="button"
-                    className="font-body text-label px-2.5 py-1.5 bg-stone3 text-muted hover:text-ink hover:bg-stone4 transition-colors flex-shrink-0">
-                    Generate
-                  </button>
+                  <Btn variant="secondary" className="flex-shrink-0">Generate</Btn>
                 </div>
               ))}
             </div>
@@ -252,10 +249,7 @@ export default function CompliancePolicy() {
                 <div className="font-body text-muted text-label leading-relaxed mb-3">
                   All {policy.frameworks.length} frameworks will be added to your compliance dashboard. Evidence requirements and escalation rules will be enforced immediately.
                 </div>
-                <button type="button"
-                  className="font-body font-medium text-label px-3.5 py-2 bg-ink text-stone hover:bg-ink/90 transition-colors">
-                  Activate policy
-                </button>
+                <Btn variant="primary">Activate policy</Btn>
               </div>
             )}
 

@@ -7,7 +7,7 @@ import ResourceAllocation from './ResourceAllocation'
 import { useFocusTrap, useExitAnimation, riskColorClass, riskLabel, riskBgColor } from '../lib/utils'
 import { shiftData, line6Data, wichitaData, denverData, haccpData, productionRate, crewHoursData } from '../data'
 import {
- StatusPill, Tabs,
+ StatusPill, SectionHeader, Tabs,
  Btn, ConsequenceNotice, PageHead, ActionBanner,
  PersonAvatar, Modal, WaveformSparkline, AnimatedCheck, Spinner,
  VaulDrawer, HoldButton
@@ -267,7 +267,7 @@ function OperatorPanel({ name, onClose, onSelectOperator }) {
  <div className="flex-1 overflow-y-auto">
  {safety && (
  <div className="border-b border-rule2">
- <div className="px-4 py-2 border-b border-rule2 bg-stone2 font-body text-muted text-label">Safety context · today</div>
+ <SectionHeader label="Safety context · today" />
  <div className="px-4 py-3 border-l-2 border-l-warn bg-warn/[0.02]">
  <div className="font-body text-ink-2 text-body leading-relaxed">{safety}</div>
  </div>
@@ -275,12 +275,7 @@ function OperatorPanel({ name, onClose, onSelectOperator }) {
  )}
 
  <div className="border-b border-rule2">
- <div className="px-4 py-2 border-b border-rule2 bg-stone2 flex items-baseline justify-between">
- <span className="font-body text-muted text-label">Today's tasks</span>
- {myTasks.some(t => !t.done) && (
- <span className="font-body text-warn text-label">{myTasks.filter(t => !t.done).length} pending</span>
- )}
- </div>
+ <SectionHeader label="Today's tasks" badge={myTasks.some(t => !t.done) ? <span className="font-body text-warn text-label">{myTasks.filter(t => !t.done).length} pending</span> : undefined} />
  {myTasks.length === 0 ? (
  <div className="px-4 py-3 font-body text-muted text-body">No tasks assigned — tasks created in ShiftIQ appear here.</div>
  ) : myTasks.map((t, i) => (
@@ -298,7 +293,7 @@ function OperatorPanel({ name, onClose, onSelectOperator }) {
 
  {myFlags.length > 0 && (
  <div className="border-b border-rule2">
- <div className="px-4 py-2 border-b border-rule2 bg-stone2 font-body text-muted text-label">Flagged items</div>
+ <SectionHeader label="Flagged items" />
  {myFlags.map((f, i) => (
  <div key={i} className="flex gap-2.5 px-4 py-3 border-b border-rule2 last:border-b-0 bg-warn/[0.02]">
  <Flag size={13} strokeWidth={2} className="text-warn flex-shrink-0 mt-0.5" />
@@ -312,7 +307,7 @@ function OperatorPanel({ name, onClose, onSelectOperator }) {
  )}
 
  <div className="border-b border-rule2">
- <div className="px-4 py-2 border-b border-rule2 bg-stone2 font-body text-muted text-label">Certification progress</div>
+ <SectionHeader label="Certification progress" />
  <div className="px-4 py-3">
  <div className="font-body text-muted text-label mb-2">{meta.certLabel}</div>
  <div style={{ height:5, background:'#CAC2B6', marginBottom:8 }}>
@@ -323,7 +318,7 @@ function OperatorPanel({ name, onClose, onSelectOperator }) {
  </div>
 
  <div>
- <div className="px-4 py-2 border-b border-rule2 bg-stone2 font-body text-muted text-label">Training plan</div>
+ <SectionHeader label="Training plan" />
  {!plan?.submitted ? (
  <div className="px-4 py-3 font-body text-muted text-body">
  No active training plan.
@@ -383,7 +378,7 @@ function CrewRow({ m, onView }) {
  </div>
  <div className="flex items-center gap-2">
  {hrs && fatigue && (
- <span className={`font-body text-label px-1 py-px ${fatigue === 'danger' ? 'bg-danger/[0.04] text-danger' : 'bg-warn/10 text-warn'}`}>{hrs.hoursThisWeek}h</span>
+ <StatusPill tone={fatigue === 'danger' ? 'danger' : 'warn'}>{hrs.hoursThisWeek}h</StatusPill>
  )}
  <div className="flex gap-1" title={`Skill level: ${m.dots.filter(Boolean).length} of ${m.dots.length}`} aria-label={`Skill level ${m.dots.filter(Boolean).length} of ${m.dots.length}`}>
  {m.dots.map((d, i) => (
@@ -450,11 +445,6 @@ function Finding({ f, onAct, onDismiss, onDelegate, dismissed }) {
  }
 
  const accentBar = f.urgency === 'danger' ? 'bg-danger' : f.urgency === 'warn' ? 'bg-warn' : 'bg-rule2'
- const urgencyChipCls = f.urgency === 'danger'
-  ? 'bg-danger/[0.04] text-danger'
-  : f.urgency === 'warn'
-  ? 'bg-warn/10 text-warn'
-  : 'bg-ok/10 text-ok'
  const urgencyLabel = f.urgency === 'danger' ? 'Critical' : f.urgency === 'warn' ? 'Warning' : 'Watch'
 
  return (
@@ -481,7 +471,7 @@ function Finding({ f, onAct, onDismiss, onDelegate, dismissed }) {
         {/* Header: urgency chip + source */}
         <div className="flex items-center justify-between px-4 pt-3 pb-1.5">
          <div className="flex items-center gap-1.5">
-          <span className={`font-body font-medium text-label px-1.5 py-px ${urgencyChipCls}`}>{urgencyLabel}</span>
+          <StatusPill tone={f.urgency === 'danger' ? 'danger' : f.urgency === 'warn' ? 'warn' : 'ok'}>{urgencyLabel}</StatusPill>
           {f.recurring && (
            <Link to={`/capa?finding=${f.id}`} className="font-body text-warn text-label flex items-center gap-1 hover:text-ink transition-colors" title="Open root cause investigation in CAPA">
             <RefreshCw size={9} strokeWidth={2} />Recurring · {f.recurring.count} of {f.recurring.window} shifts
@@ -512,7 +502,7 @@ function Finding({ f, onAct, onDismiss, onDelegate, dismissed }) {
             <p className="font-body text-muted text-label flex items-start gap-1">
              <ChevronRight size={11} className="flex-shrink-0 mt-px" />{f.evidence}
              {isPrecedent && sourceLine && !isCurrentLine && (
-              <span className="ml-1 font-body text-label text-warn bg-warn/10 px-1 py-0.5 flex-shrink-0">Cross-line</span>
+              <StatusPill tone="warn" className="ml-1 flex-shrink-0">Cross-line</StatusPill>
              )}
             </p>
             {isPrecedent && smallPool && (
@@ -724,12 +714,7 @@ function PrepareView({ forecast = [] }) {
    </div>
    {/* Action items — supervisory prep tasks */}
    <div className="flex-1 overflow-y-auto">
-    <div className="px-5 py-3 bg-stone2 border-b border-rule2">
-     <div className="font-body font-medium text-ink text-body">Pre-shift actions</div>
-     <div className="font-body text-muted text-label mt-0.5">
-      {actionRows.filter(r => !confirmed[r.name]).length} items outstanding · confirm each before shift start
-     </div>
-    </div>
+    <SectionHeader label="Pre-shift actions" sub={`${actionRows.filter(r => !confirmed[r.name]).length} items outstanding · confirm each before shift start`} />
     {actionRows.map((row, i) => {
      const done = !!confirmed[row.name + i]
      return (
@@ -902,10 +887,7 @@ export default function ShiftIQ() {
     <span className="font-medium text-ok">Quiet period active — </span>
     <span className="text-muted">{currentQuiet.reason} · Compliance Monitor in log-only mode · Until {currentQuiet.endTime}</span>
    </div>
-   <button type="button" onClick={() => clearQuietPeriod(currentQuiet.id)}
-    className="font-body text-muted text-label hover:text-danger transition-colors flex-shrink-0">
-    End quiet period
-   </button>
+   <Btn variant="ghost" onClick={() => clearQuietPeriod(currentQuiet.id)} className="flex-shrink-0">End quiet period</Btn>
   </div>
  ) : quietForm.open ? (
   <div className="flex items-center gap-2 px-5 py-2 bg-stone2 border-b border-rule2 flex-shrink-0">
@@ -924,14 +906,8 @@ export default function ShiftIQ() {
     placeholder="Until (e.g. 10:30)"
     className="font-body text-ink text-label bg-stone border border-rule2 px-2 py-1 w-24 placeholder:text-muted/60 focus:border-ochre focus:outline-none"
    />
-   <button type="button" onClick={handleSetQuietPeriod}
-    className="font-body text-label px-3 py-1 bg-ink text-stone hover:bg-ink2 transition-colors">
-    Set
-   </button>
-   <button type="button" onClick={() => setQuietForm({ open:false, reason:'', endTime:'' })}
-    className="font-body text-muted text-label hover:text-ink transition-colors">
-    Cancel
-   </button>
+   <Btn variant="secondary" onClick={handleSetQuietPeriod} className="!bg-ink !text-stone hover:!bg-ink/90 !border-ink !px-3 !min-h-0 !py-1">Set</Btn>
+   <Btn variant="ghost" onClick={() => setQuietForm({ open:false, reason:'', endTime:'' })}>Cancel</Btn>
   </div>
  ) : null}
  <ShiftIQV2 score={lineScore} lineLabel={`${activeLined?.name ?? 'Line 4'} · AM Shift`} supervisor={lineSupervisor} plant={currentPlant?.name ?? 'Salina KS'} />

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { AlertTriangle, Cpu, Gamepad2, Pause, Route, LifeBuoy } from 'lucide-react'
-import { SlidePanel } from '../components/UI'
+import { SlidePanel, SectionHeader, Btn } from '../components/UI'
 import { robotFleetData } from '../data'
 
 // ─── Extended data ────────────────────────────────────────────────────────────
@@ -547,9 +547,7 @@ export default function RobotFleet() {
         {/* Fault log — below grid */}
         {faultLog.length > 0 && (
           <div className="mt-6 bg-stone">
-            <div className="px-4 py-2 border-b border-rule2 bg-stone2">
-              <span className="font-body text-muted text-label">Shift event log</span>
-            </div>
+            <SectionHeader sub="Shift event log" />
             {faultLog.map((f, i) => (
               <div key={i} className="flex items-center gap-3 px-4 py-2.5 border-b border-rule2 last:border-0">
                 <div className={`h-1.5 w-1.5 rounded-full flex-shrink-0 ${f.severity === 'danger' ? 'bg-danger' : f.severity === 'warn' ? 'bg-warn' : 'bg-rule2'}`} />
@@ -574,34 +572,19 @@ export default function RobotFleet() {
         const footer = (
           <div className="flex items-center gap-2 flex-wrap">
             {isActive && (
-              <button type="button" className="flex items-center gap-1.5 font-body text-label px-3 py-2 bg-danger text-stone hover:bg-danger/90 transition-colors">
-                <Gamepad2 size={13} strokeWidth={2} />
-                Take control
-              </button>
+              <Btn variant="primary" icon={Gamepad2}>Take control</Btn>
             )}
             {isMonitoring && (
               <>
-                <button type="button" className="flex items-center gap-1.5 font-body text-label px-3 py-2 border border-warn text-warn hover:bg-warn/[0.06] transition-colors">
-                  <Gamepad2 size={13} strokeWidth={2} />
-                  Take control
-                </button>
-                <button type="button" className="flex items-center gap-1.5 font-body text-label px-3 py-2 text-muted hover:text-ink hover:border-muted transition-colors">
-                  <Pause size={13} strokeWidth={2} />
-                  Pause task
-                </button>
+                <Btn variant="secondary" icon={Gamepad2}>Take control</Btn>
+                <Btn variant="ghost" icon={Pause}>Pause task</Btn>
               </>
             )}
             {selectedUnit.status === 'online' && (
-              <button type="button" className="flex items-center gap-1.5 font-body text-label px-3 py-2 text-muted hover:text-ink hover:border-muted transition-colors">
-                <Route size={13} strokeWidth={2} />
-                Reroute robot
-              </button>
+              <Btn variant="ghost" icon={Route}>Reroute robot</Btn>
             )}
             {rs && (
-              <button type="button" className="flex items-center gap-1.5 font-body text-label px-3 py-2 text-muted hover:text-ink hover:border-muted transition-colors">
-                <LifeBuoy size={13} strokeWidth={2} />
-                Deploy recovery
-              </button>
+              <Btn variant="ghost" icon={LifeBuoy}>Deploy recovery</Btn>
             )}
           </div>
         )

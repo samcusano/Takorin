@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { ArrowRight, Brain } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useAppState } from '../context/AppState'
-import { VaulDrawer } from '../components/UI'
+import { VaulDrawer, StatusPill, Tabs } from '../components/UI'
 
 const INTELLIGENCE_SIGNALS = [
   { confidence: 87, label: 'Line 4 intervention window closing', detail: 'Staffing mismatch + allergen log unresolved · 27 min remaining in window', route: '/shift', routeLabel: 'ShiftIQ', tone: 'danger' },
@@ -12,17 +12,17 @@ const INTELLIGENCE_SIGNALS = [
 
 // Type → visual style mapping
 const TYPE = {
-  safety:       { label: 'Safety',       chip: 'bg-danger/[0.04] text-danger', bar: 'border-l-danger', row: 'bg-danger/[0.03]' },
-  near_miss:    { label: 'Near miss',    chip: 'bg-warn/10 text-warn',    bar: 'border-l-warn',   row: 'bg-warn/[0.02]' },
-  override:     { label: 'Override',     chip: 'bg-danger/[0.04] text-danger', bar: 'border-l-danger', row: 'bg-danger/[0.03]' },
-  escalation:   { label: 'Escalation',   chip: 'bg-danger/[0.04] text-danger', bar: 'border-l-danger', row: '' },
-  compliance:   { label: 'Compliance',   chip: 'bg-warn/10 text-warn',    bar: 'border-l-warn',   row: '' },
-  capa:         { label: 'CAPA',         chip: 'bg-warn/10 text-warn',    bar: 'border-l-warn',   row: '' },
-  evidence:     { label: 'Evidence',     chip: 'bg-ok/10 text-ok',        bar: 'border-l-ok',     row: '' },
-  acknowledged: { label: 'Acknowledged', chip: 'bg-ok/10 text-ok',        bar: 'border-l-ok',     row: '' },
-  acknowledgment: { label: 'Acknowledged', chip: 'bg-ok/10 text-ok',      bar: 'border-l-ok',     row: '' },
-  handoff:      { label: 'Handoff',      chip: 'bg-ok/10 text-ok',        bar: 'border-l-ok',     row: '' },
-  intervention: { label: 'Action',       chip: 'bg-ochre/10 text-ochre',      bar: 'border-l-ochre',    row: '' },
+  safety:       { label: 'Safety',       tone: 'danger', bar: 'border-l-danger', row: 'bg-danger/[0.03]' },
+  near_miss:    { label: 'Near miss',    tone: 'warn',   bar: 'border-l-warn',   row: 'bg-warn/[0.02]' },
+  override:     { label: 'Override',     tone: 'danger', bar: 'border-l-danger', row: 'bg-danger/[0.03]' },
+  escalation:   { label: 'Escalation',  tone: 'danger', bar: 'border-l-danger', row: '' },
+  compliance:   { label: 'Compliance',  tone: 'warn',   bar: 'border-l-warn',   row: '' },
+  capa:         { label: 'CAPA',        tone: 'warn',   bar: 'border-l-warn',   row: '' },
+  evidence:     { label: 'Evidence',    tone: 'ok',     bar: 'border-l-ok',     row: '' },
+  acknowledged: { label: 'Acknowledged', tone: 'ok',    bar: 'border-l-ok',     row: '' },
+  acknowledgment: { label: 'Acknowledged', tone: 'ok',  bar: 'border-l-ok',     row: '' },
+  handoff:      { label: 'Handoff',     tone: 'ok',     bar: 'border-l-ok',     row: '' },
+  intervention: { label: 'Action',      tone: 'ochre',  bar: 'border-l-ochre',  row: '' },
 }
 
 const FILTER = {
@@ -83,7 +83,7 @@ function NotifItem({ item, read, onRead, onNavigate }) {
       <div className={`h-[3px] w-full ${barFill(s.bar)}`} />
       {/* Header: type chip + timestamp */}
       <div className="flex items-center justify-between px-4 pt-3 pb-1">
-        <span className={`font-body font-medium text-label px-1.5 py-px ${s.chip}`}>{s.label}</span>
+        <StatusPill tone={s.tone}>{s.label}</StatusPill>
         <span className="font-body text-muted text-label">{item.time}</span>
       </div>
       {/* Body: title + description */}
@@ -194,21 +194,12 @@ export default function NotificationCenter({ onClose }) {
    </div>
 
    {/* Filter tabs */}
-   <div className="flex gap-5 px-4 py-2 border-b border-rule2 bg-stone2 flex-shrink-0">
-    {Object.keys(FILTER).map(f => (
-     <button
-      type="button"
-      key={f}
-      onClick={() => setActiveFilter(f)}
-      className={`flex items-center gap-1.5 py-1 border-b-2 transition-colors ${activeFilter === f ? 'border-b-ochre' : 'border-b-transparent'}`}
-     >
-      <span className={`font-body text-label ${activeFilter === f ? 'text-ink' : 'text-muted'}`}>{f}</span>
-      {counts[f] > 0 && (
-       <span className="font-body text-muted text-label px-1.5 py-px bg-stone3">{counts[f]}</span>
-      )}
-     </button>
-    ))}
-   </div>
+   <Tabs
+    tabs={Object.keys(FILTER).map(f => ({ id: f, label: f, badge: counts[f] || 0 }))}
+    active={activeFilter}
+    onChange={setActiveFilter}
+    className="bg-stone2 flex-shrink-0 px-0"
+   />
 
    <div className="flex-1 overflow-y-auto">
    {/* Intelligence summary — always shown on All tab */}

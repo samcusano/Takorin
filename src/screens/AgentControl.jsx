@@ -4,7 +4,7 @@ import {
   ClipboardCheck, Shield, Database, ChevronDown, ChevronRight,
   Timer, CheckCircle, XCircle, Check, Flag, InspectionPanel, TrendingUp,
 } from 'lucide-react'
-import { Btn, SlidePanel, Tabs } from '../components/UI'
+import { Btn, SlidePanel, Tabs, StatusPill } from '../components/UI'
 import { agentConfigData, dataSourceHealth } from '../data'
 import { agentPrompts } from '../data/prompts'
 import { useAppState } from '../context/AppState'
@@ -284,11 +284,9 @@ function LedgerRow({ pa, agent, onInvestigate, onApprove, onOverrideRequest, sel
 
         {/* Expiry chip (only when urgent, non-emergency) */}
         {meta.showExpiry && !pa.isEmergencyAutoAct && (
-          <span className={`inline-flex items-center font-body text-label px-1.5 py-0.5 flex-shrink-0 whitespace-nowrap ${
-            meta.consequence === 'high' ? 'bg-warn/[0.08] text-warn' : 'bg-stone3 text-muted border-rule2'
-          }`}>
+          <StatusPill tone={meta.consequence === 'high' ? 'warn' : 'muted'} className="flex-shrink-0 whitespace-nowrap">
             {meta.expiresLabel}
-          </span>
+          </StatusPill>
         )}
 
         {/* Emergency chip with live countdown */}
@@ -422,14 +420,12 @@ function BatchBar({ count, onApproveAll, onDeferAll }) {
   return (
     <div className="flex-shrink-0 flex items-center gap-3 px-5 py-2.5 bg-ink border-t border-sidebar-border">
       <span className="font-body text-stone text-label">{count} selected</span>
-      <button type="button" onClick={onApproveAll}
-        className="font-body text-label px-3 py-1.5 bg-stone text-ink hover:bg-stone2 transition-colors">
+      <Btn variant="secondary" onClick={onApproveAll} className="!bg-stone !text-ink hover:!bg-stone2 !border-stone/30">
         Approve all low-risk
-      </button>
-      <button type="button" onClick={onDeferAll}
-        className="font-body text-label px-3 py-1.5 border border-stone/30 text-stone hover:bg-stone/10 transition-colors">
+      </Btn>
+      <Btn variant="secondary" onClick={onDeferAll} className="!border-stone/30 !text-stone hover:!bg-stone/10">
         Defer all low confidence
-      </button>
+      </Btn>
     </div>
   )
 }
@@ -1207,10 +1203,7 @@ export default function AgentControl() {
           </div>
           <div className="flex items-center gap-2">
             <span className="font-body text-muted text-label">Ranked by urgency and consequence</span>
-            <button type="button" onClick={() => setActivityDrawer(true)}
-              className="font-body text-label px-3 py-1.5 text-muted hover:text-ink hover:border-muted transition-colors">
-              Activity
-            </button>
+            <Btn variant="ghost" onClick={() => setActivityDrawer(true)}>Activity</Btn>
           </div>
         </div>
 
@@ -1263,14 +1256,9 @@ export default function AgentControl() {
                                   {pa._decided === 'approved' ? 'Approved' : 'Overridden'}
                                 </span>
                               ) : pa._meta.showExpiry ? (
-                                <span className={`inline-flex items-center gap-1.5 font-body font-semibold text-label px-2 py-0.5 whitespace-nowrap mt-0.5 ${
-                                  pa._meta.consequence === 'critical' ? 'bg-danger/15 text-danger' : 'bg-warn/10 text-warn'
-                                }`}>
-                                  <span className={`w-1.5 h-1.5 rounded-full inline-block flex-shrink-0 ${
-                                    pa._meta.consequence === 'critical' ? 'bg-danger animate-pulse' : 'bg-warn'
-                                  }`} />
+                                <StatusPill tone={pa._meta.consequence === 'critical' ? 'danger' : 'warn'} className="whitespace-nowrap mt-0.5">
                                   {pa._meta.expiresLabel}
-                                </span>
+                                </StatusPill>
                               ) : null}
                             </div>
                           </button>
@@ -1284,15 +1272,15 @@ export default function AgentControl() {
               {splitChecked.size > 0 && (
                 <div className="flex-shrink-0 flex items-center gap-3 px-4 py-3 bg-ink border-t border-sidebar-border">
                   <span className="font-body text-stone text-label">{splitChecked.size} selected</span>
-                  <button type="button"
+                  <Btn variant="secondary"
                     onClick={() => { [...splitChecked].forEach(k => { const pa = pending.find(p => p._key === k); if (pa && !pa._decided && pa._meta.consequence === 'medium') handleApprove(k) }); setSplitChecked(new Set()) }}
-                    className="font-body text-label px-3 py-1.5 bg-stone text-ink hover:bg-stone2 transition-colors">
+                    className="!bg-stone !text-ink hover:!bg-stone2 !border-stone/30">
                     Approve low-risk
-                  </button>
-                  <button type="button" onClick={() => setSplitChecked(new Set())}
-                    className="font-body text-label px-2 py-1.5 text-stone/60 hover:text-stone transition-colors ml-auto">
+                  </Btn>
+                  <Btn variant="ghost" onClick={() => setSplitChecked(new Set())}
+                    className="!text-stone/60 hover:!text-stone ml-auto">
                     Clear
-                  </button>
+                  </Btn>
                 </div>
               )}
             </div>
@@ -1386,14 +1374,17 @@ export default function AgentControl() {
                                       {active.map((s, i) => {
                                         const c = s.status === 'breach' || s.status === 'stale' ? 'text-danger' : s.status === 'warn' ? 'text-warn' : 'text-ok'
                                         const l = s.status === 'breach' ? 'Breach' : s.status === 'stale' ? 'Stale' : s.status === 'warn' ? 'Watch' : 'OK'
-                                        const stageCfg = s.stage === 'correlated' ? { label: 'Correlated', cls: 'bg-ochre/10 text-ochre' } : { label: 'Qualified', cls: 'bg-ok/10 text-ok' }
+                                        const stageLabel = s.stage === 'correlated' ? 'Correlated' : 'Qualified'
+                                        const stageIsCorrelated = s.stage === 'correlated'
                                         return (
                                           <div key={i} className="flex items-start gap-3 px-4 py-2.5">
                                             <div className="flex-1 min-w-0">
                                               <div className="flex items-center gap-1.5 mb-0.5">
                                                 <div className="font-body text-muted text-label">{s.signal}</div>
                                                 {s.stage && (
-                                                  <span className={`font-body text-micro px-1 py-0.5 font-medium ${stageCfg.cls}`}>{stageCfg.label}</span>
+                                                  stageIsCorrelated
+                                                    ? <span className="font-body text-micro px-1 py-0.5 font-medium bg-ochre/10 text-ochre">{stageLabel}</span>
+                                                    : <StatusPill tone="ok">{stageLabel}</StatusPill>
                                                 )}
                                               </div>
                                               <div className="font-body text-ink text-label font-medium">{s.reading}</div>
@@ -1471,14 +1462,14 @@ export default function AgentControl() {
                       ) : (
                         <>
                           <ApproveBtn isCompliance={isCompliance} disabled={false} onApprove={() => handleApprove(pa._key)} />
-                          <button type="button" onClick={() => setOverrideModal({ pa, agent })}
-                            className="inline-flex items-center justify-center w-11 h-11 rounded-full text-muted hover:text-ink hover:border-muted transition-colors">
+                          <Btn variant="ghost" onClick={() => setOverrideModal({ pa, agent })}
+                            aria-label="Override" title="Override" className="!px-2.5 !min-h-[44px]">
                             <Flag size={13} strokeWidth={2} />
-                          </button>
-                          <button type="button" onClick={() => setInvestigationDrawer({ pa, agent })}
-                            className="inline-flex items-center justify-center w-11 h-11 rounded-full text-muted hover:text-ink hover:border-muted transition-colors">
+                          </Btn>
+                          <Btn variant="ghost" onClick={() => setInvestigationDrawer({ pa, agent })}
+                            aria-label="Investigate" title="Investigate" className="!px-2.5 !min-h-[44px]">
                             <InspectionPanel size={13} strokeWidth={2} />
-                          </button>
+                          </Btn>
                           <span className="font-body text-muted text-label ml-1">{pa._meta.blastRadius}</span>
                         </>
                       )}
@@ -1520,10 +1511,10 @@ export default function AgentControl() {
                         <EmergencyChip overrideWindowMin={pa.overrideWindowMin} />
                       </div>
                       {pa.rationale && <p className="font-display text-muted text-body leading-relaxed mb-3">{pa.rationale}</p>}
-                      <button type="button" onClick={() => setOverrideModal({ pa, agent })}
-                        className="inline-flex items-center gap-2 px-4 py-2 border border-danger/40 text-danger font-body text-label hover:bg-danger/[0.04] transition-colors">
+                      <Btn variant="secondary" onClick={() => setOverrideModal({ pa, agent })}
+                        className="!border-danger/40 !text-danger hover:!bg-danger/[0.04]">
                         <Flag size={11} strokeWidth={2} />Override before window closes
-                      </button>
+                      </Btn>
                     </div>
                   )
                 })}
@@ -1577,14 +1568,14 @@ export default function AgentControl() {
                               {!pa._decided && (
                                 <div className="flex items-center gap-2">
                                   <ApproveBtn isCompliance={isCompliance} disabled={false} onApprove={() => handleApprove(pa._key)} />
-                                  <button type="button" onClick={() => setOverrideModal({ pa, agent })}
-                                    className="inline-flex items-center justify-center w-11 h-11 rounded-full text-muted hover:text-ink transition-colors">
+                                  <Btn variant="ghost" onClick={() => setOverrideModal({ pa, agent })}
+                                    aria-label="Override" title="Override" className="!px-2.5 !min-h-[44px]">
                                     <Flag size={12} strokeWidth={2} />
-                                  </button>
-                                  <button type="button" onClick={() => setInvestigationDrawer({ pa, agent })}
-                                    className="inline-flex items-center justify-center w-11 h-11 rounded-full text-muted hover:text-ink transition-colors">
+                                  </Btn>
+                                  <Btn variant="ghost" onClick={() => setInvestigationDrawer({ pa, agent })}
+                                    aria-label="Investigate" title="Investigate" className="!px-2.5 !min-h-[44px]">
                                     <InspectionPanel size={12} strokeWidth={2} />
-                                  </button>
+                                  </Btn>
                                 </div>
                               )}
                               {pa._decided && (
@@ -1621,10 +1612,10 @@ export default function AgentControl() {
                               {!pa._decided && (
                                 <div className="flex items-center gap-1.5">
                                   <ApproveBtn isCompliance={false} disabled={false} onApprove={() => handleApprove(pa._key)} />
-                                  <button type="button" onClick={() => setOverrideModal({ pa, agent })}
-                                    className="inline-flex items-center justify-center w-11 h-11 rounded-full text-muted hover:text-ink transition-colors">
+                                  <Btn variant="ghost" onClick={() => setOverrideModal({ pa, agent })}
+                                    aria-label="Override" title="Override" className="!px-2.5 !min-h-[44px]">
                                     <Flag size={12} strokeWidth={2} />
-                                  </button>
+                                  </Btn>
                                 </div>
                               )}
                               {pa._decided && (

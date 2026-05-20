@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { AlertTriangle, CheckCircle, ShieldAlert, RotateCcw, Bot, User, ArrowRight } from 'lucide-react'
-import { PageHead, StatusPill, ActionBanner, Btn } from '../components/UI'
+import { PageHead, StatusPill, ActionBanner, Btn, Tabs } from '../components/UI'
 import { taskAllocationData } from '../data'
 import { useAppState } from '../context/AppState'
 
@@ -234,22 +234,12 @@ export default function ResourceAllocation() {
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center border-b border-rule2 bg-stone2 flex-shrink-0 px-1">
-        {tabs.map(t => (
-          <button
-            key={t.id}
-            type="button"
-            onClick={() => setTab(t.id)}
-            className={`font-body text-label px-4 py-2.5 border-b-2 transition-colors ${
-              tab === t.id
-                ? 'border-b-ochre text-ink font-medium'
-                : 'border-b-transparent text-muted hover:text-muted'
-            }`}
-          >
-            {t.label}
-          </button>
-        ))}
-      </div>
+      <Tabs
+        tabs={tabs}
+        active={tab}
+        onChange={setTab}
+        className="bg-stone2 flex-shrink-0"
+      />
 
       <div className="flex-1 overflow-y-auto bg-stone">
 

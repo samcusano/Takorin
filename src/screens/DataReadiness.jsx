@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import { readinessData } from '../data'
 import { useAppState } from '../context/AppState'
-import { HoldButton, Btn, SectionHeader } from '../components/UI'
+import { HoldButton, Btn, SectionHeader, StatusPill } from '../components/UI'
 import { Check, AlertTriangle, ChevronDown, ChevronUp, Zap } from 'lucide-react'
 
 // ── Resolution queue data ─────────────────────────────────────────────────────
@@ -356,11 +356,10 @@ function QueueClusterRow({ cluster, resolved, selected, onSelect }) {
       }`}>
       {/* Cluster badge */}
       <div className="flex items-center gap-1.5 mb-1.5">
-        <span className={`font-body text-label px-1.5 py-px font-semibold ${
-          allResolved ? 'bg-ok/10 text-ok' : 'bg-ochre/15 text-ochre'
-        }`}>
-          {allResolved ? 'Resolved' : 'High impact cluster'}
-        </span>
+        {allResolved
+          ? <StatusPill tone="ok">Resolved</StatusPill>
+          : <span className="font-body text-label px-1.5 py-px font-semibold bg-ochre/15 text-ochre">High impact cluster</span>
+        }
       </div>
       <div className={`font-body font-medium text-body leading-snug mb-1 ${allResolved ? 'text-muted line-through' : 'text-ink'}`}>
         {cluster.label}
@@ -425,17 +424,13 @@ function ResolutionQueue({ selected, onSelect, resolved }) {
   const [advisoryOpen, setAdvisoryOpen] = useState(false)
   return (
     <div className="flex-1 overflow-y-auto">
-      <div className="px-4 py-2 border-b border-rule2 bg-stone2 flex-shrink-0">
-        <span className="font-body text-muted text-label">Fixes queue</span>
-      </div>
+      <SectionHeader label="Fixes queue" />
 
       {/* Cluster */}
       <QueueClusterRow cluster={CLUSTER_A} resolved={resolved} selected={selected} onSelect={onSelect} />
 
       {/* Individual issues */}
-      <div className="px-4 py-1.5 border-b border-rule2 bg-stone2 flex-shrink-0">
-        <span className="font-body text-muted text-label">Individual issues</span>
-      </div>
+      <SectionHeader label="Individual issues" />
       <QueueIssueRow item={ISSUE_CTX}   resolved={resolved} selected={selected} onSelect={onSelect} />
       <QueueIssueRow item={ISSUE_TRACE} resolved={resolved} selected={selected} onSelect={onSelect} />
       <QueueIssueRow item={ISSUE_ERP}   resolved={resolved} selected={selected} onSelect={onSelect} />

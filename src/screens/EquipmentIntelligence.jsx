@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { equipment, recipes, spcData, runHistory } from '../data/equipment'
 import { AlertTriangle, CheckCircle2, Wrench, Activity, Clock } from 'lucide-react'
-import ShiftHero from '../components/ShiftHero'
+import { SceneHeader, SectionHeader, StatusPill, Btn } from '../components/UI'
 import { useAppState } from '../context/AppState'
 
 const STATUS_CFG = {
@@ -21,7 +21,7 @@ function HealthBar({ score }) {
   const tone = score >= 90 ? 'bg-ok' : score >= 75 ? 'bg-ochre' : 'bg-warn'
   return (
     <div className="flex items-center gap-2">
-      <div className="flex-1 h-0.5 bg-rule2">
+      <div className="flex-1 h-1.5 bg-rule2">
         <div className={`h-full ${tone}`} style={{ width: `${score}%` }} />
       </div>
       <span className={`font-body text-label tabular-nums w-6 text-right ${score >= 90 ? 'text-ok' : score >= 75 ? 'text-ochre' : 'text-warn'}`}>
@@ -44,7 +44,7 @@ function EquipmentCard({ eq, selected, onClick }) {
           <div className="font-display font-medium text-ink text-base leading-snug">{eq.name}</div>
           <div className="font-body text-muted text-label">{eq.type} · {eq.zone}</div>
         </div>
-        <span className={`font-body text-label px-1.5 py-0.5 flex-shrink-0 ${cfg.badge}`}>{cfg.label}</span>
+        <StatusPill tone={eq.status === 'active' ? 'ok' : eq.status === 'maintenance' ? 'warn' : eq.status === 'offline' ? 'danger' : 'muted'} className="flex-shrink-0">{cfg.label}</StatusPill>
       </div>
       {eq.status === 'active' && <HealthBar score={eq.healthScore} />}
       <div className="flex items-center gap-3 mt-1.5">
@@ -52,9 +52,8 @@ function EquipmentCard({ eq, selected, onClick }) {
           <span className="font-body text-muted text-label">{eq.activeLot}</span>
         )}
         {spcCfg && (
-          <div className="flex items-center gap-1 ml-auto">
-            <span className={`w-1.5 h-1.5 rounded-full ${spcCfg.dot}`} />
-            <span className={`font-body text-label ${spcCfg.tone}`}>{spcCfg.label}</span>
+          <div className="ml-auto">
+            <StatusPill tone={eq.spcStatus === 'in-control' ? 'ok' : eq.spcStatus === 'warning' ? 'warn' : 'danger'}>{spcCfg.label}</StatusPill>
           </div>
         )}
       </div>
@@ -141,11 +140,7 @@ function RecipePanel({ recipeId }) {
   if (!recipe) return null
   return (
     <div className="flex-shrink-0 border-t border-rule2">
-      <div className="px-5 py-2.5 border-b border-rule2 bg-stone2">
-        <div className="font-body text-muted text-label">
-          Active recipe · {recipe.name} <span className="text-muted">v{recipe.version}</span>
-        </div>
-      </div>
+      <SectionHeader title={`Active recipe · ${recipe.name} v${recipe.version}`} />
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
@@ -182,9 +177,7 @@ function RunHistory({ eqId }) {
   }
   return (
     <div className="flex-shrink-0 border-t border-rule2">
-      <div className="px-5 py-2.5 border-b border-rule2 bg-stone2">
-        <div className="font-body text-muted text-label">Run history</div>
-      </div>
+      <SectionHeader title="Run history" />
       {runs.map(r => {
         const oc = OUTCOME_CFG[r.outcome] ?? OUTCOME_CFG.released
         return (
@@ -195,7 +188,7 @@ function RunHistory({ eqId }) {
               <div className="font-body text-muted text-label">{r.recipe} · {r.startDate}{r.endDate ? ` → ${r.endDate}` : ' → present'}</div>
             </div>
             <div className="text-right flex-shrink-0">
-              <span className={`font-body text-label px-1.5 py-0.5 ${oc.cls}`}>{oc.label}</span>
+              <StatusPill tone={r.outcome === 'in-progress' ? 'ochre' : r.outcome === 'pending-qp' ? 'warn' : r.outcome === 'released' ? 'ok' : 'danger'}>{oc.label}</StatusPill>
               {r.spcViolations > 0 && (
                 <div className="font-body text-warn text-micro">{r.spcViolations} SPC violation{r.spcViolations > 1 ? 's' : ''}</div>
               )}
@@ -238,15 +231,12 @@ function EquipmentDetail({ eq }) {
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
       {/* Header */}
-      <div className="flex-shrink-0 px-6 py-4 border-b border-rule2">
+      <div className="flex-shrink-0 px-6 py-4 border-b border-rule2 bg-stone">
         <div className="flex items-start justify-between gap-3 mb-2">
           <div className="flex items-center gap-2">
-            <span className={`font-body text-label px-1.5 py-0.5 ${cfg.badge}`}>{cfg.label}</span>
+            <StatusPill tone={eq.status === 'active' ? 'ok' : eq.status === 'maintenance' ? 'warn' : eq.status === 'offline' ? 'danger' : 'muted'}>{cfg.label}</StatusPill>
             {spcCfg && (
-              <span className={`flex items-center gap-1 font-body text-label ${spcCfg.tone}`}>
-                <span className={`w-1.5 h-1.5 rounded-full ${spcCfg.dot}`} />
-                SPC {spcCfg.label}
-              </span>
+              <StatusPill tone={eq.spcStatus === 'in-control' ? 'ok' : eq.spcStatus === 'warning' ? 'warn' : 'danger'}>SPC {spcCfg.label}</StatusPill>
             )}
           </div>
           {eq.status !== 'maintenance' && (
@@ -259,10 +249,7 @@ function EquipmentDetail({ eq }) {
                 <CheckCircle2 size={10} strokeWidth={2} />PM ticket created
               </span>
             ) : (
-              <button type="button" onClick={handleRequestPM}
-                className="flex items-center gap-1.5 font-body text-label text-muted hover:text-ink px-2.5 py-1 border border-rule2 hover:border-ochre/50 transition-colors flex-shrink-0">
-                <Wrench size={10} strokeWidth={2} />Request PM
-              </button>
+              <Btn variant="secondary" icon={Wrench} onClick={handleRequestPM}>Request PM</Btn>
             )
           )}
         </div>
@@ -280,7 +267,7 @@ function EquipmentDetail({ eq }) {
         ].map(({ label, val, tone }) => (
           <div key={label} className="bg-stone px-3 py-2.5">
             <div className="font-body text-muted text-label mb-0.5">{label}</div>
-            <div className={`font-body font-medium text-base ${tone}`}>{val}</div>
+            <div className={`display-num text-head ${tone}`}>{val}</div>
           </div>
         ))}
       </div>
@@ -315,12 +302,15 @@ export default function EquipmentIntelligence() {
 
   return (
     <div className="flex flex-col h-full overflow-hidden content-reveal">
-      <ShiftHero
-        score={71}
-        domainLabel="Equipment health"
+      <SceneHeader
+        module="EQUIPMENT"
+        context="Line 4 · Active monitoring"
+        metric={71}
+        metricLabel="equipment health"
+        metricColor="var(--color-warn)"
         statement="Sensor A-7 at count 4 of 5 threshold. Oven B calibration stale 2h 14m. 2 assets nearing maintenance window."
-        scanInterval="5 min"
-        trend="↑ +2 since 06:10"
+        tone="warn"
+        meta={[{ label: 'SPC warnings', value: warnings.length }, { label: 'In maintenance', value: maintenance.length }]}
       />
       <div className="flex flex-1 overflow-hidden">
 
@@ -339,9 +329,7 @@ export default function EquipmentIntelligence() {
 
       {/* Right: equipment detail + SPC + recipe + runs */}
       <div className="flex-1 flex flex-col overflow-hidden bg-stone">
-        <div className="flex-shrink-0 px-5 py-2.5 border-b border-rule2 bg-stone2">
-          <span className="font-body text-muted text-label">Equipment detail</span>
-        </div>
+        <SectionHeader title="Equipment detail" />
         <EquipmentDetail eq={selectedEq} />
       </div>
       </div>
