@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { executionLog, executionSummary, autonomyTiers, rollbackLog } from '../data/execution'
 import { CheckCircle2, AlertTriangle, Clock, RotateCcw, Zap, Eye, MessageSquare, Shield, ArrowRight } from 'lucide-react'
-import { SlidePanel, StatusPill } from '../components/UI'
+import { SlidePanel, StatusPill, SceneHeader, SectionHeader, Btn } from '../components/UI'
 
 const TIER_ICONS = { observe: Eye, recommend: MessageSquare, execute: Zap, govern: Shield }
 
@@ -12,19 +12,30 @@ const OUTCOME_CFG = {
   rollback:  { label: 'Rolled back', cls: 'bg-stone3 text-muted',      dot: 'bg-muted' },
 }
 
-function TierRow({ tier, isActive, onClick }) {
+function TierRow({ tier, isActive, isCeiling, isGovern, governCriteriaMet, onClick }) {
   const Icon = TIER_ICONS[tier.id]
+  const leftBorder = isCeiling ? 'border-l-ochre' : isActive ? 'border-l-transparent' : 'border-l-transparent'
+  const bg = isCeiling ? 'bg-stone2' : isGovern && governCriteriaMet ? 'bg-ok/[0.02]' : ''
+
+  const statusBadge = isCeiling
+    ? <StatusPill tone="ochre" className="ml-auto flex-shrink-0">Active ceiling</StatusPill>
+    : isGovern
+      ? governCriteriaMet
+        ? <StatusPill tone="ok" className="ml-auto flex-shrink-0">Ready to activate</StatusPill>
+        : <StatusPill tone="muted" className="ml-auto flex-shrink-0">Not yet active</StatusPill>
+      : tier.id === 'observe'
+        ? <span className="ml-auto font-body text-muted text-label">Always on</span>
+        : null
+
   return (
     <button type="button" onClick={onClick}
-      className={`w-full text-left px-4 py-3 border-b border-rule2 border-l-4 transition-colors ${
-        isActive ? 'border-l-ochre bg-stone2' : 'border-l-transparent hover:bg-stone2/50'
-      }`}>
+      className={`w-full text-left px-4 py-3 border-b border-rule2 border-l-4 transition-colors ${leftBorder} ${bg} ${
+        isActive && !isCeiling ? 'hover:bg-stone2/50' : ''
+      } ${tier.id === 'govern' && !governCriteriaMet ? 'opacity-60' : ''}`}>
       <div className="flex items-center gap-2 mb-0.5">
         <Icon size={11} strokeWidth={2} className={tier.color} />
         <span className={`font-body font-medium text-label ${tier.color}`}>{tier.label}</span>
-        {tier.agentCount > 0 && (
-          <span className="ml-auto font-body text-muted text-label">{tier.agentCount} agents</span>
-        )}
+        {statusBadge}
       </div>
       <p className="font-body text-muted text-label leading-snug">{tier.description}</p>
       {tier.actionCount > 0 && (
@@ -80,6 +91,22 @@ function ActionDetail({ entry }) {
 
   return (
     <div className="space-y-5">
+      {/* Escalation / rollback banner */}
+      {(entry.outcome === 'escalated' || entry.outcome === 'rollback') && (
+        <div className="flex items-start gap-3 px-4 py-3 bg-warn/[0.06] border-l-4 border-l-warn">
+          <AlertTriangle size={11} strokeWidth={2} className="text-warn flex-shrink-0 mt-0.5" />
+          <div className="flex-1 min-w-0">
+            <div className="font-body font-medium text-ink text-body mb-0.5">
+              {entry.outcome === 'escalated' ? 'This action escalated' : 'This action was rolled back'}
+            </div>
+            <p className="font-body text-warn text-label leading-snug">
+              {entry.escalationNote ?? 'See details below.'}
+            </p>
+          </div>
+          <Btn variant="secondary" className="flex-shrink-0">Mark reviewed</Btn>
+        </div>
+      )}
+
       {/* Header */}
       <div>
         <div className="flex items-center gap-2 mb-2">
@@ -156,85 +183,139 @@ function ActionDetail({ entry }) {
 export default function ExecutionAuthority() {
   const [selectedTier, setSelectedTier] = useState(null)
   const [selectedId, setSelectedId] = useState(null)
+  const [governActivated, setGovernActivated] = useState(false)
+
+  // Computed trust metrics
+  const successPct = Math.round(executionSummary.successRate * 100)
+  const headerTone = successPct >= 95 ? 'ok' : successPct >= 85 ? 'warn' : 'danger'
+
+  // Govern tier unlock criteria
+  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+  const recentRollbacks = rollbackLog.filter(r => new Date(r.timestamp) > sevenDaysAgo).length
+  const governCriteriaMet = executionSummary.successRate >= 0.95 && recentRollbacks === 0
+  const governCriteriaItems = [
+    { label: `95% success rate over 30d (currently ${successPct}%)`, met: executionSummary.successRate >= 0.95 },
+    { label: `0 rollbacks in last 7 days (${recentRollbacks} on record)`, met: recentRollbacks === 0 },
+  ]
+
+  const activeCeilingId = [...autonomyTiers].reverse().find(t => t.agentCount > 0)?.id ?? 'execute'
 
   const filtered = selectedTier
     ? executionLog.filter(e => e.tier === selectedTier)
     : executionLog
 
+  const needsReview = executionLog.filter(e => e.outcome === 'escalated' || e.outcome === 'pending')
+
   const selectedEntry = executionLog.find(e => e.id === selectedId)
 
   return (
-    <div className="flex h-full overflow-hidden content-reveal">
+    <div className="flex h-full overflow-hidden content-reveal flex-col">
 
-      {/* Left: tier panel */}
-      <div className="w-[280px] flex-shrink-0 border-r border-rule2 flex flex-col bg-stone">
-        <div className="flex-shrink-0 px-5 py-4 border-b border-rule2 bg-stone2">
-          <div className="flex items-center gap-2 mt-2">
-            <span className={`display-num text-score text-ok`}>{executionSummary.totalActions}</span>
-            <span className="font-body text-muted text-label">autonomous actions · 30d</span>
+      <SceneHeader
+        module="EXECUTION"
+        context="Execute tier active"
+        metric={successPct}
+        metricLabel="% success rate"
+        statement={`${executionSummary.totalActions} autonomous actions · Execute tier active · 30 days`}
+        tone={headerTone}
+        meta={[
+          { label: 'escalation rate', value: `${Math.round(executionSummary.escalationRate * 100)}%` },
+          { label: 'rollback rate', value: `${Math.round(executionSummary.rollbackRate * 100)}%` },
+          { label: 'avg monitoring', value: executionSummary.avgMonitoringWindow },
+        ]}
+      />
+
+      <div className="flex flex-1 overflow-hidden min-h-0">
+
+        {/* Left: authority ladder */}
+        <div className="w-[280px] flex-shrink-0 border-r border-rule2 flex flex-col bg-stone">
+
+          {/* Authority ladder label */}
+          <div className="flex-shrink-0 px-4 py-2.5 border-b border-rule2 bg-stone2">
+            <span className="font-body text-micro font-semibold text-muted">AUTHORITY LADDER</span>
           </div>
-        </div>
 
-        {/* Summary stats */}
-        <div className="flex-shrink-0 grid grid-cols-2 gap-px bg-rule2 border-b border-rule2">
-          {[
-            { label: 'Success rate', val: executionSummary.successRate != null ? `${Math.round(executionSummary.successRate * 100)}%` : '—', tone: 'text-ok' },
-            { label: 'Escalation rate', val: executionSummary.escalationRate != null ? `${Math.round(executionSummary.escalationRate * 100)}%` : '—', tone: 'text-warn' },
-            { label: 'Rollback rate', val: executionSummary.rollbackRate != null ? `${Math.round(executionSummary.rollbackRate * 100)}%` : '—', tone: 'text-muted' },
-            { label: 'Avg monitor', val: executionSummary.avgMonitoringWindow, tone: 'text-ink' },
-          ].map(({ label, val, tone }) => (
-            <div key={label} className="bg-stone px-3 py-2">
-              <div className="font-body text-muted text-micro mb-0.5">{label}</div>
-              <div className={`display-num text-head ${tone}`}>{val}</div>
+          {/* Tier rows */}
+          <div className="flex-1 overflow-y-auto">
+            <button type="button" onClick={() => { setSelectedTier(null); setSelectedId(null) }}
+              className={`w-full text-left px-4 py-2.5 border-b border-rule2 border-l-4 transition-colors ${!selectedTier ? 'border-l-ochre bg-stone2' : 'border-l-transparent hover:bg-stone2/50'}`}>
+              <span className="font-body font-medium text-ink text-label">All events</span>
+              <span className="font-body text-muted text-label ml-2">{executionLog.length}</span>
+            </button>
+            {autonomyTiers.map(t => (
+              <TierRow key={t.id} tier={t}
+                isActive={selectedTier === t.id}
+                isCeiling={t.id === activeCeilingId && !governActivated}
+                isGovern={t.id === 'govern'}
+                governCriteriaMet={governCriteriaMet || governActivated}
+                onClick={() => { setSelectedTier(t.id); setSelectedId(null) }} />
+            ))}
+          </div>
+
+          {/* Govern tier CTA */}
+          {!governActivated && (
+            <div className="flex-shrink-0 border-t border-rule2">
+              {governCriteriaMet ? (
+                <div className="mx-4 my-3 px-4 py-3 border-l-4 border-l-ok bg-ok/[0.04]">
+                  <div className="font-body font-semibold text-ink text-body mb-1">Govern tier criteria met</div>
+                  <div className="font-body text-muted text-label leading-relaxed mb-3">
+                    {successPct}% success over 30 days, no rollbacks in the last 7 days. Activating puts policy enforcement agents on autonomous authority.
+                  </div>
+                  <Btn variant="primary" onClick={() => setGovernActivated(true)}>Activate Govern tier</Btn>
+                </div>
+              ) : (
+                <div className="mx-4 my-3 px-4 py-3 border-l-4 border-l-rule2 bg-stone2">
+                  <div className="font-body font-semibold text-muted text-label mb-2">To activate Govern tier</div>
+                  <div className="space-y-1.5">
+                    {governCriteriaItems.map(c => (
+                      <div key={c.label} className="flex items-start gap-1.5">
+                        {c.met
+                          ? <CheckCircle2 size={10} strokeWidth={2} className="text-ok flex-shrink-0 mt-0.5" />
+                          : <Clock size={10} strokeWidth={2} className="text-muted flex-shrink-0 mt-0.5" />
+                        }
+                        <span className={`font-body text-label leading-snug ${c.met ? 'text-ok' : 'text-muted'}`}>{c.label}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
-          ))}
+          )}
         </div>
 
-        {/* Tiers */}
-        <div className="flex-1 overflow-y-auto">
-          <button type="button" onClick={() => { setSelectedTier(null); setSelectedId(null) }}
-            className={`w-full text-left px-4 py-2.5 border-b border-rule2 border-l-4 transition-colors ${!selectedTier ? 'border-l-ochre bg-stone2' : 'border-l-transparent hover:bg-stone2/50'}`}>
-            <span className="font-body font-medium text-ink text-label">All events</span>
-            <span className="font-body text-muted text-label ml-2">{executionLog.length}</span>
-          </button>
-          {autonomyTiers.map(t => (
-            <TierRow key={t.id} tier={t}
-              isActive={selectedTier === t.id}
-              onClick={() => { setSelectedTier(t.id); setSelectedId(null) }} />
-          ))}
-        </div>
-      </div>
-
-      {/* Center: execution timeline */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <div className="flex-shrink-0 px-4 py-2.5 border-b border-rule2 bg-stone2 flex items-center justify-between">
-          <span className="font-body text-muted text-label">
-            {selectedTier ? `${selectedTier} tier` : 'All events'} · {filtered.length}
-          </span>
-          <div className="flex items-center gap-3">
-            <span className="flex items-center gap-1 font-body text-ok text-label"><span className="w-1.5 h-1.5 rounded-full bg-ok" />Success</span>
-            <span className="flex items-center gap-1 font-body text-warn text-label"><span className="w-1.5 h-1.5 rounded-full bg-warn" />Escalated</span>
-            <span className="flex items-center gap-1 font-body text-ochre text-label"><span className="w-1.5 h-1.5 rounded-full bg-ochre" />Pending</span>
-          </div>
-        </div>
-        <div className="flex-1 overflow-y-auto">
-          {filtered.map(e => (
-            <LogRow key={e.id} entry={e}
-              selected={selectedId === e.id}
-              onClick={() => setSelectedId(e.id)} />
-          ))}
-        </div>
-
-        {/* Authority ceiling callout */}
-        <div className="flex-shrink-0 px-4 py-3 border-t border-rule2 bg-stone2">
-          <div className="flex items-start gap-2">
-            <Shield size={10} className="text-ochre flex-shrink-0 mt-0.5" strokeWidth={2} />
-            <div>
-              <div className="font-body font-medium text-ink text-label mb-0.5">Current authorization level: Execute</div>
-              <p className="font-body text-muted text-label leading-snug">Governance tier not yet active. 5 agents act autonomously within pre-approved boundaries.</p>
+        {/* Center: execution timeline */}
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <div className="flex-shrink-0 px-4 py-2.5 border-b border-rule2 bg-stone2 flex items-center justify-between">
+            <span className="font-body text-muted text-label">
+              {selectedTier ? `${selectedTier} tier` : 'All events'} · {filtered.length}
+            </span>
+            <div className="flex items-center gap-3">
+              <span className="flex items-center gap-1 font-body text-ok text-label"><span className="w-1.5 h-1.5 rounded-full bg-ok" />Success</span>
+              <span className="flex items-center gap-1 font-body text-warn text-label"><span className="w-1.5 h-1.5 rounded-full bg-warn" />Escalated</span>
+              <span className="flex items-center gap-1 font-body text-ochre text-label"><span className="w-1.5 h-1.5 rounded-full bg-ochre" />Pending</span>
             </div>
           </div>
+          <div className="flex-1 overflow-y-auto">
+            {/* Needs review section */}
+            {needsReview.length > 0 && !selectedTier && (
+              <>
+                <SectionHeader tone="warn" label="Needs review" sub={`${needsReview.length} unresolved`} />
+                {needsReview.map(e => (
+                  <div key={e.id} className="border-l-2 border-l-warn">
+                    <LogRow entry={e} selected={selectedId === e.id} onClick={() => setSelectedId(e.id)} />
+                  </div>
+                ))}
+                <SectionHeader tone="muted" label="All events" />
+              </>
+            )}
+            {filtered.map(e => (
+              <LogRow key={e.id} entry={e}
+                selected={selectedId === e.id}
+                onClick={() => setSelectedId(e.id)} />
+            ))}
+          </div>
         </div>
+
       </div>
 
       {selectedEntry && (

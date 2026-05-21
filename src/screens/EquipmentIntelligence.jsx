@@ -329,7 +329,6 @@ export default function EquipmentIntelligence() {
 
       {/* Right: equipment detail + SPC + recipe + runs */}
       <div className="flex-1 flex flex-col overflow-hidden bg-stone">
-        <SectionHeader title="Equipment detail" />
         <EquipmentDetail eq={selectedEq} />
       </div>
       </div>
