@@ -8,7 +8,7 @@ import {
   Activity, CircleDot, ChevronDown, ChevronUp, ArrowRight, ExternalLink, X,
 } from 'lucide-react'
 import { interventionSummary, interventions } from '../data/interventions'
-import { FilterDropdown, SlidePanel, Btn, SegmentedControl } from '../components/UI'
+import { FilterDropdown, SlidePanel, Btn, SegmentedControl, Checkbox } from '../components/UI'
 
 // ─── Domain assignments ───────────────────────────────────────────────────────
 // Maps line.id → { area, areaOrder }
@@ -577,30 +577,26 @@ export default function PlantOverview() {
                     return (
                       <div
                         key={line.id}
-                        className={`border-b border-rule2 last:border-b-0 ${pressureCls(eff)} ${pressureClass(eff)}`}
+                        className={`flex items-center border-b border-rule2 last:border-b-0 ${pressureCls(eff)} ${pressureClass(eff)}`}
                       >
+                        {mode === 'compare' && (
+                          <Checkbox
+                            checked={isCompSel}
+                            onChange={() => toggleCompare(line.id)}
+                            size="lg"
+                            className="ml-4"
+                            aria-label={`Select ${line.name} for comparison`}
+                          />
+                        )}
                         <button
                           type="button"
-                          className={`w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors ${
+                          className={`flex-1 flex items-center gap-3 ${mode === 'compare' ? 'pl-2 pr-4' : 'px-4'} py-2.5 text-left transition-colors ${
                             mode === 'compare' && isCompSel ? 'bg-ochre/[0.03]' : 'hover:bg-stone2/50'
                           }`}
                           onClick={() => mode === 'compare' ? toggleCompare(line.id) : navigate(`/shift?line=${line.id}`)}
                           aria-label={`${line.name} — score ${eff}${mode === 'compare' ? (isCompSel ? ', selected' : ', click to select') : ', open ShiftIQ'}`}
                           aria-pressed={mode === 'compare' ? isCompSel : undefined}
                         >
-                          {/* Compare checkbox */}
-                          {mode === 'compare' && (
-                            <div className={`w-4 h-4 border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
-                              isCompSel ? 'bg-ochre border-ochre' : 'border-rule2 bg-stone'
-                            }`} aria-hidden="true">
-                              {isCompSel && (
-                                <svg width={8} height={8} viewBox="0 0 24 24" fill="none" stroke="white"
-                                  strokeWidth={3} strokeLinecap="round" strokeLinejoin="round">
-                                  <polyline points="20 6 9 17 4 12" />
-                                </svg>
-                              )}
-                            </div>
-                          )}
 
                           {/* Rank */}
                           <span className="display-num text-label text-muted tabular-nums w-4 text-right flex-shrink-0">{idx + 1}</span>

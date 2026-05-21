@@ -130,6 +130,16 @@ export function StatusPill({ tone, level, variant, status, children, icon, class
  )
 }
 
+// ── Checkbox ──────────────────────────────────────────────────────────────────
+export function Checkbox({ checked, onChange, size = 'md', className = '', ...props }) {
+ const sz = { sm: 'w-3 h-3', md: 'w-3.5 h-3.5', lg: 'w-4 h-4' }[size] ?? 'w-3.5 h-3.5'
+ return (
+  <input type="checkbox" checked={checked} onChange={onChange}
+   className={`cursor-pointer accent-ochre flex-shrink-0 ${sz} ${className}`}
+   {...props} />
+ )
+}
+
 export function SectionHeader({ tone = 'muted', label, sub, title, icon: Icon, accent, badge, className = '' }) {
  if (title) {
   return (

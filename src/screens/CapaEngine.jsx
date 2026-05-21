@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { useFocusTrap, useExitAnimation } from '../lib/utils'
 import { FileText, BarChart2, ShieldCheck, Clock, Brain, Search } from 'lucide-react'
 import { Check, X, AlertTriangle, ArrowRight, TrendingUp, ChevronRight } from 'lucide-react'
-import { StatusPill, SP, ActionBanner, Btn, HoldButton, Tabs, SceneHeader, SectionHeader } from '../components/UI'
+import { StatusPill, SP, ActionBanner, Btn, HoldButton, Tabs, SceneHeader, SectionHeader, Checkbox } from '../components/UI'
 import { openCases, patternRows, benchmarks } from '../data/capa.js'
 import { haccpData, goalsData } from '../data'
 import { useAppState } from '../context/AppState'
@@ -449,12 +449,13 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
     { key: 'corrective', label: 'Corrective measure is documented and specific to this incident' },
     { key: 'specific', label: 'Evidence is not a placeholder — it is specific to this case' },
    ].map(({ key, label }) => (
-    <label key={key} className="flex items-start gap-2.5 cursor-pointer group">
-     <div className={`w-4 h-4 border flex items-center justify-center mt-0.5 flex-shrink-0 transition-colors ${
-      declaration[key] ? 'bg-ok border-ok' : 'bg-stone border-rule2 group-hover:border-rule'
-     }`} onClick={() => toggleDeclaration(key)}>
-      {declaration[key] && <Check size={10} strokeWidth={3} className="text-stone" />}
-     </div>
+    <label key={key} className="flex items-start gap-2.5 cursor-pointer">
+     <Checkbox
+      checked={declaration[key]}
+      onChange={() => toggleDeclaration(key)}
+      size="lg"
+      className="mt-0.5"
+     />
      <span className="font-body text-label text-muted leading-snug">{label}</span>
     </label>
    ))}

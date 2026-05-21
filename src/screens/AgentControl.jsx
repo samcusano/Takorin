@@ -4,7 +4,7 @@ import {
   ClipboardCheck, Shield, Database, ChevronDown, ChevronRight,
   Timer, CheckCircle, XCircle, Check, Flag, InspectionPanel, TrendingUp,
 } from 'lucide-react'
-import { Btn, SlidePanel, Tabs, StatusPill } from '../components/UI'
+import { Btn, SlidePanel, Tabs, StatusPill, Checkbox } from '../components/UI'
 import { agentConfigData, dataSourceHealth } from '../data'
 import { agentPrompts } from '../data/prompts'
 import { useAppState } from '../context/AppState'
@@ -260,12 +260,10 @@ function LedgerRow({ pa, agent, onInvestigate, onApprove, onOverrideRequest, sel
       {/* Main row */}
       <div className="flex items-center gap-2.5 px-4 py-2.5 hover:bg-stone2 transition-colors min-h-[44px]">
         {/* Row checkbox */}
-        <input
-          type="checkbox"
+        <Checkbox
           checked={selected}
           onChange={() => onToggleSelect(pa._key)}
-          className="w-3.5 h-3.5 cursor-pointer flex-shrink-0 accent-ochre"
-          aria-label={`Select action`}
+          aria-label="Select action"
         />
 
         {/* Agent icon */}
@@ -375,8 +373,7 @@ function LedgerRow({ pa, agent, onInvestigate, onApprove, onOverrideRequest, sel
                 </span>
               </div>
               <label className="flex items-center gap-1.5 cursor-pointer ml-auto">
-                <input type="checkbox" checked={rationaleAcked} onChange={e => setRationaleAcked(e.target.checked)}
-                  className="w-3 h-3 cursor-pointer accent-ochre" />
+                <Checkbox checked={rationaleAcked} onChange={e => setRationaleAcked(e.target.checked)} size="sm" />
                 <span className="font-body text-muted text-label">I have read the AI rationale</span>
               </label>
             </div>
@@ -1238,9 +1235,8 @@ export default function AgentControl() {
                           {/* Checkbox */}
                           {!pa._decided && (
                             <div className="pl-3 flex-shrink-0" onClick={e => e.stopPropagation()}>
-                              <input type="checkbox" checked={isChecked}
-                                onChange={() => setSplitChecked(prev => { const n = new Set(prev); n.has(pa._key) ? n.delete(pa._key) : n.add(pa._key); return n })}
-                                className="w-3.5 h-3.5 cursor-pointer accent-ochre" />
+                              <Checkbox checked={isChecked}
+                                onChange={() => setSplitChecked(prev => { const n = new Set(prev); n.has(pa._key) ? n.delete(pa._key) : n.add(pa._key); return n })} />
                             </div>
                           )}
                           <button type="button"
