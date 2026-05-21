@@ -383,11 +383,6 @@ export default function PlantOverview() {
         {activeFilters > 0 && (
           <div className="flex items-center gap-3 ml-auto">
             <span className="font-body text-muted text-label">{filteredCount} of {rawLines.length} lines</span>
-            <button type="button"
-              onClick={() => { setZoneFilter('all'); setAreaFilter('all'); setFindingsFilter('all') }}
-              className="font-body text-label text-muted hover:text-ink transition-colors flex items-center gap-1">
-              <X size={10} strokeWidth={2} />Clear all
-            </button>
           </div>
         )}
       </div>

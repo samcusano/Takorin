@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { interventions } from '../data/interventions'
+import { interventions, kpiTargets } from '../data/interventions'
 import { AlertTriangle, CheckCircle2, ArrowRight, RotateCcw, AlertCircle, TrendingUp, TrendingDown } from 'lucide-react'
 import { StatusPill, SceneHeader, Btn } from '../components/UI'
 
@@ -38,6 +38,15 @@ function DwellBadge({ ms }) {
   return <span className={`font-body text-label tabular-nums ${color}`}>{secs}s review</span>
 }
 
+
+function ChapterHeader({label, accent = 'bg-rule2' }) {
+  return (
+    <div className="flex items-center gap-3 mb-4">
+      <div className={`w-[3px] h-3.5 flex-shrink-0 rounded-sm ${accent}`} />
+      <span className="font-body text-micro font-semibold text-muted tracking-wider">{label}</span>
+    </div>
+  )
+}
 
 function EventChain({ entry, compact = false }) {
   const oc = OUTCOME_CFG[entry.outcomeClassification] ?? OUTCOME_CFG.unclear
@@ -143,20 +152,35 @@ function InterventionCard({ entry, selected, onClick, index = 0 }) {
 function InterventionDetail({ entry }) {
   if (!entry) return (
     <div className="flex items-center justify-center h-full font-body text-muted text-label">
-      Select an intervention to see the full event chain
+      Select an intervention to read the full story arc
     </div>
   )
 
-  const oc = OUTCOME_CFG[entry.outcomeClassification] ?? OUTCOME_CFG.unclear
-  const dc = DECISION_CFG[entry.decision] ?? DECISION_CFG.approved
-  const fc = FRESHNESS_CFG[entry.freshnessState] ?? FRESHNESS_CFG.unknown
-  const isNegativeOutcome = entry.outcomeClassification === 'negative' || entry.outcomeClassification === 'harmful'
+  const oc  = OUTCOME_CFG[entry.outcomeClassification]  ?? OUTCOME_CFG.unclear
+  const dc  = DECISION_CFG[entry.decision]               ?? DECISION_CFG.approved
+  const fc  = FRESHNESS_CFG[entry.freshnessState]        ?? FRESHNESS_CFG.unknown
+  const isNegative = entry.outcomeClassification === 'negative' || entry.outcomeClassification === 'harmful'
+  const kpi = kpiTargets.find(k => k.id === entry.kpiTarget)
+
+  const nextQuestion = isNegative
+    ? 'This outcome suggests a systemic gap. If it reflects a recurring pattern, a CAPA formalizes the corrective action and creates an audit-ready evidence record.'
+    : entry.outcomeClassification === 'unclear'
+      ? "Effect couldn't be isolated — consider extending the monitoring window or flagging for manual review before treating this as a validated pattern."
+      : entry.wasReversed
+        ? 'The intervention achieved its goal and was safely reversed. Review the reversal trigger conditions to optimize the autonomy boundary for this agent.'
+        : entry.attributionConfidence >= 0.8
+          ? `Attribution is ${Math.round(entry.attributionConfidence * 100)}% — high enough to treat this as a validated pattern. Consider this signal class when expanding agent autonomy.`
+          : `Attribution is ${Math.round(entry.attributionConfidence * 100)}% — moderate confidence. Gather more confirmation before treating this as a validated pattern.`
+
+  const consequenceAccent = entry.outcomeClassification === 'positive' ? 'bg-ok'
+    : entry.outcomeClassification === 'unclear' ? 'bg-ochre'
+    : 'bg-danger'
 
   return (
-    <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
+    <div className="flex-1 overflow-y-auto">
 
-      {/* Header */}
-      <div>
+      {/* ── Header ─────────────────────────────────────────────────── */}
+      <div className="px-6 py-5 border-b border-rule2">
         <div className="flex items-center gap-2 mb-2">
           <StatusPill tone={oc.tone}>{oc.label}</StatusPill>
           <span className="font-body text-muted text-label">{entry.agent} · {entry.agentTier} tier</span>
@@ -169,41 +193,35 @@ function InterventionDetail({ entry }) {
         <div className="font-display font-bold text-ink text-subhead leading-tight">{entry.action}</div>
         <div className="font-body text-muted text-label mt-0.5">{entry.recommendedLabel}</div>
         {oc.desc && (
-          <div className="font-body text-muted text-label mt-2 pl-3 border-l-2 border-ochre/40 leading-snug">
-            {oc.desc}
-          </div>
+          <div className="font-body text-muted text-label mt-2 pl-3 border-l-2 border-ochre/40 leading-snug">{oc.desc}</div>
         )}
       </div>
 
-      {/* Director action — negative/harmful outcomes can become CAPAs */}
-      {isNegativeOutcome && (
-        <div className="flex items-center justify-between gap-4 px-4 py-3 bg-danger/[0.025] border-l-4 border-l-danger">
-          <div className="flex-1 min-w-0">
-            <div className="font-body font-medium text-ink text-body">Negative outcome — corrective action available</div>
-            <div className="font-body text-muted text-label mt-0.5">
-              If this result reflects a systemic gap, a CAPA formalizes the corrective action and creates an audit-ready evidence record.
+      {/* ── Chapter 1: The deviation ───────────────────────────────── */}
+      <div className="px-6 py-5 border-b border-rule2">
+        <ChapterHeader label="Deviation" accent="bg-ochre" />
+
+        {/* What the AI detected */}
+        <div className="px-4 py-3 bg-stone2 border-l-4 border-l-ochre mb-4">
+          <div className="font-body text-muted text-label mb-1">What the AI detected</div>
+          <p className="font-display text-ink text-body leading-relaxed">{entry.rationaleText}</p>
+        </div>
+
+        {/* KPI target context */}
+        {kpi && (
+          <div className="flex items-center gap-4 px-4 py-2.5 border border-rule2 bg-stone mb-4">
+            <div className="flex-1 min-w-0">
+              <span className="font-body text-muted text-label">Tracking </span>
+              <span className="font-body text-ink text-label font-medium">{kpi.label}</span>
+            </div>
+            <div className="flex items-center gap-4 flex-shrink-0">
+              <span className="font-body text-muted text-label">Baseline <span className="text-ink font-medium">{kpi.baseline} {kpi.unit}</span></span>
+              <span className="font-body text-muted text-label">Target <span className="text-ok font-medium">{kpi.target}</span></span>
             </div>
           </div>
-          <Link to="/capa" className="flex-shrink-0">
-            <Btn variant="secondary">Open CAPA</Btn>
-          </Link>
-        </div>
-      )}
+        )}
 
-      {/* Event chain */}
-      <div>
-        <div className="font-body text-muted text-label mb-2">Event chain</div>
-        <EventChain entry={entry} compact={false} />
-      </div>
-
-      {/* AI rationale */}
-      <div className="px-4 py-3 bg-stone2 border-l-4 border-l-ochre">
-        <div className="font-body text-muted text-label mb-1">AI rationale</div>
-        <p className="font-display text-ink text-body leading-relaxed">{entry.rationaleText}</p>
-      </div>
-
-      {/* Source signals */}
-      <div>
+        {/* Source signals */}
         <div className="font-body text-muted text-label mb-2">
           Source signals · <span className={fc.cls}>{fc.label}</span> · {Math.round(entry.signalCompleteness * 100)}% complete
         </div>
@@ -229,112 +247,145 @@ function InterventionDetail({ entry }) {
         )}
       </div>
 
-      {/* Decision metadata */}
-      <div className="grid grid-cols-3 gap-px bg-rule2">
-        {[
-          { label: 'Decision',        val: dc.label,                                                                                           tone: dc.cls },
-          { label: 'Reviewed by',     val: entry.reviewedBy,                                                                                  tone: 'text-ink' },
-          { label: 'Dwell time',      val: entry.dwellTimeMs > 0 ? `${(entry.dwellTimeMs / 1000).toFixed(1)}s` : 'Auto',                      tone: entry.dwellTimeMs > 0 && entry.dwellTimeMs < 5000 ? 'text-danger' : entry.dwellTimeMs < 15000 ? 'text-warn' : 'text-ok' },
-          { label: 'Decision time',   val: entry.decisionLabel,                                                                                tone: 'text-muted' },
-          { label: 'Override reason', val: entry.overrideReason ?? 'None',                                                                    tone: entry.overrideReason ? 'text-ink' : 'text-muted' },
-          { label: 'Caution',         val: entry.cautionNote ?? 'None',                                                                       tone: entry.cautionNote ? 'text-warn' : 'text-muted' },
-        ].map(({ label, val, tone }) => (
-          <div key={label} className="bg-stone px-3 py-2.5">
-            <div className="font-body text-muted text-label mb-0.5">{label}</div>
-            <div className={`font-body font-medium text-label leading-snug ${tone}`}>{val}</div>
+      {/* ── Chapter 2: The decision ────────────────────────────────── */}
+      <div className="px-6 py-5 border-b border-rule2">
+        <ChapterHeader label="Decision" accent="bg-muted" />
+
+        <EventChain entry={entry} compact={false} />
+
+        {entry.overrideReason && (
+          <div className="mt-3 flex items-start gap-2 px-3 py-2.5 bg-warn/[0.04] border-l-2 border-l-warn">
+            <AlertTriangle size={10} className="text-warn flex-shrink-0 mt-0.5" strokeWidth={2} />
+            <p className="font-body text-warn text-label leading-snug">{entry.overrideReason}</p>
           </div>
-        ))}
+        )}
+        {entry.cautionNote && (
+          <div className="flex items-center gap-1.5 mt-3">
+            <AlertCircle size={9} className="text-warn flex-shrink-0" />
+            <span className="font-body text-warn text-label">{entry.cautionNote}</span>
+          </div>
+        )}
       </div>
 
-      {/* Before → After metrics */}
-      {entry.metricsAfter && (
-        <div>
-          <div className="font-body text-muted text-label mb-2">Before → After · {entry.metricsUpdatedLabel}</div>
-          <div className="grid grid-cols-2 gap-px bg-rule2">
-            <div className="bg-stone px-3 py-2">
-              <div className="font-body text-muted text-label mb-2">Before</div>
-              {Object.entries(entry.metricsBefore).map(([k, v]) => (
-                <div key={k} className="flex items-baseline justify-between py-1 border-b border-rule2 last:border-0">
-                  <span className="font-body text-muted text-label">{formatKey(k)}</span>
-                  <span className="display-num text-base text-muted tabular-nums">{v}</span>
-                </div>
-              ))}
+      {/* ── Chapter 3: The consequence ─────────────────────────────── */}
+      <div className="px-6 py-5 border-b border-rule2">
+        <ChapterHeader label="Consequence" accent={consequenceAccent} />
+
+        {/* Before → After */}
+        {entry.metricsAfter && (
+          <div className="mb-4">
+            <div className="font-body text-muted text-label mb-2">Before → After · {entry.metricsUpdatedLabel}</div>
+            <div className="grid grid-cols-2 gap-px bg-rule2">
+              <div className="bg-stone px-3 py-2">
+                <div className="font-body text-muted text-label mb-2">Before</div>
+                {Object.entries(entry.metricsBefore).map(([k, v]) => (
+                  <div key={k} className="flex items-baseline justify-between py-1 border-b border-rule2 last:border-0">
+                    <span className="font-body text-muted text-label">{formatKey(k)}</span>
+                    <span className="display-num text-base text-muted tabular-nums">{v}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="bg-stone px-3 py-2">
+                <div className="font-body text-muted text-label mb-2">After</div>
+                {Object.entries(entry.metricsAfter).map(([k, v]) => (
+                  <div key={k} className="flex items-baseline justify-between py-1 border-b border-rule2 last:border-0">
+                    <span className="font-body text-muted text-label">{formatKey(k)}</span>
+                    <span className="display-num text-base text-ink tabular-nums">{v}</span>
+                  </div>
+                ))}
+              </div>
             </div>
-            <div className="bg-stone px-3 py-2">
-              <div className="font-body text-muted text-label mb-2">After</div>
-              {Object.entries(entry.metricsAfter).map(([k, v]) => (
-                <div key={k} className="flex items-baseline justify-between py-1 border-b border-rule2 last:border-0">
-                  <span className="font-body text-muted text-label">{formatKey(k)}</span>
-                  <span className="display-num text-base text-ink tabular-nums">{v}</span>
-                </div>
-              ))}
+          </div>
+        )}
+
+        {/* KPI impact */}
+        {entry.kpiDelta && (
+          <div className={`px-4 py-3 border mb-4 ${
+            entry.kpiDelta.direction === 'improvement' ? 'bg-ok/[0.04] border-ok/20' :
+            entry.kpiDelta.direction === 'degradation' ? 'bg-warn/[0.04] border-warn/20' :
+            'border-rule2 bg-stone2'
+          }`}>
+            <div className="font-body text-muted text-label mb-1">KPI impact · {entry.kpiDelta.metric}</div>
+            <div className="flex items-center gap-3">
+              <span className="font-body text-muted text-body">{entry.kpiDelta.before}</span>
+              <ArrowRight size={12} className="text-muted" />
+              <span className={`display-num text-head ${
+                entry.kpiDelta.direction === 'improvement' ? 'text-ok' :
+                entry.kpiDelta.direction === 'degradation' ? 'text-warn' : 'text-ink'
+              }`}>{entry.kpiDelta.after}</span>
+              {entry.kpiDelta.pct !== undefined && (
+                <span className={`font-body text-label ${entry.kpiDelta.pct > 0 ? 'text-ok' : 'text-warn'}`}>
+                  {entry.kpiDelta.pct > 0 ? '+' : ''}{entry.kpiDelta.pct}%
+                </span>
+              )}
+            </div>
+            <div className="font-body text-muted text-label mt-1.5">
+              Attribution confidence: {entry.attributionConfidence != null ? `${Math.round(entry.attributionConfidence * 100)}%` : '—'}
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* KPI impact */}
-      {entry.kpiDelta && (
-        <div className={`px-4 py-3 border ${
-          entry.kpiDelta.direction === 'improvement' ? 'bg-ok/[0.04] border-ok/20' :
-          entry.kpiDelta.direction === 'degradation' ? 'bg-warn/[0.04] border-warn/20' :
-          'border-rule2 bg-stone2'
-        }`}>
-          <div className="font-body text-muted text-label mb-1">KPI impact · {entry.kpiDelta.metric}</div>
-          <div className="flex items-center gap-3">
-            <span className="font-body text-muted text-body">{entry.kpiDelta.before}</span>
-            <ArrowRight size={12} className="text-muted" />
-            <span className={`display-num text-head ${
-              entry.kpiDelta.direction === 'improvement' ? 'text-ok' :
-              entry.kpiDelta.direction === 'degradation' ? 'text-warn' :
-              'text-ink'
-            }`}>{entry.kpiDelta.after}</span>
-            {entry.kpiDelta.pct !== undefined && (
-              <span className={`font-body text-label ${entry.kpiDelta.pct > 0 ? 'text-ok' : 'text-warn'}`}>
-                {entry.kpiDelta.pct > 0 ? '+' : ''}{entry.kpiDelta.pct}%
-              </span>
-            )}
+        {/* Operator confirmation */}
+        {entry.operatorConfirmation ? (
+          <div className="flex items-start gap-3 px-4 py-3 bg-ok/[0.04] border-l-4 border-l-ok">
+            <CheckCircle2 size={12} strokeWidth={2} className="text-ok flex-shrink-0 mt-0.5" />
+            <div className="flex-1 min-w-0">
+              <div className="font-body text-muted text-label mb-0.5">Confirmed by operator</div>
+              <div className="font-body font-medium text-ink text-label">{entry.operatorConfirmation.confirmedBy} · {entry.operatorConfirmation.station}</div>
+              <div className="font-body text-ok text-label">{entry.operatorConfirmation.note}</div>
+              <div className="font-body text-muted text-label mt-0.5">{entry.operatorConfirmation.confirmedAt}</div>
+            </div>
           </div>
-          <div className="font-body text-muted text-label mt-1.5">
-            Attribution confidence: {entry.attributionConfidence != null ? `${Math.round(entry.attributionConfidence * 100)}%` : '—'}
+        ) : (
+          <div className="flex items-center gap-2 px-4 py-3 bg-stone2">
+            <div className="w-1.5 h-1.5 rounded-full bg-muted flex-shrink-0" />
+            <span className="font-body text-muted text-label">No operator confirmation — outcome estimated from telemetry</span>
           </div>
-        </div>
-      )}
-
-      {/* Operator confirmation */}
-      {entry.operatorConfirmation ? (
-        <div className="flex items-start gap-3 px-4 py-3 bg-ok/[0.04] border-l-4 border-l-ok">
-          <CheckCircle2 size={12} strokeWidth={2} className="text-ok flex-shrink-0 mt-0.5" />
-          <div className="flex-1 min-w-0">
-            <div className="font-body text-muted text-label mb-0.5">Confirmed by operator</div>
-            <div className="font-body font-medium text-ink text-label">{entry.operatorConfirmation.confirmedBy} · {entry.operatorConfirmation.station}</div>
-            <div className="font-body text-ok text-label">{entry.operatorConfirmation.note}</div>
-            <div className="font-body text-muted text-label mt-0.5">{entry.operatorConfirmation.confirmedAt}</div>
-          </div>
-        </div>
-      ) : (
-        <div className="flex items-center gap-2 px-4 py-3 bg-stone2">
-          <div className="w-1.5 h-1.5 rounded-full bg-muted flex-shrink-0" />
-          <span className="font-body text-muted text-label">No operator confirmation — outcome estimated from telemetry</span>
-        </div>
-      )}
-
-      {/* Outcome narrative */}
-      <div className="px-4 py-3 bg-stone2">
-        <div className="font-body text-muted text-label mb-1">Outcome narrative</div>
-        <p className="font-display text-ink text-body leading-relaxed">{entry.outcomeNotes}</p>
+        )}
       </div>
 
-      {/* Reversal record */}
-      {entry.wasReversed && (
-        <div className="flex items-start gap-2 px-3 py-2.5 bg-stone2">
-          <RotateCcw size={10} className="text-muted flex-shrink-0 mt-0.5" strokeWidth={2} />
-          <div>
-            <div className="font-body font-medium text-ink text-label mb-0.5">Intervention reversed — {entry.reversedAt}</div>
-            <p className="font-body text-muted text-label leading-snug">{entry.reversalReason}</p>
-          </div>
+      {/* ── Chapter 4: What this means ─────────────────────────────── */}
+      <div className="px-6 py-5">
+        <ChapterHeader label="What this means" accent="bg-rule2" />
+
+        {/* Outcome narrative */}
+        <div className="px-4 py-3 bg-stone2 mb-4">
+          <div className="font-body text-muted text-label mb-1">What happened</div>
+          <p className="font-display text-ink text-body leading-relaxed">{entry.outcomeNotes}</p>
         </div>
-      )}
+
+        {/* Reversal record */}
+        {entry.wasReversed && (
+          <div className="flex items-start gap-2 px-3 py-2.5 bg-stone2 mb-4">
+            <RotateCcw size={10} className="text-muted flex-shrink-0 mt-0.5" strokeWidth={2} />
+            <div>
+              <div className="font-body font-medium text-ink text-label mb-0.5">Intervention reversed — {entry.reversedAt}</div>
+              <p className="font-body text-muted text-label leading-snug">{entry.reversalReason}</p>
+            </div>
+          </div>
+        )}
+
+        {/* Director action — negative outcomes */}
+        {isNegative && (
+          <div className="flex items-center justify-between gap-4 px-4 py-3 bg-danger/[0.025] border-l-4 border-l-danger mb-4">
+            <div className="flex-1 min-w-0">
+              <div className="font-body font-medium text-ink text-body">Negative outcome — corrective action available</div>
+              <div className="font-body text-muted text-label mt-0.5">
+                If this result reflects a systemic gap, a CAPA formalizes the corrective action and creates an audit-ready evidence record.
+              </div>
+            </div>
+            <Link to="/capa" className="flex-shrink-0">
+              <Btn variant="secondary">Open CAPA</Btn>
+            </Link>
+          </div>
+        )}
+
+        {/* The question this raises */}
+        <div className="px-4 py-3 border-l-4 border-l-rule2 bg-stone2">
+          <div className="font-body text-muted text-label mb-1">The question this raises</div>
+          <p className="font-body text-ink text-body leading-relaxed">{nextQuestion}</p>
+        </div>
+      </div>
 
     </div>
   )

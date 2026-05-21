@@ -418,12 +418,10 @@ export default function Sidebar() {
    <path d="M8 13 L14 13 L14 7 Z" fill="var(--color-ochre)"/>
   </svg>
   {!collapsed && (
-   <div className="flex-1 min-w-0">
+   <div className="flex-0 min-w-0">
     <div className="font-body font-bold text-ink text-label leading-none">Takorin</div>
-    <div className="font-body text-sidebar-ghost text-micro mt-1">Total intelligence</div>
    </div>
   )}
-  {!collapsed && <div className="live-dot w-1.5 h-1.5 rounded-full bg-ok flex-shrink-0" />}
  </button>
 
  {/* Facility — hidden when collapsed */}

@@ -48,21 +48,6 @@ export default function App() {
  <Sidebar />
  <main className="flex-1 flex flex-col overflow-hidden" style={{ marginLeft: sidebarCollapsed ? 48 : 240, transition: 'margin-left 200ms cubic-bezier(0.16, 1, 0.3, 1)' }}>
  <TrustStrip />
- {roleInfo && (
- <div className="flex items-center justify-between px-4 py-2 bg-stone2 border-b border-rule flex-shrink-0">
-  <span className="font-body text-micro text-muted">
-   Viewing as <span className="text-ochre">{roleInfo.name}</span>
-   <span className="text-muted"> · {roleInfo.role}</span>
-  </span>
-  <button
-   type="button"
-   onClick={() => { setViewingRole('director') }}
-   className="font-body text-micro text-muted hover:text-ink transition-colors px-2 py-1 border border-rule hover:border-rule2"
-  >
-   Exit role view
-  </button>
- </div>
- )}
  <Suspense fallback={<ScreenLoader />}>
  <Routes>
  <Route path="/" element={<Navigate to="/overview" replace />} />

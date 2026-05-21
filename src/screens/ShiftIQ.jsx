@@ -910,7 +910,7 @@ export default function ShiftIQ() {
    <Btn variant="ghost" onClick={() => setQuietForm({ open:false, reason:'', endTime:'' })}>Cancel</Btn>
   </div>
  ) : null}
- <ShiftIQV2 score={lineScore} lineLabel={`${activeLined?.name ?? 'Line 4'} · AM Shift`} supervisor={lineSupervisor} plant={currentPlant?.name ?? 'Salina KS'} />
+ <ShiftIQV2 score={lineScore} lineLabel={`${activeLined?.name ?? 'Line 4'} · AM Shift`} supervisor={lineSupervisor} plant={currentPlant?.name ?? 'Salina KS'} isSupervisorView={viewingRole === 'supervisor'} />
  </>}
  </div>
  )

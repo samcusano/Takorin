@@ -163,7 +163,7 @@ function SupplierCard({ tone = 'warn', title, desc, evidence, children, actions,
 function SupplierRow({ s, audit, isDanger, index, total }) {
   const scoreColor = s.score >= 90 ? SC.sage : s.score >= 80 ? SC.amber : SC.rust
   const hasFlag = isDanger || audit?.result === 'Conditional' || audit?.needsAction
-  const flagLabel = audit?.needsAction ? 'NEEDS ACTION' : isDanger ? 'AT RISK' : 'CONDITIONAL'
+  const flagLabel = audit?.needsAction ? 'Needs action' : isDanger ? 'At risk' : 'Conditional'
   const flagColor = isDanger ? SC.rust : SC.amber
   return (
     <div className="row-in" style={{
@@ -319,9 +319,6 @@ export default function SupplierIQ() {
                   : <>
                       <Btn variant="primary" onClick={() => setCoaRequested(true)}>Request COA</Btn>
                       <Btn variant="secondary" onClick={() => setCoaViewLot(lot)}>View specs</Btn>
-                      <Link to="/network" className="font-body text-ochre text-label flex items-center gap-1 hover:text-ink transition-colors self-center">
-                        <ArrowRight size={9} />Network impact
-                      </Link>
                     </>
                 }
               >

@@ -118,6 +118,10 @@ export function AppStateProvider({ children }) {
  const setCurrentPlant = (p) => { _setCurrentPlant(p); setWorkerModeState(p.workerMode) }
  const setWorkerMode = (m) => setWorkerModeState(m)
  const [viewingRole, setViewingRole] = useState('director')
+ const [signOffRequests, setSignOffRequests] = useState([
+  { id: 'sor-1', operator: 'C. Reyes', finding: 'Allergen changeover log', requestedAt: '07:12', station: 'Sauce Dosing L2' },
+ ])
+ const [escalatedToDirector, setEscalatedToDirector] = useState(false)
  const [agentDecidedKeys, setAgentDecidedKeys] = useState(new Set())
  const markAgentDecided = (key) => setAgentDecidedKeys(prev => new Set([...prev, key]))
  const acknowledgeCommand = (id) => setCommandAcknowledged(prev => new Set([...prev, id]))
@@ -171,6 +175,8 @@ export function AppStateProvider({ children }) {
  activityLog, logActivity,
  currentPlant, setCurrentPlant,
  viewingRole, setViewingRole,
+ signOffRequests, setSignOffRequests,
+ escalatedToDirector, setEscalatedToDirector,
  pilotExpanded, setPilotExpanded,
  handoffAccepted, setHandoffAccepted,
  agentDecidedKeys, markAgentDecided,

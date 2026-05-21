@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Brain, ChevronDown, ChevronUp, Check, Users } from 'lucide-react'
+import { Brain, Check, Users } from 'lucide-react'
 import { Btn } from '../components/UI'
 import { Link } from 'react-router-dom'
 import { useAppState } from '../context/AppState'
@@ -169,7 +169,7 @@ function OperatorRow({ op, index, total }) {
       </div>
       {op.flag && (
         <span className="font-body text-micro flex-shrink-0 px-1.5 py-0.5" style={{ color: P.amber, background: `${P.amber}18`, border: `1px solid ${P.amber}40` }}>
-          CERT GAP
+          Cert gap
         </span>
       )}
     </div>
@@ -206,61 +206,178 @@ function TimelineEntry({ ev, index, total }) {
 
 // ── Score explainer ────────────────────────────────────────────────────────────
 function ScoreExplainer({ score }) {
-  const [open, setOpen] = useState(false)
   const baseScore = score - SCORE_FACTORS.reduce((s, f) => s + f.contribution, 0)
+  return (
+    <div>
+      <div className="flex items-baseline gap-2.5" style={{ padding: '8px 20px', borderBottom: `1px solid ${P.border2}` }}>
+        <span className="font-body text-body text-muted" style={{ minWidth: 28, textAlign: 'right' }}>{baseScore}</span>
+        <span className="font-body text-label text-muted">Base · no shift conditions</span>
+      </div>
+      {SCORE_FACTORS.map((f, i) => {
+        const valC = f.tone === 'danger' ? P.rust : f.tone === 'warn' ? P.amber : P.dim
+        const confC = f.confidence === 'HIGH' ? P.sage : f.confidence === 'MEDIUM' ? P.amber : P.dim
+        return (
+          <div key={i} style={{
+            padding: '9px 20px', borderBottom: i < SCORE_FACTORS.length - 1 ? `1px solid ${P.border2}` : 'none',
+            background: f.tone === 'danger' ? `${P.rust}06` : 'transparent',
+            display: 'flex', alignItems: 'flex-start', gap: 10,
+          }}>
+            <span className="font-body font-bold text-body" style={{ color: f.contribution > 0 ? valC : P.dim, minWidth: 28, textAlign: 'right', flexShrink: 0 }}>
+              {f.contribution > 0 ? `+${f.contribution}` : '—'}
+            </span>
+            <div style={{ flex: 1 }}>
+              <div className="font-body font-medium text-label" style={{ color: f.contribution > 0 ? P.bone : P.dim, marginBottom: 2 }}>{f.label}</div>
+              <div className="font-body text-micro text-muted">{f.state}</div>
+              <div className="flex items-center gap-1.5 mt-1">
+                <div style={{ width: 5, height: 5, borderRadius: '50%', background: confC, flexShrink: 0 }} />
+                <span className="font-body text-micro text-muted">{f.confidence} · {f.source}</span>
+              </div>
+            </div>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+// ── Supervisor: My queue ──────────────────────────────────────────────────────
+function SupervisorQueue({ findings, signOffRequests, setSignOffRequests, logActivity, supervisor }) {
+  const actNow  = findings.filter(f => f.urgency === 'danger')
+  const watchItems = findings.filter(f => f.urgency === 'warn')
+
+  const handleApprove = (req) => {
+    setSignOffRequests(p => p.filter(r => r.id !== req.id))
+    logActivity({ actor: supervisor, action: `Approved sign-off: ${req.finding}`, item: req.operator, type: 'intervention' })
+  }
+  const handleDecline = (req) => {
+    setSignOffRequests(p => p.filter(r => r.id !== req.id))
+    logActivity({ actor: supervisor, action: `Declined sign-off: ${req.finding}`, item: req.operator, type: 'intervention' })
+  }
 
   return (
-    <div style={{ borderTop: `1px solid ${P.border}` }}>
-      <button
-        type="button"
-        onClick={() => setOpen(o => !o)}
-        className="w-full flex items-center justify-between hover:bg-stone2 transition-colors"
-        style={{ padding: '11px 20px', background: 'transparent', border: 'none', cursor: 'pointer' }}>
-        <div className="flex items-center gap-2">
-          <Brain size={11} color={P.dim} />
-          <span className="font-body text-label text-muted">Why {score}?</span>
-        </div>
-        {open ? <ChevronUp size={11} color={P.dim} /> : <ChevronDown size={11} color={P.dim} />}
-      </button>
-
-      {open && (
-        <div style={{ borderTop: `1px solid ${P.border2}` }}>
-          <div className="flex items-baseline gap-2.5" style={{ padding: '8px 20px', borderBottom: `1px solid ${P.border2}` }}>
-            <span className="font-body text-body text-muted" style={{ minWidth: 28, textAlign: 'right' }}>{baseScore}</span>
-            <span className="font-body text-label text-muted">Base · no shift conditions</span>
+    <div className="flex-1 overflow-y-auto" style={{ borderRight: `1px solid ${P.border}` }}>
+      <div style={{ padding: '20px 24px 0' }}>
+        <div className="font-body text-micro text-muted mb-3">Act now · {actNow.length} item{actNow.length !== 1 ? 's' : ''}</div>
+        {actNow.map((f, i) => (
+          <div key={f.id} className="v2-row-in" style={{
+            animationDelay: `${i * 50}ms`, padding: '14px 16px', marginBottom: 8,
+            background: P.surface, border: `1px solid ${P.border}`, borderLeft: `3px solid ${P.rust}`,
+          }}>
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className="font-body text-micro px-1.5 py-0.5" style={{ color: P.rust, background: `${P.rust}14`, border: `1px solid ${P.rust}35` }}>Blocking</span>
+              <span className="font-body text-micro text-muted">{f.source}</span>
+            </div>
+            <div className="font-body font-medium text-body" style={{ color: P.bone, lineHeight: 1.4, marginBottom: 8 }}>{f.title}</div>
+            <div className="font-body text-micro text-muted" style={{ marginBottom: 12, lineHeight: 1.5 }}>{f.desc}</div>
+            <div className="flex items-center gap-2">
+              <Btn variant="primary" onClick={() => logActivity({ actor: supervisor, action: `Resolved: ${f.title}`, item: f.id, type: 'intervention' })}>Mark resolved</Btn>
+              <Btn variant="secondary" onClick={() => logActivity({ actor: supervisor, action: `Escalated: ${f.title}`, item: f.id, type: 'escalation' })}>Escalate</Btn>
+            </div>
           </div>
-          {SCORE_FACTORS.map((f, i) => {
-            const valC = f.tone === 'danger' ? P.rust : f.tone === 'warn' ? P.amber : P.dim
-            const confC = f.confidence === 'HIGH' ? P.sage : f.confidence === 'MEDIUM' ? P.amber : P.dim
-            return (
-              <div key={i} style={{
-                padding: '9px 20px', borderBottom: i < SCORE_FACTORS.length - 1 ? `1px solid ${P.border2}` : 'none',
-                background: f.tone === 'danger' ? `${P.rust}06` : 'transparent',
-                display: 'flex', alignItems: 'flex-start', gap: 10,
+        ))}
+        {watchItems.length > 0 && (
+          <div style={{ marginTop: 16 }}>
+            <div className="font-body text-micro text-muted mb-3">Watch · {watchItems.length} items</div>
+            {watchItems.map((f, i) => (
+              <div key={f.id} className="v2-row-in" style={{
+                animationDelay: `${(actNow.length + i) * 50}ms`,
+                display: 'flex', alignItems: 'flex-start', gap: 12,
+                padding: '12px 16px', marginBottom: 6,
+                background: P.surface, border: `1px solid ${P.border}`, borderLeft: `3px solid ${P.amber}`,
               }}>
-                <span className="font-body font-bold text-body" style={{ color: f.contribution > 0 ? valC : P.dim, minWidth: 28, textAlign: 'right', flexShrink: 0 }}>
-                  {f.contribution > 0 ? `+${f.contribution}` : '—'}
-                </span>
                 <div style={{ flex: 1 }}>
-                  <div className="font-body font-medium text-label" style={{ color: f.contribution > 0 ? P.bone : P.dim, marginBottom: 2 }}>{f.label}</div>
-                  <div className="font-body text-micro text-muted">{f.state}</div>
-                  <div className="flex items-center gap-1.5 mt-1">
-                    <div style={{ width: 5, height: 5, borderRadius: '50%', background: confC, flexShrink: 0 }} />
-                    <span className="font-body text-micro text-muted">{f.confidence} · {f.source}</span>
-                  </div>
+                  <div className="font-body text-micro text-muted" style={{ marginBottom: 3 }}>{f.source}</div>
+                  <div className="font-body font-medium text-label" style={{ color: P.bone }}>{f.title}</div>
                 </div>
               </div>
-            )
-          })}
+            ))}
+          </div>
+        )}
+      </div>
+      <Divider />
+      <div style={{ padding: '18px 24px 24px' }}>
+        <div className="font-body text-micro text-muted mb-3">Sign-off requested · {signOffRequests.length} pending</div>
+        {signOffRequests.length === 0 ? (
+          <p className="font-body text-label" style={{ color: P.dim }}>No pending sign-offs — operators are good to go.</p>
+        ) : signOffRequests.map((req, i) => (
+          <div key={req.id} className="v2-row-in" style={{
+            animationDelay: `${i * 50}ms`, padding: '14px 16px', marginBottom: 8,
+            background: P.surface, border: `1px solid ${P.border}`, borderLeft: `3px solid ${P.sage}`,
+          }}>
+            <div className="font-body font-medium text-body" style={{ color: P.bone, marginBottom: 4 }}>{req.operator}</div>
+            <div className="font-body text-micro text-muted" style={{ marginBottom: 12 }}>{req.finding} · {req.station} · {req.requestedAt}</div>
+            <div className="flex items-center gap-2">
+              <Btn variant="primary" onClick={() => handleApprove(req)}>Approve</Btn>
+              <Btn variant="secondary" onClick={() => handleDecline(req)}>Decline</Btn>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+// ── Supervisor: My team ───────────────────────────────────────────────────────
+function SupervisorTeam({ taskAssignments, escalatedToDirector, setEscalatedToDirector, logActivity, supervisor }) {
+  const handleEscalate = () => {
+    setEscalatedToDirector(true)
+    logActivity({ actor: supervisor, action: 'Escalated shift situation to director J. Crocker', item: 'Line 4 AM', type: 'escalation' })
+  }
+
+  const allTasks = Object.entries(taskAssignments).flatMap(([operator, tasks]) =>
+    tasks.map(t => ({ ...t, operator }))
+  )
+
+  return (
+    <div style={{ width: 304, flexShrink: 0, overflowY: 'auto', background: P.bg, display: 'flex', flexDirection: 'column' }}>
+      <div style={{ padding: '20px 20px 16px' }}>
+        <div className="font-body text-micro text-muted mb-3">My team · {crew.length} operators</div>
+        <div style={{ border: `1px solid ${P.border}`, overflow: 'hidden' }}>
+          {crew.map((op, i) => <OperatorRow key={op.name} op={op} index={i} total={crew.length} />)}
         </div>
-      )}
+      </div>
+      <Divider />
+      <div style={{ padding: '18px 20px 16px' }}>
+        <div className="font-body text-micro text-muted mb-3">Task assignments · {allTasks.length}</div>
+        {allTasks.length === 0 ? (
+          <p className="font-body text-label" style={{ color: P.dim }}>No tasks assigned this shift.</p>
+        ) : allTasks.map((t, i) => (
+          <div key={t.id} style={{
+            display: 'flex', alignItems: 'flex-start', gap: 10, padding: '9px 0',
+            borderBottom: i < allTasks.length - 1 ? `1px solid ${P.border2}` : 'none',
+          }}>
+            <div style={{ flex: 1 }}>
+              <div className="font-body font-medium text-label" style={{ color: t.done ? P.sage : P.bone }}>{t.operator}</div>
+              <div className="font-body text-micro text-muted">{t.label}</div>
+            </div>
+            <span className="font-body text-micro flex-shrink-0" style={{ color: P.dim }}>{t.dueTime}</span>
+          </div>
+        ))}
+      </div>
+      <Divider />
+      <div style={{ padding: '18px 20px 20px', margin: '0 0 0 0', borderLeft: `3px solid ${P.clay}`, background: `${P.clay}06` }}>
+        <div className="font-body font-semibold text-body" style={{ color: P.bone, marginBottom: 6 }}>Escalate to director</div>
+        <div className="font-body text-label text-muted" style={{ marginBottom: 14, lineHeight: 1.5 }}>
+          If this situation is beyond your shift authority, escalate to J. Crocker with context.
+        </div>
+        {escalatedToDirector ? (
+          <div className="flex items-center gap-1.5">
+            <div style={{ width: 5, height: 5, borderRadius: '50%', background: P.sage, flexShrink: 0 }} />
+            <span className="font-body text-label" style={{ color: P.sage }}>Escalated to J. Crocker</span>
+          </div>
+        ) : (
+          <Btn variant="primary" onClick={handleEscalate}>Escalate to J. Crocker</Btn>
+        )}
+      </div>
     </div>
   )
 }
 
 // ── Main ──────────────────────────────────────────────────────────────────────
-export default function ShiftIQV2({ score = 78, lineLabel = 'Line 4 · AM Shift', supervisor = 'D. Kowalski', plant = 'Salina KS' }) {
-  const { checklistSigned, allergenOverride, taskAssignments, setTaskAssignments, logActivity } = useAppState()
+export default function ShiftIQV2({ score = 78, lineLabel = 'Line 4 · AM Shift', supervisor = 'D. Kowalski', plant = 'Salina KS', isSupervisorView = false }) {
+  const { checklistSigned, allergenOverride, taskAssignments, setTaskAssignments, logActivity,
+    signOffRequests, setSignOffRequests, escalatedToDirector, setEscalatedToDirector } = useAppState()
+  const [scoreOverlayOpen, setScoreOverlayOpen] = useState(false)
 
   const signedCount = 7 + Object.keys(checklistSigned).length
   const allergenSigned = !!checklistSigned['allergen'] || !!allergenOverride
@@ -286,6 +403,27 @@ export default function ShiftIQV2({ score = 78, lineLabel = 'Line 4 · AM Shift'
   return (
     <>
       <style>{V2_CSS}</style>
+
+      {/* ── Score why overlay ───────────────────────────────────────────── */}
+      {scoreOverlayOpen && (
+        <>
+          <div className="fixed inset-0 z-40 bg-black/40" onClick={() => setScoreOverlayOpen(false)} />
+          <div className="fixed z-50 plant-drop-in" style={{ top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 360 }}>
+            <div className="overflow-hidden" style={{ background: P.surface, border: `1px solid ${P.border}`, boxShadow: '0 16px 48px rgba(0,0,0,0.5)' }}>
+              <div className="flex items-center justify-between" style={{ padding: '14px 20px', borderBottom: `1px solid ${P.border}` }}>
+                <div className="flex items-center gap-2">
+                  <Brain size={12} color={P.dim} />
+                  <span className="font-body font-medium text-ink text-body">Why {score}?</span>
+                </div>
+                <button type="button" onClick={() => setScoreOverlayOpen(false)}
+                  className="font-body text-muted text-label hover:text-ink transition-colors"
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px 6px' }}>✕</button>
+              </div>
+              <ScoreExplainer score={score} />
+            </div>
+          </div>
+        </>
+      )}
 
       <div className="flex flex-col h-full overflow-hidden" style={{ background: P.bg, color: P.bone }}>
 
@@ -320,7 +458,12 @@ export default function ShiftIQV2({ score = 78, lineLabel = 'Line 4 · AM Shift'
               <div className="flex items-center gap-1.5 mt-2">
                 <div style={{ width: 5, height: 5, borderRadius: '50%', background: riskC }} />
                 <span className="font-body text-micro" style={{ color: riskC }}>{sLabel(score)}</span>
-                <span className="font-body text-micro text-muted" style={{ marginLeft: 2 }}>· Risk score</span>
+                <button type="button" onClick={() => setScoreOverlayOpen(true)}
+                  className="flex items-center gap-1 hover:opacity-70 transition-opacity"
+                  style={{ marginLeft: 6, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+                  <Brain size={10} color={P.dim} />
+                  <span className="font-body text-micro text-muted">Why?</span>
+                </button>
               </div>
             </div>
 
@@ -369,6 +512,13 @@ export default function ShiftIQV2({ score = 78, lineLabel = 'Line 4 · AM Shift'
 
         {/* ── BODY ──────────────────────────────────────────────────────────── */}
         <div className="flex flex-1 min-h-0 overflow-hidden">
+          {isSupervisorView ? (
+            <>
+              <SupervisorQueue findings={richFindings} signOffRequests={signOffRequests} setSignOffRequests={setSignOffRequests} logActivity={logActivity} supervisor={supervisor} />
+              <SupervisorTeam taskAssignments={taskAssignments} escalatedToDirector={escalatedToDirector} setEscalatedToDirector={setEscalatedToDirector} logActivity={logActivity} supervisor={supervisor} />
+            </>
+          ) : (
+          <>
 
           {/* LEFT: Intelligence + Crew + Checklists */}
           <div className="flex-1 overflow-y-auto" style={{ borderRight: `1px solid ${P.border}` }}>
@@ -436,9 +586,10 @@ export default function ShiftIQV2({ score = 78, lineLabel = 'Line 4 · AM Shift'
                 <TimelineEntry key={i} ev={ev} index={i} total={agentEvents.length} />
               ))}
             </div>
-            <Divider />
-            <ScoreExplainer score={score} />
           </div>
+
+          </>
+          )}
         </div>
       </div>
     </>
