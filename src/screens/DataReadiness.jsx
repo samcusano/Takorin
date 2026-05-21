@@ -208,53 +208,6 @@ const ISSUE_CHECK = {
   ],
 }
 
-// ── Trend sparkline ───────────────────────────────────────────────────────────
-
-const TREND_DAYS = [
-  { day: 'M', delta: +1 },
-  { day: 'T', delta: +2 },
-  { day: 'W', delta: +3 },
-  { day: 'T', delta: +1 },
-  { day: 'F', delta: +2 },
-  { day: 'S', delta: 0  },
-  { day: 'T', delta: -3, current: true },
-]
-
-function TrendChart() {
-  const w = 224, h = 52, padT = 6, padB = 16, padL = 4, padR = 4
-  const chartW = w - padL - padR
-  const chartH = h - padT - padB
-  const maxAbs  = 4
-  const barW    = Math.floor(chartW / TREND_DAYS.length) - 3
-  const baseline = padT + chartH / 2
-  const xOf = (i) => padL + i * (chartW / TREND_DAYS.length) + (chartW / TREND_DAYS.length - barW) / 2
-  const hOf = (d) => Math.max(2, Math.abs(d) / maxAbs * (chartH / 2))
-
-  return (
-    <svg width="100%" viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="xMidYMid meet"
-      role="img" aria-label="7-day readiness trend: +6 net this week, -3 today from ERP mismatch">
-      {/* Baseline */}
-      <line x1={padL} x2={w - padR} y1={baseline} y2={baseline} stroke="#CAC2B6" strokeWidth="0.5" />
-      {TREND_DAYS.map((d, i) => {
-        const x    = xOf(i)
-        const barH = hOf(d.delta)
-        const isPos = d.delta >= 0
-        const barY  = isPos ? baseline - barH : baseline
-        const color = d.current
-          ? (d.delta < 0 ? 'var(--color-danger)' : 'var(--color-ok)')
-          : (isPos ? 'var(--color-ok)' : 'var(--color-danger)')
-        const opacity = d.current ? 0.9 : 0.5
-        return (
-          <g key={i}>
-            <rect x={x} y={barY} width={barW} height={barH} fill={color} opacity={opacity} rx="1" />
-            <text x={x + barW / 2} y={h - 3} fontSize="7.5" fill={d.current ? 'var(--color-muted)' : 'var(--color-dim)'}
-              textAnchor="middle" fontWeight={d.current ? '600' : '400'}>{d.day}</text>
-          </g>
-        )
-      })}
-    </svg>
-  )
-}
 
 // ── Left rail: Readiness Instrument ──────────────────────────────────────────
 
@@ -301,7 +254,7 @@ function ReadinessInstrument({ score, resolved }) {
       {/* Projected */}
       {totalGain > 0 ? (
         <div className="flex items-baseline gap-1.5 mb-4">
-          <span className="font-body text-muted text-label">Projected after queued fixes:</span>
+          <span className="font-body text-muted text-label">If all issues are resolved:</span>
           <span className="display-num text-base font-bold text-ok">{projected}</span>
           <span className="font-body text-ok text-label">(+{totalGain})</span>
         </div>
@@ -317,26 +270,23 @@ function ReadinessInstrument({ score, resolved }) {
         {moduleRows.map(m => (
           <div key={m.label} className="flex items-baseline justify-between">
             <span className="font-body text-muted text-label">{m.label}</span>
-            <span className={`display-num text-label font-bold tabular-nums ${m.danger ? 'text-danger' : m.ok ? 'text-ok' : 'text-warn'}`}>
+            <span className={`display-num text-base font-bold tabular-nums ${m.danger ? 'text-danger' : m.ok ? 'text-ok' : 'text-warn'}`}>
               {m.value}
             </span>
           </div>
         ))}
       </div>
 
-      {/* Trend chart */}
-      <div className="border-t border-rule2 pt-3">
-        <div className="flex items-baseline justify-between mb-2">
-          <div className="flex items-baseline gap-1.5">
-            <span className="display-num text-label font-bold text-ok">+6</span>
-            <span className="font-body text-muted text-label">this week</span>
-          </div>
-          <div className="flex items-baseline gap-1">
-            <span className="display-num text-label font-bold text-danger">−3</span>
-            <span className="font-body text-muted text-label">ERP mismatch</span>
-          </div>
+      {/* Week summary */}
+      <div className="flex items-baseline justify-between border-t border-rule2 pt-3">
+        <div className="flex items-baseline gap-1.5">
+          <span className="display-num text-label font-bold text-ok">+6</span>
+          <span className="font-body text-muted text-label">this week</span>
         </div>
-        <TrendChart />
+        <div className="flex items-baseline gap-1">
+          <span className="display-num text-label font-bold text-danger">−3</span>
+          <span className="font-body text-muted text-label">today · ERP mismatch</span>
+        </div>
       </div>
     </div>
   )
@@ -349,7 +299,7 @@ function QueueClusterRow({ cluster, resolved, selected, onSelect }) {
   const isSelected  = selected === cluster.id
   return (
     <button type="button" onClick={() => onSelect(cluster.id)}
-      className={`w-full text-left px-4 py-3.5 border-b border-rule2 border-l-2 transition-colors ${
+      className={`w-full text-left px-4 py-3.5 border-b border-rule2 border-l-[3px] transition-colors ${
         isSelected        ? 'border-l-ochre bg-ochre/[0.06]'
         : allResolved     ? 'border-l-ok opacity-40'
         : 'border-l-warn bg-warn/[0.02] hover:bg-stone2'
@@ -366,7 +316,7 @@ function QueueClusterRow({ cluster, resolved, selected, onSelect }) {
       </div>
       {!allResolved && (
         <>
-          <div className="font-body text-ochre text-label mb-1.5">Resolve together → {cluster.gainLabel}</div>
+          <div className="font-body text-ochre text-body font-medium mb-1.5">Resolve together → {cluster.gainLabel}</div>
           <div className="space-y-0.5">
             {cluster.memberLabels.map((m, i) => (
               <div key={m.key} className="flex items-center gap-1.5">
@@ -424,13 +374,13 @@ function ResolutionQueue({ selected, onSelect, resolved }) {
   const [advisoryOpen, setAdvisoryOpen] = useState(false)
   return (
     <div className="flex-1 overflow-y-auto">
-      <SectionHeader label="Fixes queue" />
+      <SectionHeader tone="ochre" label="Start here" sub="Highest impact" />
 
       {/* Cluster */}
       <QueueClusterRow cluster={CLUSTER_A} resolved={resolved} selected={selected} onSelect={onSelect} />
 
       {/* Individual issues */}
-      <SectionHeader label="Individual issues" />
+      <SectionHeader label="Other issues" />
       <QueueIssueRow item={ISSUE_CTX}   resolved={resolved} selected={selected} onSelect={onSelect} />
       <QueueIssueRow item={ISSUE_TRACE} resolved={resolved} selected={selected} onSelect={onSelect} />
       <QueueIssueRow item={ISSUE_ERP}   resolved={resolved} selected={selected} onSelect={onSelect} />
@@ -521,7 +471,7 @@ function WorkspacePanel({ item, isCluster, resolved, onResolve, onResolveCluster
             {item.detectedAgo && <span className="font-body text-muted text-label">· Detected {item.detectedAgo}</span>}
             {isResolved && <span className="font-body text-ok text-label flex items-center gap-1"><Check size={10} strokeWidth={2.5} />Resolved</span>}
           </div>
-          <h2 className="font-display font-bold text-ink text-title leading-snug mb-3">{item.label}</h2>
+          <h2 className="font-display font-bold text-ink text-page leading-snug mb-3">{item.label}</h2>
           <div className="grid grid-cols-3 gap-4">
             {item.systemsImpacted?.length > 0 && (
               <div>
@@ -532,7 +482,7 @@ function WorkspacePanel({ item, isCluster, resolved, onResolve, onResolveCluster
             {item.confidenceDrop > 0 && (
               <div>
                 <div className="font-body text-muted text-label mb-1">Accuracy impact</div>
-                <div className="display-num text-base font-bold text-danger">−{item.confidenceDrop}%</div>
+                <div className="display-num text-metric font-bold text-danger">−{item.confidenceDrop}%</div>
               </div>
             )}
             {item.unlocks?.length > 0 && (
@@ -554,7 +504,7 @@ function WorkspacePanel({ item, isCluster, resolved, onResolve, onResolveCluster
           )}
           {isCluster && (
             <div className="mt-3 px-3 py-2 bg-stone2">
-              <div className="font-body text-muted text-label mb-1">Why grouped</div>
+              <div className="font-body text-muted text-label mb-1">Why these are linked</div>
               <div className="font-body text-muted text-label leading-relaxed">{item.why}</div>
             </div>
           )}
@@ -563,7 +513,7 @@ function WorkspacePanel({ item, isCluster, resolved, onResolve, onResolveCluster
         {/* AI Assessment */}
         {item.aiAssessment && (
           <div>
-            <SectionHeader tone="muted" label="AI Assessment" className="mb-2" />
+            <SectionHeader tone="muted" label="Why this happened" className="mb-2" />
             <div className="border border-rule2 bg-stone2 px-4 py-3.5">
               <div className="flex items-start justify-between gap-3 mb-2">
                 <div className="font-body text-ink text-body leading-relaxed flex-1">{item.aiAssessment.text}</div>
@@ -578,7 +528,7 @@ function WorkspacePanel({ item, isCluster, resolved, onResolve, onResolveCluster
         {/* Fix Sequencing */}
         {item.fixSequence?.length > 0 && (
           <div>
-            <SectionHeader tone="muted" label="Recommended resolution order" className="mb-2" />
+            <SectionHeader tone="muted" label="How to fix this" className="mb-2" />
             <div className="border border-rule2 bg-stone divide-y divide-rule2">
               {item.fixSequence.map((step, i) => (
                 <div key={i} className="flex items-center gap-4 px-4 py-3">
@@ -600,14 +550,14 @@ function WorkspacePanel({ item, isCluster, resolved, onResolve, onResolveCluster
         {/* Auto-remediation */}
         {item.autoEligible && !isResolved && (
           <div>
-            <SectionHeader tone="muted" label="Automatic remediation" className="mb-2" />
+            <SectionHeader tone="muted" label="AI can fix this" className="mb-2" />
             <div className="border border-rule2 bg-stone px-4 py-4">
               <div className="flex items-center gap-2 mb-3">
                 <Zap size={12} strokeWidth={2} className="text-ochre flex-shrink-0" />
                 <span className="font-body font-semibold text-ink text-body">Can be fixed automatically</span>
               </div>
               <div className="space-y-1 mb-4">
-                <div className="font-body text-muted text-label mb-1.5">Automatic fix is safe because:</div>
+                <div className="font-body text-muted text-label mb-1.5">This fix is safe because:</div>
                 {item.autoSafeReason.map(r => (
                   <div key={r} className="flex items-center gap-2">
                     <Check size={9} strokeWidth={2.5} className="text-ok flex-shrink-0" />
@@ -616,17 +566,17 @@ function WorkspacePanel({ item, isCluster, resolved, onResolve, onResolveCluster
                 ))}
               </div>
               <div className="border-t border-rule2 pt-3">
-                <div className="font-body text-muted text-label mb-2">Human confirmation required — action will be logged for audit.</div>
+                <div className="font-body text-muted text-label mb-2">Requires your sign-off — logged for audit.</div>
                 {autoConfirming ? (
                   <div className="flex gap-2">
                     <Btn variant="primary" onClick={() => { setAutoConfirming(false); onResolve(item.key, item.points, item.label) }}>
-                      Confirm automatic reconciliation
+                      Confirm fix
                     </Btn>
                     <Btn variant="secondary" onClick={() => setAutoConfirming(false)}>Cancel</Btn>
                   </div>
                 ) : (
                   <Btn variant="secondary" onClick={() => setAutoConfirming(true)}>
-                    Run automatic reconciliation
+                    Apply automatic fix
                   </Btn>
                 )}
               </div>
@@ -637,16 +587,22 @@ function WorkspacePanel({ item, isCluster, resolved, onResolve, onResolveCluster
         {/* Risk Forecast */}
         {item.riskForecast?.length > 0 && !isResolved && (
           <div>
-            <SectionHeader tone="muted" label="Projected risk if unresolved" className="mb-2" />
+            <SectionHeader tone="muted" label="If you delay" className="mb-2" />
             <div className="space-y-2">
-              {item.riskForecast.map(r => (
-                <div key={r.hours} className="flex items-start gap-4 px-4 py-3 bg-stone">
-                  <div className="flex-shrink-0 text-right w-14">
-                    <div className="display-num text-body font-bold text-muted tabular-nums">{r.hours}h</div>
+              {item.riskForecast.map((r, i, arr) => {
+                const isLast = i === arr.length - 1
+                const isMid  = i > 0 && !isLast
+                const hoursColor = isLast ? 'text-danger' : isMid ? 'text-warn' : 'text-muted'
+                const consequenceColor = isLast ? 'text-ink' : 'text-muted'
+                return (
+                  <div key={r.hours} className={`flex items-start gap-4 px-4 py-3 ${isLast ? 'bg-danger/[0.03]' : 'bg-stone'}`}>
+                    <div className="flex-shrink-0 text-right w-14">
+                      <div className={`display-num text-body font-bold tabular-nums ${hoursColor}`}>{r.hours}h</div>
+                    </div>
+                    <div className={`font-body text-label leading-snug ${consequenceColor}`}>{r.consequence}</div>
                   </div>
-                  <div className="font-body text-muted text-label leading-snug">{r.consequence}</div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           </div>
         )}
@@ -656,14 +612,14 @@ function WorkspacePanel({ item, isCluster, resolved, onResolve, onResolveCluster
           <div className="border-t border-rule2 pt-6">
             {isCluster ? (
               <>
-                <div className="font-body text-muted text-label mb-3">Resolving this cluster closes {item.memberKeys.length} issues and adds +{item.totalPoints} pts readiness.</div>
+                <div className="font-body text-muted text-label mb-3">Resolving both issues together adds +{item.totalPoints} pts readiness.</div>
                 {confirming ? (
                   <div className="flex gap-2">
                     <Btn variant="primary" onClick={() => { setConfirming(false); onResolveCluster(item) }}>Confirm resolution</Btn>
                     <Btn variant="secondary" onClick={() => setConfirming(false)}>Cancel</Btn>
                   </div>
                 ) : (
-                  <HoldButton label={`Hold to resolve cluster — +${item.totalPoints} pts readiness`}
+                  <HoldButton label={`Hold to resolve both issues — +${item.totalPoints} pts`}
                     holdLabel="Keep holding to confirm cluster resolution…"
                     doneLabel="Cluster resolved"
                     duration={2000} tone="ok"
@@ -685,7 +641,7 @@ function WorkspacePanel({ item, isCluster, resolved, onResolve, onResolveCluster
           <div className="border-t border-rule2 pt-6">
             <div className="flex items-center gap-2 px-4 py-3 bg-warn/[0.06] border border-warn/20">
               <AlertTriangle size={12} strokeWidth={2} className="text-warn flex-shrink-0" />
-              <span className="font-body text-warn text-label">Resolution requires external action — cannot be completed from this interface</span>
+              <span className="font-body text-warn text-label">Needs maintenance — contact your team to resolve</span>
             </div>
           </div>
         )}
@@ -708,7 +664,7 @@ function EmptyWorkspace() {
     <div className="flex-1 flex flex-col items-center justify-center text-center px-8">
       <div className="font-display font-bold text-ink text-head mb-2">Select an issue to begin</div>
       <div className="font-body text-muted text-body max-w-[320px] leading-relaxed">
-        Choose a cluster or individual issue from the queue. The workspace will show full context, AI assessment, and resolution steps.
+        Select an issue from the queue to see why it happened, how to fix it, and what's at risk if you delay.
       </div>
     </div>
   )
