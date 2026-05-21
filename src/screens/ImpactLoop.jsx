@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { interventions } from '../data/interventions'
 import { AlertTriangle, CheckCircle2, ArrowRight, RotateCcw, AlertCircle, TrendingUp, TrendingDown } from 'lucide-react'
-import { AlluvialDiagram } from '../components/Charts'
 import { StatusPill, SceneHeader, Btn } from '../components/UI'
 
 const OUTCOME_CFG = {
@@ -29,13 +28,6 @@ const FRESHNESS_CFG = {
   unknown:  { label: 'Unknown',  cls: 'text-muted'  },
 }
 
-const OUTCOME_FILTERS = [
-  { value: null,       label: 'All',      chip: 'bg-stone3 text-muted',              dot: 'bg-muted'  },
-  { value: 'positive', label: 'Positive', chip: 'bg-ok/10 text-ok',                 dot: 'bg-ok'     },
-  { value: 'unclear',  label: 'Unclear',  chip: 'bg-ochre/10 text-ochre',           dot: 'bg-ochre'  },
-  { value: 'negative', label: 'Negative', chip: 'bg-danger/[0.04] text-danger',     dot: 'bg-danger' },
-  { value: 'harmful',  label: 'Harmful',  chip: 'bg-danger/[0.04] text-danger',     dot: 'bg-danger' },
-]
 
 const formatKey = k => k.replace(/([A-Z])/g, ' $1').replace(/^./, c => c.toUpperCase()).trim()
 
@@ -46,17 +38,6 @@ function DwellBadge({ ms }) {
   return <span className={`font-body text-label tabular-nums ${color}`}>{secs}s review</span>
 }
 
-function FilterChip({ active, tone, dot, onClick, children }) {
-  return (
-    <button type="button" onClick={onClick}
-      className={`inline-flex items-center gap-1 font-body font-medium text-label px-2 py-0.5 transition-colors whitespace-nowrap ${
-        active ? tone : 'bg-stone3 text-muted hover:text-ink'
-      }`}>
-      <span className={`w-1 h-1 rounded-full flex-shrink-0 ${dot ?? 'bg-current'}`} />
-      {children}
-    </button>
-  )
-}
 
 function EventChain({ entry, compact = false }) {
   const oc = OUTCOME_CFG[entry.outcomeClassification] ?? OUTCOME_CFG.unclear
@@ -158,7 +139,7 @@ function InterventionCard({ entry, selected, onClick }) {
   )
 }
 
-function InterventionDetail({ entry, allInterventions }) {
+function InterventionDetail({ entry }) {
   if (!entry) return (
     <div className="flex items-center justify-center h-full font-body text-muted text-label">
       Select an intervention to see the full event chain
@@ -354,33 +335,12 @@ function InterventionDetail({ entry, allInterventions }) {
         </div>
       )}
 
-      {/* Intervention flow — embedded */}
-      <div>
-        <div className="font-body text-muted text-label mb-1">Intervention flow — all decisions this period</div>
-        <p className="font-display text-muted text-label leading-relaxed mb-3">
-          How all interventions flow from agent recommendation through human decision to operational outcome. Width reflects count.
-        </p>
-        <AlluvialDiagram interventions={allInterventions} />
-        <div className="mt-3 flex flex-wrap gap-3">
-          {[['positive', 'Positive', 'text-ok'], ['unclear', 'Unclear', 'text-ochre'], ['negative', 'Negative', 'text-danger']].map(([k, l, cls]) => (
-            <span key={k} className={`font-body text-label flex items-center gap-1 ${cls}`}>
-              <span className="w-2 h-2 rounded-sm bg-current opacity-75" />{l}
-            </span>
-          ))}
-        </div>
-      </div>
-
     </div>
   )
 }
 
 export default function ImpactLoop() {
   const [selectedId, setSelectedId] = useState(interventions[0]?.id ?? null)
-  const [outcomeFilter, setOutcomeFilter] = useState(null)
-
-  const filtered = outcomeFilter
-    ? interventions.filter(e => e.outcomeClassification === outcomeFilter)
-    : interventions
 
   const selectedEntry = interventions.find(e => e.id === selectedId)
   const positiveCount = interventions.filter(e => e.outcomeClassification === 'positive').length
@@ -409,29 +369,10 @@ export default function ImpactLoop() {
 
       <div className="flex flex-1 min-h-0 overflow-hidden">
 
-        {/* ── Left: filter chips + list ─────────────────────────────── */}
+        {/* ── Left: list ────────────────────────────────────────────── */}
         <div className="w-[280px] flex-shrink-0 border-r border-rule2 flex flex-col bg-stone">
-
-          <div className="flex-shrink-0 flex items-center gap-1.5 px-3 py-2 border-b border-rule2 flex-wrap">
-            {OUTCOME_FILTERS.map(f => (
-              <FilterChip
-                key={f.value ?? 'all'}
-                active={outcomeFilter === f.value}
-                tone={f.chip}
-                dot={f.dot}
-                onClick={() => setOutcomeFilter(f.value)}
-              >
-                {f.label}
-              </FilterChip>
-            ))}
-          </div>
-
           <div className="flex-1 overflow-y-auto">
-            {filtered.length === 0 ? (
-              <div className="flex items-center justify-center h-full font-body text-muted text-label">
-                No interventions match this filter
-              </div>
-            ) : filtered.map(e => (
+            {interventions.map(e => (
               <InterventionCard key={e.id} entry={e}
                 selected={selectedId === e.id}
                 onClick={() => setSelectedId(e.id)} />
@@ -446,7 +387,7 @@ export default function ImpactLoop() {
               <span className="font-body text-muted text-label truncate block">{selectedEntry.action}</span>
             </div>
           )}
-          <InterventionDetail entry={selectedEntry} allInterventions={interventions} />
+          <InterventionDetail entry={selectedEntry} />
         </div>
 
       </div>

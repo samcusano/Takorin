@@ -906,7 +906,7 @@ function AgentTierStrip({ tier0Count, tier1Items, tier2Items, tier3Items, tier1O
       <div className="flex items-center gap-2.5 px-4 py-3 border-r border-rule2 flex-shrink-0">
         <div className="w-1.5 h-1.5 rounded-full bg-ok flex-shrink-0" />
         <div>
-          <div className="font-body text-muted text-label mb-0.5">TIER 0</div>
+          <div className="font-body text-muted text-label mb-0.5">Tier 0</div>
           <div className="font-body text-ink text-body font-medium">{tier0Count} auto</div>
         </div>
       </div>
@@ -915,7 +915,7 @@ function AgentTierStrip({ tier0Count, tier1Items, tier2Items, tier3Items, tier1O
         className={`flex items-center gap-2.5 px-4 py-3 border-r border-rule2 flex-shrink-0 hover:bg-stone3 transition-colors text-left ${tier1Open ? 'bg-stone3' : ''}`}>
         <div className="w-1.5 h-1.5 rounded-full bg-ochre flex-shrink-0" />
         <div>
-          <div className="font-body text-muted text-label mb-0.5">TIER 1</div>
+          <div className="font-body text-muted text-label mb-0.5">Tier 1</div>
           <div className="font-body text-ink text-body font-medium">{tier1Items.length} informed</div>
         </div>
         <ChevronDown size={9} className={`text-muted flex-shrink-0 transition-transform ${tier1Open ? 'rotate-180' : ''}`} />
@@ -925,7 +925,7 @@ function AgentTierStrip({ tier0Count, tier1Items, tier2Items, tier3Items, tier1O
         <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${tier2Undecided > TIER2_BUDGET ? 'bg-danger' : 'bg-warn'}`} />
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between gap-2 mb-1.5">
-            <div className="font-body text-muted text-label">TIER 2</div>
+            <div className="font-body text-muted text-label">Tier 2</div>
             <div className={`font-body text-body tabular-nums font-medium ${tier2Undecided > TIER2_BUDGET ? 'text-danger' : 'text-muted'}`}>
               {tier2Undecided}/{TIER2_BUDGET}
               {tier2Undecided > TIER2_BUDGET && ' — over budget'}
@@ -940,7 +940,7 @@ function AgentTierStrip({ tier0Count, tier1Items, tier2Items, tier3Items, tier1O
       <div className={`flex items-center gap-2.5 px-4 py-3 flex-shrink-0 border-l-2 ${tier3Undecided > 0 ? 'bg-danger/[0.05] border-l-danger' : 'border-l-transparent'}`}>
         <div className={`w-2 h-2 rounded-full flex-shrink-0 ${tier3Undecided > 0 ? 'bg-danger animate-pulse' : 'bg-muted'}`} />
         <div>
-          <div className="font-body text-muted text-label mb-0.5">TIER 3</div>
+          <div className="font-body text-muted text-label mb-0.5">Tier 3</div>
           <div className={`font-body text-body font-medium ${tier3Undecided > 0 ? 'text-danger' : 'text-muted'}`}>
             {tier3Undecided > 0 ? `${tier3Undecided} pending` : tier3Items.length > 0 ? `${tier3Items.length} reviewed` : 'None'}
           </div>
@@ -1136,8 +1136,7 @@ export default function AgentControl() {
       {/* ── System confidence header ─────────────────────────────────── */}
       <div className="flex-shrink-0 flex items-stretch border-b border-rule2 bg-stone">
         <div className="px-5 py-3 border-r border-rule2 flex-shrink-0">
-          <div className="font-body text-muted text-label mb-1">Agent Control · Salina</div>
-          <div className="flex items-baseline gap-2">
+          <div className="items-baseline gap-2">
             <div className={`display-num text-score leading-none ${confColor}`}>
               {systemConfidence ?? 79}%
             </div>
