@@ -95,42 +95,32 @@ function LayoutGrid({ d, currentPlant, carryForwardItems, acknowledgedCount, car
 
    {/* ── Handoff summary stats ────────────────────────────────────── */}
    <div className="flex-shrink-0 flex divide-x divide-rule2 border-b border-rule2 bg-stone">
-    <div className="px-5 py-3 min-w-0">
-     <div className="font-body text-micro text-muted mb-1">Carry-forward</div>
-     <div className="flex items-baseline gap-2">
-      <span className={`display-num text-metric leading-none ${criticalCount > 0 ? 'text-danger' : carryForwardCount > 0 ? 'text-warn' : 'text-ok'}`}>{carryForwardCount}</span>
-      {criticalCount > 0 && <span className="font-body text-danger text-label">{criticalCount} critical</span>}
-      {criticalCount === 0 && carryForwardCount > 0 && <span className="font-body text-warn text-label">watch</span>}
-      {carryForwardCount === 0 && <span className="font-body text-ok text-label">all clear</span>}
+    <div className="px-5 py-4 min-w-0">
+     <div className="font-body text-muted text-label mb-1">Carry-forward</div>
+     <div className={`display-num text-title font-bold leading-none ${criticalCount > 0 ? 'text-danger' : carryForwardCount > 0 ? 'text-warn' : 'text-ok'}`}>{carryForwardCount}</div>
+     <div className={`font-body text-label mt-0.5 ${criticalCount > 0 ? 'text-danger' : carryForwardCount > 0 ? 'text-warn' : 'text-ok'}`}>
+      {criticalCount > 0 ? `${criticalCount} critical` : carryForwardCount > 0 ? 'watch' : 'all clear'}
      </div>
     </div>
-    <div className="px-5 py-3 min-w-0">
-     <div className="font-body text-micro text-muted mb-1">Acknowledged</div>
-     <div className="flex items-baseline gap-2">
-      <span className={`display-num text-metric leading-none ${allAcknowledged ? 'text-ok' : 'text-muted'}`}>{acknowledgedCount}<span className="text-muted">/{carryForwardCount}</span></span>
-      {allAcknowledged && <span className="font-body text-ok text-label">ready</span>}
-     </div>
+    <div className="px-5 py-4 min-w-0">
+     <div className="font-body text-muted text-label mb-1">Acknowledged</div>
+     <div className={`display-num text-title font-bold leading-none ${allAcknowledged ? 'text-ok' : 'text-muted'}`}>{acknowledgedCount}<span className="opacity-40">/{carryForwardCount}</span></div>
+     <div className={`font-body text-label mt-0.5 ${allAcknowledged ? 'text-ok' : 'text-muted'}`}>{allAcknowledged ? 'ready' : 'pending'}</div>
     </div>
-    <div className="px-5 py-3 min-w-0">
-     <div className="font-body text-micro text-muted mb-1">Synthesis confidence</div>
-     <div className="flex items-baseline gap-2">
-      <span className="display-num text-metric leading-none text-ok">91%</span>
-      <span className="font-body text-muted text-label">4 of 5 sources fresh</span>
-     </div>
+    <div className="px-5 py-4 min-w-0">
+     <div className="font-body text-muted text-label mb-1">Synthesis confidence</div>
+     <div className="display-num text-title font-bold leading-none text-ok">91%</div>
+     <div className="font-body text-muted text-label mt-0.5">4 of 5 sources fresh</div>
     </div>
-    <div className="px-5 py-3 min-w-0">
-     <div className="font-body text-micro text-muted mb-1">Cert coverage</div>
-     <div className="flex items-baseline gap-2">
-      <span className="display-num text-metric leading-none text-warn">1 gap</span>
-      <span className="font-body text-muted text-label">Sauce Dosing L2</span>
-     </div>
+    <div className="px-5 py-4 min-w-0">
+     <div className="font-body text-muted text-label mb-1">Cert coverage</div>
+     <div className="display-num text-title font-bold leading-none text-warn">1 gap</div>
+     <div className="font-body text-muted text-label mt-0.5">Sauce Dosing L2</div>
     </div>
-    <div className="px-5 py-3 min-w-0 flex-1">
-     <div className="font-body text-micro text-muted mb-1">Risk at handoff</div>
-     <div className="flex items-baseline gap-2">
-      <span className="display-num text-metric leading-none text-danger">78</span>
-      <span className="font-body text-danger text-label">at risk</span>
-     </div>
+    <div className="px-5 py-4 min-w-0 flex-1">
+     <div className="font-body text-muted text-label mb-1">Risk at handoff</div>
+     <div className="display-num text-title font-bold leading-none text-danger">78</div>
+     <div className="font-body text-danger text-label mt-0.5">at risk</div>
     </div>
    </div>
 
@@ -291,17 +281,8 @@ function MachineStateHandoff() {
  return (
   <div className="flex flex-col h-full overflow-hidden content-reveal">
 
-   {/* ── Header: eyebrow + title ─────────────────────────────────── */}
-   <div className="flex-shrink-0 px-6 py-4 border-b border-rule2 bg-stone" style={{ borderLeft: '6px solid var(--color-ochre)' }}>
-    <div className="font-body font-semibold text-muted text-label mb-1.5">
-     Machine State Handoff · Robotic workforce · Wichita Plant
-    </div>
-    <div className="font-display font-bold text-page text-ink leading-none">
-     Shift boundary <span className="text-ochre">14:00</span>
-    </div>
-   </div>
-
    {/* ── Stats strip — SupplierIQ pattern ───────────────────────── */}
+
    <div className="flex-shrink-0 flex items-center divide-x divide-rule2 border-b border-rule2 bg-stone">
     <div className="flex items-center gap-2.5 px-5 py-2.5">
      <span className="font-body text-muted text-label">Online units</span>
@@ -374,7 +355,7 @@ function MachineStateHandoff() {
     {/* Right: fleet calibration & program state */}
     <div className="w-[45%] flex flex-col overflow-hidden">
      <div className="flex-shrink-0 px-5 py-2.5 border-b border-rule2 bg-stone2">
-      <span className="font-body font-bold text-ink text-body">Fleet state</span>
+      <span className="font-body font-bold text-ink text-body">Fleet status</span>
      </div>
      <div className="flex-1 overflow-y-auto">
       {units.filter(u => u.status !== 'fault').map((u) => {

@@ -295,16 +295,6 @@ export default function SupplierIQ() {
       {activeTab === 'network' && <NetworkView />}
       {activeTab === 'suppliers' && <>
 
-      {/* Alert strip — populated with active alerts */}
-      <div className="flex items-center gap-2 px-4 py-2 border-b border-rule2 bg-stone2 flex-shrink-0">
-        {blockingLots.length > 1 && (
-          <AlertChip count={blockingLots.length - 1} tone="danger" label={(blockingLots.length - 1) === 1 ? 'blocking' : 'blocking'} />
-        )}
-        {monitoringLots.length > 1 && (
-          <AlertChip count={monitoringLots.length - 1} tone="warn" label={(monitoringLots.length - 1) === 1 ? 'expiring' : 'expiring'} />
-        )}
-      </div>
-
       <div className="flex flex-1 min-h-0 overflow-hidden">
       <div className="flex-1 overflow-y-auto" style={{ borderRight: `1px solid ${SC.border}` }}>
 

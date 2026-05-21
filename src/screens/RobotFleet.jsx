@@ -513,18 +513,6 @@ export default function RobotFleet() {
   return (
     <div className="flex flex-col h-full overflow-hidden">
 
-      {/* Fleet header */}
-      <div className="flex-shrink-0 border-b border-rule2 px-6 py-4 bg-stone flex items-center justify-between">
-        <div>
-          <div className="font-body text-muted text-label mb-0.5">Robot Fleet · Salina Campus</div>
-          <div className="display-num text-page text-ink leading-none">
-            {summary.online}
-            <span className="font-body font-normal text-muted text-base ml-2">of {summary.total} online</span>
-          </div>
-        </div>
-        <div className="font-body text-muted text-label">{summary.energyToday} kWh today</div>
-      </div>
-
       {/* Stat strip / filter */}
       <StatStrip summary={summary} filter={filter} setFilter={setFilter} />
 
