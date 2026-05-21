@@ -239,7 +239,7 @@ export default function IntegrationHub() {
         {/* Header */}
         <div className="flex-shrink-0 px-5 py-4 border-b border-rule2 bg-stone2">
           <div className="flex items-center gap-2">
-            <span className={`display-num text-display ${integrationSummary.active >= 30 ? 'text-ok' : 'text-warn'}`}>
+            <span className={`display-num text-score ${integrationSummary.active >= 30 ? 'text-ok' : 'text-warn'}`}>
               {integrationSummary.active}
             </span>
             <span className="font-body text-muted text-label">of {integrationSummary.total} active</span>

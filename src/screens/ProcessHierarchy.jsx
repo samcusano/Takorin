@@ -314,7 +314,7 @@ function CausalPanel({ zone, building }) {
           <div className="font-body text-muted text-label">{zone.vessels} vessels · {zone.activeBatches} active batches</div>
         </div>
         <div className="text-right flex-shrink-0">
-          <div className={`display-num text-page leading-none ${scoreColor(zone.score)}`}>{zone.score}</div>
+          <div className={`display-num text-score leading-none ${scoreColor(zone.score)}`}>{zone.score}</div>
           <div className={`font-body font-bold text-label ${statusColor}`}>{statusLabel}</div>
         </div>
       </div>
@@ -468,7 +468,7 @@ function ReasoningPanel({ zone, building }) {
           )}
         </div>
         <div className="text-right flex-shrink-0">
-          <div className={`display-num text-page leading-none ${scoreColor(zone.score)}`}>{zone.score}</div>
+          <div className={`display-num text-score leading-none ${scoreColor(zone.score)}`}>{zone.score}</div>
           <div className={`font-body font-bold text-label ${statusColor}`}>{statusLabel}</div>
         </div>
       </div>

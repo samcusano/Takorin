@@ -314,7 +314,7 @@ export default function ShiftIQV2({ score = 78, lineLabel = 'Line 4 · AM Shift'
           <div className="flex items-center" style={{ gap: 32, padding: '18px 24px 16px', position: 'relative' }}>
             {/* Score block */}
             <div style={{ flexShrink: 0 }}>
-              <div className="display-num text-titan font-bold leading-none" style={{ color: riskC }}>
+              <div className="display-num text-score leading-none" style={{ color: riskC }}>
                 {score}
               </div>
               <div className="flex items-center gap-1.5 mt-2">

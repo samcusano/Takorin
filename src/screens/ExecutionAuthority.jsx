@@ -170,7 +170,7 @@ export default function ExecutionAuthority() {
       <div className="w-[280px] flex-shrink-0 border-r border-rule2 flex flex-col bg-stone">
         <div className="flex-shrink-0 px-5 py-4 border-b border-rule2 bg-stone2">
           <div className="flex items-center gap-2 mt-2">
-            <span className={`display-num text-display text-ok`}>{executionSummary.totalActions}</span>
+            <span className={`display-num text-score text-ok`}>{executionSummary.totalActions}</span>
             <span className="font-body text-muted text-label">autonomous actions · 30d</span>
           </div>
         </div>

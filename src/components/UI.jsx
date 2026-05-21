@@ -74,7 +74,7 @@ export function SceneHeader({
      {/* Metric block */}
      {metric != null && (
       <div className="flex-shrink-0">
-       <div className="font-body font-bold text-jumbo leading-none tabular-nums"
+       <div className="display-num text-score leading-none tabular-nums"
         style={{ color: mc }}>
         {metric}
        </div>

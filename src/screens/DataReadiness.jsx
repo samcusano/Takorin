@@ -292,7 +292,7 @@ function ReadinessInstrument({ score, resolved }) {
 
       {/* Score */}
       <div className="flex items-baseline gap-3 mb-1">
-        <span key={score} className={`display-num text-hero leading-none score-tick ${zoneText}`}>{score}</span>
+        <span key={score} className={`display-num text-score leading-none score-tick ${zoneText}`}>{score}</span>
         <div className="pb-1">
           <div className={`font-body font-semibold text-body ${zoneText}`}>{zone}</div>
         </div>

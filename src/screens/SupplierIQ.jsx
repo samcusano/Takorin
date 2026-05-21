@@ -6,7 +6,7 @@ import NetworkView from './NetworkView'
 import { useNavigate, Link } from 'react-router-dom'
 import { supplierData, supplierAudits, empResultsHistory } from '../data'
 import { useAppState } from '../context/AppState'
-import { StatusPill, SectionHeader, Btn, Layout, ActionBanner, Spinner, AnimatedCheck, MetadataRow, ExpandableMetadata, ActionCard, SlidePanel, Tabs } from '../components/UI'
+import { StatusPill, SectionHeader, Btn, ActionBanner, Spinner, AnimatedCheck, MetadataRow, ExpandableMetadata, SlidePanel, Tabs } from '../components/UI'
 import StatBar from '../components/StatBar.jsx'
 
 // ── LotTicketPanel ────────────────────────────────────────────────────────────
@@ -129,6 +129,68 @@ function NetworkBadge({ intel }) {
   )
 }
 
+// ── Shared palette — matches ShiftIQV2 FindingCard / OperatorRow ─────────────
+const SC = {
+  bg: '#0B0F18', surface: '#131A26', border: '#263042', border2: '#1A2335',
+  context: '#C4844E', rust: '#DE6C4E', amber: '#C98E2A', sage: '#5FA877', bone: '#EDE4CB',
+}
+
+// ── SupplierCard — FindingCard grammar for critical/monitoring items ───────────
+function SupplierCard({ tone = 'warn', title, desc, evidence, children, actions }) {
+  const accent = tone === 'danger' ? SC.rust : tone === 'warn' ? SC.amber : SC.border
+  return (
+    <div style={{ background: SC.surface, border: `1px solid ${SC.border}`, borderLeft: `3px solid ${accent}`, marginBottom: 10 }}>
+      <div style={{ padding: '14px 16px 10px' }}>
+        <div className="font-display font-semibold text-base text-ink leading-snug mb-2">{title}</div>
+        {desc && <p className="font-display text-body leading-relaxed m-0" style={{ color: SC.context }}>{desc}</p>}
+      </div>
+      {evidence && (
+        <div style={{ padding: '8px 16px', borderTop: `1px solid ${SC.border2}`, borderBottom: `1px solid ${SC.border2}` }}>
+          <span className="font-body text-label text-muted">{evidence}</span>
+        </div>
+      )}
+      {children}
+      {actions && (
+        <div style={{ padding: '10px 16px', display: 'flex', alignItems: 'center', gap: 8 }}>
+          {actions}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ── SupplierRow — OperatorRow grammar for supplier standings ──────────────────
+function SupplierRow({ s, audit, isDanger, index, total }) {
+  const scoreColor = s.score >= 90 ? SC.sage : s.score >= 80 ? SC.amber : SC.rust
+  const hasFlag = isDanger || audit?.result === 'Conditional' || audit?.needsAction
+  const flagLabel = audit?.needsAction ? 'NEEDS ACTION' : isDanger ? 'AT RISK' : 'CONDITIONAL'
+  const flagColor = isDanger ? SC.rust : SC.amber
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'center', gap: 16, padding: '11px 16px',
+      borderBottom: index < total - 1 ? `1px solid ${SC.border2}` : 'none',
+      background: isDanger ? `${SC.rust}09` : 'transparent',
+    }}>
+      <div style={{ minWidth: 140 }}>
+        <div className="font-body font-medium text-body" style={{ color: isDanger ? SC.rust : SC.bone }}>{s.name}</div>
+        <div className="font-body text-micro text-muted" style={{ marginTop: 3 }}>{s.tier}</div>
+      </div>
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div style={{ flex: 1, height: 2, background: SC.border }}>
+          <div style={{ height: '100%', width: `${s.score}%`, background: scoreColor, transition: 'width 700ms cubic-bezier(0.16,1,0.3,1)' }} />
+        </div>
+        <span className="font-body text-label" style={{ minWidth: 28, textAlign: 'right', color: scoreColor }}>{s.score}</span>
+      </div>
+      {hasFlag && (
+        <span className="font-body text-micro flex-shrink-0 px-1.5 py-0.5"
+          style={{ color: flagColor, background: `${flagColor}18`, border: `1px solid ${flagColor}40` }}>
+          {flagLabel}
+        </span>
+      )}
+    </div>
+  )
+}
+
 // ── Ingredient icons — lucide.dev ─────────────────────────────────────────────
 
 const FOOD_ICONS = {
@@ -232,11 +294,6 @@ export default function SupplierIQ() {
       {activeTab === 'network' && <NetworkView />}
       {activeTab === 'suppliers' && <>
 
-      <StatBar cells={d.stats.map(s => ({
-        label: s.label, value: s.value, sub: s.sub, pct: s.fill,
-        type: s.tone === 'danger' ? 'sa' : s.tone === 'warn' ? 'sw' : 'so',
-      }))} />
-
       {/* Alert strip — populated with active alerts */}
       <div className="flex items-center gap-2 px-4 py-2 border-b border-rule2 bg-stone2 flex-shrink-0">
         {blockingLots.length > 1 && (
@@ -247,248 +304,156 @@ export default function SupplierIQ() {
         )}
       </div>
 
-      <Layout side={side}>
+      <div className="flex flex-1 min-h-0 overflow-hidden">
+      <div className="flex-1 overflow-y-auto" style={{ borderRight: `1px solid ${SC.border}` }}>
 
         {/* ── Resolve now ── */}
         {resolveCount > 0 && (
           <>
-            <SectionHeader
-              tone="critical"
-              label="Resolve now"
-              sub={`${resolveCount} item${resolveCount > 1 ? 's' : ''} blocking production`}
-            />
-
-            {blockingLots.map((lot, i) => {
-              return (
-                <ActionCard
-                  key={i}
-                  tone="danger"
-                  icon={FOOD_ICONS[lot.ing]}
-                  title={`${lot.ing} — COA Missing`}
-                  subtitle={`Production start held · ${lot.supplier} · Lot ${lot.delivery}`}
-                  metadata={[
-                    `${lot.shelf}d shelf remaining`,
-                    `Received ${lot.deliveryTime}`,
-                    lot.supply
-                  ]}
-                  status={
-                    coaRequested ? (
-                      <StatusPill status="complete" tone="ok" />
-                    ) : null
-                  }
-                  actions={
-                    <>
-                      {coaRequested ? (
-                        <span className="font-body text-ok text-label flex items-center gap-1"><Check size={11} strokeWidth={2} /> COA request sent</span>
-                      ) : (
-                        <>
-                          <Btn variant="primary" onClick={() => setCoaRequested(true)}>Request COA</Btn>
-                          <Btn variant="secondary" onClick={() => setCoaViewLot(lot)}>View specs</Btn>
-                          <Link to="/network" className="font-body text-ochre text-label flex items-center gap-1 hover:text-ink transition-colors self-center">
-                            <ArrowRight size={9} />Network impact
-                          </Link>
-                        </>
-                      )}
-                    </>
-                  }
-                >
-                  {!namingResolved && (
-                    <div className="flex items-start gap-1.5 mt-2 p-2 bg-danger/5 border border-danger/20">
-                      <AlertTriangle size={12} strokeWidth={2} className="text-danger flex-shrink-0 mt-0.5" />
-                      <div className="flex-1">
-                        <div className="font-body font-medium text-danger text-label">FSMA 204 blocker</div>
-                        <div className="font-body text-danger text-label mt-0.5 opacity-80">Naming conflict at CTE 2 prevents traceability submission</div>
-                        <button type="button"
-                          onClick={() => navigate('/readiness', { state: { highlight: 'conflict-0' } })}
-                          className="font-body text-danger text-label hover:underline mt-1 flex items-center gap-0.5">
-                          Fix in Data Readiness <ArrowRight size={9} />
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </ActionCard>
-              )
-            })}
-
-            {coaRequested && (
-              <div className="flex items-center gap-2 px-4 py-2.5 bg-ok/10 border-b border-ok/20 font-body text-ok text-label">
-                <Check size={12} strokeWidth={2} className="flex-shrink-0" />
-                COA request sent to ConAgra · Expected response within 2 hours · Hold maintained until received
+            <div style={{ padding: '20px 24px 16px' }}>
+              <div className="font-body text-micro text-muted mb-3">
+                Resolve now · {resolveCount} item{resolveCount > 1 ? 's' : ''} blocking production
               </div>
-            )}
+
+            {blockingLots.map((lot, i) => (
+              <SupplierCard
+                key={i}
+                tone="danger"
+                title={`${lot.ing} — COA Missing`}
+                desc={`Production start held · ${lot.supplier} · Lot ${lot.delivery}`}
+                evidence={[`${lot.shelf}d shelf remaining`, lot.deliveryTime, lot.supply].filter(Boolean).join(' · ')}
+                actions={coaRequested
+                  ? <span className="font-body text-ok text-label flex items-center gap-1"><Check size={11} strokeWidth={2} /> COA request sent</span>
+                  : <>
+                      <Btn variant="primary" onClick={() => setCoaRequested(true)}>Request COA</Btn>
+                      <Btn variant="secondary" onClick={() => setCoaViewLot(lot)}>View specs</Btn>
+                      <Link to="/network" className="font-body text-ochre text-label flex items-center gap-1 hover:text-ink transition-colors self-center">
+                        <ArrowRight size={9} />Network impact
+                      </Link>
+                    </>
+                }
+              >
+                {!namingResolved && (
+                  <div style={{ borderTop: `1px solid ${SC.border2}` }}
+                    className="flex items-start gap-1.5 px-4 py-2.5 bg-danger/5">
+                    <AlertTriangle size={12} strokeWidth={2} className="text-danger flex-shrink-0 mt-0.5" />
+                    <div className="flex-1">
+                      <div className="font-body font-medium text-danger text-label">FSMA 204 blocker</div>
+                      <div className="font-body text-danger text-label mt-0.5 opacity-80">Naming conflict at CTE 2 prevents traceability submission</div>
+                      <button type="button"
+                        onClick={() => navigate('/readiness', { state: { highlight: 'conflict-0' } })}
+                        className="font-body text-danger text-label hover:underline mt-1 flex items-center gap-0.5">
+                        Fix in Data Readiness <ArrowRight size={9} />
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </SupplierCard>
+            ))}
 
             {auditActionSuppliers.map(s => (
-              <ActionCard
+              <SupplierCard
                 key={s.name}
                 tone="warn"
-                icon={ClipboardCheck}
                 title={`${s.name} — Conditional Audit Approval`}
-                subtitle="Re-audit required before next purchase order"
-                metadata={[
-                  `Reason: ${supplierAudits[s.name]?.reason.split(' · ')[0]}`,
-                  `Last audit: ${supplierAudits[s.name]?.lastAudit}`
-                ]}
-                actions={
-                  <>
-                    <Btn variant="primary">Schedule re-audit</Btn>
-                    <Btn variant="secondary" icon={History}><span className="sr-only">View audit history</span></Btn>
-                  </>
-                }
+                desc="Re-audit required before next purchase order"
+                evidence={[`Reason: ${supplierAudits[s.name]?.reason.split(' · ')[0]}`, `Last audit: ${supplierAudits[s.name]?.lastAudit}`].filter(Boolean).join(' · ')}
+                actions={<><Btn variant="primary">Schedule re-audit</Btn><Btn variant="secondary"><History size={11} /></Btn></>}
               />
             ))}
+            </div>
           </>
         )}
+
+        {resolveCount > 0 && <div style={{ height: 1, background: SC.border }} />}
 
         {/* ── Monitoring ── */}
         {monitoringLots.length > 0 && (
           <>
-            <SectionHeader
-              tone="warn"
-              label="Monitoring"
-              sub={`${monitoringLots.length} at risk · ${d.stats[5]?.value} alerts`}
-            />
+            <div style={{ padding: '20px 24px 16px' }}>
+              <div className="font-body text-micro text-muted mb-3">
+                Monitoring · {monitoringLots.length} at risk
+              </div>
 
-            {monitoringLots.map((lot, i) => {
-              return (
-                <ActionCard
+              {monitoringLots.map((lot, i) => (
+                <SupplierCard
                   key={i}
                   tone={lot.shelfTone === 'danger' ? 'danger' : 'warn'}
-                  icon={FOOD_ICONS[lot.ing] || Droplets}
                   title={`${lot.ing} — ${lot.shelfTone === 'danger' ? 'Expiring soon' : 'Shelf life alert'}`}
-                  subtitle={`${lot.supplier} · Lot ${lot.delivery}`}
-                  metadata={[
-                    `${lot.shelf}d shelf remaining`,
-                    `Arrived ${lot.deliveryTime}`,
-                    lot.coa
-                  ]}
-                  status={<StatusPill status={lot.coaTone === 'ok' ? 'complete' : 'pending'} tone={lot.coaTone === 'ok' ? 'ok' : 'warn'} />}
+                  desc={`${lot.supplier} · Lot ${lot.delivery}`}
+                  evidence={[`${lot.shelf}d shelf remaining`, lot.deliveryTime, lot.coa].filter(Boolean).join(' · ')}
                   actions={
-                    <>
-                      <button type="button" onClick={() => setCoaViewLot(lot)}
-                        className="font-body font-medium text-label px-3 py-2 min-h-[36px] flex items-center gap-2 bg-stone2 text-muted hover:border-muted hover:bg-stone3 transition-colors">
-                        <Eye size={10} /> View COA
-                      </button>
-                    </>
+                    <button type="button" onClick={() => setCoaViewLot(lot)}
+                      className="font-body font-medium text-label px-3 py-2 min-h-[36px] flex items-center gap-2 bg-stone2 text-muted hover:bg-stone3 transition-colors">
+                      <Eye size={10} /> View COA
+                    </button>
                   }
                 >
                   {lot.useFirst && (
-                    <div className="flex items-center gap-2 mt-2 p-2 bg-warn/5 border border-warn/20">
+                    <div style={{ borderTop: `1px solid ${SC.border2}` }}
+                      className="flex items-center gap-2 px-4 py-2.5 bg-warn/5">
                       <AlertCircle size={11} strokeWidth={2} className="text-warn flex-shrink-0" />
                       <span className="font-body text-warn text-label">Use-first priority — prioritize in stock rotation</span>
                     </div>
                   )}
-                </ActionCard>
-              )
-            })}
+                </SupplierCard>
+              ))}
 
-            {/* ConAgra reliability — network signal, not lot-tracking data */}
-            <ActionCard
-              tone="warn"
-              icon={AlertTriangle}
-              title="ConAgra reliability — 22nd percentile"
-              subtitle="Network signal · 3 non-conformances in last 30 days across 14 plants"
-              metadata={['High confidence', 'Network intelligence · 14 plants', 'Pattern: delivery delays → scrap spikes']}
-              status={null}
-              actions={
-                <Link to="/network" className="font-body text-ochre text-label flex items-center gap-1 hover:text-ink transition-colors self-center">
-                  <ArrowRight size={9} />View in Network
-                </Link>
-              }
-            />
+              <SupplierCard
+                tone="warn"
+                title="ConAgra reliability — 22nd percentile"
+                desc="Network signal · 3 non-conformances in last 30 days across 14 plants"
+                evidence="High confidence · Network intelligence · 14 plants · Pattern: delivery delays → scrap spikes"
+                actions={
+                  <Link to="/network" className="font-body text-ochre text-label flex items-center gap-1 hover:text-ink transition-colors">
+                    <ArrowRight size={9} />View in Network
+                  </Link>
+                }
+              />
 
-            {/* Price alerts */}
-            <ActionCard
-              tone="warn"
-              icon={Truck}
-              title="Price Alerts"
-              subtitle="2 active supplier contracts need renegotiation"
-              metadata={[
-                'Tomato sauce +14%',
-                'ConAgra renewal May 12',
-                'Canola oil +8%'
-              ]}
-              status={rfqSent ? <StatusPill status="complete" tone="ok" /> : null}
-              actions={
-                rfqSent
+              <SupplierCard
+                tone="warn"
+                title="Price Alerts"
+                desc="2 active supplier contracts need renegotiation"
+                evidence="Tomato sauce +14% · ConAgra renewal May 12 · Canola oil +8%"
+                actions={rfqSent
                   ? <span className="font-body text-ok text-label flex items-center gap-1"><Check size={10} strokeWidth={2} /> RFQ sent</span>
                   : <Btn variant="secondary" onClick={() => setRfqSent(true)}>Request alternatives</Btn>
-              }
-            />
+                }
+              />
+            </div>
           </>
         )}
 
+        <div style={{ height: 1, background: SC.border }} />
+
         {/* ── Supplier standings ── */}
-        <div className="border-b border-rule2">
-          <div className="flex items-center justify-between px-4 py-2.5 bg-stone2 border-b border-rule2">
-            <span className="font-body text-label text-muted">SUPPLIER STANDINGS</span>
-            <span className="font-body text-label text-muted">5 active · by score</span>
+        <div style={{ padding: '18px 24px 24px' }}>
+          <div className="font-body text-micro text-muted mb-3">
+            Supplier standings · {sortedSuppliers.length} active
           </div>
-
-          {sortedSuppliers.map((s, i) => {
-            const audit = supplierAudits[s.name]
-            const intel = networkIntel[s.name]
-            const isDanger = s.tierTone === 'danger'
-            const isWarn   = s.tierTone === 'int'
-            const scoreColor = s.score >= 90 ? 'var(--color-ok)' : s.score >= 80 ? 'var(--color-warn)' : 'var(--color-danger)'
-            const scoreTextCls = s.score >= 90 ? 'text-ok' : s.score >= 80 ? 'text-warn' : 'text-danger'
-
-            return (
-              <div key={s.name} className={`border-b border-rule2 last:border-b-0 border-l-[3px] ${
-                isDanger ? 'border-l-danger bg-danger/[0.025]' : 'border-l-transparent'
-              }`}>
-                <div className="px-4 pt-3.5 pb-3">
-                  {/* Name row */}
-                  <div className="flex items-center gap-2 mb-2.5">
-                    <span className={`font-display font-semibold text-base leading-none ${isDanger ? 'text-danger' : 'text-ink'}`}>{s.name}</span>
-                    <span className={`font-body text-label px-1.5 py-0.5 leading-none ${
-                      s.tierTone === 'ok'     ? 'bg-ok/10 text-ok'
-                      : isDanger             ? 'bg-danger/[0.1] text-danger'
-                      : 'bg-warn/10 text-warn'
-                    }`}>{s.tier}</span>
-                    <div className="flex-1" />
-                    {audit?.needsAction
-                      ? <Btn variant="secondary">Schedule</Btn>
-                      : <button type="button" className="font-body text-muted text-label hover:text-ink transition-colors px-2 py-1 flex items-center gap-1">
-                        <History size={11} /><span className="sr-only">History</span>
-                      </button>
-                    }
-                  </div>
-
-                  {/* Score + wide bar row */}
-                  <div className="flex items-center gap-3 mb-1.5">
-                    <span className={`font-display font-bold text-subhead leading-none tabular-nums w-9 flex-shrink-0 ${scoreTextCls}`}>{s.score}</span>
-                    <div className="flex-1 h-[5px] bg-rule2">
-                      <div className="h-full transition-[width] duration-500 ease-enter" style={{ width: `${s.score}%`, background: scoreColor }} />
-                    </div>
-                    <div className="flex items-center gap-2 flex-shrink-0 text-right">
-                      <span className={`font-body font-medium text-label ${
-                        audit?.result === 'Approved'    ? 'text-ok'
-                        : audit?.result === 'Conditional' ? 'text-warn'
-                        : 'text-danger'
-                      }`}>{audit?.result}</span>
-                      {audit?.lastAudit && <span className="font-body text-muted text-label">{audit.lastAudit}</span>}
-                    </div>
-                  </div>
-
-                  {/* Audit reason or network intel */}
-                  {(audit?.reason || (intel && intel.note)) && (
-                    <div className="font-body text-label mt-1">
-                      {audit?.reason
-                        ? <span className="text-warn">{audit.reason.split(' · ')[0]}</span>
-                        : intel?.note && <span className={intel.tone === 'danger' ? 'text-danger' : 'text-muted'}>{intel.note}</span>
-                      }
-                      {intel && !audit?.reason && (
-                        <span className="text-muted"> · {intel.percentile}th pct. · {intel.plants} plants</span>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </div>
-            )
-          })}
+          <div style={{ border: `1px solid ${SC.border}`, overflow: 'hidden' }}>
+            {sortedSuppliers.map((s, i) => (
+              <SupplierRow
+                key={s.name}
+                s={s}
+                audit={supplierAudits[s.name]}
+                isDanger={s.tierTone === 'danger'}
+                index={i}
+                total={sortedSuppliers.length}
+              />
+            ))}
+          </div>
         </div>
 
-      </Layout>
+      </div>
+
+      {/* Right column — Open gaps */}
+      <div style={{ width: 304, flexShrink: 0, overflowY: 'auto', background: SC.bg }}>
+        {side}
+      </div>
+
+      </div>
       </>}
     </div>
     </>
