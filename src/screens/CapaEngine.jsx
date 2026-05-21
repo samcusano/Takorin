@@ -2,9 +2,8 @@ import React, { useState, useRef, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useFocusTrap, useExitAnimation } from '../lib/utils'
 import { FileText, BarChart2, ShieldCheck, Clock, Brain, Search } from 'lucide-react'
-import StatBar from '../components/StatBar.jsx'
 import { Check, X, AlertTriangle, ArrowRight, TrendingUp, ChevronRight } from 'lucide-react'
-import { StatusPill, SP, ActionBanner, Btn, HoldButton, Tabs } from '../components/UI'
+import { StatusPill, SP, ActionBanner, Btn, HoldButton, Tabs, SceneHeader, SectionHeader } from '../components/UI'
 import { openCases, patternRows, benchmarks } from '../data/capa.js'
 import { haccpData, goalsData } from '../data'
 import { useAppState } from '../context/AppState'
@@ -185,7 +184,7 @@ function PriorityQueueRow({ c, isSelected, onSelect, isEscalated, isResolved }) 
   )}
   <span className="font-body text-muted text-label">{c.capaId}</span>
   </div>
-  <div className={`font-body font-medium text-label leading-snug truncate ${isResolved || isEscalated ? 'text-muted' : 'text-ink'}`}>
+  <div className={`font-body font-medium text-body leading-snug truncate ${isResolved || isEscalated ? 'text-muted' : 'text-ink'}`}>
   {c.title}
   </div>
   {c.due && !isResolved && !isEscalated && (
@@ -194,7 +193,7 @@ function PriorityQueueRow({ c, isSelected, onSelect, isEscalated, isResolved }) 
   </div>
   )}
   {c.priorityReason && !isResolved && !isEscalated && (
-  <div className="font-body text-label mt-0.5 leading-snug text-muted">
+  <div className="font-body text-label mt-0.5 leading-snug text-ink2">
    {c.priorityReason}
   </div>
   )}
@@ -266,6 +265,18 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
  const [localFiles, setLocalFiles] = useState([])
  const [detailTab, setDetailTab] = useState('details')
  const fileInputRef = useRef(null)
+ const containerRef = useRef(null)
+ const recommendedActionRef = useRef(null)
+
+ useEffect(() => {
+  const frame = requestAnimationFrame(() => {
+   const el = recommendedActionRef.current
+   const container = containerRef.current
+   if (el && container) container.scrollTop = el.offsetTop - 8
+  })
+  return () => cancelAnimationFrame(frame)
+ }, [])
+
  // Evidence declaration checklist — required before close
  const [declaration, setDeclaration] = useState({ rootCause: false, corrective: false, specific: false })
  const declarationComplete = Object.values(declaration).every(Boolean)
@@ -335,18 +346,10 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
      {c.assigned} · {c.due}
     </div>
    </div>
-   {/* Ghost score watermark */}
-   {score > 0 && (
-    <div className={`display-num font-bold text-display tabular-nums leading-none flex-shrink-0 select-none ${
-     score >= 80 ? 'text-danger/20' : score >= 55 ? 'text-warn/20' : 'text-muted/15'
-    }`}>
-     {score}
-    </div>
-   )}
   </div>
  </div>
 
- <div className="flex-1 overflow-y-auto">
+ <div ref={containerRef} className="flex-1 overflow-y-auto">
  {/* ── Directed handoff banner — shown when it's the director's turn ── */}
  {c.directorTurn && !isClosed && !actionTaken && (
   <ActionBanner
@@ -380,8 +383,13 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
  )}
  {/* ── Recommended action (the operative section) ── */}
  {!isClosed && !actionTaken && (
- <div className={`px-4 py-4 border-b border-rule2 ${isBlocking ? 'bg-danger/[0.025]' : c.type === 'ca' ? 'bg-ok/[0.02]' : 'bg-stone2'}`}>
- <div className="font-body text-muted text-label mb-3">RECOMMENDED ACTION</div>
+ <div ref={recommendedActionRef}>
+ <SectionHeader
+  label={isBlocking ? 'Blocking' : c.type === 'ca' ? 'Ready to close' : 'Action required'}
+  tone={isBlocking ? 'danger' : c.type === 'ca' ? 'ok' : 'warn'}
+  sub="Recommended action"
+ />
+ <div className={`px-4 py-4 border-b border-rule2 ${isBlocking ? 'bg-danger/[0.025]' : c.type === 'ca' ? 'bg-ok/[0.02]' : ''}`}>
 
  {/* Two-column impact context — tinted by outcome */}
  {(c.expectedImpact || c.riskIfIgnored) && (
@@ -463,7 +471,7 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
    disabled={!correctiveMeasure.trim() || !declarationComplete}
    onConfirm={handleApprove}
   />
-  <button type="button" onClick={() => setClosureStep(null)} className="font-body text-muted text-label hover:text-muted transition-colors">← Back</button>
+  <Btn variant="ghost" onClick={() => setClosureStep(null)}>← Back</Btn>
  </div>
  ) : (
  <Btn variant="primary" onClick={() => setClosureStep('measure')} className="w-full !justify-between !rounded-none">
@@ -477,6 +485,7 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
   <ChevronRight size={13} strokeWidth={2} className="opacity-60" />
  </Btn>
  )}
+ </div>
  </div>
  )}
 
@@ -641,7 +650,7 @@ function LayoutQueue({ visibleCases, blockingEvidenceUploaded, setBlockingEviden
 
  {/* Search */}
  <div className="px-3 py-2 border-b border-rule2 flex-shrink-0">
-  <div className="flex items-center gap-2 bg-stone2 border border-transparent px-2 py-1.5 focus-within:border-ochre/50 transition-colors">
+  <div className="flex items-center gap-2 bg-stone2 border border-rule px-2 py-1.5 focus-within:border-ochre/50 transition-colors">
    <Search size={11} strokeWidth={2} className="text-muted flex-shrink-0" />
    <input
     type="text"
@@ -727,70 +736,36 @@ function LayoutQueue({ visibleCases, blockingEvidenceUploaded, setBlockingEviden
 // ── Main screen ───────────────────────────────────────────────────────────────
 
 export default function CapaEngine() {
- const { closedCases, setClosedCases, blockingEvidenceUploaded, setBlockingEvidenceUploaded, logActivity } = useAppState()
- const [escalated, setEscalated] = useState(false)
- const [showReassign, setShowReassign] = useState(false)
- const [reassignTarget, setReassignTarget] = useState('')
- const [reassignDone, setReassignDone] = useState(false)
+ const { closedCases, blockingEvidenceUploaded, setBlockingEvidenceUploaded } = useAppState()
  const visibleCases = openCases.filter(c => !closedCases.includes(c.id))
  const openCount = visibleCases.length
  const awaitingCount = visibleCases.filter(c => c.type === 'ca').length
  const closedCount = 14 + closedCases.length
  const overdueCount = visibleCases.filter(c => c.badge === 'Overdue').length
-
- const statCells = [
- { type: overdueCount > 0 ? 'sa' : 'so', label:'Overdue',
- value: String(overdueCount), sub: 'Past due date', pct: Math.round(overdueCount / 4 * 100) },
- { type: openCount > 0 ? 'sw' : 'so', label:'Open cases',
- value: String(openCount), sub: 'Active queue', pct: Math.round(openCount / 7 * 100) },
- { type: awaitingCount > 0 ? 'sw' : 'so', label:'Awaiting closure',
- value: String(awaitingCount), sub: awaitingCount > 0 ? 'Evidence submitted' : 'None pending', pct: awaitingCount > 0 ? 20 : 0 },
- { type:'so', label:'Closed this quarter', value: String(closedCount), sub:'All evidence-gated', pct:100 },
- ]
+ const queueCount = openCount + (!blockingEvidenceUploaded ? 1 : 0)
+ const headerTone = overdueCount > 0 ? 'danger' : awaitingCount > 0 ? 'warn' : 'ok'
+ const headerStatement = overdueCount > 0
+  ? `${overdueCount} case${overdueCount !== 1 ? 's' : ''} overdue — 78% on-time closure rate at the 44th percentile. Resolving overdue items this shift moves this plant above median before inspection.`
+  : awaitingCount > 0
+   ? `No cases overdue. ${awaitingCount} awaiting your sign-off — approve to advance the closure rate before inspection.`
+   : 'No open overdue cases. All cases on track before the FDA inspection window.'
 
  return (
  <div className="flex flex-col h-full overflow-hidden content-reveal">
 
- {/* Overdue banner — custom layout to surface FDA countdown */}
- <div className="flex-shrink-0 border-b-2 border-b-warn bg-stone2">
-  <div className="px-5 py-4 flex items-center gap-5">
-   <div className="flex-1 min-w-0">
-    <div className="font-display font-semibold text-ink text-base leading-tight">
-     2 cases overdue
-    </div>
-    <div className="font-body text-muted text-label mt-0.5">
-     CAPA-2604-001 and CAPA-2604-002 past due · Salina Campus · April 16, 2026
-    </div>
-   </div>
-   {/* FDA inspection countdown */}
-   <div className="flex-shrink-0 text-right border-l border-rule2 pl-5">
-    <div className="display-num font-bold text-metric text-warn leading-none">18</div>
-    <div className="font-body text-muted text-label mt-0.5 whitespace-nowrap">days to FDA inspection</div>
-   </div>
-   <div className="flex gap-2 flex-shrink-0">
-    <Btn variant="primary" onClick={() => setEscalated(true)}>{escalated ? 'All overdue escalated ✓' : 'Escalate all overdue'}</Btn>
-    <Btn variant="secondary" onClick={() => setShowReassign(p => !p)}>{reassignDone ? 'Reassigned ✓' : 'Bulk reassign'}</Btn>
-   </div>
-  </div>
-  {showReassign && !reassignDone && (
-   <div className="px-5 pb-4 flex items-center gap-2">
-    <select
-     aria-label="Reassign overdue cases to"
-     value={reassignTarget}
-     onChange={e => setReassignTarget(e.target.value)}
-     className="font-body text-ink text-label bg-stone border border-rule2 px-2 py-1 flex-1 cursor-pointer focus:border-ochre focus:outline-none"
-    >
-     <option value="">Reassign overdue cases to…</option>
-     <option>M. Santos · Line 4 PM</option>
-     <option>A. Novotny · QA Lead</option>
-     <option>T. Osei · QA Tech</option>
-    </select>
-    <Btn variant="primary" disabled={!reassignTarget} onClick={() => { setReassignDone(true); setShowReassign(false) }}>Confirm</Btn>
-   </div>
-  )}
- </div>
-
- <StatBar cells={statCells} />
+ <SceneHeader
+  module="CAPA"
+  context="Salina Campus · April 16"
+  metric={18}
+  metricLabel="Days to FDA inspection"
+  tone={headerTone}
+  statement={headerStatement}
+  meta={[
+   { label: 'Overdue', value: String(overdueCount), color: overdueCount > 0 ? 'var(--color-danger)' : undefined },
+   { label: 'Open', value: String(queueCount) },
+   { label: 'Closed Q', value: String(closedCount) },
+  ]}
+ />
 
  <LayoutQueue
   visibleCases={visibleCases}

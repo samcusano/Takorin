@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { compliancePolicies, multiRegulatoryCoverage } from '../data/compliance'
-import { AlertTriangle } from 'lucide-react'
+import { AlertTriangle, ArrowRight } from 'lucide-react'
 import { SceneHeader, StatusPill, Btn } from '../components/UI'
 
 const STATUS_LABEL  = { active: 'Active', inactive: 'Inactive', monitoring: 'Monitoring' }
@@ -57,36 +57,41 @@ function EvidenceRow({ e }) {
   )
 }
 
-// ─── Escalation flow ──────────────────────────────────────────────────────────
-// Steps escalate visually: first = mild, last = legal danger
+// ─── Escalation strip ─────────────────────────────────────────────────────────
+// Horizontal, sits below the SceneHeader. Tone escalates left → right.
 
 function escalationTone(i, total) {
-  if (i === total - 1) return { dot: 'bg-danger', num: 'text-stone', border: 'border-l-danger', bg: 'bg-danger/[0.04]', threshold: 'text-danger' }
-  if (i > 0 || total === 2) return { dot: 'bg-warn', num: 'text-stone', border: 'border-l-warn', bg: '', threshold: 'text-warn' }
-  return { dot: 'bg-stone3', num: 'text-muted', border: 'border-l-rule2', bg: '', threshold: 'text-muted' }
+  if (i === total - 1) return { dot: 'bg-danger', num: 'text-stone', bg: 'bg-danger/[0.04]', threshold: 'text-danger' }
+  if (i > 0 || total === 2) return { dot: 'bg-warn',   num: 'text-stone', bg: '',                threshold: 'text-warn'   }
+  return                          { dot: 'bg-stone3',  num: 'text-muted', bg: '',                threshold: 'text-muted'  }
 }
 
-function EscalationFlow({ steps }) {
+function EscalationStrip({ steps }) {
   return (
-    <div className="divide-y divide-rule2">
-      {steps.map((s, i) => {
-        const t = escalationTone(i, steps.length)
-        return (
-          <div key={i} className={`flex items-start gap-3 px-5 py-3 border-l-2 ${t.border} ${t.bg}`}>
-            <div className="flex flex-col items-center flex-shrink-0 mt-0.5">
-              <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 ${t.dot}`}>
-                <span className={`font-body text-micro font-bold ${t.num}`}>{i + 1}</span>
-              </div>
-              {i < steps.length - 1 && <div className="w-px bg-rule2 mt-1" style={{ height: 16 }} />}
+    <div className="flex-shrink-0 flex items-stretch border-b border-rule2">
+      <div className="px-4 flex items-center border-r border-rule2 flex-shrink-0 bg-stone2">
+        <span className="font-body text-micro font-semibold text-muted">ESCALATION</span>
+      </div>
+      <div className="flex flex-1 items-stretch gap-0">
+        {steps.flatMap((s, i) => {
+          const t = escalationTone(i, steps.length)
+          const isLast = i === steps.length - 1
+          const cell = (
+            <div key={`step-${i}`} className={`flex-1 min-w-0 px-3 py-2.5 ${isLast ? t.bg : 'bg-stone2'}`}>
+              <div className={`font-body text-micro mb-0.5 ${t.threshold}`}>{s.threshold}</div>
+              <div className="font-body text-ink text-label leading-snug">{s.action}</div>
+              <div className="font-body text-muted text-micro mt-0.5">{s.channel}</div>
             </div>
-            <div className="flex-1 min-w-0">
-              <div className={`font-body font-medium text-label ${t.threshold}`}>{s.threshold}</div>
-              <div className="font-body text-muted text-label mt-0.5 leading-snug">{s.action}</div>
-              <div className="font-body text-micro text-muted mt-0.5">{s.channel}</div>
-            </div>
-          </div>
-        )
-      })}
+          )
+          if (isLast) return [cell]
+          return [
+            cell,
+            <div key={`arrow-${i}`} className="flex items-center px-1 text-rule2 flex-shrink-0">
+              <ArrowRight size={10} />
+            </div>,
+          ]
+        })}
+      </div>
     </div>
   )
 }
@@ -205,23 +210,19 @@ export default function CompliancePolicy() {
             meta={metaItems}
           />
 
+          <EscalationStrip steps={policy.escalationLogic} />
+
           <div className="flex-1 overflow-y-auto">
 
-            {/* Regulatory frameworks */}
-            <div className="border-b border-rule2">
-              <SectionHeader label="FRAMEWORKS" count={`${policy.frameworks.length} configured`} accent="bg-ochre" />
-              {policy.frameworks.map(f => <FrameworkRow key={f.id} f={f} />)}
-            </div>
-
-            {/* Evidence + Escalation */}
+            {/* Frameworks + Evidence — two columns */}
             <div className="flex border-b border-rule2">
               <div className="flex-1 border-r border-rule2">
+                <SectionHeader label="FRAMEWORKS" count={`${policy.frameworks.length} configured`} accent="bg-ochre" />
+                {policy.frameworks.map(f => <FrameworkRow key={f.id} f={f} />)}
+              </div>
+              <div className="flex-1">
                 <SectionHeader label="EVIDENCE" count={`${policy.evidenceRequirements.length} requirements`} accent="bg-ok" />
                 {policy.evidenceRequirements.map((e, i) => <EvidenceRow key={i} e={e} />)}
-              </div>
-              <div className="w-[320px] flex-shrink-0">
-                <SectionHeader label="ESCALATION" count={`${policy.escalationLogic.length} thresholds`} accent="bg-danger" />
-                <EscalationFlow steps={policy.escalationLogic} />
               </div>
             </div>
 

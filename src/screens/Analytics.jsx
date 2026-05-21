@@ -808,11 +808,6 @@ export default function Analytics() {
 
           </div>
 
-          <footer className="mt-10 pt-5 border-t border-rule2 flex items-center justify-between">
-            <span className="font-body text-muted text-label">Takorin Total Intelligence · {facility.name}</span>
-            <span className="font-body text-muted text-label">Data through Apr 16, 2026 · 06:42</span>
-          </footer>
-
         </div>
       </div>
     </div>

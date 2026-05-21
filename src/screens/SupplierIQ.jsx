@@ -9,111 +9,102 @@ import { useAppState } from '../context/AppState'
 import { StatusPill, SectionHeader, Btn, Layout, ActionBanner, Spinner, AnimatedCheck, MetadataRow, ExpandableMetadata, ActionCard, SlidePanel, Tabs } from '../components/UI'
 import StatBar from '../components/StatBar.jsx'
 
-// ── CoaPanel ──────────────────────────────────────────────────────────────────
+// ── LotTicketPanel ────────────────────────────────────────────────────────────
 
-const LAB_RESULTS_PASS = [
-  { label: 'Microbial count', value: '< 100 CFU/g' },
-  { label: 'pH level',        value: '4.2'          },
-  { label: 'Moisture',        value: '12.4%'        },
-  { label: 'Certification',   value: 'SQF Level 2'  },
-]
-
-const LAB_RESULTS_PENDING = [
-  'Microbial count',
-  'pH level',
-  'Moisture %',
-  'Test certification',
-]
-
-function CoaPanel({ lot, onClose }) {
+function LotTicketPanel({ lot, onClose, coaRequested, setCoaRequested }) {
   if (!lot) return null
-  const coaPass   = lot.coaTone === 'ok'
-  const shelfPct  = Math.min(100, Math.round((lot.shelf / 45) * 100))
-  const shelfColor = lot.shelfTone === 'ok' ? 'bg-ok' : lot.shelfTone === 'warn' ? 'bg-warn' : 'bg-danger'
-  const shelfText  = lot.shelfTone === 'ok' ? 'text-ok' : lot.shelfTone === 'warn' ? 'text-warn' : 'text-danger'
+
+  const coaPass      = lot.coaTone === 'ok'
+  const shelfPct     = Math.min(100, Math.round((lot.shelf / 45) * 100))
+  const shelfTextCls = lot.shelfTone === 'ok' ? 'text-ok' : lot.shelfTone === 'warn' ? 'text-warn' : 'text-danger'
   const supplierName = lot.supplier.split(' · ')[0]
   const lotCode      = lot.supplier.split(' · ')[1] || lot.delivery
+  const accentColor  = lot.coaTone === 'ok' ? 'var(--color-ok)' : lot.coaTone === 'danger' ? 'var(--color-danger)' : 'var(--color-warn)'
+  const deliveryTextCls = lot.deliveryTone === 'ok' ? 'text-ink' : lot.deliveryTone === 'warn' ? 'text-warn' : 'text-ochre'
+
+  const steps = [
+    { label: `Confirm COA from ${supplierName}`, done: coaPass },
+    { label: 'Receive physical shipment',         done: lot.delivery === 'Delivered' },
+    { label: 'Complete microbial test',           done: coaPass },
+    { label: 'Complete pH test',                  done: coaPass },
+    { label: 'Complete moisture test',            done: coaPass },
+    { label: 'Complete test certification',       done: coaPass },
+  ]
+  const completedCount = steps.filter(s => s.done).length
+
+  const footer = lot.coaTone === 'danger' ? (
+    <div className="flex items-center gap-2">
+      {coaRequested
+        ? <span className="font-body text-ok text-label flex items-center gap-1.5"><Check size={11} strokeWidth={2} />COA request sent</span>
+        : <Btn variant="primary" onClick={() => setCoaRequested(true)}>Request COA</Btn>
+      }
+      <Btn variant="secondary" onClick={onClose}>Close</Btn>
+    </div>
+  ) : (
+    <Btn variant="secondary" onClick={onClose}>Close</Btn>
+  )
 
   return (
     <SlidePanel
       title={lot.ing}
-      subtitle={supplierName}
+      subtitle={`${lotCode} · ${supplierName}`}
+      accentColor={accentColor}
       onClose={onClose}
-      footer={<Btn variant="secondary" onClick={onClose}>Close</Btn>}
+      footer={footer}
     >
-      {/* ── COA status hero ─────────────────────────────────────────── */}
-      <div className={`px-5 py-5 ${coaPass ? 'bg-ok/[0.035]' : 'bg-danger/[0.035]'}`}>
-        <div className={`font-body text-label mb-2 ${coaPass ? 'text-ok' : 'text-danger'}`}>
-          Certificate of Analysis
-        </div>
-        <div className={`font-display font-bold text-metric leading-none mb-1.5 ${coaPass ? 'text-ok' : 'text-danger'}`}>
-          {coaPass ? 'Verified' : 'Pending receipt'}
-        </div>
-        <div className="font-body text-muted text-label">
-          {coaPass
-            ? 'Validated Apr 12, 2026 · All parameters within specification'
-            : `Not received · Hold active until COA confirmed by ${supplierName}`}
-        </div>
-      </div>
+      {/* All sections go edge-to-edge by negating the panel's p-5 */}
+      <div className="-m-5 space-y-0">
 
-      {/* ── Lot identity ─────────────────────────────────────────────── */}
-      <div>
-        <div className="font-body text-muted text-label mb-3">Lot details</div>
-        <div className="space-y-3">
-          {[
-            { label: 'Ingredient',  value: lot.ing               },
-            { label: 'Supplier',    value: supplierName           },
-            { label: 'Lot',         value: lotCode                },
-            { label: 'PO date',     value: lot.po                 },
-            { label: 'Received',    value: lot.deliveryTime       },
-          ].map(({ label, value }) => (
-            <div key={label} className="flex items-baseline justify-between border-b border-rule2 pb-2">
-              <span className="font-body text-muted text-label">{label}</span>
-              <span className="font-body font-medium text-ink text-body">{value}</span>
+        {/* ── Status strip ─────────────────────────────────────────── */}
+        <div className="flex items-center justify-between px-5 py-2.5 border-b border-rule2">
+          <span className="font-body text-micro text-muted">{coaPass ? 'RECEIVED' : 'PENDING RECEIPT'}</span>
+          {!coaPass && <StatusPill tone="danger">Hold Active</StatusPill>}
+        </div>
+
+        {/* ── Key metrics ──────────────────────────────────────────── */}
+        <div className="grid grid-cols-2 gap-px bg-rule2 border-b border-rule2">
+          <div className={`px-5 py-4 ${lot.deliveryTone !== 'ok' ? 'bg-warn/[0.02]' : 'bg-stone'}`}>
+            <div className="font-body text-micro text-muted mb-1.5">Expected Arrival</div>
+            <div className={`font-body font-medium text-body ${deliveryTextCls}`}>{lot.deliveryTime}</div>
+          </div>
+          <div className={`px-5 py-4 ${lot.shelfTone === 'danger' ? 'bg-danger/[0.025]' : lot.shelfTone === 'warn' ? 'bg-warn/[0.02]' : 'bg-stone'}`}>
+            <div className="flex items-center gap-1.5 mb-1.5">
+              {lot.shelfTone !== 'ok' && (
+                <AlertTriangle size={10} strokeWidth={2} className={lot.shelfTone === 'danger' ? 'text-danger' : 'text-warn'} />
+              )}
+              <span className="font-body text-micro text-muted">Shelf Life</span>
             </div>
-          ))}
+            <div className={`display-num text-head font-bold leading-none ${shelfTextCls}`}>
+              {lot.shelf}
+              <span className="font-body text-label font-normal text-muted ml-1.5">of 45 days ({shelfPct}%)</span>
+            </div>
+          </div>
         </div>
-      </div>
 
-      {/* ── Shelf life bar ───────────────────────────────────────────── */}
-      <div>
-        <div className="flex items-baseline justify-between mb-2">
-          <span className="font-body text-muted text-label">Shelf life</span>
-          <span className={`display-num text-head font-bold leading-none ${shelfText}`}>{lot.shelf}<span className="font-body text-label font-normal text-muted ml-1">days</span></span>
-        </div>
-        <div className="h-2 bg-rule2 rounded-full overflow-hidden mb-1">
-          <div className={`h-full rounded-full ${shelfColor} transition-[width]`} style={{ width: `${shelfPct}%` }} />
-        </div>
-        <div className="font-body text-muted text-label">{lot.shelf} of 45 days remaining · standard shelf life</div>
-      </div>
-
-      {/* ── Lab results ──────────────────────────────────────────────── */}
-      <div>
-        <div className="font-body text-muted text-label mb-3">
-          Lab results{coaPass ? ' · Apr 12, 2026' : ' · Pending'}
-        </div>
-        {coaPass ? (
-          <div className="grid grid-cols-2 gap-px bg-rule2">
-            {LAB_RESULTS_PASS.map(r => (
-              <div key={r.label} className="bg-stone px-4 py-3.5">
-                <div className="font-body text-muted text-label mb-1.5">{r.label}</div>
-                <div className="flex items-center justify-between">
-                  <span className="font-body font-medium text-ink text-base">{r.value}</span>
-                  <Check size={12} strokeWidth={2.5} className="text-ok" />
+        {/* ── Release readiness ─────────────────────────────────────── */}
+        <div>
+          <div className="flex items-center justify-between px-5 py-2.5 bg-stone2 border-b border-rule2">
+            <span className="font-display font-semibold text-ink text-body">Release Readiness</span>
+            <span className={`font-body text-label ${completedCount === steps.length ? 'text-ok' : 'text-muted'}`}>
+              <span className="display-num text-base">{completedCount}</span> of {steps.length} steps complete
+            </span>
+          </div>
+          <div className="divide-y divide-rule2">
+            {steps.map((step, i) => (
+              <div key={i} className={`flex items-center gap-3.5 px-5 py-3 ${step.done ? 'bg-ok/[0.02]' : ''}`}>
+                <div className={`w-5 h-5 rounded-full border-2 flex-shrink-0 flex items-center justify-center ${
+                  step.done ? 'bg-ok border-ok' : 'border-rule'
+                }`}>
+                  {step.done && <Check size={10} strokeWidth={3} className="text-stone" />}
                 </div>
+                <span className={`font-body text-body leading-snug ${step.done ? 'text-muted' : 'text-ink'}`}>
+                  {step.label}
+                </span>
               </div>
             ))}
           </div>
-        ) : (
-          <div className="grid grid-cols-2 gap-px bg-rule2">
-            {LAB_RESULTS_PENDING.map(label => (
-              <div key={label} className="bg-stone px-4 py-3.5">
-                <div className="font-body text-muted text-label mb-1.5">{label}</div>
-                <div className="font-body text-warn text-label font-medium">Not tested</div>
-              </div>
-            ))}
-          </div>
-        )}
+        </div>
+
       </div>
     </SlidePanel>
   )
@@ -228,7 +219,7 @@ export default function SupplierIQ() {
 
   return (
     <>
-    <CoaPanel lot={coaViewLot} onClose={() => setCoaViewLot(null)} />
+    <LotTicketPanel lot={coaViewLot} onClose={() => setCoaViewLot(null)} coaRequested={coaRequested} setCoaRequested={setCoaRequested} />
     <div className="flex flex-col h-full overflow-hidden content-reveal">
 
       <Tabs
