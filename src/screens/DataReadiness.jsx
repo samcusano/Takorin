@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom'
 import { readinessData } from '../data'
 import { useAppState } from '../context/AppState'
 import { HoldButton, Btn, SectionHeader, StatusPill } from '../components/UI'
-import { Check, AlertTriangle, ChevronDown, ChevronUp, Zap } from 'lucide-react'
+import { Check, AlertTriangle, ChevronDown, ChevronUp, Zap, Clock, Link2, Layers } from 'lucide-react'
 
 // ── Resolution queue data ─────────────────────────────────────────────────────
 
@@ -461,95 +461,137 @@ function WorkspacePanel({ item, isCluster, resolved, onResolve, onResolveCluster
 
   return (
     <div className="flex-1 overflow-y-auto">
-      <div className="max-w-[680px] px-8 py-6 space-y-7">
+      <div className="max-w-[720px] px-8 py-7">
 
-        {/* Issue context */}
-        <div>
-          <div className="flex items-center gap-2 mb-2">
-            {isCluster && <span className="font-body text-label px-1.5 py-px bg-ochre/15 text-ochre font-semibold">Cluster</span>}
-            <span className={`font-body text-label font-medium ${severityColor}`}>{severityLabel}</span>
-            {item.detectedAgo && <span className="font-body text-muted text-label">· Detected {item.detectedAgo}</span>}
-            {isResolved && <span className="font-body text-ok text-label flex items-center gap-1"><Check size={10} strokeWidth={2.5} />Resolved</span>}
-          </div>
-          <h2 className="font-display font-bold text-ink text-page leading-snug mb-3">{item.label}</h2>
-          <div className="grid grid-cols-3 gap-4">
-            {item.systemsImpacted?.length > 0 && (
-              <div>
-                <div className="font-body text-muted text-label mb-1">Systems impacted</div>
-                <div className="font-body text-muted text-label">{item.systemsImpacted.join(' · ')}</div>
-              </div>
-            )}
-            {item.confidenceDrop > 0 && (
-              <div>
-                <div className="font-body text-muted text-label mb-1">Accuracy impact</div>
-                <div className="display-num text-metric font-bold text-danger">−{item.confidenceDrop}%</div>
-              </div>
-            )}
-            {item.unlocks?.length > 0 && (
-              <div>
-                <div className="font-body text-muted text-label mb-1">Unlocks</div>
-                <div className="space-y-0.5">
-                  {item.unlocks.map(u => (
-                    <div key={u} className="font-body text-ok text-label">· {u}</div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-          {item.blockedBy && (
-            <div className="flex items-center gap-2 mt-3 px-3 py-2 bg-warn/[0.06] border border-warn/20">
-              <AlertTriangle size={11} strokeWidth={2} className="text-warn flex-shrink-0" />
-              <span className="font-body text-warn text-label">Blocked by: {item.blockedBy}</span>
-            </div>
+        {/* 1. Status row */}
+        <div className="flex items-center gap-3 mb-5">
+          {isCluster
+            ? <StatusPill
+                tone={item.severity === 'critical' || item.severity === 'high' ? 'danger' : item.severity === 'moderate' ? 'warn' : 'muted'}
+                icon={AlertTriangle}
+              >
+                CLUSTER: {severityLabel.toUpperCase()}
+              </StatusPill>
+            : <StatusPill
+                tone={item.severity === 'critical' || item.severity === 'high' ? 'danger' : item.severity === 'moderate' ? 'warn' : 'muted'}
+              >
+                {severityLabel.toUpperCase()}
+              </StatusPill>
+          }
+          {item.detectedAgo && (
+            <span className="flex items-center gap-1.5 font-body text-muted text-label">
+              <Clock size={10} className="text-muted flex-shrink-0" />
+              Detected {item.detectedAgo}
+            </span>
           )}
-          {isCluster && (
-            <div className="mt-3 px-3 py-2 bg-stone2">
-              <div className="font-body text-muted text-label mb-1">Why these are linked</div>
-              <div className="font-body text-muted text-label leading-relaxed">{item.why}</div>
+          {isResolved && (
+            <span className="flex items-center gap-1.5 font-body text-ok text-label">
+              <Check size={10} strokeWidth={2.5} />Resolved
+            </span>
+          )}
+        </div>
+
+        {/* 2. Hero: title left, accuracy impact right */}
+        <div className="flex items-start justify-between gap-6 mb-4">
+          <h2 className="font-display font-bold text-ink text-page leading-tight flex-1">{item.label}</h2>
+          {item.confidenceDrop > 0 && (
+            <div className="flex-shrink-0 text-right">
+              <div className="font-body text-muted text-label mb-1">Accuracy impact</div>
+              <div className="display-num text-metric font-bold text-danger leading-none">−{item.confidenceDrop}%</div>
             </div>
           )}
         </div>
 
-        {/* AI Assessment */}
-        {item.aiAssessment && (
-          <div>
-            <SectionHeader tone="muted" label="Why this happened" className="mb-2" />
-            <div className="border border-rule2 bg-stone2 px-4 py-3.5">
-              <div className="flex items-start justify-between gap-3 mb-2">
-                <div className="font-body text-ink text-body leading-relaxed flex-1">{item.aiAssessment.text}</div>
-                <span className="font-body text-label font-bold text-ochre flex-shrink-0 px-2 py-0.5 bg-ochre/10">
-                  {item.aiAssessment.confidence}%
-                </span>
-              </div>
+        {/* 3. System tag chips */}
+        {item.systemsImpacted?.length > 0 && (
+          <div className="flex flex-wrap gap-1.5 mb-5">
+            {item.systemsImpacted.map(s => (
+              <span key={s} className="font-body text-label text-muted bg-stone2 border border-rule2 px-2 py-0.5">{s}</span>
+            ))}
+          </div>
+        )}
+
+        {/* 4. Unlocks */}
+        {item.unlocks?.length > 0 && (
+          <div className="mb-6">
+            <div className="flex items-center gap-1.5 mb-2">
+              <Zap size={12} strokeWidth={2} className="text-ok flex-shrink-0" />
+              <span className="font-body font-semibold text-ok text-body">Unlocks</span>
+            </div>
+            <div className="space-y-1.5">
+              {item.unlocks.map(u => (
+                <div key={u} className="flex items-center gap-2">
+                  <span className="w-1 h-1 rounded-full bg-ok flex-shrink-0" />
+                  <span className="font-body text-ok text-body">{u}</span>
+                </div>
+              ))}
             </div>
           </div>
         )}
 
-        {/* Fix Sequencing */}
+        {/* 5. Blocked by */}
+        {item.blockedBy && (
+          <div className="flex items-center gap-2 mb-5 px-3 py-2 bg-warn/[0.06] border border-warn/20">
+            <AlertTriangle size={11} strokeWidth={2} className="text-warn flex-shrink-0" />
+            <span className="font-body text-warn text-label">Blocked by: {item.blockedBy}</span>
+          </div>
+        )}
+
+        {/* 6. Two-column insight cards */}
+        {(isCluster || item.aiAssessment) && (
+          <div className={`grid gap-3 mb-7 ${isCluster && item.aiAssessment ? 'grid-cols-2' : 'grid-cols-1'}`}>
+            {isCluster && item.why && (
+              <div className="border border-rule2 bg-stone2 px-4 py-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <Link2 size={12} strokeWidth={2} className="text-ochre flex-shrink-0" />
+                  <span className="font-body font-semibold text-ink text-body">Why these are linked</span>
+                </div>
+                <p className="font-body text-muted text-label leading-relaxed">{item.why}</p>
+              </div>
+            )}
+            {item.aiAssessment && (
+              <div className="border border-rule2 bg-stone2 px-4 py-4">
+                <div className="flex items-center justify-between gap-3 mb-3">
+                  <div className="flex items-center gap-2">
+                    <Layers size={12} strokeWidth={2} className="text-ochre flex-shrink-0" />
+                    <span className="font-body font-semibold text-ink text-body">Why this happened</span>
+                  </div>
+                  <span className="font-body text-label font-bold text-ochre px-2 py-0.5 bg-ochre/10 flex-shrink-0 whitespace-nowrap">
+                    {item.aiAssessment.confidence}% confidence
+                  </span>
+                </div>
+                <p className="font-body text-muted text-label leading-relaxed">{item.aiAssessment.text}</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* 7. Fix sequencing */}
         {item.fixSequence?.length > 0 && (
-          <div>
-            <SectionHeader tone="muted" label="How to fix this" className="mb-2" />
-            <div className="border border-rule2 bg-stone divide-y divide-rule2">
+          <div className="mb-7">
+            <div className="font-body text-micro font-semibold text-muted mb-3 tracking-wider">HOW TO FIX THIS</div>
+            <div className="space-y-2">
               {item.fixSequence.map((step, i) => (
-                <div key={i} className="flex items-center gap-4 px-4 py-3">
-                  <span className="display-num text-base font-bold text-muted/60 flex-shrink-0 w-4">{i + 1}</span>
-                  <span className="font-body text-ink text-body flex-1">{step.step}</span>
+                <div key={i} className="flex items-center gap-4 px-4 py-3 bg-stone2 border border-rule2">
+                  <span className="display-num text-[11px] font-bold text-stone bg-ochre w-5 h-5 flex items-center justify-center flex-shrink-0 tabular-nums">{i + 1}</span>
+                  <span className="font-body text-ink text-body flex-1 leading-snug">{step.step}</span>
                   <span className="font-body text-muted text-label flex-shrink-0">{step.duration}</span>
                 </div>
               ))}
-              {item.estimatedMinutes && (
-                <div className="flex items-center justify-between px-4 py-2.5 bg-stone2">
-                  <span className="font-body text-muted text-label">Estimated completion</span>
-                  <span className="font-body text-muted text-label font-medium">{item.estimatedMinutes} minutes</span>
-                </div>
-              )}
             </div>
+            {item.estimatedMinutes && (
+              <div className="flex items-center gap-1.5 mt-3 px-1">
+                <Clock size={11} className="text-muted flex-shrink-0" />
+                <span className="font-body text-muted text-label">Estimated completion: </span>
+                <span className="font-body text-ink text-label font-semibold">{item.estimatedMinutes} minutes</span>
+              </div>
+            )}
           </div>
         )}
 
         {/* Auto-remediation */}
         {item.autoEligible && !isResolved && (
-          <div>
+          <div className="mb-7">
             <SectionHeader tone="muted" label="AI can fix this" className="mb-2" />
             <div className="border border-rule2 bg-stone px-4 py-4">
               <div className="flex items-center gap-2 mb-3">
@@ -586,7 +628,7 @@ function WorkspacePanel({ item, isCluster, resolved, onResolve, onResolveCluster
 
         {/* Risk Forecast */}
         {item.riskForecast?.length > 0 && !isResolved && (
-          <div>
+          <div className="mb-7">
             <SectionHeader tone="muted" label="If you delay" className="mb-2" />
             <div className="space-y-2">
               {item.riskForecast.map((r, i, arr) => {
