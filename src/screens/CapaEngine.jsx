@@ -147,6 +147,7 @@ const BLOCKING_ITEM = {
  recommendedAction: 'Upload Pack Line QA pre-check log',
  expectedImpact: 'FDA audit package unblocked. All 14 closed CAPAs ready for FSMA 204 export.',
  riskIfIgnored: 'FSMA 204 evidence gap remains open through the FDA Region 7 inspection window.',
+ before: 'Pack Line QA pre-check logs completed without exception for 6 consecutive months · Last documented compliance gap: June 2025 · Zero open QA evidence items as of April 12',
 }
 
 function CollapsibleSection({ label, isOpen, onToggle, children }) {
@@ -382,6 +383,17 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
    </Btn>
   </div>
  )}
+ {/* ── Before this case — the baseline state ── */}
+ {c.before && !isClosed && (
+  <div className="px-4 py-3 border-b border-rule2 flex items-start gap-2.5">
+   <Clock size={11} strokeWidth={2} className="text-muted flex-shrink-0 mt-0.5" />
+   <div>
+    <div className="font-body text-muted text-label font-medium mb-0.5">Before this case</div>
+    <div className="font-body text-muted text-label leading-snug">{c.before}</div>
+   </div>
+  </div>
+ )}
+
  {/* ── Recommended action (the operative section) ── */}
  {!isClosed && !actionTaken && (
  <div ref={recommendedActionRef}>

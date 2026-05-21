@@ -90,7 +90,7 @@ Output (JSON):
     // five-step checklist lives in reference/live.md (loaded once per
     // session); repeating it per-event would waste tokens.
     if (result.carbonize) {
-      result.todo = 'REQUIRED before next poll: carbonize cleanup in ' + relFile + '. See reference/live.md "Required after accept".';
+      result.todo = 'Required before next poll: carbonize cleanup in ' + relFile + '. See reference/live.md "Required after accept".';
     }
     console.log(JSON.stringify({ handled: true, file: relFile, ...result }));
   }

@@ -71,8 +71,8 @@ function escalationTone(i, total) {
 function EscalationStrip({ steps }) {
   return (
     <div className="flex-shrink-0 flex items-stretch border-b border-rule2">
-      <div className="px-4 flex items-center border-r border-rule2 flex-shrink-0 bg-stone2">
-        <span className="font-body text-micro font-semibold text-muted">ESCALATION</span>
+      <div className="px-4 items-center border-r border-rule2 flex-shrink-0">
+        <span className="font-body text-micro text-muted mb-1.5">Escalation</span>
       </div>
       <div className="flex flex-1 items-stretch gap-0">
         {steps.flatMap((s, i) => {
@@ -147,7 +147,7 @@ export default function CompliancePolicy() {
           <div className="flex items-start gap-2">
             <AlertTriangle size={11} className="text-warn flex-shrink-0 mt-0.5" strokeWidth={2} />
             <div>
-              <div className="font-body font-bold text-warn text-body mb-0.5">Coverage gap</div>
+              <div className="font-body text-warn text-body mb-1.5">Coverage gap</div>
               <div className="font-body text-muted text-label leading-snug">{multiRegulatoryCoverage.coverageGap}</div>
             </div>
           </div>
@@ -189,7 +189,7 @@ export default function CompliancePolicy() {
 
         {/* Export markets */}
         <div className="flex-shrink-0 px-5 py-3 border-t border-rule2 bg-stone2">
-          <div className="font-body text-micro text-muted mb-1.5">EXPORT MARKETS</div>
+          <div className="font-body text-micro text-muted mb-1.5">Export markets</div>
           <div className="flex flex-wrap gap-1">
             {multiRegulatoryCoverage.currentExportMarkets.map(m => (
               <span key={m} className="font-body text-muted text-label bg-stone3 px-1.5 py-0.5">{m}</span>
@@ -219,18 +219,18 @@ export default function CompliancePolicy() {
             {/* Frameworks + Evidence — two columns */}
             <div className="flex border-b border-rule2">
               <div className="flex-1 border-r border-rule2">
-                <SectionHeader label="FRAMEWORKS" count={`${policy.frameworks.length} configured`} accent="bg-ochre" />
+                <SectionHeader label="Frameworks" count={`${policy.frameworks.length} configured`} accent="bg-ochre" />
                 {policy.frameworks.map((f, i) => <FrameworkRow key={f.id} f={f} index={i} />)}
               </div>
               <div className="flex-1">
-                <SectionHeader label="EVIDENCE" count={`${policy.evidenceRequirements.length} requirements`} accent="bg-ok" />
+                <SectionHeader label="Evidence" count={`${policy.evidenceRequirements.length} requirements`} accent="bg-ok" />
                 {policy.evidenceRequirements.map((e, i) => <EvidenceRow key={i} e={e} index={i} />)}
               </div>
             </div>
 
             {/* Reporting templates */}
             <div>
-              <SectionHeader label="REPORTING" count={`${policy.reportingTemplates.length} templates`} accent="bg-muted" />
+              <SectionHeader label="Reporting" count={`${policy.reportingTemplates.length} templates`} accent="bg-muted" />
               {policy.reportingTemplates.map(t => (
                 <div key={t.id} className="flex items-center gap-3 px-5 py-3 border-b border-rule2 last:border-0 hover:bg-stone2 transition-colors">
                   <div className="flex-1 min-w-0">

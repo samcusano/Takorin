@@ -37,6 +37,7 @@ const CLUSTER_A = {
   ],
   estimatedMinutes: 22,
   autoEligible: false,
+  baseline: 'ERP field matching operating at 98% · Supplier lot name formats aligned across all 14 active records since the May 9 validated sync · FSMA traceability chain intact',
   riskForecast: [
     { hours: 12, consequence: 'FSMA export failure likely — traceability chain incomplete' },
     { hours: 24, consequence: 'SupplierIQ confidence may fall below operational threshold' },
@@ -74,6 +75,7 @@ const ISSUE_CTX = {
     'No audit conflict detected in current shift',
     'Prior approval pattern matches this SKU class',
   ],
+  baseline: 'Oven B SKU profiles complete for all active products · ShiftIQ CCP-3 evaluating within ±1% of expected accuracy · No false positives flagged in the prior 30-day window',
   riskForecast: [
     { hours: 12, consequence: 'ShiftIQ CCP evaluations remain unreliable for Oven B' },
     { hours: 24, consequence: 'Model confidence in Oven B signals may fall below 70%' },
@@ -105,6 +107,7 @@ const ISSUE_SCADA = {
   ],
   estimatedMinutes: null,
   autoEligible: false,
+  baseline: 'Oven B SCADA feed stable at 99.7% uptime over the prior 90 days · Zone 3 network switch serviced during the March maintenance window',
   riskForecast: [
     { hours: 8,  consequence: 'Accuracy impact grows from −4 to −8 if unresolved' },
     { hours: 24, consequence: 'Extended downtime may trigger compliance flag in audit log' },
@@ -136,6 +139,7 @@ const ISSUE_ERP = {
   ],
   estimatedMinutes: 30,
   autoEligible: false,
+  baseline: 'All 214 ERP ingredient records linked to supplier database · Full chain-of-custody traceability maintained through April 8 before the ingredient master migration',
   riskForecast: [
     { hours: 24, consequence: 'Traceability gap persists through next regulatory cycle' },
     { hours: 72, consequence: 'FSMA 204 audit export may flag incomplete ingredient provenance' },
@@ -167,6 +171,7 @@ const ISSUE_TRACE = {
   ],
   estimatedMinutes: null,
   autoEligible: false,
+  baseline: 'All ConAgra and ADM lot intake forms complete with required metadata · FSMA 204 traceability chain validated at last compliance review 6 days before this gap appeared',
   riskForecast: [
     { hours: 12, consequence: 'Affected lots cannot be included in FSMA 204 traceability report' },
     { hours: 48, consequence: 'FDA inspection may flag lot provenance gaps if unresolved' },
@@ -203,6 +208,7 @@ const ISSUE_CHECK = {
     'No audit conflict — both systems agree on the checklist items',
     'Zero production impact during sync',
   ],
+  baseline: 'All 12 ShiftIQ startup checklist items mapped to corresponding MES workflow steps · Operator sign-off verified against machine-side completion since last ShiftIQ update in February',
   riskForecast: [
     { hours: 24, consequence: 'Operator sign-offs remain unverifiable against MES for these 3 items' },
   ],
@@ -534,6 +540,17 @@ function WorkspacePanel({ item, isCluster, resolved, onResolve, onResolveCluster
           <div className="flex items-center gap-2 mb-5 px-3 py-2 bg-warn/[0.06] border border-warn/20">
             <AlertTriangle size={11} strokeWidth={2} className="text-warn flex-shrink-0" />
             <span className="font-body text-warn text-label">Blocked by: {item.blockedBy}</span>
+          </div>
+        )}
+
+        {/* 5.5 The Before — what was expected */}
+        {item.baseline && (
+          <div className="border border-rule2 bg-stone px-4 py-4 mb-5">
+            <div className="flex items-center gap-2 mb-2">
+              <Clock size={12} strokeWidth={2} className="text-muted flex-shrink-0" />
+              <span className="font-body font-semibold text-muted text-body">What was expected</span>
+            </div>
+            <p className="font-body text-muted text-label leading-relaxed">{item.baseline}</p>
           </div>
         )}
 
