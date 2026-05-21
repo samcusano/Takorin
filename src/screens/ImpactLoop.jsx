@@ -102,13 +102,14 @@ function EventChain({ entry, compact = false }) {
   )
 }
 
-function InterventionCard({ entry, selected, onClick }) {
+function InterventionCard({ entry, selected, onClick, index = 0 }) {
   const oc = OUTCOME_CFG[entry.outcomeClassification] ?? OUTCOME_CFG.unclear
   return (
     <button type="button" onClick={onClick}
-      className={`w-full text-left px-4 py-3.5 border-b border-rule2 border-l-4 ${oc.border} transition-colors ${
+      className={`w-full text-left px-4 py-3.5 border-b border-rule2 border-l-4 ${oc.border} transition-colors row-in card-lift ${
         selected ? 'bg-stone2' : 'hover:bg-stone2/50'
-      }`}>
+      }`}
+      style={{ animationDelay: `${index * 60}ms` }}>
       <div className="flex items-start gap-2 mb-2">
         <div className="flex-1 min-w-0">
           <StatusPill tone={oc.tone} className="mb-1.5">{oc.label}</StatusPill>
@@ -372,8 +373,8 @@ export default function ImpactLoop() {
         {/* ── Left: list ────────────────────────────────────────────── */}
         <div className="w-[280px] flex-shrink-0 border-r border-rule2 flex flex-col bg-stone">
           <div className="flex-1 overflow-y-auto">
-            {interventions.map(e => (
-              <InterventionCard key={e.id} entry={e}
+            {interventions.map((e, i) => (
+              <InterventionCard key={e.id} entry={e} index={i}
                 selected={selectedId === e.id}
                 onClick={() => setSelectedId(e.id)} />
             ))}

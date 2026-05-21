@@ -23,11 +23,12 @@ function SectionHeader({ label, count, accent = 'bg-rule2' }) {
 
 // ─── Framework row ────────────────────────────────────────────────────────────
 
-function FrameworkRow({ f }) {
+function FrameworkRow({ f, index = 0 }) {
   const border = STATUS_BORDER[f.status] ?? 'border-l-rule2'
   const color  = STATUS_COLOR[f.status]  ?? 'text-muted'
   return (
-    <div className={`flex items-start gap-3 px-5 py-3 border-b border-rule2 last:border-0 border-l-2 ${border} ${f.status === 'inactive' ? 'opacity-40' : ''}`}>
+    <div className={`flex items-start gap-3 px-5 py-3 border-b border-rule2 last:border-0 border-l-2 row-in ${border} ${f.status === 'inactive' ? 'opacity-40' : ''}`}
+      style={{ animationDelay: `${index * 50}ms` }}>
       <div className="flex-1 min-w-0">
         <div className="flex items-baseline gap-2 flex-wrap mb-0.5">
           <span className="font-body font-medium text-ink text-body">{f.name}</span>
@@ -42,9 +43,10 @@ function FrameworkRow({ f }) {
 
 // ─── Evidence row ─────────────────────────────────────────────────────────────
 
-function EvidenceRow({ e }) {
+function EvidenceRow({ e, index = 0 }) {
   return (
-    <div className={`flex items-start gap-3 px-5 py-2.5 border-b border-rule2 last:border-0 ${e.required ? 'border-l-2 border-l-ok' : ''}`}>
+    <div className={`flex items-start gap-3 px-5 py-2.5 border-b border-rule2 last:border-0 row-in ${e.required ? 'border-l-2 border-l-ok' : ''}`}
+      style={{ animationDelay: `${index * 50}ms` }}>
       <div className="flex-1 min-w-0">
         <div className="font-body font-medium text-ink text-body leading-snug">{e.domain}</div>
         <div className="font-body text-muted text-label mt-0.5 leading-snug">{e.requirement}</div>
@@ -218,11 +220,11 @@ export default function CompliancePolicy() {
             <div className="flex border-b border-rule2">
               <div className="flex-1 border-r border-rule2">
                 <SectionHeader label="FRAMEWORKS" count={`${policy.frameworks.length} configured`} accent="bg-ochre" />
-                {policy.frameworks.map(f => <FrameworkRow key={f.id} f={f} />)}
+                {policy.frameworks.map((f, i) => <FrameworkRow key={f.id} f={f} index={i} />)}
               </div>
               <div className="flex-1">
                 <SectionHeader label="EVIDENCE" count={`${policy.evidenceRequirements.length} requirements`} accent="bg-ok" />
-                {policy.evidenceRequirements.map((e, i) => <EvidenceRow key={i} e={e} />)}
+                {policy.evidenceRequirements.map((e, i) => <EvidenceRow key={i} e={e} index={i} />)}
               </div>
             </div>
 

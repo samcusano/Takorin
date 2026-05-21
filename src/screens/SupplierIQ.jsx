@@ -136,10 +136,10 @@ const SC = {
 }
 
 // ── SupplierCard — FindingCard grammar for critical/monitoring items ───────────
-function SupplierCard({ tone = 'warn', title, desc, evidence, children, actions }) {
+function SupplierCard({ tone = 'warn', title, desc, evidence, children, actions, delay = 0 }) {
   const accent = tone === 'danger' ? SC.rust : tone === 'warn' ? SC.amber : SC.border
   return (
-    <div style={{ background: SC.surface, border: `1px solid ${SC.border}`, borderLeft: `3px solid ${accent}`, marginBottom: 10 }}>
+    <div className="row-in" style={{ background: SC.surface, border: `1px solid ${SC.border}`, borderLeft: `3px solid ${accent}`, marginBottom: 10, animationDelay: `${delay}ms` }}>
       <div style={{ padding: '14px 16px 10px' }}>
         <div className="font-display font-semibold text-base text-ink leading-snug mb-2">{title}</div>
         {desc && <p className="font-display text-body leading-relaxed m-0" style={{ color: SC.context }}>{desc}</p>}
@@ -166,10 +166,11 @@ function SupplierRow({ s, audit, isDanger, index, total }) {
   const flagLabel = audit?.needsAction ? 'NEEDS ACTION' : isDanger ? 'AT RISK' : 'CONDITIONAL'
   const flagColor = isDanger ? SC.rust : SC.amber
   return (
-    <div style={{
+    <div className="row-in" style={{
       display: 'flex', alignItems: 'center', gap: 16, padding: '11px 16px',
       borderBottom: index < total - 1 ? `1px solid ${SC.border2}` : 'none',
       background: isDanger ? `${SC.rust}09` : 'transparent',
+      animationDelay: `${index * 55}ms`,
     }}>
       <div style={{ minWidth: 140 }}>
         <div className="font-body font-medium text-body" style={{ color: isDanger ? SC.rust : SC.bone }}>{s.name}</div>
@@ -177,7 +178,7 @@ function SupplierRow({ s, audit, isDanger, index, total }) {
       </div>
       <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 10 }}>
         <div style={{ flex: 1, height: 2, background: SC.border }}>
-          <div style={{ height: '100%', width: `${s.score}%`, background: scoreColor, transition: 'width 700ms cubic-bezier(0.16,1,0.3,1)' }} />
+          <div className="bar-grow" style={{ height: '100%', width: `${s.score}%`, background: scoreColor }} />
         </div>
         <span className="font-body text-label" style={{ minWidth: 28, textAlign: 'right', color: scoreColor }}>{s.score}</span>
       </div>
@@ -318,6 +319,7 @@ export default function SupplierIQ() {
             {blockingLots.map((lot, i) => (
               <SupplierCard
                 key={i}
+                delay={i * 60}
                 tone="danger"
                 title={`${lot.ing} — COA Missing`}
                 desc={`Production start held · ${lot.supplier} · Lot ${lot.delivery}`}
@@ -351,9 +353,10 @@ export default function SupplierIQ() {
               </SupplierCard>
             ))}
 
-            {auditActionSuppliers.map(s => (
+            {auditActionSuppliers.map((s, i) => (
               <SupplierCard
                 key={s.name}
+                delay={(blockingLots.length + i) * 60}
                 tone="warn"
                 title={`${s.name} — Conditional Audit Approval`}
                 desc="Re-audit required before next purchase order"
@@ -378,6 +381,7 @@ export default function SupplierIQ() {
               {monitoringLots.map((lot, i) => (
                 <SupplierCard
                   key={i}
+                  delay={i * 60}
                   tone={lot.shelfTone === 'danger' ? 'danger' : 'warn'}
                   title={`${lot.ing} — ${lot.shelfTone === 'danger' ? 'Expiring soon' : 'Shelf life alert'}`}
                   desc={`${lot.supplier} · Lot ${lot.delivery}`}

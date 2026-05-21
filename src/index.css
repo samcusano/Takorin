@@ -286,6 +286,41 @@
   .drawer-in  { animation: drawerIn  320ms var(--ease-spring) both; }
   .drawer-out { animation: drawerOut 220ms var(--ease-exit) both; }
 
+  /* ── Row entrance — staggered list/card reveal (matches ShiftIQV2) ──────── */
+  @keyframes rowIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .row-in { animation: rowIn 320ms var(--ease-spring) both; }
+
+  /* ── Metric entrance — hero display-num numbers in SceneHeader ───────────── */
+  @keyframes metricIn {
+    from { opacity: 0; transform: translateY(12px) scale(0.88); }
+    to   { opacity: 1; transform: translateY(0)    scale(1); }
+  }
+  .metric-in {
+    animation: metricIn 440ms var(--ease-spring) both;
+    animation-delay: 100ms;
+  }
+
+  /* ── Bar grow — scaleX reveal for progress / score fill bars ─────────────── */
+  @keyframes barGrow {
+    from { transform: scaleX(0); }
+    to   { transform: scaleX(1); }
+  }
+  .bar-grow {
+    transform-origin: left center;
+    animation: barGrow 550ms var(--ease-spring) both;
+    animation-delay: 160ms;
+  }
+
+  /* ── Card lift — hover elevation for interactive cards ────────────────────── */
+  .card-lift {
+    transition: transform 120ms var(--ease-enter), box-shadow 120ms var(--ease-enter);
+  }
+  .card-lift:hover  { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,0,0,0.32); }
+  .card-lift:active { transform: translateY(0) scale(0.99); transition-duration: 80ms; }
+
   /* ── Reduced-motion overrides ───────────────────────────────────────────── */
   @media (prefers-reduced-motion: reduce) {
     .undo-countdown         { animation: none; width: 0%; }
@@ -304,5 +339,9 @@
     .danger-pulse           { animation: none; }
     .spinner                { animation-duration: 2000ms; }
     .atmo-glow-danger, .atmo-glow-warn, .atmo-glow-ok { animation: none; opacity: 0.05; }
+    .row-in   { animation: none; opacity: 1; transform: none; }
+    .metric-in { animation: none; opacity: 1; transform: none; }
+    .bar-grow  { animation: none; transform: none; }
+    .card-lift, .card-lift:hover, .card-lift:active { transform: none; box-shadow: none; }
   }
 }

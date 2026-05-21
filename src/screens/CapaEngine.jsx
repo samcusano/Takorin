@@ -162,14 +162,15 @@ function CollapsibleSection({ label, isOpen, onToggle, children }) {
  )
 }
 
-function PriorityQueueRow({ c, isSelected, onSelect, isEscalated, isResolved }) {
+function PriorityQueueRow({ c, isSelected, onSelect, isEscalated, isResolved, index = 0 }) {
  const score = c.priorityScore || 0
  const rowBg = isSelected ? 'bg-ochre/[0.04]'
  : score >= 80 && !isResolved && !isEscalated ? 'bg-danger/[0.015]' : ''
 
  return (
  <button type="button" onClick={onSelect}
- className={`relative w-full text-left border-b border-rule2 transition-colors overflow-hidden ${rowBg} ${isResolved || isEscalated ? 'opacity-50' : 'hover:bg-stone3'}`}>
+ className={`relative w-full text-left border-b border-rule2 transition-colors overflow-hidden row-in card-lift ${rowBg} ${isResolved || isEscalated ? 'opacity-50' : 'hover:bg-stone3'}`}
+ style={{ animationDelay: `${index * 55}ms` }}>
  <div className="flex items-start gap-3 px-4 py-3 pb-6">
  <div className="flex-1 min-w-0">
   <div className="flex items-center gap-1.5 mb-0.5 flex-wrap">
@@ -212,7 +213,7 @@ function PriorityQueueRow({ c, isSelected, onSelect, isEscalated, isResolved }) 
  {/* Urgency bar — fills proportional to priority score */}
  {!isResolved && !isEscalated && score > 0 && (
   <div className="absolute bottom-0 left-0 h-[2px] w-full">
-   <div className={`h-full transition-[width] duration-500 ease-enter ${
+   <div className={`h-full bar-grow ${
     score >= 80 ? 'bg-danger/50' : score >= 55 ? 'bg-warn/40' : 'bg-muted/20'
    }`} style={{ width: `${score}%` }} />
   </div>
@@ -679,10 +680,11 @@ function LayoutQueue({ visibleCases, blockingEvidenceUploaded, setBlockingEviden
 
  {/* Ranked items — scrollable */}
  <div className="flex-1 overflow-y-auto">
- {(searchQuery ? filteredQueue : sortedQueue).map((c) => (
+ {(searchQuery ? filteredQueue : sortedQueue).map((c, i) => (
  <PriorityQueueRow
  key={c.id}
  c={c}
+ index={i}
  isSelected={selectedId === c.id}
  onSelect={() => setSelectedId(c.id)}
  isEscalated={escalatedIds.has(c.id)}
