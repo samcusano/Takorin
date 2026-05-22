@@ -308,6 +308,17 @@ export const operatorContextData = {
       { id: 'af4', label: 'Restart temperature verified at 60°C' },
       { id: 'af5', label: 'Supervisor sign-off on line restart' },
     ],
+    directives: [
+      {
+        id: 'dir-r03-01',
+        from: 'D. Kowalski',
+        role: 'Supervisor',
+        urgency: 'warn',
+        message: 'R-03 Seal Press A going offline at 14:30 for bearing inspection. Prepare manual sealing station before handoff. I will brief you at 13:45.',
+        deadline: '13:45',
+        sentAt: '13:12',
+      },
+    ],
   },
   'P. Okonkwo': {
     mode: 'CCP_MONITORING',
@@ -1016,6 +1027,7 @@ export const agentConfigData = {
     {
       id:'pre-shift', name:'Pre-Shift Verification', icon:'Shield', promptVersion:'1.0.0',
       description:'Verifies all startup conditions T-30 min before shift: certs, checklists, sensors, robot calibration.',
+      trustScore: 91, trustTrajectory: [78, 81, 83, 85, 87, 89, 90, 91],
       isComplianceCategory: false,
       confidenceMethodology: 'Percentage of startup conditions passing (cert status, checklist completion, sensor health, calibration validity). 100% = all conditions verified. A missing cert drops it proportionally.',
       enabled:true, confidenceThreshold:80,
@@ -1026,6 +1038,7 @@ export const agentConfigData = {
     {
       id:'compliance', name:'Compliance Monitor', icon:'AlertTriangle',
       description:'Real-time signal monitoring. Opens CAPAs automatically on threshold breach with regulatory mapping and evidence.',
+      trustScore: 78, trustTrajectory: [65, 68, 70, 72, 74, 75, 77, 78],
       isComplianceCategory: true,
       writeScope: 'create-only',
       corroborationRequired: true,
@@ -1088,6 +1101,7 @@ export const agentConfigData = {
     {
       id:'supplier', name:'Supplier Intelligence', icon:'Truck',
       description:'Monitors COA status, requests missing docs, recommends hold/release decisions.',
+      trustScore: 82, trustTrajectory: [68, 72, 74, 77, 79, 80, 81, 82],
       isComplianceCategory: true,
       confidenceMethodology: 'Binary COA presence check (100% if received and valid, 0% if absent) weighted by time-to-production urgency. At ≥4h before production start with no COA: 95%+. Between 1-4h: 85-94%. Under 1h: always escalates regardless of confidence.',
       regulatoryObligations: ['FSMA 204 supplier verification', 'HACCP CCP-1 ingredient control'],
@@ -1138,6 +1152,7 @@ export const agentConfigData = {
     {
       id:'resource', name:'Resource Allocation', icon:'Users',
       description:'Proposes schedule adjustments on absence or cert gap. In hybrid mode, rebalances human/robot task coverage. In emergency conditions (human absent + robot qualified + T-60 min), can act autonomously unless overridden.',
+      trustScore: 72, trustTrajectory: [60, 63, 65, 67, 68, 70, 71, 72],
       isComplianceCategory: false,
       confidenceMethodology: 'Probability that the proposed allocation meets all certification requirements AND maintains ≥72% qualified staffing threshold. Based on cert database at time of proposal. Does not account for same-day changes.',
       enabled:true, confidenceThreshold:75,
@@ -1210,6 +1225,7 @@ export const agentConfigData = {
     {
       id:'maintenance', name:'Predictive Maintenance', icon:'Wrench',
       description:'Analyzes telemetry trends and schedules maintenance windows before failures occur.',
+      trustScore: 84, trustTrajectory: [71, 74, 77, 79, 81, 82, 83, 84],
       isComplianceCategory: false,
       confidenceMethodology: 'Pattern similarity score against historical failure signatures in the precedent library, weighted by recency and line match. 100% = identical signature on same equipment. Penalised if precedent pool < 5 cases or if precedents are from a different line.',
       enabled:true, confidenceThreshold:82,
@@ -1260,6 +1276,7 @@ export const agentConfigData = {
     {
       id:'handoff', name:'Handoff Synthesis', icon:'Handshake',
       description:'Pre-populates handoff documents from live shift data T-45 min before shift end. Supervisor reviews and signs — they do not author.',
+      trustScore: 89, trustTrajectory: [80, 82, 84, 85, 87, 88, 88, 89],
       isComplianceCategory: true,
       confidenceMethodology: 'Data freshness score per item: 100% = source updated within 15 min. Each hour of staleness reduces per-item confidence by 10%. Items from sources with gaps (SCADA offline, MES sync failure) are flagged as unverified regardless of score.',
       regulatoryObligations: ['Shift handoff documentation (FSMA 204)', 'CCP status continuity record'],
@@ -1301,6 +1318,7 @@ export const agentConfigData = {
     },
     {
       id:'escalation', name:'Risk Escalation', icon:'Bell',
+      trustScore: 88, trustTrajectory: [75, 79, 81, 83, 85, 86, 87, 88],
       description:'Routes critical findings to owners before time windows close. Escalates if unacknowledged. "I\'m on the floor" status pauses re-fires and routes to named backup.',
       isComplianceCategory: false,
       confidenceMethodology: 'Not applicable — escalation fires based on time elapsed and finding urgency level, not a confidence model. A critical finding unacknowledged for 10 min always escalates regardless of any confidence score.',
@@ -1318,6 +1336,7 @@ export const agentConfigData = {
     },
     {
       id:'capa-closure', name:'CAPA Closure', icon:'ClipboardCheck',
+      trustScore: 76, trustTrajectory: [60, 64, 67, 69, 71, 73, 74, 76],
       description:'Tracks evidence vs. requirements, sends targeted reminders, validates closure readiness. Enabled in advisory mode — cannot close cases autonomously. In robot mode: manages task queue rebalancing.',
       isComplianceCategory: true,
       writeScope: 'track-only',
@@ -1357,6 +1376,7 @@ export const agentConfigData = {
     },
     {
       id:'data-guardian', name:'Data Quality Guardian', icon:'Shield',
+      trustScore: 95, trustTrajectory: [88, 90, 91, 92, 93, 94, 94, 95],
       description:'Monitors all data source freshness every 5 minutes. When any source critical to a compliance or safety agent is stale > 30 min, surfaces a finding to the director and flags dependent agents.',
       isComplianceCategory: false,
       confidenceMethodology: 'Binary: each source is either fresh (< 30 min) or stale (≥ 30 min). No probability model — purely recency-based.',

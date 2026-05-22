@@ -1,8 +1,145 @@
 import { useState } from 'react'
 import { equipment, recipes, spcData, runHistory } from '../data/equipment'
-import { AlertTriangle, CheckCircle2, Wrench, Activity, Clock } from 'lucide-react'
-import { SceneHeader, SectionHeader, StatusPill, Btn } from '../components/UI'
+import { AlertTriangle, CheckCircle2, Wrench, Activity, Clock, TrendingDown, CalendarClock, Zap } from 'lucide-react'
+import { SceneHeader, SectionHeader, StatusPill, Btn, SlidePanel } from '../components/UI'
 import { useAppState } from '../context/AppState'
+
+// ─── Remaining Useful Life strip ──────────────────────────────────────────────
+
+function RULStrip({ eq }) {
+  if (!eq.rul) return null
+  const maxH  = 48
+  const pct   = Math.min(100, (eq.rul / maxH) * 100)
+  const safe  = pct > 60
+  const warn  = pct > 25 && pct <= 60
+  const crit  = pct <= 25
+  const barColor = crit ? 'var(--color-danger)' : warn ? 'var(--color-warn)' : 'var(--color-ok)'
+  const textColor = crit ? 'text-danger' : warn ? 'text-warn' : 'text-ok'
+  return (
+    <div className="flex-shrink-0 px-5 py-3 border-b border-rule2 bg-stone2">
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-1.5">
+          <TrendingDown size={10} strokeWidth={2} className={textColor} aria-hidden="true" />
+          <span className="font-body text-label font-medium text-muted">Remaining useful life</span>
+        </div>
+        <span className={`display-num text-base tabular-nums ${textColor}`}>{eq.rul}{eq.rulUnit === 'hours' ? 'h' : eq.rulUnit}</span>
+      </div>
+      <div className="relative h-2 bg-rule2 overflow-hidden">
+        {/* Failure risk zone */}
+        <div className="absolute right-0 top-0 h-full bg-danger/20" style={{ width: '25%' }} />
+        {/* Warn zone */}
+        <div className="absolute top-0 h-full bg-warn/10" style={{ left: '25%', width: '35%' }} />
+        {/* Current fill */}
+        <div className="absolute left-0 top-0 h-full transition-[width] duration-700" style={{ width: `${pct}%`, background: barColor }} />
+        {/* Now marker */}
+        <div className="absolute top-0 h-full w-0.5 bg-ink/50" style={{ left: `${pct}%` }} />
+      </div>
+      <div className="flex items-center justify-between mt-1.5">
+        <span className="font-body text-micro text-muted">Now</span>
+        <span className="font-body text-micro text-danger">Failure risk zone → 12h</span>
+        <span className="font-body text-micro text-muted">Normal lifecycle → {maxH}h</span>
+      </div>
+      {eq.rulTrend === 'declining' && (
+        <div className="font-body text-micro text-warn mt-1">Trend: declining · was {eq.rul + 8}h at shift start → {eq.rul}h now</div>
+      )}
+    </div>
+  )
+}
+
+// ─── Production Impact card ───────────────────────────────────────────────────
+
+function ProductionImpactCard({ eq }) {
+  const impact = eq.productionImpact
+  if (!impact) return null
+  return (
+    <div className="flex-shrink-0 mx-5 my-3 border border-warn/30 bg-warn/[0.03]">
+      <div className="flex items-center gap-2 px-4 py-2 border-b border-warn/20">
+        <AlertTriangle size={10} strokeWidth={2} className="text-warn flex-shrink-0" aria-hidden="true" />
+        <span className="font-body font-medium text-warn text-label">If R-03 fails mid-shift</span>
+      </div>
+      <div className="grid grid-cols-3 gap-px bg-warn/10 divide-x divide-warn/10">
+        {[
+          { label: 'Units at risk', val: impact.unitsAtRisk.toLocaleString(), color: 'text-warn' },
+          { label: 'Downtime',      val: `${impact.downtimeMins / 60}h`,       color: 'text-danger' },
+          { label: 'Est. loss',     val: `$${(impact.lossEstimate / 1000).toFixed(1)}K`, color: 'text-danger' },
+        ].map(({ label, val, color }) => (
+          <div key={label} className="bg-stone px-3 py-2.5 text-center">
+            <div className="font-body text-muted text-label mb-0.5">{label}</div>
+            <div className={`display-num text-base tabular-nums ${color}`}>{val}</div>
+          </div>
+        ))}
+      </div>
+      <div className="px-4 py-2 font-body text-muted text-label">
+        Line 4 PM shift starts 14:00 — resolution before handoff prevents downstream scheduling impact.
+      </div>
+    </div>
+  )
+}
+
+// ─── Maintenance Window Optimizer ─────────────────────────────────────────────
+
+function MaintenanceWindowOptimizer({ eq, onSchedule }) {
+  const [open, setOpen] = useState(false)
+  const [scheduled, setScheduled] = useState(null)
+  const windows = eq.maintenanceWindows ?? []
+  if (windows.length === 0) return null
+
+  const handleSchedule = (w) => {
+    setScheduled(w)
+    setOpen(false)
+    onSchedule?.(w)
+  }
+
+  return (
+    <>
+      {scheduled ? (
+        <div className="flex items-center gap-2 font-body text-ok text-label flex-shrink-0 px-2">
+          <CheckCircle2 size={10} strokeWidth={2} />
+          Scheduled: {scheduled.label}
+        </div>
+      ) : (
+        <Btn variant="secondary" icon={CalendarClock} onClick={() => setOpen(true)}>
+          Find best window
+        </Btn>
+      )}
+      {open && (
+        <SlidePanel
+          title="Maintenance Window Optimizer"
+          subtitle={`R-03 Seal Press A · ${eq.rul}h remaining · 3 candidate windows`}
+          accentColor="var(--color-warn)"
+          onClose={() => setOpen(false)}
+          footer={<Btn variant="secondary" onClick={() => setOpen(false)}>Close</Btn>}
+        >
+          <div className="space-y-3">
+            {windows.map((w, i) => (
+              <div key={i} className={`border ${w.recommended ? 'border-ok/40 bg-ok/[0.03]' : 'border-rule2'}`}>
+                <div className="flex items-start justify-between gap-3 px-4 py-3">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="font-body font-medium text-ink text-body">{w.label}</span>
+                      {w.recommended && <StatusPill tone="ok">Recommended</StatusPill>}
+                    </div>
+                    <div className="font-body text-muted text-label">{w.impact}</div>
+                    <div className="font-body text-muted text-label mt-0.5">{w.note}</div>
+                  </div>
+                  <div className="flex-shrink-0 text-right">
+                    <div className={`display-num text-base tabular-nums ${w.confidence >= 85 ? 'text-ok' : 'text-warn'}`}>{w.confidence}%</div>
+                    <div className="font-body text-muted text-label">conf.</div>
+                  </div>
+                </div>
+                <div className="px-4 pb-3">
+                  <Btn variant={w.recommended ? 'primary' : 'secondary'} onClick={() => handleSchedule(w)}>
+                    Schedule this window
+                  </Btn>
+                </div>
+              </div>
+            ))}
+          </div>
+        </SlidePanel>
+      )}
+    </>
+  )
+}
 
 const STATUS_CFG = {
   active:      { label: 'Active',       dot: 'bg-ok',     badge: 'bg-ok/10 text-ok' },
@@ -201,7 +338,7 @@ function RunHistory({ eqId }) {
 }
 
 function EquipmentDetail({ eq }) {
-  const { maintenanceTickets, setMaintenanceTickets } = useAppState()
+  const { maintenanceTickets, setMaintenanceTickets, logActivity } = useAppState()
   const [pmRequested, setPmRequested] = useState(false)
 
   if (!eq) return (
@@ -240,17 +377,24 @@ function EquipmentDetail({ eq }) {
             )}
           </div>
           {eq.status !== 'maintenance' && (
-            existingTicket ? (
-              <span className="font-body text-label text-warn flex items-center gap-1 flex-shrink-0">
-                <Wrench size={10} strokeWidth={2} />PM requested
-              </span>
-            ) : pmRequested ? (
-              <span className="font-body text-label text-ok flex items-center gap-1 flex-shrink-0">
-                <CheckCircle2 size={10} strokeWidth={2} />PM ticket created
-              </span>
-            ) : (
-              <Btn variant="secondary" icon={Wrench} onClick={handleRequestPM}>Request PM</Btn>
-            )
+            <div className="flex items-center gap-2 flex-shrink-0">
+              {eq.maintenanceWindows?.length > 0 && (
+                <MaintenanceWindowOptimizer eq={eq} onSchedule={(w) => {
+                  logActivity?.({ actor: 'D. Kowalski', action: `Scheduled R-03 maintenance: ${w.label}`, item: eq.name, type: 'intervention' })
+                }} />
+              )}
+              {existingTicket ? (
+                <span className="font-body text-label text-warn flex items-center gap-1 flex-shrink-0">
+                  <Wrench size={10} strokeWidth={2} />PM requested
+                </span>
+              ) : pmRequested ? (
+                <span className="font-body text-label text-ok flex items-center gap-1 flex-shrink-0">
+                  <CheckCircle2 size={10} strokeWidth={2} />PM ticket created
+                </span>
+              ) : (
+                <Btn variant="secondary" icon={Wrench} onClick={handleRequestPM}>Request PM</Btn>
+              )}
+            </div>
           )}
         </div>
         <div className="font-display font-bold text-ink text-subhead leading-none mb-0.5">{eq.name}</div>
@@ -271,6 +415,20 @@ function EquipmentDetail({ eq }) {
           </div>
         ))}
       </div>
+
+      {/* Remaining useful life — only for equipment with rul data */}
+      {eq.rul != null && <RULStrip eq={eq} />}
+
+      {/* Production impact — shown when rul < 24h */}
+      {eq.rul != null && eq.rul < 24 && eq.productionImpact && <ProductionImpactCard eq={eq} />}
+
+      {/* Before-context for agent-flagged equipment */}
+      {eq.before && (
+        <div className="flex-shrink-0 flex items-start gap-2 px-5 py-2.5 border-b border-rule2" style={{ background: 'rgba(196,132,78,0.04)' }}>
+          <span className="font-body text-label font-medium flex-shrink-0" style={{ color: 'var(--color-context)' }}>Before ·</span>
+          <p className="font-body text-label text-muted leading-relaxed m-0">{eq.before}</p>
+        </div>
+      )}
 
       {/* SPC chart */}
       <div className="flex-1 flex flex-col overflow-y-auto min-h-0">

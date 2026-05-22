@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Flag, ShieldCheck, Check, Lock, AlertTriangle, Activity, CheckCircle2, WifiOff, Brain, BookOpen, ChevronDown, ChevronUp, Send } from 'lucide-react'
+import { Flag, ShieldCheck, Check, Lock, AlertTriangle, Activity, CheckCircle2, WifiOff, Brain, BookOpen, ChevronDown, ChevronUp, Send, MessageSquare, X } from 'lucide-react'
 import { operatorContextData, fatigueData } from '../data'
 import { integrationSummary, connectors } from '../data/integrations'
 import { useAppState } from '../context/AppState'
@@ -82,6 +82,48 @@ const CERT_NEXT_STEPS = {
  'C. Reyes':   ['Complete 3 more supervised shifts at Sauce Dosing', 'Pass L2 Sauce Dosing practical assessment', 'Assessment window: May 22–30'],
  'P. Okonkwo': ['Complete 2 senior operator observations (2 remaining)', 'Submit L3 application via training coordinator', 'Assessment window: Jun 3–10'],
  'F. Adeyemi': ['Complete 5 more QA inspector shifts', 'Attend allergen changeover training (1 session remaining)', 'Assessment window: Jul 8–15'],
+}
+
+// ── Directive Card — supervisor-pushed messages, highest priority surface ──────
+
+function DirectiveCard({ directive, onAcknowledge }) {
+ const [exiting, setExiting] = useState(false)
+ const isWarn = directive.urgency === 'warn'
+ const isDanger = directive.urgency === 'danger'
+ const accentClass = isDanger ? 'border-l-danger bg-danger/[0.03]' : 'border-l-warn bg-warn/[0.03]'
+ const accentText  = isDanger ? 'text-danger' : 'text-warn'
+ const dotClass    = isDanger ? 'bg-danger beat' : 'bg-warn'
+
+ const handleAck = () => {
+  setExiting(true)
+  setTimeout(() => onAcknowledge(directive.id), 280)
+ }
+
+ return (
+  <div className={`flex-shrink-0 border-b-2 border-l-[3px] transition-opacity ${accentClass} ${exiting ? 'opacity-0 transition-opacity duration-300' : ''}`}
+    style={{ borderBottomColor: isDanger ? 'var(--color-danger)' : 'var(--color-warn)' }}>
+   <div className="flex items-start gap-3 px-5 py-4">
+    <div className={`w-2 h-2 rounded-full flex-shrink-0 mt-1 ${dotClass}`} />
+    <div className="flex-1 min-w-0">
+     <div className="flex items-center gap-2 mb-1">
+      <MessageSquare size={10} strokeWidth={2} className={accentText} aria-hidden="true" />
+      <span className={`font-body text-label font-medium ${accentText}`}>From {directive.from}</span>
+      <span className="font-body text-muted text-label">· {directive.role} · sent {directive.sentAt}</span>
+     </div>
+     <p className="font-display text-ink text-base leading-snug font-medium">{directive.message}</p>
+     {directive.deadline && (
+      <div className={`font-body text-label mt-1 ${accentText}`}>Prepare by {directive.deadline}</div>
+     )}
+    </div>
+    <button type="button" onClick={handleAck}
+     className="flex items-center gap-1.5 font-body text-label text-muted hover:text-ink transition-colors flex-shrink-0 px-2 py-1 border border-rule2 hover:border-muted"
+     aria-label="Acknowledge directive">
+     <Check size={10} strokeWidth={2.5} />
+     <span>Got it</span>
+    </button>
+   </div>
+  </div>
+ )
 }
 
 // ── Station Briefing — what's different since your last shift ─────────────────
@@ -583,6 +625,7 @@ export default function OperatorView({ role }) {
  const selected = isOperatorRole ? (ROLE_TO_OPERATOR[role] ?? 'C. Reyes') : directorSelected
  const [procedureCompletions, setProcedureCompletions] = useState({})
  const [tempLogEntries, setTempLogEntries] = useState({})
+ const [acknowledgedDirectives, setAcknowledgedDirectives] = useState(new Set())
 
  const {
   taskAssignments, flaggedItems, nearMisses,
@@ -708,6 +751,17 @@ export default function OperatorView({ role }) {
      )}
     </div>
    )}
+
+   {/* ── Supervisor directives — highest priority push surface ── */}
+   {(ctx?.directives ?? [])
+    .filter(d => !acknowledgedDirectives.has(d.id))
+    .map(d => (
+     <DirectiveCard key={d.id} directive={d} onAcknowledge={(id) => {
+      setAcknowledgedDirectives(prev => new Set([...prev, id]))
+      logActivity({ actor: selected, action: `Acknowledged supervisor directive: "${d.message.slice(0, 60)}"`, item: 'Directive', type: 'intervention' })
+     }} />
+    ))
+   }
 
    {/* ── Operational State Header ─────────────────────────────── */}
    <OperationalStateHeader ctx={ctx} />

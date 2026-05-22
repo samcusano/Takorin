@@ -851,6 +851,64 @@ function ActivityLog({ agentActions }) {
 
 const STALE_AGENTS = new Set(['pre-shift', 'resource', 'handoff'])
 
+// ─── Agent trust score miniature sparkline ────────────────────────────────────
+
+function TrustSparkline({ data, color }) {
+  if (!data || data.length < 2) return null
+  const min = Math.min(...data) - 2
+  const max = Math.max(...data) + 2
+  const range = max - min || 1
+  const w = 48, h = 16
+  const pts = data.map((v, i) => {
+    const x = (i / (data.length - 1)) * w
+    const y = h - ((v - min) / range) * h
+    return `${x},${y}`
+  }).join(' ')
+  return (
+    <svg width={w} height={h} aria-hidden="true">
+      <polyline points={pts} fill="none" stroke={color} strokeWidth="1.2"
+        strokeLinecap="round" strokeLinejoin="round" opacity="0.8" />
+      {/* Last point dot */}
+      {(() => {
+        const lastX = w; const lastV = data[data.length - 1]
+        const lastY = h - ((lastV - min) / range) * h
+        return <circle cx={lastX} cy={lastY} r="2" fill={color} />
+      })()}
+    </svg>
+  )
+}
+
+// ─── Trust score tiles strip ─────────────────────────────────────────────────
+
+function TrustTilesStrip({ agents }) {
+  const highlight = agents.filter(a => a.trustScore != null).slice(0, 5)
+  return (
+    <div className="flex-shrink-0 flex items-stretch border-b border-rule2 overflow-x-auto bg-stone">
+      {highlight.map((agent, i) => {
+        const score = agent.trustScore ?? 80
+        const color = score >= 85 ? 'var(--color-ok)' : score >= 70 ? 'var(--color-warn)' : 'var(--color-danger)'
+        const Icon  = ICON_MAP[agent.icon] || Shield
+        return (
+          <div key={agent.id} className="flex items-center gap-3 px-4 py-3 border-r border-rule2 flex-shrink-0 min-w-[160px]">
+            <Icon size={11} className="text-muted flex-shrink-0" aria-hidden="true" />
+            <div className="flex-1 min-w-0">
+              <div className="font-body text-muted text-label truncate">{agent.name.split(' ')[0]}</div>
+              <div className="flex items-center gap-2 mt-0.5">
+                <span className="display-num text-base font-medium" style={{ color }}>{score}</span>
+                <TrustSparkline data={agent.trustTrajectory} color={color} />
+              </div>
+            </div>
+          </div>
+        )
+      })}
+      <div className="flex items-center px-4 py-3 flex-shrink-0 ml-auto">
+        <span className="font-body text-muted text-label">Trust ·&nbsp;</span>
+        <span className="font-body text-muted text-label">rolling 10-shift attribution score</span>
+      </div>
+    </div>
+  )
+}
+
 function FleetStrip({ agents }) {
   const staleSources = dataSourceHealth?.filter(s => s.status === 'stale') ?? []
   const staleSource = staleSources[0]
@@ -1163,8 +1221,8 @@ export default function AgentControl() {
         )}
       </div>
 
-      {/* ── Fleet strip (trust layer, above decisions) ───────────────── */}
-      <FleetStrip agents={agents} />
+      {/* ── Trust score tiles — agent reliability at a glance ───────── */}
+      <TrustTilesStrip agents={agents} />
 
       {/* ── Autonomous tier budget ───────────────────────────────────── */}
       <AgentTierStrip
@@ -1188,6 +1246,49 @@ export default function AgentControl() {
 
       {/* ── Priority-weighted ledger ──────────────────────────────────── */}
       <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
+
+        {/* ── Approval Gate — Tier 3 (compliance + emergency) surfaced first ─ */}
+        {tier3Items.filter(p => !p._decided).length > 0 && (
+          <div className="flex-shrink-0 border-b-2 border-danger/30 bg-danger/[0.025]">
+            <div className="flex items-center justify-between px-5 py-2 border-b border-danger/15">
+              <div className="flex items-center gap-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-danger animate-pulse flex-shrink-0" />
+                <span className="font-body font-medium text-danger text-label">
+                  Approval gate · {tier3Items.filter(p => !p._decided).length} action{tier3Items.filter(p => !p._decided).length !== 1 ? 's' : ''} waiting
+                </span>
+              </div>
+              <span className="font-body text-muted text-label">Compliance-locked — requires director sign-off</span>
+            </div>
+            {tier3Items.filter(p => !p._decided).slice(0, 2).map(pa => {
+              const agent = agents.find(a => a.id === pa._agentId)
+              if (!agent) return null
+              const Icon = ICON_MAP[agent.icon] || Shield
+              return (
+                <div key={pa._key} className="flex items-start gap-4 px-5 py-4 border-b border-danger/10 last:border-b-0">
+                  <Icon size={13} className="text-danger flex-shrink-0 mt-0.5" aria-hidden="true" />
+                  <div className="flex-1 min-w-0">
+                    <div className="font-body text-muted text-label mb-0.5">{agent.name}</div>
+                    <div className="font-display font-semibold text-ink text-base leading-snug mb-1">{pa._meta.verbFirst}</div>
+                    <p className="font-body text-muted text-label leading-relaxed">{pa.rationale}</p>
+                    <div className="flex items-center gap-2 mt-2.5">
+                      <ApproveBtn isCompliance={agent.isComplianceCategory} disabled={false} onApprove={() => handleApprove(pa._key)} />
+                      <Btn variant="secondary" onClick={() => setInvestigationDrawer({ pa, agent })}>Review evidence</Btn>
+                      <Btn variant="ghost" onClick={() => setOverrideModal({ pa, agent })} className="text-danger">
+                        <Flag size={11} strokeWidth={2} />Override
+                      </Btn>
+                    </div>
+                  </div>
+                  <div className="flex-shrink-0 text-right">
+                    <div className={`display-num text-head font-medium tabular-nums leading-none ${pa.confidence >= 80 ? 'text-ok' : 'text-warn'}`}>
+                      {pa.confidence}%
+                    </div>
+                    <div className="font-body text-muted text-label mt-0.5">confidence</div>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
 
         {/* Queue header */}
         <div className="flex-shrink-0 flex items-center justify-between px-5 py-2 border-b border-rule2 bg-stone">
@@ -1286,8 +1387,50 @@ export default function AgentControl() {
                 const pa = pending.find(p => p._key === splitFocused)
                 const agent = pa ? agents.find(a => a.id === pa._agentId) : null
                 if (!pa || !agent) return (
-                  <div className="flex items-center justify-center h-full font-body text-muted text-label">
-                    Select a decision to review
+                  <div className="flex flex-col h-full overflow-y-auto">
+                    {/* Live deliberation feed — Predictive Maintenance agent on R-03 */}
+                    <div className="border-b border-rule2 bg-stone2 px-5 py-3 flex items-center gap-2 flex-shrink-0">
+                      <div className="w-1.5 h-1.5 rounded-full live-dot flex-shrink-0" style={{ background: 'var(--color-deep)' }} />
+                      <span className="font-body font-medium text-label text-ink">Predictive Maintenance · live deliberation</span>
+                      <span className="font-body text-muted text-label ml-auto">R-03 Seal Press A</span>
+                    </div>
+                    <div className="px-5 py-4 space-y-4 flex-1">
+                      <p className="font-body text-muted text-label">
+                        Agent is: <span className="text-ink font-medium">Monitoring — vibration reading updated 4 min ago</span>
+                      </p>
+                      <div className="space-y-2.5">
+                        {[
+                          { signal: 'Vibration trend',   reading: '3.4 mm/s → rising', status: 'breach', note: '+1.3 mm/s from shift start · 62% increase' },
+                          { signal: 'Precedent match',   reading: 'R-08 failure (72h)', status: 'warn',   note: '3-case pool · cross-line (Line 6→4) · treat with caution' },
+                          { signal: 'MTBF forecast',     reading: '14h to failure',     status: 'breach', note: '±3h uncertainty · confidence 84%' },
+                        ].map((s, i) => {
+                          const dot = s.status === 'breach' ? 'bg-danger' : s.status === 'warn' ? 'bg-warn' : 'bg-ok'
+                          const tc  = s.status === 'breach' ? 'text-danger' : s.status === 'warn' ? 'text-warn' : 'text-ok'
+                          return (
+                            <div key={i} className="flex items-start gap-3 px-3 py-2.5 bg-stone border border-rule2">
+                              <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 mt-1 ${dot}`} />
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-baseline justify-between gap-2">
+                                  <span className="font-body text-muted text-label">{s.signal}</span>
+                                  <span className={`font-body text-label font-medium flex-shrink-0 ${tc}`}>{s.reading}</span>
+                                </div>
+                                <div className="font-body text-muted text-label mt-0.5 leading-snug">{s.note}</div>
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                      <div className="px-3 py-2.5 bg-stone border border-rule2/60 border-l-2" style={{ borderLeftColor: 'var(--color-deep)' }}>
+                        <div className="font-body text-label font-medium mb-1" style={{ color: 'var(--color-deep)' }}>Agent conclusion</div>
+                        <p className="font-body text-muted text-label leading-relaxed">
+                          Vibration pattern matches bearing failure precursor. Recommend pre-emptive inspection tonight 22:00–23:30.
+                          Risk of not acting: unplanned downtime in 14±3h — $8,200 production loss at precedent.
+                        </p>
+                      </div>
+                      <div className="font-body text-muted text-label">
+                        Select a pending decision from the left panel to review full evidence and approve.
+                      </div>
+                    </div>
                   </div>
                 )
                 const cfg = CONSEQUENCE_CFG[pa._meta.consequence]
