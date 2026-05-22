@@ -63,7 +63,7 @@ function LogRow({ entry, selected, onClick }) {
       }`}>
       <div className="mb-1">
         <StatusPill tone={entry.outcome === 'success' ? 'ok' : entry.outcome === 'escalated' ? 'warn' : entry.outcome === 'pending' ? 'ochre' : 'muted'} className="mb-1.5">{out.label}</StatusPill>
-        <p className="font-display font-medium text-ink text-base leading-snug mb-0.5">{entry.action}</p>
+        <p className="font-body font-medium text-ink text-body leading-snug mb-0.5">{entry.action}</p>
         <div className="flex items-center gap-2">
           <span className="font-body text-muted text-label">{entry.agent}</span>
           <span className="font-body text-muted text-label opacity-50">·</span>
@@ -230,11 +230,6 @@ export default function ExecutionAuthority() {
         {/* Left: authority ladder */}
         <div className="w-[280px] flex-shrink-0 border-r border-rule2 flex flex-col bg-stone">
 
-          {/* Authority ladder label */}
-          <div className="flex-shrink-0 px-4 py-2.5 border-b border-rule2 bg-stone2">
-            <span className="font-body text-micro font-semibold text-muted">AUTHORITY LADDER</span>
-          </div>
-
           {/* Tier rows */}
           <div className="flex-1 overflow-y-auto">
             <button type="button" onClick={() => { setSelectedTier(null); setSelectedId(null) }}
@@ -285,16 +280,6 @@ export default function ExecutionAuthority() {
 
         {/* Center: execution timeline */}
         <div className="flex-1 flex flex-col overflow-hidden">
-          <div className="flex-shrink-0 px-4 py-2.5 border-b border-rule2 bg-stone2 flex items-center justify-between">
-            <span className="font-body text-muted text-label">
-              {selectedTier ? `${selectedTier} tier` : 'All events'} · {filtered.length}
-            </span>
-            <div className="flex items-center gap-3">
-              <span className="flex items-center gap-1 font-body text-ok text-label"><span className="w-1.5 h-1.5 rounded-full bg-ok" />Success</span>
-              <span className="flex items-center gap-1 font-body text-warn text-label"><span className="w-1.5 h-1.5 rounded-full bg-warn" />Escalated</span>
-              <span className="flex items-center gap-1 font-body text-ochre text-label"><span className="w-1.5 h-1.5 rounded-full bg-ochre" />Pending</span>
-            </div>
-          </div>
           <div className="flex-1 overflow-y-auto">
             {/* Needs review section */}
             {needsReview.length > 0 && !selectedTier && (

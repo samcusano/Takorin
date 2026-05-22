@@ -118,6 +118,14 @@ Step 2: [Next action]
   ...
 ```
 
+## Tier 0 — Must Never
+
+- Evaluate only the happy path — error recovery, undo, back navigation, and dead ends must be walked
+- Issue a finding without citing the specific heuristic (H1–H10) it violates — "confusing" is not a finding
+- Duplicate accessibility findings the accessibility-reviewer will catch — focus on the usability angle, not the compliance angle
+- Let deferred Minor findings disappear — route every one to `design-debt-tracker`
+- Evaluate the spec or mockup instead of the actual build — test what was built, not what was planned
+
 ## How You Work
 
 - **Test the actual build, not the spec** — evaluate what was built, not what was planned

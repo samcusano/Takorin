@@ -8,7 +8,7 @@ const OUTCOME_CFG = {
   positive: { label: 'Positive', tone: 'ok',     dot: 'bg-ok',     border: 'border-l-ok',     chip: 'bg-ok/10 text-ok'           },
   negative: { label: 'Negative', tone: 'danger', dot: 'bg-danger', border: 'border-l-danger', chip: 'bg-danger/[0.04] text-danger',
               desc: null },
-  unclear:  { label: 'Unclear',  tone: 'ochre',  dot: 'bg-ochre',  border: 'border-l-ochre',  chip: 'bg-ochre/10 text-ochre',
+  unclear:  { label: 'Inconclusive', tone: 'ochre', dot: 'bg-ochre', border: 'border-l-ochre', chip: 'bg-ochre/10 text-ochre',
               desc: "Effect couldn't be isolated — multiple concurrent changes affected this outcome simultaneously. Attribution confidence is reduced." },
   harmful:  { label: 'Harmful',  tone: 'danger', dot: 'bg-danger', border: 'border-l-danger', chip: 'bg-danger/[0.04] text-danger',
               desc: null },
@@ -122,7 +122,7 @@ function InterventionCard({ entry, selected, onClick, index = 0 }) {
       <div className="flex items-start gap-2 mb-2">
         <div className="flex-1 min-w-0">
           <StatusPill tone={oc.tone} className="mb-1.5">{oc.label}</StatusPill>
-          <div className="font-display font-medium text-ink text-base leading-snug mb-0.5">{entry.action}</div>
+          <div className="font-body font-medium text-ink text-body leading-snug mb-0.5">{entry.action}</div>
           <div className="font-body text-muted text-label">{entry.recommendedLabel}</div>
         </div>
       </div>
@@ -233,6 +233,7 @@ function InterventionDetail({ entry }) {
                 <div className="font-body text-muted text-label">{s.value} vs baseline {s.baseline}</div>
               </div>
               <div className="text-right flex-shrink-0">
+                <StatusPill tone={oc.tone} className="mb-1.5">{oc.label}</StatusPill>
                 <div className={`font-body text-label ${s.stale ? 'text-warn' : 'text-ok'}`}>{s.stale ? 'Stale' : 'Fresh'}</div>
                 <div className="font-body text-muted text-micro">{s.freshnessMin}min ago</div>
               </div>

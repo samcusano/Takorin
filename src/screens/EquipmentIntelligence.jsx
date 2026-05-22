@@ -41,7 +41,7 @@ function EquipmentCard({ eq, selected, onClick }) {
       }`}>
       <div className="flex items-start justify-between gap-2 mb-1">
         <div>
-          <div className="font-display font-medium text-ink text-base leading-snug">{eq.name}</div>
+          <div className="font-body font-medium text-ink text-body leading-snug">{eq.name}</div>
           <div className="font-body text-muted text-label">{eq.type} · {eq.zone}</div>
         </div>
         <StatusPill tone={eq.status === 'active' ? 'ok' : eq.status === 'maintenance' ? 'warn' : eq.status === 'offline' ? 'danger' : 'muted'} className="flex-shrink-0">{cfg.label}</StatusPill>

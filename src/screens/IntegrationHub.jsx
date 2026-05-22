@@ -29,7 +29,7 @@ function ConnectorCard({ c, selected, onClick }) {
             {c.status === 'active' && c.streaming && <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-ok opacity-40" />}
             <span className={`relative inline-flex rounded-full h-1.5 w-1.5 ${cfg.dot}`} />
           </div>
-          <span className="font-body font-medium text-ink text-label leading-snug">{c.name}</span>
+          <span className="font-body font-medium text-ink text-body leading-snug">{c.name}</span>
         </div>
         {c.conflicts > 0 && (
           <AlertTriangle size={9} className="text-warn flex-shrink-0 mt-0.5" strokeWidth={2} />

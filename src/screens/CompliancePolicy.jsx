@@ -171,7 +171,7 @@ export default function CompliancePolicy() {
                   <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${dotColor}`} />
                   <span className={`font-body text-micro ${statusColor}`}>{STATUS_LABEL[p.status]}</span>
                 </div>
-                <div className="font-display font-bold text-ink text-base leading-snug mb-0.5">{p.name}</div>
+                <div className="font-body font-medium text-ink text-body leading-snug mb-0.5">{p.name}</div>
                 <div className="font-body text-muted text-label mb-2">{p.jurisdiction}</div>
                 <div className="flex items-center gap-3 flex-wrap">
                   <span className="font-body text-muted text-label">{p.frameworks.length} frameworks</span>

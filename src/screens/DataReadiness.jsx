@@ -353,7 +353,7 @@ function QueueIssueRow({ item, resolved, selected, onSelect }) {
       }`}>
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
-          <div className={`font-body font-medium text-label leading-snug ${isResolved ? 'text-muted line-through' : 'text-ink'}`}>
+          <div className={`font-body font-medium text-body leading-snug ${isResolved ? 'text-muted line-through' : 'text-ink'}`}>
             {item.label}
           </div>
           {item.permanent && !isResolved && (

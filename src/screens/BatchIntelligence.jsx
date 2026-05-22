@@ -342,7 +342,7 @@ export default function BatchIntelligence() {
                   </div>
                 )}
                 <div className="flex items-baseline justify-between gap-2 mb-0.5">
-                  <span className="font-body font-bold text-ink text-body leading-snug truncate">{b.name}</span>
+                  <span className="font-body font-medium text-ink text-body leading-snug truncate">{b.name}</span>
                   <span className={`display-num text-base tabular-nums flex-shrink-0 ${confColor}`}>{conf}%</span>
                 </div>
                 <div className="font-body text-muted text-micro mb-2">{b.vessel} · {b.daysElapsed}/{b.totalDays}d</div>

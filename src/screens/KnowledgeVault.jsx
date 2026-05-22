@@ -10,7 +10,6 @@ import {
   Truck, ClipboardCheck, RotateCcw, TrendingDown, Shield, Zap, Waves,
 } from 'lucide-react'
 import { StatusPill, SlidePanel, SegmentedControl } from '../components/UI'
-import { KnowledgeTreemap } from '../components/Charts'
 
 // ── Operational Memory Domains ───────────────────────────────────────────────
 
@@ -118,8 +117,6 @@ function EntryDetail({ entry }) {
   const riskKey = entry.institutionalRisk?.split(' ')[0]
   const risk = RISK_CFG[riskKey]
   const confColor = entry.confidence >= 90 ? 'text-ok' : entry.confidence >= 80 ? 'text-ochre' : 'text-warn'
-  const memType = MEMORY_TYPES.find(m => m.id === entry._memoryType)
-  const recallColor = RECALL_COLOR[entry._recallMode] ?? RECALL_COLOR.condition
   const domain = DOMAINS.find(d => d.id === entry._domain)
 
   return (
@@ -131,15 +128,6 @@ function EntryDetail({ entry }) {
               {domain && (
                 <span className={`font-body text-label px-2 py-0.5 ${domain.badge}`}>{domain.label}</span>
               )}
-              {memType && (
-                <span className="inline-flex items-center gap-1 font-body text-label text-muted">
-                  <span className={`w-1.5 h-1.5 rounded-full ${memType.dot}`} />{memType.label}
-                </span>
-              )}
-              <span className={`inline-flex items-center gap-1 font-body font-medium text-label px-2 py-0.5 ${recallColor.chip}`}>
-                <span className={`w-1 h-1 rounded-full ${recallColor.dot}`} />
-                {entry._recallMode}-driven
-              </span>
             </div>
             <div className="font-display font-bold text-ink text-head leading-snug">{entry.title}</div>
           </div>
@@ -216,19 +204,11 @@ function OperationalMemoryVault() {
   const [activeDomain, setActiveDomain] = useState('active-deviations')
   const [showMemory, setShowMemory]     = useState(false)
   const [slideEntry, setSlideEntry]     = useState(null)
-  const [expandedIds, setExpandedIds]   = useState(new Set())
-  const [showTreemap, setShowTreemap]   = useState(false)
 
   const domain = DOMAINS.find(d => d.id === activeDomain)
 
   // All entries for this domain — no inline filters
   const entries = ENRICHED.filter(e => e._domain === activeDomain)
-
-  // Group entries by memory type within domain
-  const grouped = MEMORY_TYPES.map(mt => ({
-    ...mt,
-    entries: entries.filter(e => e._memoryType === mt.id),
-  })).filter(g => g.entries.length > 0)
 
   // Domain counts
   const domainCounts = DOMAINS.map(d => ({
@@ -288,37 +268,6 @@ function OperationalMemoryVault() {
 
       {/* Center: entries */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Treemap overview panel */}
-        {showTreemap && !showMemory && (
-          <div className="flex-shrink-0 border-b border-rule2 px-5 py-4 bg-stone">
-            <div className="flex items-center justify-between mb-3">
-              <span className="font-body text-muted text-label">Knowledge map — size by count · color by confidence</span>
-              <button type="button" onClick={() => setShowTreemap(false)}
-                className="font-body text-label text-muted hover:text-ink transition-colors">Close</button>
-            </div>
-            <KnowledgeTreemap domains={DOMAINS} enriched={ENRICHED} />
-            <div className="flex gap-4 mt-3">
-              {[['≥90% conf', 'text-ok'], ['80–89%', 'text-ochre'], ['<80%', 'text-warn']].map(([l, c]) => (
-                <span key={l} className={`font-body text-label flex items-center gap-1 ${c}`}>
-                  <span className="w-2 h-2 bg-current opacity-75" />{l}
-                </span>
-              ))}
-              <span className="font-body text-label flex items-center gap-1 text-danger ml-1">
-                <span className="w-1 h-3 bg-danger opacity-60 inline-block" /> Active batch
-              </span>
-            </div>
-          </div>
-        )}
-        {/* Toggle button */}
-        {!showMemory && (
-          <div className="flex-shrink-0 px-5 py-1.5 border-b border-rule2 bg-stone2 flex items-center justify-between">
-            <span className="font-body text-muted text-label">{ENRICHED.filter(e => e._domain === activeDomain).length} entries</span>
-            <button type="button" onClick={() => setShowTreemap(t => !t)}
-              className={`font-body text-label transition-colors ${showTreemap ? 'text-ochre' : 'text-muted hover:text-ink'}`}>
-              {showTreemap ? 'Map on' : 'Map'}
-            </button>
-          </div>
-        )}
         {showMemory ? (
           <>
             <div className="flex-shrink-0 px-5 py-2.5 border-b border-rule2 bg-stone2">
@@ -378,23 +327,15 @@ function OperationalMemoryVault() {
               </div>
             </div>
 
-            {/* Entry list grouped by memory type */}
+            {/* Entry list */}
             <div className="flex-1 overflow-y-auto">
               {entries.length === 0 ? (
                 <div className="flex items-center justify-center h-full font-body text-muted text-label">
                   No entries in this domain
                 </div>
               ) : (
-                grouped.map(group => (
-                  <div key={group.id}>
-                    {/* Memory type section header */}
-                    <div className={`flex items-center gap-3 px-5 py-2.5 bg-stone3 border-b border-rule2 border-l-2 ${group.border} sticky top-0`}>
-                      <span className={`w-2 h-2 rounded-full flex-shrink-0 ${group.dot}`} />
-                      <span className="font-body font-bold text-ink text-body flex-1">{group.label}</span>
-                      <span className="display-num text-base text-muted">{group.entries.length}</span>
-                    </div>
-                    <div className="px-3 py-3 space-y-2.5">
-                      {group.entries.map(e => {
+                <div className="px-3 py-3 space-y-2.5">
+                  {entries.map(e => {
                         const riskKey  = e.institutionalRisk?.split(' ')[0]
                         const risk     = RISK_CFG[riskKey]
                         const confColor = e.confidence >= 90 ? 'text-ok' : e.confidence >= 80 ? 'text-ochre' : 'text-warn'
@@ -428,7 +369,7 @@ function OperationalMemoryVault() {
                                 <div className={`display-num text-page leading-none flex-shrink-0 ${confColor}`}>{e.confidence}%</div>
                               </div>
                               {/* Body: title + preview */}
-                              <div className="font-display font-semibold text-ink text-base leading-snug mb-1.5">{e.title}</div>
+                              <div className="font-body font-medium text-ink text-body leading-snug mb-1.5">{e.title}</div>
                               <div className="font-body text-muted text-label leading-snug line-clamp-2">{e.body?.slice(0, 110)}…</div>
                               {/* Footer: author + evidence + tags */}
                               <div className="flex items-center gap-2 mt-3 pt-2.5 border-t border-rule2 flex-wrap">
@@ -443,9 +384,7 @@ function OperationalMemoryVault() {
                           </article>
                         )
                       })}
-                    </div>
-                  </div>
-                ))
+                </div>
               )}
             </div>
           </>
