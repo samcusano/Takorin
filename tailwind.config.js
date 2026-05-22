@@ -26,8 +26,9 @@ export default {
         sidebar: { DEFAULT: '#080D16', 2: '#0E1520', 3: '#152030', border: '#1C2A40', ghost: '#6A88A8' },
       },
       fontFamily: {
-        body:    ["'IBM Plex Sans'", 'system-ui', 'sans-serif'],
-        display: ["'IBM Plex Sans'", 'system-ui', 'sans-serif'],
+        body:    ["'Inter'", 'system-ui', 'sans-serif'],
+        display: ["'Instrument Sans'", "'Inter'", 'system-ui', 'sans-serif'],
+        mono:    ["'DM Mono'", "'Menlo'", "'Courier New'", 'monospace'],
       },
       fontSize: {
         // ── UI text scale ──────────────────────────────────────────────────

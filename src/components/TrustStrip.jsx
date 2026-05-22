@@ -239,7 +239,7 @@ const TONE_CLS = {
 
 export default function TrustStrip() {
   const { pathname } = useLocation()
-  const { closedCases, nearMisses, activityLog } = useAppState()
+  const { closedCases, nearMisses, activityLog, agentActions } = useAppState()
 
   const activeConnectors = integrationSummary.active
   const totalConnectors  = integrationSummary.total
@@ -286,8 +286,28 @@ export default function TrustStrip() {
         </div>
       ))}
 
+      {/* Agent presence chip */}
+      {agentActions?.length > 0 && (() => {
+        const active = agentActions.filter(a => a.status !== 'overridden')
+        const last   = active[0]
+        return (
+          <div className="flex items-center gap-1.5 flex-shrink-0 ml-auto">
+            <div className="h-3 w-px bg-rule flex-shrink-0" />
+            <div className="w-1.5 h-1.5 rounded-full flex-shrink-0 live-dot" style={{ background: 'var(--color-deep)' }} />
+            <span className="font-body text-label" style={{ color: 'var(--color-deep)' }}>
+              {active.length} agent{active.length !== 1 ? 's' : ''}
+            </span>
+            {last && (
+              <span className="font-body text-label text-muted hidden xl:inline truncate max-w-[320px]">
+                · {last.agentName}: {last.action}
+              </span>
+            )}
+          </div>
+        )
+      })()}
+
       {/* Right side — total signals */}
-      <div className="ml-auto font-body text-muted text-label flex-shrink-0">
+      <div className={`font-body text-muted text-label flex-shrink-0 ${agentActions?.length > 0 ? '' : 'ml-auto'}`}>
         {integrationSummary.totalSignals.toLocaleString()} signals · {integrationSummary.streamingSources} streaming
       </div>
     </div>

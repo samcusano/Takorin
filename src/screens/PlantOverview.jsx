@@ -4,11 +4,43 @@ import { shiftData, line6Data, wichitaData, denverData, facility } from '../data
 import { useAppState } from '../context/AppState'
 import { riskColorClass, riskLabel, riskBgColor } from '../lib/utils'
 import {
-  AlertTriangle, CheckCircle, Brain, Clock, Users,
+  AlertTriangle, CheckCircle, Brain, Clock, Users, Bot, User,
   Activity, CircleDot, ChevronDown, ChevronUp, ArrowRight, ExternalLink, X,
 } from 'lucide-react'
 import { interventionSummary, interventions } from '../data/interventions'
 import { FilterDropdown, SlidePanel, Btn, SegmentedControl, Checkbox } from '../components/UI'
+
+// ─── Before-narratives — one sentence per line describing normal baseline ─────
+const LINE_BEFORE = {
+  l4: 'Avg OEE 82% over 5 prior shifts · Score was 54 at 06:12 — normal early-shift · Allergen log unsigned but changeover not started',
+  l6: 'Avg OEE 88% · All clear for 3 consecutive shifts · B. Petrov crew fully certified at shift start',
+  l3: 'Sensor variance within historical range for 14 consecutive shifts · No carry-forward findings at handoff',
+  l2: 'Lowest-risk line in Hall A · No findings in 5 shifts · J. Park crew stable for 6 weeks',
+  w1: 'Allergen changeover delay is a known AM pattern on this line · Prior 3 shifts scored between 62–68',
+  w2: 'Best-performing Wichita line this week · Running clean for 8 consecutive shifts',
+  w3: 'PM crew — lighter volume than AM · Typically 5–8 pts lower risk than AM baseline',
+  d1: 'Denver pilot week 3 · Model confidence growing with each shift · No open findings in 11 shifts',
+  d2: 'Best-performing line across all three plants · T. Reeves crew at 94% certified for 6 weeks',
+}
+
+// ─── Actor mode badge — shows who is executing on a line ─────────────────────
+const ACTOR_MODE = { human: 'human', robot: 'robot', hybrid: 'hybrid' }
+
+function ActorBadge({ mode }) {
+  if (!mode || mode === 'human') return null
+  const cfg = {
+    robot:  { Icon: Bot,   label: 'Automated', color: 'var(--color-ochre)' },
+    hybrid: { Icon: Users, label: 'Hybrid',    color: 'var(--color-deep)'  },
+  }[mode]
+  if (!cfg) return null
+  const { Icon, label, color } = cfg
+  return (
+    <span className="flex items-center gap-0.5 flex-shrink-0" style={{ color }} aria-label={`${label} mode`} title={`${label} worker mode`}>
+      <Icon size={9} strokeWidth={2} aria-hidden="true" />
+      <span className="font-body text-micro">{label}</span>
+    </span>
+  )
+}
 
 // ─── Domain assignments ───────────────────────────────────────────────────────
 // Maps line.id → { area, areaOrder }
@@ -137,7 +169,8 @@ function pressureClass(score) {
 
 export default function PlantOverview() {
   const navigate = useNavigate()
-  const { shiftActed, setShiftActed, currentPlant } = useAppState()
+  const { shiftActed, setShiftActed, currentPlant, agentActions } = useAppState()
+  const workerMode = currentPlant?.workerMode ?? 'human'
   const [selectedFinding, setSelectedFinding]   = useState(null)
   const [impactExpanded, setImpactExpanded]     = useState(false)
   const [mode, setMode]                         = useState('normal')
@@ -572,8 +605,9 @@ export default function PlantOverview() {
                     return (
                       <div
                         key={line.id}
-                        className={`flex items-center border-b border-rule2 last:border-b-0 ${pressureCls(eff)} ${pressureClass(eff)}`}
+                        className={`flex flex-col border-b border-rule2 last:border-b-0 ${pressureCls(eff)} ${pressureClass(eff)}`}
                       >
+                        <div className="flex items-center">
                         {mode === 'compare' && (
                           <Checkbox
                             checked={isCompSel}
@@ -596,10 +630,13 @@ export default function PlantOverview() {
                           {/* Rank */}
                           <span className="display-num text-label text-muted tabular-nums w-4 text-right flex-shrink-0">{idx + 1}</span>
 
-                          {/* Name + supervisor */}
+                          {/* Name + supervisor + actor badge */}
                           <div className="w-28 flex-shrink-0">
                             <div className="font-display font-semibold text-ink text-body leading-none">{line.name}</div>
-                            <div className="font-body text-muted text-label mt-0.5 truncate">{meta.supervisor}</div>
+                            <div className="flex items-center gap-1.5 mt-0.5">
+                              <span className="font-body text-muted text-label truncate">{meta.supervisor}</span>
+                              <ActorBadge mode={workerMode} />
+                            </div>
                           </div>
 
                           {/* Score bar — zone bands + score fill + confidence tick */}
@@ -662,6 +699,15 @@ export default function PlantOverview() {
                             />
                           </div>
                         )}
+                        </div>{/* end inner flex row */}
+
+                        {/* Before-narrative — shown for lines under pressure */}
+                        {eff >= 60 && LINE_BEFORE[line.id] && mode === 'normal' && (
+                          <div className="flex items-start gap-2 px-4 py-1.5 border-t border-rule2/40" style={{ background: 'rgba(196,132,78,0.04)' }}>
+                            <span className="font-body text-micro flex-shrink-0 mt-px" style={{ color: 'var(--color-context)' }}>Before ·</span>
+                            <span className="font-body text-micro leading-relaxed text-muted">{LINE_BEFORE[line.id]}</span>
+                          </div>
+                        )}
                       </div>
                     )
                   })}
@@ -674,7 +720,7 @@ export default function PlantOverview() {
         {/* ── Cross-line findings feed ─────────────────────────────────── */}
         <section className="border-t-2 border-rule2 mt-0">
           <div className="sticky top-0 z-10 flex items-center justify-between px-5 py-2 border-b border-rule2 bg-stone2">
-            <span className="font-body font-bold text-ink text-label">
+            <span className="font-body font-semibold text-ink text-label">
               Pending across all lines
               {allFindings.length > 0 && (
                 <span className="ml-2 font-body text-warn text-label font-normal">
@@ -688,6 +734,26 @@ export default function PlantOverview() {
               </span>
             )}
           </div>
+
+          {/* Agent intervention cards — AI-attributed actions in the findings feed */}
+          {agentActions?.filter(a => a.status !== 'overridden' && a.status !== 'completed').map((action, i) => (
+            <div key={action.id}
+              className="flex items-start gap-4 px-5 py-3.5 border-b border-rule2"
+              style={{ background: 'rgba(124,134,232,0.04)' }}>
+              <Brain size={14} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--color-deep)' }} strokeWidth={1.75} aria-hidden="true" />
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+                  <span className="font-body text-label font-medium" style={{ color: 'var(--color-deep)' }}>{action.agentName}</span>
+                  <span className="font-body text-micro px-1.5 py-px" style={{ color: 'var(--color-deep)', background: 'rgba(124,134,232,0.12)', border: '1px solid rgba(124,134,232,0.25)' }}>
+                    {action.status === 'pending-review' ? 'Awaiting review' : 'Active'}
+                  </span>
+                  <span className="font-body text-micro text-muted">{action.timestamp}</span>
+                </div>
+                <div className="font-body font-medium text-ink text-body leading-snug">{action.action}</div>
+                <div className="font-body text-muted text-label mt-0.5">{action.target} · {action.rationale}</div>
+              </div>
+            </div>
+          ))}
 
           {allFindings.length > 0
             ? allFindings.map((f, i) => (

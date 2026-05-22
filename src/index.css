@@ -68,7 +68,7 @@
 
   body {
     margin: 0;
-    font-family: 'IBM Plex Sans', system-ui, sans-serif;
+    font-family: 'Inter', system-ui, sans-serif;
     background: var(--color-stone);
     color: var(--color-ink);
     -webkit-font-smoothing: antialiased;
@@ -111,13 +111,40 @@
     );
   }
 
-  /* ── Display type — large numeric values ───────────────────────────────── */
+  /* ── Display type — tabular numeric data values ────────────────────────── */
   .display-num {
-    font-family: 'IBM Plex Sans', system-ui, sans-serif;
-    font-weight: 700;
+    font-family: 'DM Mono', 'Menlo', 'Courier New', monospace;
+    font-weight: 500;
     font-style: normal;
-    letter-spacing: -0.03em;
+    letter-spacing: -0.01em;
     line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ── Plant mode — high-contrast for wall-mounted displays ──────────────── */
+  .plant-mode {
+    --color-ink:     #FFFFFF;
+    --color-ink-2:   #D4D4D4;
+    --color-muted:   #9CA3AF;
+    --color-stone:   #080808;
+    --color-stone-2: #111111;
+    --color-stone-3: #1A1A1A;
+    --color-stone-4: #222222;
+    --color-rule:    #2E2E2E;
+    --color-rule-2:  #242424;
+  }
+  .plant-mode .font-body { letter-spacing: 0.01em; }
+  .plant-mode .display-num { font-weight: 700; }
+
+  /* ── OKLCH perceptual color tokens — progressive enhancement ───────────── */
+  @supports (color: oklch(0.5 0.2 200)) {
+    :root {
+      --color-ok:      oklch(0.65 0.13 145);
+      --color-warn:    oklch(0.65 0.13 70);
+      --color-danger:  oklch(0.58 0.17 30);
+      --color-deep:    oklch(0.58 0.18 275);
+      --color-context: oklch(0.63 0.13 55);
+    }
   }
 
   /* ── Atmospheric glow — risk-toned, slow pulse ─────────────────────────── */

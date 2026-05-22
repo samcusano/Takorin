@@ -373,6 +373,31 @@ function SupervisorTeam({ taskAssignments, escalatedToDirector, setEscalatedToDi
   )
 }
 
+// ── Before strip — what was normal before this shift's conditions ─────────────
+const BEFORE_CONTEXT = {
+  l4: { oee: '82%', shifts: 28, accuracy: 82, baseScore: 54, normal: 'Allergen log unsigned but changeover not yet started · Sensor A-7 variance count was 1 at shift start' },
+  l6: { oee: '88%', shifts: 22, accuracy: 91, baseScore: 42, normal: 'All checklists cleared at T+30 · Staffing 89% certified — no gaps at shift start' },
+  default: { oee: '84%', shifts: 20, accuracy: 85, baseScore: 55, normal: 'Conditions within normal range at shift start' },
+}
+
+function BeforeStrip({ lineLabel, baseScore }) {
+  const lineId  = lineLabel?.toLowerCase().includes('line 4') ? 'l4'
+    : lineLabel?.toLowerCase().includes('line 6') ? 'l6'
+    : null
+  const ctx     = BEFORE_CONTEXT[lineId] ?? BEFORE_CONTEXT.default
+  return (
+    <div className="flex items-start gap-3 px-6 py-2 border-t" style={{ borderColor: P.border2, background: `${P.clay}08` }}>
+      <span className="font-body text-micro flex-shrink-0 mt-px" style={{ color: P.clay }}>Before ·</span>
+      <p className="font-body text-micro leading-relaxed flex-1" style={{ color: P.cream, margin: 0 }}>
+        Score was {ctx.baseScore} at shift start — within normal range · {ctx.normal}
+      </p>
+      <span className="font-body text-micro flex-shrink-0 tabular-nums" style={{ color: P.dim }}>
+        Avg OEE {ctx.oee} · {ctx.shifts} shifts · {ctx.accuracy}% model accuracy
+      </span>
+    </div>
+  )
+}
+
 // ── Main ──────────────────────────────────────────────────────────────────────
 export default function ShiftIQV2({ score = 78, lineLabel = 'Line 4 · AM Shift', supervisor = 'D. Kowalski', plant = 'Salina KS', isSupervisorView = false }) {
   const { checklistSigned, allergenOverride, taskAssignments, setTaskAssignments, logActivity,
@@ -508,6 +533,9 @@ export default function ShiftIQV2({ score = 78, lineLabel = 'Line 4 · AM Shift'
               </div>
             ))}
           </div>
+
+          {/* Before-context strip — what was normal before this shift's conditions */}
+          <BeforeStrip lineLabel={lineLabel} baseScore={54} />
         </header>
 
         {/* ── BODY ──────────────────────────────────────────────────────────── */}
@@ -522,6 +550,19 @@ export default function ShiftIQV2({ score = 78, lineLabel = 'Line 4 · AM Shift'
 
           {/* LEFT: Intelligence + Crew + Checklists */}
           <div className="flex-1 overflow-y-auto" style={{ borderRight: `1px solid ${P.border}` }}>
+
+            {/* Shift-start narrative — what changed since shift open */}
+            <div style={{ padding: '16px 24px 0', borderBottom: `1px solid ${P.border2}`, marginBottom: 0 }}>
+              <div className="flex items-start gap-2.5 pb-4">
+                <div style={{ width: 5, height: 5, borderRadius: '50%', background: P.clay, flexShrink: 0, marginTop: 5 }} />
+                <p className="font-body text-label leading-relaxed" style={{ color: P.cream, margin: 0 }}>
+                  Shift opened at 06:12 with score 54 — within normal range.
+                  Risk built 54 → 78 over 30 minutes as three signals compounded:
+                  checklist lag, a cert mismatch at Sauce Dosing, and Sensor A-7 variance.
+                  All three are within supervisor authority to resolve before handoff.
+                </p>
+              </div>
+            </div>
 
             {/* Intelligence */}
             <div style={{ padding: '20px 24px 16px' }}>

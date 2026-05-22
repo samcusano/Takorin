@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useFocusTrap, useExitAnimation } from '../lib/utils'
-import { FileText, BarChart2, ShieldCheck, Clock, Brain, Search } from 'lucide-react'
-import { Check, X, AlertTriangle, ArrowRight, TrendingUp, ChevronRight } from 'lucide-react'
+import { FileText, BarChart2, ShieldCheck, Clock, Brain, Search, Zap } from 'lucide-react'
+import { Check, X, AlertTriangle, ArrowRight, TrendingUp } from 'lucide-react'
 import { StatusPill, SP, ActionBanner, Btn, HoldButton, Tabs, SceneHeader, SectionHeader, Checkbox } from '../components/UI'
 import { openCases, patternRows, benchmarks } from '../data/capa.js'
 import { haccpData, goalsData } from '../data'
@@ -54,13 +54,26 @@ function CaseDetailPanel({ caseData, onClose }) {
  </div>
  <div className="flex-1 overflow-y-auto">
  <div className="grid grid-cols-2 gap-px bg-rule border-b border-rule2">
- {[{l:'Status',v:caseData.badge,vc:caseData.badgeColor},{l:'Administrative owner',v:caseData.administrativeOwner||caseData.assigned},{l:'Due date',v:caseData.due,vc:caseData.dueColor},{l:'Source',v:caseData.source}].map(m=>(
+ {[{l:'Status',v:caseData.badge,vc:caseData.badgeColor},{l:'Administrative owner',v:caseData.administrativeOwner||caseData.assigned},{l:'Due date',v:caseData.due,vc:caseData.dueColor},{l:'Source',v:caseData.source,agent:caseData.source?.startsWith('Auto-created')}].map(m=>(
  <div key={m.l} className="bg-stone2 px-4 py-3">
  <div className="font-body text-label text-muted mb-1">{m.l}</div>
- <div className={`font-body text-label font-medium ${m.vc||'text-ink'}`}>{m.v}</div>
+ {m.agent ? (
+  <div className="flex items-center gap-1.5">
+   <Zap size={10} strokeWidth={2} style={{ color: 'var(--color-deep)', flexShrink: 0 }} aria-hidden="true" />
+   <span className="font-body text-label font-medium" style={{ color: 'var(--color-deep)' }}>{m.v}</span>
+  </div>
+ ) : (
+  <div className={`font-body text-label font-medium ${m.vc||'text-ink'}`}>{m.v}</div>
+ )}
  </div>
  ))}
  </div>
+ {caseData.before && (
+ <div className="px-4 py-3 border-b border-rule2 flex items-start gap-2" style={{ background: 'rgba(196,132,78,0.04)' }}>
+  <span className="font-body text-label font-medium flex-shrink-0 mt-px" style={{ color: 'var(--color-context)' }}>Before ·</span>
+  <p className="font-body text-label leading-relaxed text-muted m-0">{caseData.before}</p>
+ </div>
+ )}
  <div className="px-4 py-3 border-b border-rule2">
  <div className="font-body text-label text-muted mb-2">Root cause</div>
  <div className="flex gap-1.5 flex-wrap">
@@ -178,6 +191,11 @@ function PriorityQueueRow({ c, isSelected, onSelect, isEscalated, isResolved, in
   <StatusPill tone={isEscalated ? 'muted' : isResolved ? 'ok' : c.badgeColor === 'text-danger' ? 'danger' : c.badgeColor === 'text-ok' ? 'ok' : 'warn'}>
    {isEscalated ? 'Delegated' : isResolved ? 'Resolved' : c.badge}
   </StatusPill>
+  {c.source?.startsWith('Auto-created') && !isResolved && !isEscalated && (
+   <span className="flex items-center gap-1 font-body text-label px-1.5 py-0.5 flex-shrink-0" style={{ color: 'var(--color-deep)', background: 'rgba(124,134,232,0.10)', border: '1px solid rgba(124,134,232,0.22)' }}>
+    <Zap size={9} strokeWidth={2} aria-hidden="true" />Agent-opened
+   </span>
+  )}
   {c.directorTurn && !isResolved && !isEscalated && (
    <span className="font-body text-label bg-ochre/10 text-ochre px-1.5 py-0.5">Your turn</span>
   )}
@@ -434,7 +452,6 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
  <input ref={fileInputRef} type="file" className="hidden" onChange={handleUpload} />
  <Btn variant="primary" onClick={() => fileInputRef.current?.click()} className="w-full !justify-between !rounded-none">
   <span>{c.recommendedAction}</span>
-  <ChevronRight size={13} strokeWidth={2} className="opacity-60" />
  </Btn>
  </>
  ) : c.type === 'ca' ? (
@@ -490,13 +507,11 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
  ) : (
  <Btn variant="primary" onClick={() => setClosureStep('measure')} className="w-full !justify-between !rounded-none">
   <span>{c.recommendedAction || 'Approve & close case'}</span>
-  <ChevronRight size={13} strokeWidth={2} className="opacity-60" />
  </Btn>
  )
  ) : (
  <Btn variant="primary" onClick={handleEscalate} className="w-full !justify-between !rounded-none">
   <span>{c.recommendedAction || c.primaryLabel}</span>
-  <ChevronRight size={13} strokeWidth={2} className="opacity-60" />
  </Btn>
  )}
  </div>
