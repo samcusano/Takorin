@@ -216,21 +216,66 @@ export const interventions = [
       note: 'CAPA evidence package assembled and submitted via QA portal',
     },
   },
+  // ── R-03 Bearing — complete loop: flagged → approved → inspected → line clear ──
+  {
+    id: 'INT-2026-R03-01',
+    agent: 'Predictive Maintenance',
+    agentTier: 'recommend',
+    action: 'Bearing inspection scheduled — R-03 Seal Press A, tonight 22:00–23:30',
+    rationaleText: 'Vibration increased 62% during shift (2.1 → 3.4 mm/s). Signature matches R-08 failure precursor (72h to fault). MTBF model: 14h to probable failure. Pre-emptive window avoids unplanned downtime.',
+    recommendedAt: '2026-05-16T13:12:00Z',
+    recommendedLabel: 'May 16, 13:12',
+    kpiTarget: 'production-loss',
+
+    sourceSignals: [
+      { name: 'R-03 vibration sensor', value: '3.4 mm/s',    baseline: '< 2.5 mm/s',       freshnessMin: 4, stale: false },
+      { name: 'R-03 temperature',      value: '+7°C rise',   baseline: 'stable ±2°C',        freshnessMin: 4, stale: false },
+      { name: 'MTBF forecast',          value: '14h to fault', baseline: '> 100h normal',     freshnessMin: 0, stale: false },
+    ],
+    signalCompleteness: 1.0,
+    freshnessState: 'fresh',
+
+    reviewedBy: 'J. Crocker',
+    reviewRole: 'Director',
+    dwellTimeMs: 41000,
+    decision: 'approved',
+    overrideReason: null,
+    decisionLabel: 'May 16, 13:23',
+
+    metricsBefore: { vibrationMmS: 3.4, healthScore: 71, productionLossRisk: 8200 },
+    actionTaken: 'Maintenance window confirmed tonight 22:00–23:30 · Bearing replaced · R-03 returned to service 23:48',
+    actionLabel: 'May 16, 22:00',
+
+    metricsAfter: { vibrationMmS: 0.9, healthScore: 94, productionLossRisk: 0 },
+    metricsUpdatedLabel: 'May 16, 23:50',
+
+    outcomeClassification: 'positive',
+    outcomeNotes: 'Bearing inspection at 22:45 confirmed wear — replaced. R-03 returned to service at 23:48 running at 0.9 mm/s (well within normal range). Line 4 AM shift started clean. Production loss avoided: $8,200 (R-08 precedent). Actual downtime: 108 min vs. 120 min estimated.',
+    kpiDelta: { metric: 'Production loss avoided', before: '$8,200 at risk', after: '$0', direction: 'improvement', pct: 100 },
+    wasReversed: false,
+    attributionConfidence: 0.84,
+    operatorConfirmation: {
+      confirmedBy: 'C. Reyes',
+      confirmedAt: 'May 17, 06:18',
+      station: 'Line 4 · Pack Line',
+      note: 'R-03 running clean at shift start · Vibration 0.9 mm/s · Within normal range confirmed',
+    },
+  },
 ]
 
 export const interventionSummary = {
-  total: 5,
-  positive: 3,
+  total: 6,
+  positive: 4,
   negative: 0,
   unclear: 1,
   reversed: 1,
   autoExecuted: 2,
-  humanApproved: 2,
+  humanApproved: 3,
   humanRejected: 1,
-  avgDwellTimeMs: 22467,
-  avgAttributionConfidence: 0.71,
+  avgDwellTimeMs: 26800,
+  avgAttributionConfidence: 0.74,
   lowDwellDecisions: 1,
-  operatorConfirmed: 2, // outcomes confirmed by operator station action
+  operatorConfirmed: 3,
 }
 
 export const kpiTargets = [

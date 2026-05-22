@@ -1,7 +1,79 @@
 import { useState } from 'react'
 import { compliancePolicies, multiRegulatoryCoverage } from '../data/compliance'
-import { AlertTriangle, ArrowRight } from 'lucide-react'
-import { SceneHeader, StatusPill, Btn } from '../components/UI'
+import { AlertTriangle, ArrowRight, ClipboardCheck, CheckCircle2, XCircle, AlertCircle, Play } from 'lucide-react'
+import { SceneHeader, StatusPill, Btn, SlidePanel } from '../components/UI'
+
+// ─── FDA Inspection Simulation data ──────────────────────────────────────────
+
+const AUDIT_CHECKS = [
+  { category: 'CAPA Register',           result: 'fail',    detail: '1 case overdue 7 days (CAPA-2604-001) · 1 awaiting closure (CAPA-2604-003) · 1 in progress', remediation: 'Close CAPA-2604-001 before inspection — 7-day gap is visible in audit package', link: '/capa' },
+  { category: 'FSMA 204 Traceability',   result: 'fail',    detail: 'TS-8811 naming conflict across MES, ERP, and supplier portal — lot chain incomplete', remediation: 'Resolve 3-name conflict in DataReadiness before FDA walkthrough', link: '/readiness' },
+  { category: 'Sanitation Records',       result: 'pass',    detail: 'All active lines current · Last Line 6 PM gap resolved (CAPA-2604-003 evidence submitted)' },
+  { category: 'HACCP CCP Documentation', result: 'pass',    detail: 'CCP-1, CCP-3, CCP-4 all within limits · Logs current for active SKU' },
+  { category: 'COA Documentation',        result: 'at-risk', detail: 'ConAgra TS-8811 pending · Production scheduled tomorrow · 24h to resolve', remediation: 'Follow up with ConAgra QA — COA required before production use', link: '/supplier' },
+  { category: 'Personnel Certifications', result: 'at-risk', detail: 'Kowalski L4 cert expires Jun 1 (10 days) · Okonkwo L2 expires Jun 15', remediation: 'Schedule renewal sessions before FDA window closes' },
+  { category: 'Escalation Procedures',   result: 'pass',    detail: 'All escalation logic documented and tested · R-03 incident demonstrates working chain' },
+  { category: 'SQF Certification',        result: 'pass',    detail: 'Valid through 2027 · Last audit Jan 2026 · 0 findings' },
+]
+
+const RESULT_CFG = {
+  pass:    { label: 'Pass',    icon: CheckCircle2, color: 'text-ok',     bg: 'bg-ok/[0.03]',     border: 'border-l-ok',     dot: 'bg-ok' },
+  fail:    { label: 'Fail',    icon: XCircle,      color: 'text-danger',  bg: 'bg-danger/[0.03]', border: 'border-l-danger', dot: 'bg-danger' },
+  'at-risk': { label: 'At risk', icon: AlertCircle, color: 'text-warn',  bg: 'bg-warn/[0.02]',   border: 'border-l-warn',   dot: 'bg-warn' },
+}
+
+function AuditSimPanel({ onClose }) {
+  const passes = AUDIT_CHECKS.filter(c => c.result === 'pass').length
+  const total  = AUDIT_CHECKS.length
+  const score  = Math.round((passes / total) * 100)
+  const scoreColor = score >= 80 ? 'text-ok' : score >= 60 ? 'text-warn' : 'text-danger'
+
+  return (
+    <SlidePanel
+      title="FDA Inspection Simulation"
+      subtitle={`US FDA Region 7 · 18 days to scheduled inspection · Run ${new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}`}
+      accentColor="var(--color-warn)"
+      onClose={onClose}
+      footer={<Btn variant="secondary" onClick={onClose}>Close</Btn>}
+    >
+      {/* Score header */}
+      <div className="flex items-center gap-4 px-4 py-4 bg-stone2 border border-rule2 mb-4">
+        <div className={`display-num text-score leading-none ${scoreColor}`}>{score}%</div>
+        <div className="flex-1 min-w-0">
+          <div className={`font-body font-semibold text-body ${scoreColor}`}>
+            {score >= 80 ? 'Likely ready for inspection' : score >= 60 ? 'Not ready — blocking gaps must close first' : 'At risk — multiple critical gaps'}
+          </div>
+          <div className="font-body text-muted text-label mt-0.5">{passes} of {total} checks pass · {total - passes} require action before inspection</div>
+        </div>
+      </div>
+
+      {/* Checks */}
+      <div className="space-y-2">
+        {AUDIT_CHECKS.map((check, i) => {
+          const cfg = RESULT_CFG[check.result]
+          const Icon = cfg.icon
+          return (
+            <div key={i} className={`border-l-[3px] ${cfg.border} ${cfg.bg} border border-rule2/60`}>
+              <div className="flex items-start gap-3 px-4 py-3">
+                <Icon size={13} strokeWidth={2} className={`flex-shrink-0 mt-0.5 ${cfg.color}`} aria-hidden="true" />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap mb-0.5">
+                    <span className="font-body font-medium text-ink text-body">{check.category}</span>
+                    <span className={`font-body text-label font-medium ${cfg.color}`}>{cfg.label}</span>
+                  </div>
+                  <p className="font-body text-muted text-label leading-relaxed">{check.detail}</p>
+                  {check.remediation && (
+                    <p className={`font-body text-label mt-1 leading-snug ${cfg.color}`}>→ {check.remediation}</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </SlidePanel>
+  )
+}
 
 const STATUS_LABEL  = { active: 'Active', inactive: 'Inactive', monitoring: 'Monitoring' }
 const STATUS_COLOR  = { active: 'text-ok', inactive: 'text-muted', monitoring: 'text-ochre' }
@@ -102,6 +174,7 @@ function EscalationStrip({ steps }) {
 
 export default function CompliancePolicy() {
   const [selectedId, setSelectedId] = useState('fda-us')
+  const [auditOpen, setAuditOpen] = useState(false)
   const policy = compliancePolicies.find(p => p.id === selectedId)
 
   // Hero metric: inspection countdown > CAPA count > framework count
@@ -201,6 +274,7 @@ export default function CompliancePolicy() {
       {/* ── Right: policy workspace ──────────────────────────────── */}
       {policy && (
         <div className="flex-1 flex flex-col overflow-hidden">
+          {auditOpen && <AuditSimPanel onClose={() => setAuditOpen(false)} />}
 
           <SceneHeader
             module="COMPLIANCE"
@@ -211,6 +285,22 @@ export default function CompliancePolicy() {
             tone={heroTone}
             meta={metaItems}
           />
+
+          {/* Inspection simulation trigger — only for FDA-US with an active inspection window */}
+          {policy.nextInspection && (
+            <div className="flex-shrink-0 flex items-center justify-between px-5 py-2.5 border-b border-rule2 bg-stone2">
+              <div className="flex items-center gap-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-warn flex-shrink-0" />
+                <span className="font-body text-warn text-label font-medium">
+                  {policy.nextInspection.authority} inspection in {policy.nextInspection.daysRemaining} days
+                </span>
+                <span className="font-body text-muted text-label">— 2 blocking gaps require resolution before arrival</span>
+              </div>
+              <Btn variant="secondary" onClick={() => setAuditOpen(true)}>
+                <Play size={10} strokeWidth={2} />Run audit simulation
+              </Btn>
+            </div>
+          )}
 
           <EscalationStrip steps={policy.escalationLogic} />
 

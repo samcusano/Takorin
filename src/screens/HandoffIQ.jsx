@@ -1,11 +1,61 @@
 import { useState } from 'react'
 import { handoffData, certExpiry, haccpData, robotFleetData } from '../data'
 import { Btn, PersonAvatar, CarryForwardItem, SlidePanel, StatusPill } from '../components/UI'
-import { Check, AlertTriangle, Clock, Brain, Bot, CheckCircle, Cpu } from 'lucide-react'
+import { Check, AlertTriangle, Clock, Brain, Bot, CheckCircle, Cpu, Zap } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useAppState } from '../context/AppState'
 
 const FINDING_TO_CASE = { sf1: 'I.', sf2: 'II.', sf3: 'II.' }
+
+// ── Live document strip — shows document building in real time ────────────────
+
+const SHIFT_EVENTS = [
+  { time: '13:23', actor: 'Director', text: 'Approved R-03 bearing inspection · window tonight 22:00–23:30', type: 'agent' },
+  { time: '13:12', actor: 'Predictive Maintenance', text: 'R-03 vibration at 3.4 mm/s — flagged for inspection', type: 'agent' },
+  { time: '11:30', actor: 'T. Osei', text: 'Uploaded CAPA-2604-003 evidence package — 4 files', type: 'human' },
+  { time: '09:15', actor: 'System', text: 'Auto-escalation: CAPA-2604-001 overdue (2nd notice)', type: 'system' },
+  { time: '06:48', actor: 'D. Kowalski', text: 'Martinez reassigned to Sauce Dosing — staffing 72% → 83%', type: 'human' },
+  { time: '06:42', actor: 'D. Kowalski', text: 'Completed 4 overdue startup checklists', type: 'human' },
+  { time: '06:12', actor: 'ShiftIQ', text: 'Shift started — risk score 54, normal early-shift', type: 'system' },
+]
+
+function LiveDocumentStrip({ activityLog }) {
+  const [expanded, setExpanded] = useState(false)
+  const eventCount = SHIFT_EVENTS.length
+  return (
+    <div className="flex-shrink-0 border-b-2 border-b-ok/20 bg-ok/[0.03]">
+      <button type="button" onClick={() => setExpanded(e => !e)}
+        className="w-full flex items-center gap-3 px-5 py-2.5 text-left hover:bg-ok/[0.04] transition-colors">
+        <div className="flex items-center gap-1.5">
+          <div className="w-1.5 h-1.5 rounded-full bg-ok live-dot flex-shrink-0" />
+          <span className="font-body font-medium text-ok text-label">Live · Document building in real time</span>
+        </div>
+        <span className="font-body text-muted text-label">{eventCount} events captured this shift</span>
+        <span className="font-body text-muted text-label ml-auto">Last updated 14:02</span>
+        <span className="font-body text-muted text-label">{expanded ? '▲' : '▼'}</span>
+      </button>
+      {expanded && (
+        <div className="border-t border-ok/15 slide-in">
+          {SHIFT_EVENTS.slice(0, 5).map((ev, i) => (
+            <div key={i} className="flex items-start gap-3 px-5 py-2 border-b border-rule2/60 last:border-b-0">
+              <span className="font-body text-muted text-micro tabular-nums w-9 flex-shrink-0 mt-px">{ev.time}</span>
+              {ev.type === 'agent'
+                ? <Zap size={9} strokeWidth={2} className="text-deep flex-shrink-0 mt-px" style={{ color: 'var(--color-deep)' }} />
+                : ev.type === 'human'
+                  ? <div className="w-1.5 h-1.5 rounded-full bg-ok flex-shrink-0 mt-1" />
+                  : <div className="w-1.5 h-1.5 rounded-full bg-muted flex-shrink-0 mt-1" />
+              }
+              <div className="flex-1 min-w-0">
+                <span className="font-body text-label font-medium text-muted mr-1.5">{ev.actor}</span>
+                <span className="font-body text-label text-muted">{ev.text}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
 
 function CarryForwardDetailPanel({ item, onClose }) {
  if (!item) return null
@@ -92,6 +142,9 @@ function LayoutGrid({ d, currentPlant, carryForwardItems, acknowledgedCount, car
  return (
   <>
   <CarryForwardDetailPanel item={viewingItem} onClose={() => setViewingItem(null)} />
+
+   {/* ── Live document strip — shift event capture ──────────────── */}
+   <LiveDocumentStrip activityLog={[]} />
 
    {/* ── Handoff summary stats ────────────────────────────────────── */}
    <div className="flex-shrink-0 flex divide-x divide-rule2 border-b border-rule2 bg-stone">
@@ -428,14 +481,15 @@ export default function HandoffIQ() {
  )
 
  const carryForwardItems = d.cases
-  .filter(c => c.urgency === 'warn' || c.urgency === 'danger')
-  .sort((a, b) => ({ danger: 0, warn: 1 }[a.urgency] ?? 2) - ({ danger: 0, warn: 1 }[b.urgency] ?? 2))
+  .filter(c => c.urgency === 'warn' || c.urgency === 'danger' || c.urgency === 'ok')
+  .sort((a, b) => ({ danger: 0, warn: 1, ok: 2 }[a.urgency] ?? 3) - ({ danger: 0, warn: 1, ok: 2 }[b.urgency] ?? 3))
   .map(c => ({
    id: c.num, urgency: c.urgency, title: c.title,
    operationalImpact: c.desc,
    ownerContext: c.evidence || 'Documented in shift record',
    recommendedAction: c.recommendedAction || c.events?.[0]?.val || '',
-   resolvedInShift: actedCaseNums.has(c.num),
+   resolvedInShift: c.resolvedInShift || actedCaseNums.has(c.num),
+   agentSourced: c.agentSourced || false,
   }))
 
  const carryForwardCount = carryForwardItems.length
