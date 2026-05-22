@@ -6,7 +6,7 @@ import { batches, batchSummary } from '../data/batches'
 import { CheckCircle, AlertTriangle, TrendingUp, TrendingDown, Minus } from 'lucide-react'
 import { sensoryReadings, expertAnnotations, craftPriors, seasonalBaselines } from '../data/quality'
 import { compliancePolicies } from '../data/compliance'
-import { Tabs, SectionHeader, StatusPill, SceneHeader, toneColor } from '../components/UI'
+import { Tabs, SectionHeader, StatusPill, SceneHeader, toneColor, AnimatedScore } from '../components/UI'
 
 const activePolicies = compliancePolicies.filter(p => p.status === 'active' || p.status === 'monitoring')
 
@@ -58,12 +58,12 @@ function ConfidenceChart({ trajectory, forecast }) {
       {/* Grid lines */}
       {[60, 70, 80, 90].map(v => (
         <line key={v} x1={pad} x2={W - pad} y1={toY(v)} y2={toY(v)}
-          stroke="var(--color-rule-2)" strokeWidth={0.5} />
+          stroke="var(--color-rule-2)" strokeWidth={2} />
       ))}
       {/* Area fill */}
       <polygon points={fillPts} fill="url(#trajFill)" />
       {/* Forecast (dashed) */}
-      <polyline points={forecPts} fill="none" stroke="var(--color-ochre)"
+      <polyline points={forecPts} fill="none" stroke="var(--color-signal)"
         strokeWidth={1.5} strokeDasharray="4 3" opacity={0.6} />
       {/* Actual trajectory */}
       <polyline points={trajPts} fill="none" stroke="var(--color-ok)"
@@ -89,7 +89,7 @@ function StageTracker({ stages }) {
           const isActive = s.status === 'active'
           return (
             <div key={s.id} className={`flex-1 h-1.5 transition-colors ${
-              isDone ? 'bg-ok' : isActive ? 'bg-ochre' : 'bg-rule2'
+              isDone ? 'bg-ok' : isActive ? 'bg-signal' : 'bg-rule2'
             }`} />
           )
         })}
@@ -101,7 +101,7 @@ function StageTracker({ stages }) {
           return (
             <div key={s.id} className="flex-1 min-w-0">
               <div className={`font-body text-micro truncate leading-tight ${
-                isActive ? 'text-ochre font-medium' : isDone ? 'text-muted' : 'text-muted opacity-40'
+                isActive ? 'text-signal font-medium' : isDone ? 'text-muted' : 'text-muted opacity-40'
               }`}>{s.label}</div>
             </div>
           )
@@ -117,11 +117,11 @@ function SignalRow({ s }) {
   const arrowColor = s.trend === 'rising' ? 'text-ok' : s.trend === 'declining' ? 'text-warn' : 'text-muted'
   const isCritical = s.influence === 'critical'
   return (
-    <div className={`flex items-center gap-4 px-5 py-3 border-b border-rule2 last:border-b-0 ${isCritical ? 'border-l-2 border-l-ochre' : ''}`}>
+    <div className={`flex items-center gap-4 px-5 py-3 border-b border-rule2 last:border-b-0 ${isCritical ? 'border-l-2 border-l-signal' : ''}`}>
       <div className="flex-1 min-w-0">
         <div className="flex items-baseline gap-2">
           <span className="font-body font-medium text-ink text-body">{s.label}</span>
-          {isCritical && <span className="font-body text-micro text-ochre">critical</span>}
+          {isCritical && <span className="font-body text-micro text-signal">critical</span>}
         </div>
         {s.note && <div className="font-body text-muted text-label mt-0.5 leading-snug">{s.note}</div>}
       </div>
@@ -168,12 +168,12 @@ function QualityTab() {
   return (
     <div className="flex flex-col flex-1 overflow-hidden">
       <Tabs tabs={QTABS} active={qTab} onChange={setQTab} />
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto page-rise">
         {qTab === 'sensory' && (
           <div className="divide-y divide-rule2">
             {sensoryReadings.map(r => {
-              const scoreColor = r.overallScore >= 90 ? 'text-ok' : r.overallScore >= 80 ? 'text-ochre' : 'text-warn'
-              const scoreToneKey = r.overallScore >= 90 ? 'ok' : r.overallScore >= 80 ? 'ochre' : 'warn'
+              const scoreColor = r.overallScore >= 90 ? 'text-ok' : r.overallScore >= 80 ? 'text-signal' : 'text-warn'
+              const scoreToneKey = r.overallScore >= 90 ? 'ok' : r.overallScore >= 80 ? 'signal' : 'warn'
               return (
                 <div key={r.id} className="px-6 py-4">
                   <div className="flex items-start justify-between gap-4 mb-3">
@@ -182,7 +182,7 @@ function QualityTab() {
                       <div className="font-body text-muted text-label mt-0.5">{r.source} · {new Date(r.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</div>
                     </div>
                     <div className="text-right flex-shrink-0">
-                      <div className={`display-num text-metric leading-none ${scoreColor}`}>{r.overallScore}</div>
+                      <div className={`display-num text-metric leading-none ${scoreColor}`}><AnimatedScore value={r.overallScore} /></div>
                       <div className="font-body text-muted text-label mt-0.5">{r.gradeProjection} · {r.confidence}% conf</div>
                     </div>
                   </div>
@@ -202,8 +202,8 @@ function QualityTab() {
                     })}
                   </div>
                   {r.expertAnnotation && (
-                    <div className="mt-3 flex items-start gap-3 px-3 py-2.5 border-l-2 border-l-ochre bg-ochre/[0.03]">
-                      <span className="font-body font-semibold text-ochre text-micro flex-shrink-0 mt-px">{r.expertAnnotation.author}</span>
+                    <div className="mt-3 flex items-start gap-3 px-3 py-2.5 border-l-2 border-l-signal bg-signal/[0.03]">
+                      <span className="font-body font-semibold text-signal text-micro flex-shrink-0 mt-px">{r.expertAnnotation.author}</span>
                       <span className="font-body text-ink text-body leading-relaxed">{r.expertAnnotation.note}</span>
                     </div>
                   )}
@@ -215,7 +215,7 @@ function QualityTab() {
         {qTab === 'annotations' && (
           <div className="divide-y divide-rule2">
             {expertAnnotations.map(a => {
-              const typeTone = { 'quality-watch': 'warn', 'grade-confirmation': 'ok', 'process-note': 'muted', 'outcome-validation': 'ochre' }[a.type] ?? 'muted'
+              const typeTone = { 'quality-watch': 'warn', 'grade-confirmation': 'ok', 'process-note': 'muted', 'outcome-validation': 'signal' }[a.type] ?? 'muted'
               const typeLabel = { 'quality-watch': 'Quality watch', 'grade-confirmation': 'Grade confirmed', 'process-note': 'Process note', 'outcome-validation': 'Outcome validation' }[a.type] ?? a.type
               return (
                 <div key={a.id} className="px-6 py-4">
@@ -249,7 +249,7 @@ function QualityTab() {
                     <div className="font-body font-medium text-ink text-body leading-snug">{p.rule}</div>
                   </div>
                   <div className="text-right flex-shrink-0">
-                    <div className={`display-num text-title leading-none ${p.confidence >= 90 ? 'text-ok' : p.confidence >= 80 ? 'text-ochre' : 'text-warn'}`}>{p.confidence}%</div>
+                    <div className={`display-num text-title leading-none ${p.confidence >= 90 ? 'text-ok' : p.confidence >= 80 ? 'text-signal' : 'text-warn'}`}>{p.confidence}%</div>
                     <div className="font-body text-muted text-micro mt-0.5">{p.evidenceBatches} batches</div>
                   </div>
                 </div>
@@ -347,11 +347,11 @@ export default function BatchIntelligence() {
                 </div>
                 <div className="font-body text-muted text-micro mb-2">{b.vessel} · {b.daysElapsed}/{b.totalDays}d</div>
                 <div className="h-1 bg-rule2 mb-1.5">
-                  <div className={`h-full ${isComplete ? 'bg-ok' : 'bg-ochre'} transition-[width]`} style={{ width: `${pctDone}%` }} />
+                  <div className={`h-full ${isComplete ? 'bg-ok' : 'bg-signal'} transition-[width]`} style={{ width: `${pctDone}%` }} />
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="font-body text-muted text-micro">{isComplete ? 'Complete' : b.stage.replace(/-/g, ' ')}</span>
-                  <span className={`font-body text-micro ${b.grade === 'Premium' ? 'text-ochre' : 'text-muted'}`}>{b.grade}</span>
+                  <span className={`font-body text-micro ${b.grade === 'Premium' ? 'text-signal' : 'text-muted'}`}>{b.grade}</span>
                 </div>
                 {b.hasFinding && (
                   <div className="mt-1.5">
@@ -417,7 +417,7 @@ export default function BatchIntelligence() {
                     <span className="inline-block w-5 h-0.5 bg-ok rounded-full" />actual
                   </span>
                   <span className="flex items-center gap-1.5 font-body text-muted text-label">
-                    <span className="inline-block w-5 h-0.5 bg-ochre opacity-60" style={{ backgroundImage: 'repeating-linear-gradient(90deg,var(--color-ochre) 0,var(--color-ochre) 4px,transparent 4px,transparent 7px)' }} />forecast
+                    <span className="inline-block w-5 h-0.5 bg-signal opacity-60" style={{ backgroundImage: 'repeating-linear-gradient(90deg,var(--color-signal) 0,var(--color-signal) 4px,transparent 4px,transparent 7px)' }} />forecast
                   </span>
                   <span className="flex items-center gap-1 font-body text-label" style={{ color: 'var(--color-ok)' }}>
                     <TrendingUp size={10} strokeWidth={2} />{trendLabel}
@@ -457,7 +457,7 @@ export default function BatchIntelligence() {
                     <div key={label} className="flex items-center gap-2 mb-2">
                       <span className="font-body text-muted text-label w-20 flex-shrink-0">{label}</span>
                       <div className="flex-1 h-1.5 bg-rule2">
-                        <div className={`h-full ${val >= 85 ? 'bg-ok' : val >= 70 ? 'bg-ochre' : 'bg-warn'} transition-[width]`} style={{ width: `${val}%` }} />
+                        <div className={`h-full ${val >= 85 ? 'bg-ok' : val >= 70 ? 'bg-signal' : 'bg-warn'} transition-[width]`} style={{ width: `${val}%` }} />
                       </div>
                       <span className="display-num text-base tabular-nums w-7 text-right flex-shrink-0 text-muted">{val}</span>
                     </div>

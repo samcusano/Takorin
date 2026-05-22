@@ -9,13 +9,13 @@ import {
   AlertTriangle, ChevronDown, ChevronRight, Database, Activity,
   Truck, ClipboardCheck, RotateCcw, TrendingDown, Shield, Zap, Waves,
 } from 'lucide-react'
-import { StatusPill, SlidePanel, SegmentedControl } from '../components/UI'
+import { StatusPill, SlidePanel, SegmentedControl, StatGrid, EmptyState } from '../components/UI'
 
 // ── Operational Memory Domains ───────────────────────────────────────────────
 
 const DOMAINS = [
   { id: 'active-deviations',    label: 'Active Deviations',    icon: Zap,           color: 'text-danger', bg: 'bg-danger/[0.04]', border: 'border-l-danger', badge: 'bg-danger/[0.04] text-danger' },
-  { id: 'sensory-drift',        label: 'Sensory Drift',        icon: Waves,         color: 'text-ochre',  bg: 'bg-ochre/[0.05]',  border: 'border-l-ochre',  badge: 'bg-ochre/10 text-ochre'  },
+  { id: 'sensory-drift',        label: 'Sensory Drift',        icon: Waves,         color: 'text-signal',  bg: 'bg-signal/[0.05]',  border: 'border-l-signal',  badge: 'bg-signal/10 text-signal'  },
   { id: 'supplier-deviation',   label: 'Supplier Deviation',   icon: Truck,         color: 'text-warn',   bg: 'bg-warn/[0.04]',   border: 'border-l-warn',   badge: 'bg-warn/10 text-warn'    },
   { id: 'yield-loss',           label: 'Yield Loss',           icon: TrendingDown,  color: 'text-warn',   bg: 'bg-warn/[0.04]',   border: 'border-l-warn',   badge: 'bg-warn/10 text-warn'    },
   { id: 'capa-patterns',        label: 'CAPA Patterns',        icon: ClipboardCheck,color: 'text-muted',  bg: '',                  border: 'border-l-muted',  badge: 'bg-stone3 text-muted'    },
@@ -26,7 +26,7 @@ const DOMAINS = [
 const MEMORY_TYPES = [
   { id: 'variance',     label: 'Variance memory',    dot: 'bg-warn',   border: 'border-l-warn'   },
   { id: 'intervention', label: 'Intervention memory', dot: 'bg-ok',    border: 'border-l-ok'     },
-  { id: 'sensory',      label: 'Sensory memory',     dot: 'bg-ochre',  border: 'border-l-ochre'  },
+  { id: 'sensory',      label: 'Sensory memory',     dot: 'bg-signal',  border: 'border-l-signal'  },
   { id: 'seasonal',     label: 'Seasonal memory',    dot: 'bg-muted',  border: 'border-l-muted'  },
   { id: 'judgment',     label: 'Operator judgment',  dot: 'bg-ink',    border: 'border-l-ink'    },
   { id: 'causality',    label: 'Process causality',  dot: 'bg-muted',  border: 'border-l-muted'  },
@@ -92,7 +92,7 @@ const ENRICHED = knowledgeEntries.map(e => ({
 const RECALL_COLOR = {
   anomaly:   { chip: 'bg-danger/[0.04] text-danger', dot: 'bg-danger'  },
   event:     { chip: 'bg-warn/10 text-warn',     dot: 'bg-warn'    },
-  condition: { chip: 'bg-ochre/10 text-ochre',   dot: 'bg-ochre'   },
+  condition: { chip: 'bg-signal/10 text-signal',   dot: 'bg-signal'   },
   outcome:   { chip: 'bg-ok/10 text-ok',         dot: 'bg-ok'      },
 }
 
@@ -113,10 +113,10 @@ const TYPE_LABELS = {
 // ── Entry detail (shared across variants) ────────────────────────────────────
 
 function EntryDetail({ entry }) {
-  if (!entry) return <div className="flex items-center justify-center h-full font-body text-muted text-label">Select an entry</div>
+  if (!entry) return <EmptyState message="Select an entry" />
   const riskKey = entry.institutionalRisk?.split(' ')[0]
   const risk = RISK_CFG[riskKey]
-  const confColor = entry.confidence >= 90 ? 'text-ok' : entry.confidence >= 80 ? 'text-ochre' : 'text-warn'
+  const confColor = entry.confidence >= 90 ? 'text-ok' : entry.confidence >= 80 ? 'text-signal' : 'text-warn'
   const domain = DOMAINS.find(d => d.id === entry._domain)
 
   return (
@@ -154,24 +154,21 @@ function EntryDetail({ entry }) {
           <div className="font-body text-muted text-label mb-2">Encoded rule</div>
           <pre className="font-body text-muted text-label leading-relaxed bg-stone2 px-4 py-3 whitespace-pre-wrap">{entry.codedRule}</pre>
         </div>
-        <div className="grid grid-cols-3 gap-px bg-rule2">
+        <StatGrid cols={3} noBorder>
           {[
             { label: 'Evidence batches', val: entry.evidenceBase.batchCount != null ? String(entry.evidenceBase.batchCount) : 'Protocol-based' },
             { label: 'Year range',       val: entry.evidenceBase.yearRange },
             { label: 'Success rate',     val: entry.evidenceBase.successRate ?? 'N/A' },
           ].map(({ label, val }) => (
-            <div key={label} className="bg-stone px-3 py-2.5">
-              <div className="font-body text-muted text-label mb-0.5">{label}</div>
-              <div className="display-num text-base">{val}</div>
-            </div>
+            <StatGrid.Cell key={label} label={label} value={val} size="sm" />
           ))}
-        </div>
+        </StatGrid>
         {entry.activeBatches?.length > 0 && (
           <div>
             <div className="font-body text-muted text-label mb-2">Active batches</div>
             <div className="flex flex-wrap gap-1.5">
               {entry.activeBatches.map(b => (
-                <span key={b} className="font-body text-ochre text-label px-2 py-0.5 bg-ochre/[0.06]">{b}</span>
+                <span key={b} className="font-body text-signal text-label px-2 py-0.5 bg-signal/[0.06]">{b}</span>
               ))}
             </div>
           </div>
@@ -236,7 +233,7 @@ function OperationalMemoryVault() {
                 }`}>
                 <div className="flex items-center justify-between gap-2 mb-0.5">
                   <div className="flex items-center gap-2">
-                    <Icon size={13} className={isActive ? d.color : 'text-muted'} strokeWidth={1.75} />
+                    <Icon size={13} className={isActive ? d.color : 'text-muted'} strokeWidth={2} />
                     <span className={`font-body font-medium text-body leading-snug ${isActive ? 'text-ink' : 'text-muted'}`}>{d.label}</span>
                   </div>
                   <span className={`display-num text-base ${isActive ? 'text-muted' : 'text-muted/50'}`}>{dc?.count ?? 0}</span>
@@ -256,9 +253,9 @@ function OperationalMemoryVault() {
         <button type="button"
           onClick={() => { setShowMemory(true) }}
           className={`flex-shrink-0 flex items-center gap-2 px-4 py-3.5 border-t border-rule2 transition-colors border-l-2 ${
-            showMemory ? 'bg-stone2 border-l-ochre' : 'border-l-transparent hover:bg-stone2/50'
+            showMemory ? 'bg-stone2 border-l-signal' : 'border-l-transparent hover:bg-stone2/50'
           }`}>
-          <Database size={10} className={showMemory ? 'text-ochre' : 'text-muted'} strokeWidth={1.75} />
+          <Database size={10} className={showMemory ? 'text-signal' : 'text-muted'} strokeWidth={2} />
           <div className="text-left">
             <div className={`font-body font-medium text-label ${showMemory ? 'text-ink' : 'text-muted'}`}>Process Memory</div>
             <div className="font-body text-muted text-label">{processMemory.length} reference batches</div>
@@ -278,13 +275,13 @@ function OperationalMemoryVault() {
               <div className="w-[280px] flex-shrink-0 border-r border-rule2 overflow-y-auto">
                 {processMemory.map(m => {
                   const ocColor = { exceptional: 'text-ok', excellent: 'text-ok', underperformed: 'text-danger' }[m.outcome] ?? 'text-muted'
-                  const border = m.outcome === 'underperformed' ? 'border-l-danger' : m.grade === 'Premium' ? 'border-l-ochre' : 'border-l-muted'
+                  const border = m.outcome === 'underperformed' ? 'border-l-danger' : m.grade === 'Premium' ? 'border-l-signal' : 'border-l-muted'
                   return (
                     <button key={m.id} type="button" onClick={() => setSlideEntry({ _pm: true, ...m })}
                       className={`w-full text-left px-4 py-4 border-b border-rule2 transition-colors border-l-4 ${border} hover:bg-stone2/50`}>
                       <div className="flex items-baseline justify-between mb-1">
                         <span className="font-body font-bold text-ink text-body">{m.batchId}</span>
-                        <span className={`display-num text-base ${m.grade === 'Premium' ? 'text-ochre' : 'text-muted'}`}>{m.grade}</span>
+                        <span className={`display-num text-base ${m.grade === 'Premium' ? 'text-signal' : 'text-muted'}`}>{m.grade}</span>
                       </div>
                       <div className="font-body text-muted text-micro mb-1.5">{m.sku}</div>
                       <div className="flex items-center gap-3">
@@ -330,15 +327,13 @@ function OperationalMemoryVault() {
             {/* Entry list */}
             <div className="flex-1 overflow-y-auto">
               {entries.length === 0 ? (
-                <div className="flex items-center justify-center h-full font-body text-muted text-label">
-                  No entries in this domain
-                </div>
+                <EmptyState message="No entries in this domain" />
               ) : (
                 <div className="px-3 py-3 space-y-2.5">
                   {entries.map(e => {
                         const riskKey  = e.institutionalRisk?.split(' ')[0]
                         const risk     = RISK_CFG[riskKey]
-                        const confColor = e.confidence >= 90 ? 'text-ok' : e.confidence >= 80 ? 'text-ochre' : 'text-warn'
+                        const confColor = e.confidence >= 90 ? 'text-ok' : e.confidence >= 80 ? 'text-signal' : 'text-warn'
                         const topBar   = riskKey === 'HIGH' ? 'bg-danger' : riskKey === 'MEDIUM' ? 'bg-warn' : 'bg-ok/50'
                         const recallC  = RECALL_COLOR[e._recallMode] ?? RECALL_COLOR.condition
                         return (
@@ -402,14 +397,11 @@ function OperationalMemoryVault() {
         <SlidePanel title={slideEntry.batchId} subtitle={`${slideEntry.sku} · ${slideEntry.grade}`}
           onClose={() => setSlideEntry(null)} maxWidth="480px">
           <div className="space-y-4 px-1 py-2">
-            <div className="grid grid-cols-3 gap-px bg-rule2">
+            <StatGrid cols={3} noBorder>
               {[{ label: 'Aroma', val: String(slideEntry.finalAromaScore) }, { label: 'EBC', val: String(slideEntry.finalEBC) }, { label: 'Amino N', val: slideEntry.finalAminoNitrogen }].map(({ label, val }) => (
-                <div key={label} className="bg-stone px-3 py-2.5">
-                  <div className="font-body text-muted text-label mb-0.5">{label}</div>
-                  <div className="display-num text-base">{val}</div>
-                </div>
+                <StatGrid.Cell key={label} label={label} value={val} size="sm" />
               ))}
-            </div>
+            </StatGrid>
             <div>
               <div className="font-body text-muted text-label mb-2">Key signal events</div>
               <div className="divide-y divide-rule2">
@@ -425,7 +417,7 @@ function OperationalMemoryVault() {
               </div>
             </div>
             {slideEntry.masterBlenderNote && (
-              <div className="px-4 py-3 bg-ochre/[0.04] border border-ochre/20 border-l-4 border-l-ochre">
+              <div className="px-4 py-3 bg-signal/[0.04] border border-signal/20 border-l-4 border-l-signal">
                 <div className="font-body text-muted text-label mb-1">Master blender note</div>
                 <p className="font-body text-ink text-body leading-relaxed">{slideEntry.masterBlenderNote}</p>
               </div>
@@ -468,14 +460,14 @@ function ResearchMode({ variant, setVariant }) {
             <button key={String(d.id)} type="button"
               onClick={() => { setFilterCat(d.id); setShowMemory(false) }}
               className={`inline-flex items-center gap-1 font-body font-medium text-label px-2 py-0.5 transition-colors ${
-                isActive ? (domDef ? domDef.badge : 'bg-ochre/10 text-ochre') : 'bg-stone3 text-muted hover:text-muted'
+                isActive ? (domDef ? domDef.badge : 'bg-signal/10 text-signal') : 'bg-stone3 text-muted hover:text-muted'
               }`}>
               <span className="w-1 h-1 rounded-full bg-current" />{d.label} <span className="opacity-60">{d.count}</span>
             </button>
           )
         })}
         <button type="button" onClick={() => { setShowMemory(true); setFilterCat(null) }}
-          className={`inline-flex items-center gap-1 font-body font-medium text-label px-2 py-0.5 transition-colors ${showMemory ? 'bg-ochre/10 text-ochre' : 'bg-stone3 text-muted hover:text-muted'}`}>
+          className={`inline-flex items-center gap-1 font-body font-medium text-label px-2 py-0.5 transition-colors ${showMemory ? 'bg-signal/10 text-signal' : 'bg-stone3 text-muted hover:text-muted'}`}>
           <span className="w-1 h-1 rounded-full bg-current" />Process Memory {processMemory.length}
         </button>
       </div>
@@ -485,7 +477,7 @@ function ResearchMode({ variant, setVariant }) {
           const riskKey = e.institutionalRisk?.split(' ')[0]
           const riskBadgeCls = riskKey === 'HIGH' ? 'bg-danger/10 text-danger' : riskKey === 'MEDIUM' ? 'bg-warn/10 text-warn' : null
           const domain = DOMAINS.find(d => d.id === e._domain)
-          const conf = e.confidence >= 90 ? 'text-ok' : e.confidence >= 80 ? 'text-ochre' : 'text-warn'
+          const conf = e.confidence >= 90 ? 'text-ok' : e.confidence >= 80 ? 'text-signal' : 'text-warn'
           return (
             <div key={e.id}>
               <button type="button"
@@ -544,7 +536,7 @@ function DeepReference({ variant, setVariant }) {
         </div>
         <div className="flex-1 overflow-y-auto divide-y divide-rule2">
           <button type="button" onClick={() => { setActiveDomain(null); setShowMemory(false) }}
-            className={`w-full text-left px-4 py-3 border-l-2 transition-colors flex items-center justify-between ${!activeDomain && !showMemory ? 'border-l-ochre bg-stone2' : 'border-l-transparent hover:bg-stone2/50'}`}>
+            className={`w-full text-left px-4 py-3 border-l-2 transition-colors flex items-center justify-between ${!activeDomain && !showMemory ? 'border-l-signal bg-stone2' : 'border-l-transparent hover:bg-stone2/50'}`}>
             <span className="font-body font-medium text-ink text-body">All entries</span>
             <span className="font-body text-muted text-label">{ENRICHED.length}</span>
           </button>
@@ -554,7 +546,7 @@ function DeepReference({ variant, setVariant }) {
             const activeCount = ENRICHED.filter(e => e._domain === d.id && e.activeBatches?.length > 0).length
             return (
               <button key={d.id} type="button" onClick={() => { setActiveDomain(d.id); setShowMemory(false) }}
-                className={`w-full text-left px-4 py-3 border-l-2 transition-colors ${isActive ? 'border-l-ochre bg-stone2' : 'border-l-transparent hover:bg-stone2/50'}`}>
+                className={`w-full text-left px-4 py-3 border-l-2 transition-colors ${isActive ? 'border-l-signal bg-stone2' : 'border-l-transparent hover:bg-stone2/50'}`}>
                 <div className="flex items-center justify-between">
                   <span className="font-body font-medium text-ink text-body">{d.label}</span>
                   <span className="font-body text-muted text-label">{count}</span>
@@ -565,8 +557,8 @@ function DeepReference({ variant, setVariant }) {
           })}
         </div>
         <button type="button" onClick={() => { setShowMemory(true); setActiveDomain(null) }}
-          className={`flex-shrink-0 flex items-center gap-2 px-4 py-3.5 border-t border-rule2 border-l-2 transition-colors ${showMemory ? 'border-l-ochre bg-stone2' : 'border-l-transparent hover:bg-stone2/50'}`}>
-          <Database size={10} className={showMemory ? 'text-ochre' : 'text-muted'} strokeWidth={1.75} />
+          className={`flex-shrink-0 flex items-center gap-2 px-4 py-3.5 border-t border-rule2 border-l-2 transition-colors ${showMemory ? 'border-l-signal bg-stone2' : 'border-l-transparent hover:bg-stone2/50'}`}>
+          <Database size={10} className={showMemory ? 'text-signal' : 'text-muted'} strokeWidth={2} />
           <div>
             <div className={`font-body font-medium text-label ${showMemory ? 'text-ink' : 'text-muted'}`}>Process Memory</div>
             <div className="font-body text-muted text-label">{processMemory.length} batches</div>
@@ -582,12 +574,12 @@ function DeepReference({ variant, setVariant }) {
           <div className="flex-1 overflow-y-auto divide-y divide-rule2">
             {filtered.map(e => {
               const riskKey = e.institutionalRisk?.split(' ')[0]
-              const conf = e.confidence >= 90 ? 'text-ok' : e.confidence >= 80 ? 'text-ochre' : 'text-warn'
+              const conf = e.confidence >= 90 ? 'text-ok' : e.confidence >= 80 ? 'text-signal' : 'text-warn'
               const domain = DOMAINS.find(d => d.id === e._domain)
               const borderLeft = riskKey === 'HIGH' ? 'border-l-danger' : riskKey === 'MEDIUM' ? 'border-l-warn' : 'border-l-ok/40'
               return (
                 <button key={e.id} type="button" onClick={() => setSelectedId(e.id)}
-                  className={`w-full text-left px-4 py-3.5 border-l-4 transition-colors ${selectedId === e.id ? 'bg-stone2 border-l-ochre' : `${borderLeft} hover:bg-stone2/50`}`}>
+                  className={`w-full text-left px-4 py-3.5 border-l-4 transition-colors ${selectedId === e.id ? 'bg-stone2 border-l-signal' : `${borderLeft} hover:bg-stone2/50`}`}>
                   {domain && <span className={`font-body text-micro px-1.5 py-0.5 ${domain.badge} mb-1 inline-block`}>{domain.label}</span>}
                   <div className="flex items-start justify-between gap-2">
                     <div className="font-body font-medium text-ink text-body leading-snug flex-1">{e.title}</div>

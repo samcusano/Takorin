@@ -22,7 +22,7 @@ const TYPE = {
   acknowledged: { label: 'Acknowledged', tone: 'ok',    bar: 'border-l-ok',     row: '' },
   acknowledgment: { label: 'Acknowledged', tone: 'ok',  bar: 'border-l-ok',     row: '' },
   handoff:      { label: 'Handoff',     tone: 'ok',     bar: 'border-l-ok',     row: '' },
-  intervention: { label: 'Action',      tone: 'ochre',  bar: 'border-l-ochre',  row: '' },
+  intervention: { label: 'Action',      tone: 'signal',  bar: 'border-l-signal',  row: '' },
 }
 
 const FILTER = {
@@ -96,7 +96,7 @@ function NotifItem({ item, read, onRead, onNavigate }) {
         <div className="flex items-center justify-between px-4 py-2.5 border-t border-rule2/60">
           {item.link ? (
             <button type="button" onClick={() => onNavigate(item.link)}
-              className="font-body text-ochre text-label flex items-center gap-1 hover:text-ink transition-colors">
+              className="font-body text-signal text-label flex items-center gap-1 hover:text-ink transition-colors">
               <ArrowRight size={10} />{item.linkLabel || 'Open in module'}
             </button>
           ) : <span />}
@@ -206,7 +206,7 @@ export default function NotificationCenter({ onClose }) {
    {activeFilter === 'All' && (
     <div className="border-b border-rule2 bg-stone2">
      <div className="px-4 py-2.5 border-b border-rule2 flex items-center gap-2">
-      <Brain size={11} strokeWidth={1.75} className="text-muted" />
+      <Brain size={11} strokeWidth={2} className="text-muted" />
       <span className="font-body text-label text-muted font-medium">Intelligence summary</span>
       <span className="font-body text-muted text-label ml-auto">Updated 06:42</span>
      </div>
@@ -227,7 +227,7 @@ export default function NotificationCenter({ onClose }) {
         {/* Footer: single CTA */}
         <div className="px-4 py-2.5 border-t border-rule2/60">
          <button type="button" onClick={() => go(sig.route)}
-          className="font-body text-ochre text-label flex items-center gap-1 hover:text-ink transition-colors">
+          className="font-body text-signal text-label flex items-center gap-1 hover:text-ink transition-colors">
           <ArrowRight size={9} />Open in {sig.routeLabel}
          </button>
         </div>

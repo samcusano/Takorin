@@ -1,10 +1,10 @@
 import { useState } from 'react'
 import { batchRecords, deviations } from '../data/records'
 import { Lock, CheckCircle2, XCircle, Clock, FileCheck2, AlertTriangle, Shield } from 'lucide-react'
-import { StatusPill, SectionHeader, Tabs, Btn } from '../components/UI'
+import { StatusPill, SectionHeader, Tabs, Btn, StatGrid, EmptyState } from '../components/UI'
 
 const STATUS_CFG = {
-  'in-progress': { label: 'In progress', dot: 'bg-ochre', tone: 'ochre' },
+  'in-progress': { label: 'In progress', dot: 'bg-signal', tone: 'signal' },
   'pending-qp':  { label: 'Pending QP',  dot: 'bg-warn',  tone: 'warn' },
   'released':    { label: 'Released',    dot: 'bg-ok',    tone: 'ok' },
   'rejected':    { label: 'Rejected',    dot: 'bg-danger', tone: 'danger' },
@@ -23,7 +23,7 @@ function RecordCard({ rec, selected, onClick }) {
   return (
     <button type="button" onClick={onClick}
       className={`w-full text-left p-3.5 border-b border-rule2 border-l-4 transition-colors ${
-        selected ? 'border-l-ochre bg-stone2' : 'border-l-transparent hover:bg-stone2/50'
+        selected ? 'border-l-signal bg-stone2' : 'border-l-transparent hover:bg-stone2/50'
       }`}>
       <div className="flex items-start justify-between gap-2 mb-1">
         <div>
@@ -35,7 +35,7 @@ function RecordCard({ rec, selected, onClick }) {
       {/* Completeness bar */}
       <div className="flex items-center gap-2 mt-2">
         <div className="h-0.5 bg-rule2 flex-1">
-          <div className={`h-full ${rec.completeness >= 1 ? 'bg-ok' : rec.completeness >= 0.5 ? 'bg-ochre' : 'bg-warn'}`}
+          <div className={`h-full ${rec.completeness >= 1 ? 'bg-ok' : rec.completeness >= 0.5 ? 'bg-signal' : 'bg-warn'}`}
             style={{ width: `${rec.completeness * 100}%` }} />
         </div>
         <span className="font-body text-muted text-label tabular-nums">{Math.round(rec.completeness * 100)}%</span>
@@ -44,7 +44,7 @@ function RecordCard({ rec, selected, onClick }) {
         <span className="font-body text-muted text-label">Hold points: {clearedHPs}/{rec.holdPoints.length}</span>
         {devs.length > 0 && (
           <span className="flex items-center gap-0.5 font-body text-warn text-label">
-            <AlertTriangle size={8} strokeWidth={2} />{devs.length} dev.
+            <AlertTriangle size={10} strokeWidth={2} />{devs.length} dev.
           </span>
         )}
       </div>
@@ -113,11 +113,7 @@ function StepRow({ step }) {
 
 function RecordDetail({ rec }) {
   const [tab, setTab] = useState('bmr')
-  if (!rec) return (
-    <div className="flex items-center justify-center h-full font-body text-muted text-label">
-      Select a batch record
-    </div>
-  )
+  if (!rec) return <EmptyState message="Select a batch record" sub="Choose from the list to view details" />
 
   const cfg = STATUS_CFG[rec.status] ?? STATUS_CFG['in-progress']
   const devs = deviations.filter(d => d.batchId === rec.batchId)
@@ -206,18 +202,15 @@ function RecordDetail({ rec }) {
           <div className="px-6 py-5 space-y-4">
             {rec.qpDisposition ? (
               <>
-                <div className="grid grid-cols-3 gap-px bg-rule2">
+                <StatGrid cols={3} noBorder>
                   {[
                     { label: 'QP', val: rec.qpDisposition.qp },
                     { label: 'Status', val: rec.qpDisposition.status === 'released' ? 'Released' : rec.qpDisposition.status === 'under-review' ? 'Under review' : rec.qpDisposition.status },
                     { label: 'Submitted', val: rec.qpDisposition.submittedAt },
                   ].map(({ label, val }) => (
-                    <div key={label} className="bg-stone px-3 py-2.5">
-                      <div className="font-body text-muted text-label mb-0.5">{label}</div>
-                      <div className="font-body font-medium text-ink text-body">{val}</div>
-                    </div>
+                    <StatGrid.Cell key={label} label={label} value={val} size="sm" />
                   ))}
-                </div>
+                </StatGrid>
                 {rec.qpDisposition.notes && (
                   <div className="px-4 py-3 bg-stone2">
                     <div className="font-body text-muted text-label mb-1">QP notes</div>
@@ -264,8 +257,8 @@ export default function RecordVault() {
             )}
             {openHolds > 0 && (
               <div className="flex items-center gap-1">
-                <Lock size={9} strokeWidth={2} className="text-ochre" />
-                <span className="font-body text-ochre text-label">{openHolds} open hold{openHolds > 1 ? 's' : ''}</span>
+                <Lock size={9} strokeWidth={2} className="text-signal" />
+                <span className="font-body text-signal text-label">{openHolds} open hold{openHolds > 1 ? 's' : ''}</span>
               </div>
             )}
           </div>

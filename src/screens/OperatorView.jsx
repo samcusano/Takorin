@@ -1,9 +1,10 @@
 import { useState } from 'react'
-import { Flag, ShieldCheck, Check, Lock, AlertTriangle, Activity, CheckCircle2, WifiOff, Brain, BookOpen, ChevronDown, ChevronUp, Send, MessageSquare, X } from 'lucide-react'
+import { Flag, ShieldCheck, Check, Lock, AlertTriangle, Activity, CheckCircle2, WifiOff, Brain, BookOpen, ChevronDown, ChevronUp, Send, MessageSquare, X, Eye } from 'lucide-react'
 import { operatorContextData, fatigueData } from '../data'
 import { integrationSummary, connectors } from '../data/integrations'
 import { useAppState } from '../context/AppState'
-import { SectionHeader, StatusPill, PersonAvatar, Btn, Modal, Tabs } from '../components/UI'
+import { SectionHeader, StatusPill, PersonAvatar, Btn, Modal, Tabs, AnimatedScore } from '../components/UI'
+import { OBSERVATION_CATEGORIES, OBSERVATION_STATIONS } from '../data/observations'
 
 // ── Static operator data ──────────────────────────────────────────────────────
 
@@ -161,11 +162,11 @@ function TroubleshootingHint({ operator }) {
  if (!briefing?.troubleshooting) return null
  const { title, hint, precedent } = briefing.troubleshooting
  return (
-  <div className="border-b border-rule2 border-l-2 border-l-ochre bg-ochre/[0.02]">
+  <div className="border-b border-rule2 border-l-2 border-l-signal bg-signal/[0.02]">
    <button type="button" onClick={() => setExpanded(e => !e)}
     className="w-full flex items-center justify-between px-5 py-3 text-left">
     <div className="flex items-center gap-2">
-     <BookOpen size={11} strokeWidth={2} className="text-ochre flex-shrink-0" />
+     <BookOpen size={11} strokeWidth={2} className="text-signal flex-shrink-0" />
      <span className="font-body font-medium text-ink text-body">{title}</span>
     </div>
     {expanded ? <ChevronUp size={11} className="text-muted flex-shrink-0" /> : <ChevronDown size={11} className="text-muted flex-shrink-0" />}
@@ -239,7 +240,7 @@ function KnowledgeCapturePrompt({ source, operator, onDismiss, onSubmit }) {
   <div className="mx-5 mb-4 border border-rule2 bg-stone2 slide-in">
    <div className="flex items-center justify-between px-4 py-2.5 border-b border-rule2">
     <div className="flex items-center gap-1.5">
-     <BookOpen size={10} strokeWidth={2} className="text-ochre flex-shrink-0" />
+     <BookOpen size={10} strokeWidth={2} className="text-signal flex-shrink-0" />
      <span className="font-body font-medium text-ink text-label">Add to knowledge vault?</span>
     </div>
     <button type="button" onClick={onDismiss} className="font-body text-muted text-label hover:text-ink transition-colors px-1">Skip</button>
@@ -252,7 +253,7 @@ function KnowledgeCapturePrompt({ source, operator, onDismiss, onSubmit }) {
      value={body}
      onChange={e => setBody(e.target.value)}
      placeholder="Describe what happened and what worked…"
-     className="w-full font-display text-ink text-body bg-stone border border-rule2 px-3 py-2 placeholder:text-muted/60 focus:border-ochre focus:outline-none resize-none leading-relaxed"
+     className="w-full font-display text-ink text-body bg-stone border border-rule2 px-3 py-2 placeholder:text-muted/60 focus:border-signal focus:outline-none resize-none leading-relaxed"
     />
     <div className="flex items-center justify-between mt-2">
      <span className="font-body text-muted text-label">Submitted by {operator} · pending supervisor review</span>
@@ -272,7 +273,7 @@ function DataCommitmentOverlay({ onAcknowledge }) {
   <Modal title="What we track">
    <div className="overflow-y-auto flex-1 px-5 py-5">
     <div className="flex items-start gap-3 mb-4">
-     <ShieldCheck size={20} strokeWidth={1.75} className="text-ok flex-shrink-0 mt-0.5" />
+     <ShieldCheck size={20} strokeWidth={2} className="text-ok flex-shrink-0 mt-0.5" />
      <div>
       <div className="font-display font-bold text-ink text-base leading-snug mb-1">What we track</div>
       <p className="font-body text-ink2 text-body leading-relaxed">Takorin tracks production signals to help you work safely. Here's what your supervisor can see, and what they can't.</p>
@@ -471,7 +472,7 @@ function MonitoringSurface({ ctx, entries, onLog }) {
      <span className={`display-num text-score font-bold leading-none ${
       lastValue == null ? 'text-muted' : ccpMet ? 'text-ok' : 'text-danger'
      }`}>
-      {lastValue != null ? `${lastValue}°F` : '—'}
+      {lastValue != null ? <AnimatedScore value={lastValue} suffix="°F" effect="glow" /> : '—'}
      </span>
      {lastValue != null && (
       <span className={`font-body text-label px-1.5 py-0.5 ${ccpMet ? 'bg-ok/10 text-ok' : 'bg-danger/[0.08] text-danger'}`}>
@@ -505,7 +506,7 @@ function MonitoringSurface({ ctx, entries, onLog }) {
         onChange={e => setInputVal(e.target.value)}
         placeholder="185"
         autoFocus
-        className="flex-1 font-body text-ink text-body bg-stone2 border border-rule2 px-3 py-2 placeholder:text-muted/60 focus:border-ochre focus:outline-none"
+        className="flex-1 font-body text-ink text-body bg-stone2 border border-rule2 px-3 py-2 placeholder:text-muted/60 focus:border-signal focus:outline-none"
        />
        <Btn variant="primary" onClick={() => {
         if (inputVal) { onLog(Number(inputVal)); setLogging(false); setInputVal('') }
@@ -523,7 +524,7 @@ function MonitoringSurface({ ctx, entries, onLog }) {
    </div>
 
    {/* Reading history */}
-   <div className="px-5 py-4">
+   <div className="px-5 py-4 border-b border-rule2">
     <div className="font-body text-muted text-label mb-3">Reading history</div>
     <div className="space-y-px">
      {[...allEntries].reverse().map((r, i) => (
@@ -535,6 +536,90 @@ function MonitoringSurface({ ctx, entries, onLog }) {
      ))}
     </div>
    </div>
+
+   {/* Floor observation log */}
+   <ObservationLogger />
+  </div>
+ )
+}
+
+// ── Observation Logger — quick-capture floor observations ──────────────────────
+function ObservationLogger() {
+ const { logObservation, fieldObservations } = useAppState()
+ const [open, setOpen] = useState(false)
+ const [station, setStation] = useState(OBSERVATION_STATIONS[0])
+ const [category, setCategory] = useState('workflow')
+ const [note, setNote] = useState('')
+ const [justLogged, setJustLogged] = useState(false)
+
+ const shiftObs = fieldObservations.filter(o => o.shiftId === 'am-0522')
+
+ function handleSubmit() {
+  if (!note.trim()) return
+  logObservation({ station, category, note: note.trim(), operator: 'C. Reyes' })
+  setNote('')
+  setOpen(false)
+  setJustLogged(true)
+  setTimeout(() => setJustLogged(false), 2500)
+ }
+
+ return (
+  <div className="px-5 py-4">
+   <div className="flex items-center justify-between mb-3">
+    <div className="flex items-center gap-1.5">
+     <Eye size={10} strokeWidth={2} className="text-muted" />
+     <span className="font-body text-muted text-label">Floor observations · {shiftObs.length} this shift</span>
+    </div>
+    {!open && <Btn variant="ghost" onClick={() => setOpen(true)}>+ Note</Btn>}
+   </div>
+
+   {open && (
+    <div className="bg-stone2 border border-rule2 p-3 mb-3 space-y-3">
+     {/* Category chips */}
+     <div className="flex flex-wrap gap-1.5">
+      {OBSERVATION_CATEGORIES.map(cat => (
+       <button key={cat.id} type="button" onClick={() => setCategory(cat.id)}
+        className={`font-body text-label px-2 py-1 border transition-colors ${category === cat.id ? `${cat.bgCls} ${cat.textCls} border-transparent` : 'border-rule2 text-muted hover:text-ink'}`}>
+        {cat.label}
+       </button>
+      ))}
+     </div>
+     {/* Station */}
+     <select value={station} onChange={e => setStation(e.target.value)}
+      className="w-full font-body text-label text-ink bg-stone border border-rule2 px-2 py-1.5 focus:border-signal focus:outline-none appearance-none">
+      {OBSERVATION_STATIONS.map(s => <option key={s} value={s}>{s}</option>)}
+     </select>
+     {/* Note */}
+     <textarea value={note} onChange={e => setNote(e.target.value)}
+      rows={3} placeholder="What did you see?"
+      autoFocus
+      className="w-full font-body text-label text-ink bg-stone border border-rule2 px-3 py-2 resize-none placeholder:text-muted/60 focus:border-signal focus:outline-none" />
+     <div className="flex gap-2">
+      <Btn variant="primary" onClick={handleSubmit} disabled={!note.trim()}>Log observation</Btn>
+      <Btn variant="secondary" onClick={() => { setOpen(false); setNote('') }}>Cancel</Btn>
+     </div>
+    </div>
+   )}
+
+   {justLogged && (
+    <div className="flex items-center gap-2 py-2 mb-2">
+     <Check size={11} strokeWidth={2} className="text-ok flex-shrink-0" />
+     <span className="font-body text-ok text-label">Observation logged</span>
+    </div>
+   )}
+
+   {shiftObs.slice(0, 3).map(obs => {
+    const cat = OBSERVATION_CATEGORIES.find(c => c.id === obs.category)
+    return (
+     <div key={obs.id} className="py-2.5 border-b border-rule2 last:border-b-0">
+      <div className="flex items-center gap-2 mb-1">
+       {cat && <span className={`font-body text-micro px-1.5 py-0.5 ${cat.bgCls} ${cat.textCls}`}>{cat.label}</span>}
+       <span className="font-body text-micro text-muted">{obs.timeLabel} · {obs.station}</span>
+      </div>
+      <p className="font-body text-label text-muted leading-snug m-0">{obs.note}</p>
+     </div>
+    )
+   })}
   </div>
  )
 }
@@ -556,7 +641,7 @@ function TaskSection({ selected, station, tasks, linkedTasks, flags, nearMisses,
       disabled={t.done || !t.interventionId}
       onClick={() => t.interventionId && !t.done && onLinkedTaskConfirm(t)}
       className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 transition-colors ${
-       t.done ? 'bg-ok cursor-default' : t.interventionId ? 'border-2 border-ochre hover:bg-ochre/10 cursor-pointer' : 'border-2 border-rule2 cursor-default'
+       t.done ? 'bg-ok cursor-default' : t.interventionId ? 'border-2 border-signal hover:bg-signal/10 cursor-pointer' : 'border-2 border-rule2 cursor-default'
       }`}>
       {t.done && <Check size={11} strokeWidth={2.5} className="text-stone" />}
      </button>
@@ -565,8 +650,8 @@ function TaskSection({ selected, station, tasks, linkedTasks, flags, nearMisses,
       <div className="flex items-center gap-2 mt-0.5">
        {t.dueTime && <span className="font-body text-muted text-label">Due {t.dueTime}</span>}
        {t.interventionId && (
-        <span className="flex items-center gap-0.5 font-body text-label text-ochre">
-         <Brain size={8} strokeWidth={2} />{t.interventionLabel}
+        <span className="flex items-center gap-0.5 font-body text-label text-signal">
+         <Brain size={10} strokeWidth={2} />{t.interventionLabel}
         </span>
        )}
        {t.done && t.confirmedAt && (
@@ -723,9 +808,9 @@ export default function OperatorView({ role }) {
       <button type="button" key={o.name} aria-pressed={selected === o.name}
        onClick={() => { setDirectorSelected(o.name); setSupervisorCalled(false) }}
        className={`flex items-center gap-2 px-4 py-2.5 border-r border-rule2 border-b-2 transition-colors ${
-        selected === o.name ? 'border-b-ochre bg-stone2' : 'border-b-transparent hover:bg-stone2/50'
+        selected === o.name ? 'border-b-signal bg-stone2' : 'border-b-transparent hover:bg-stone2/50'
        }`}>
-       <PersonAvatar name={o.name} size={22} />
+       <PersonAvatar name={o.name} size={20} />
        <div className="text-left">
         <div className="font-body font-medium text-ink text-label">{o.name}</div>
         <div className="font-body text-muted text-label">{o.station}</div>
@@ -773,7 +858,7 @@ export default function OperatorView({ role }) {
    <StationBriefing operator={selected} />
 
    {/* ── Main content ─────────────────────────────────────────── */}
-   <div className="flex-1 overflow-y-auto">
+   <div className="flex-1 overflow-y-auto page-rise">
 
     {/* Dominant surface */}
     {ctx?.dominantSurface === 'procedural' && (

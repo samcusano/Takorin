@@ -64,14 +64,14 @@ function SideItem({ to, icon: Icon, label, badge, badgeType, disabled, id, onDis
    <NavTooltip label={`${label} — not available`}>
     <button type="button" onClick={() => onDisabledClick?.(label)}
      className="flex items-center justify-center h-10 w-full opacity-40 cursor-not-allowed">
-     <Icon size={15} strokeWidth={1.75} />
+     <Icon size={15} strokeWidth={2} />
     </button>
    </NavTooltip>
   )
   return (
    <button type="button" onClick={() => onDisabledClick?.(label)}
     className="flex items-center gap-3 px-4 py-2.5 text-label opacity-40 cursor-not-allowed select-none w-full text-left">
-    <Icon size={15} strokeWidth={1.75} className="flex-shrink-0" />
+    <Icon size={15} strokeWidth={2} className="flex-shrink-0" />
     <span className="font-body text-base">{label}</span>
    </button>
   )
@@ -81,9 +81,9 @@ function SideItem({ to, icon: Icon, label, badge, badgeType, disabled, id, onDis
    <NavLink to={to}
     className={({ isActive }) =>
      `flex items-center justify-center h-10 w-full transition-colors duration-100 border-l-2 ` +
-     (isActive ? `border-ochre bg-ochre/10 text-white` : `border-transparent text-white/50 hover:bg-sidebar-2 hover:text-white`)
+     (isActive ? `border-signal bg-signal/10 text-white` : `border-transparent text-white/50 hover:bg-sidebar-2 hover:text-white`)
     }>
-    {() => <Icon size={15} strokeWidth={1.75} />}
+    {() => <Icon size={15} strokeWidth={2} />}
    </NavLink>
   </NavTooltip>
  )
@@ -93,12 +93,12 @@ function SideItem({ to, icon: Icon, label, badge, badgeType, disabled, id, onDis
  className={({ isActive }) =>
  `flex items-center gap-3 px-4 py-2.5 text-sm transition-colors duration-100 border-l-2 ` +
  (isActive
- ? `border-ochre bg-ochre/10 text-white font-medium`
+ ? `border-signal bg-signal/10 text-white font-medium`
  : `border-transparent text-white/50 hover:bg-sidebar-2 hover:text-white`)
  }
  >
  {({ isActive }) => (<>
- <Icon size={15} strokeWidth={1.75} className="flex-shrink-0" />
+ <Icon size={15} strokeWidth={2} className="flex-shrink-0" />
  <span className="font-body text-base">{label}</span>
  <NavBadge badge={badge} badgeType={badgeType} />
  </>)}
@@ -120,9 +120,9 @@ function PlantItem({ collapsed }) {
    <NavLink to="/overview"
     className={({ isActive }) =>
      `flex items-center justify-center h-10 w-full border-l-2 transition-colors duration-100 ` +
-     (isActive ? `border-ochre bg-ochre/10 text-white` : `border-transparent text-white/50 hover:bg-sidebar-2 hover:text-white`)
+     (isActive ? `border-signal bg-signal/10 text-white` : `border-transparent text-white/50 hover:bg-sidebar-2 hover:text-white`)
     }>
-    {() => <LayoutGrid size={15} strokeWidth={1.75} />}
+    {() => <LayoutGrid size={15} strokeWidth={2} />}
    </NavLink>
   </NavTooltip>
  )
@@ -132,13 +132,13 @@ function PlantItem({ collapsed }) {
    className={({ isActive }) =>
     `flex items-center gap-3 px-4 py-2.5 transition-colors duration-100 border-l-2 ` +
     (isActive
-     ? `border-ochre bg-ochre/10 text-white font-medium`
+     ? `border-signal bg-signal/10 text-white font-medium`
      : `border-transparent text-white/50 hover:bg-sidebar-2 hover:text-white`)
    }
   >
    {() => (<>
-    <LayoutGrid size={15} strokeWidth={1.75} className="flex-shrink-0" />
-    <span className="font-body flex-1">Overview</span>
+    <LayoutGrid size={15} strokeWidth={2} className="flex-shrink-0" />
+    <span className="font-body text-base">Overview</span>
     {activeCount > 0 && (
      <span className={`ml-auto text-label font-semibold px-1.5 py-0.5 ${
       criticalCount > 0 ? 'bg-danger text-white' : 'bg-warn/20 text-warn'
@@ -159,7 +159,7 @@ const DISABLED_PLANTS = [
 ]
 
 const SECTOR_LABELS = { food: 'Food', pharma: 'Pharma', electronics: 'Electronics', semiconductor: 'Semiconductor' }
-const SECTOR_COLORS = { food: 'text-ok', pharma: 'text-ochre', electronics: 'text-warn', semiconductor: 'text-muted' }
+const SECTOR_COLORS = { food: 'text-ok', pharma: 'text-signal', electronics: 'text-warn', semiconductor: 'text-muted' }
 
 function PlantDropdown({ triggerRef, onClose, complianceState, currentPlant, setCurrentPlant }) {
  const dropRef = useRef(null)
@@ -209,7 +209,7 @@ function PlantDropdown({ triggerRef, onClose, complianceState, currentPlant, set
      <div className="px-5 pt-3 pb-4">
       {AVAILABLE_PLANTS.map(p => {
        const isActive = currentPlant.id === p.id
-       const modeColor = p.workerMode === 'robot' ? 'text-ochre' : p.workerMode === 'hybrid' ? 'text-warn' : 'text-ok'
+       const modeColor = p.workerMode === 'robot' ? 'text-signal' : p.workerMode === 'hybrid' ? 'text-warn' : 'text-ok'
        const modeLabel = p.workerMode === 'robot' ? 'Robotic' : p.workerMode === 'hybrid' ? 'Hybrid' : 'Human'
        return (
         <button
@@ -220,7 +220,7 @@ function PlantDropdown({ triggerRef, onClose, complianceState, currentPlant, set
         >
          <div className="flex items-center gap-2">
           <div className="w-5 h-5 rounded bg-sidebar-3 flex items-center justify-center flex-shrink-0">
-           <Building2 size={10} strokeWidth={1.75} className={isActive ? 'text-ochre' : 'text-white/50'} />
+           <Building2 size={10} strokeWidth={2} className={isActive ? 'text-signal' : 'text-white/50'} />
           </div>
           <div className="text-left">
            <span className={`font-body text-label block leading-tight ${isActive ? 'text-white font-medium' : 'text-white/50'}`}>{p.name}</span>
@@ -234,7 +234,7 @@ function PlantDropdown({ triggerRef, onClose, complianceState, currentPlant, set
        <div key={p.name} className="flex items-center justify-between py-1.5 opacity-40">
         <div className="flex items-center gap-2">
          <div className="w-5 h-5 rounded bg-sidebar-3 flex items-center justify-center flex-shrink-0">
-          <Building2 size={10} strokeWidth={1.75} className="text-white/50" />
+          <Building2 size={10} strokeWidth={2} className="text-white/50" />
          </div>
          <span className="font-body text-white/50 text-label">{p.name}</span>
         </div>
@@ -257,7 +257,7 @@ function PlantDropdown({ triggerRef, onClose, complianceState, currentPlant, set
          className={`flex items-center justify-between w-full py-1.5 ${isActive ? 'cursor-default' : 'hover:opacity-80 transition-opacity'}`}>
          <div className="flex items-center gap-2">
           <div className="w-5 h-5 rounded bg-sidebar-3 flex items-center justify-center flex-shrink-0">
-           <Building2 size={10} strokeWidth={1.75} className={isActive ? 'text-ochre' : 'text-white/50'} />
+           <Building2 size={10} strokeWidth={2} className={isActive ? 'text-signal' : 'text-white/50'} />
           </div>
           <div className="text-left">
            <span className={`font-body text-label block leading-tight ${isActive ? 'text-white font-medium' : 'text-white/50'}`}>{p.name}</span>
@@ -331,7 +331,7 @@ function UserDropdown({ triggerRef, onClose, viewingRole, setViewingRole }) {
         onClick={() => { setViewingRole(r.id); navigate(r.route); onClose() }}
         className="flex items-center gap-2.5 w-full py-1.5 group"
        >
-        <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 transition-colors ${viewingRole === r.id ? 'bg-ochre' : 'bg-sidebar-border group-hover:bg-sidebar-3'}`} />
+        <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 transition-colors ${viewingRole === r.id ? 'bg-signal' : 'bg-sidebar-border group-hover:bg-sidebar-3'}`} />
         <PersonAvatar name={r.name} size={20} />
         <div className="flex-1 text-left min-w-0">
          <div className={`font-body text-label font-medium truncate transition-colors ${viewingRole === r.id ? 'text-white' : 'text-white/50 group-hover:text-white/70'}`}>{r.name}</div>
@@ -348,7 +348,7 @@ function UserDropdown({ triggerRef, onClose, viewingRole, setViewingRole }) {
 }
 
 const WORKER_MODE_LABELS = { human: 'Human workforce', robot: 'Robotic workforce', hybrid: 'Human · Robot hybrid' }
-const WORKER_MODE_COLORS = { human: 'text-ok', robot: 'text-ochre', hybrid: 'text-warn' }
+const WORKER_MODE_COLORS = { human: 'text-ok', robot: 'text-signal', hybrid: 'text-warn' }
 
 const STATIC_AGENT_TOTAL = agentConfigData.agents.reduce((n, a) => n + (a.pendingActions?.length ?? 0), 0)
 
@@ -360,7 +360,7 @@ function AgentItem({ count, collapsed }) {
      `flex items-center justify-center h-10 w-full border-l-2 transition-colors ` +
      (isActive ? `border-l-danger bg-sidebar2 text-white` : `border-l-transparent text-white/50 hover:bg-sidebar2 hover:text-white`)
     }>
-    {() => <Cpu size={15} strokeWidth={1.75} />}
+    {() => <Cpu size={15} strokeWidth={2} />}
    </NavLink>
   </NavTooltip>
  )
@@ -369,7 +369,7 @@ function AgentItem({ count, collapsed }) {
    className={({ isActive }) =>
     `flex items-center gap-3 px-4 py-2.5 w-full text-left transition-colors hover:bg-sidebar2 border-l-2 ${isActive ? 'bg-sidebar2 border-l-danger text-white' : 'border-l-transparent text-white/50 hover:text-white'}`
    }>
-   <Cpu size={15} strokeWidth={1.75} className="flex-shrink-0" />
+   <Cpu size={15} strokeWidth={2} className="flex-shrink-0" />
    <span className="font-body text-base">Agents</span>
    {count > 0 && <StatusPill tone="alert" dot={false} className="ml-auto">{count}</StatusPill>}
   </NavLink>
@@ -414,8 +414,8 @@ export default function Sidebar() {
   aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
  >
   <svg width="18" height="18" viewBox="0 0 22 22" aria-hidden="true" className="flex-shrink-0">
-   <path d="M11 2 L20 11 L11 20 L2 11 Z" fill="none" stroke="var(--color-ochre)" strokeWidth="1.3"/>
-   <path d="M8 13 L14 13 L14 7 Z" fill="var(--color-ochre)"/>
+   <path d="M11 2 L20 11 L11 20 L2 11 Z" fill="none" stroke="var(--color-signal)" strokeWidth="1.3"/>
+   <path d="M8 13 L14 13 L14 7 Z" fill="var(--color-signal)"/>
   </svg>
   {!collapsed && (
    <div className="flex-0 min-w-0">
@@ -432,7 +432,7 @@ export default function Sidebar() {
   className="flex items-center gap-2.5 px-4 py-3 border-b border-sidebar-border w-full text-left hover:bg-sidebar2 transition-colors"
  >
   <div className="w-8 h-8 rounded-full bg-sidebar-2 flex items-center justify-center flex-shrink-0">
-  <Building2 size={15} className="text-white/50" strokeWidth={1.75} />
+  <Building2 size={15} className="text-white/50" strokeWidth={2} />
   </div>
   <div className="flex-1 min-w-0">
   <div className="font-body text-white text-base font-medium truncate">{currentPlant?.name || 'Salina Campus'}</div>
@@ -476,13 +476,13 @@ export default function Sidebar() {
     <NavTooltip label="Notifications">
      <button type="button" onClick={() => setNotifOpen(true)}
       className="flex items-center justify-center h-10 w-full text-white/50 hover:bg-sidebar2 hover:text-white transition-colors">
-      <Bell size={15} strokeWidth={1.75} />
+      <Bell size={15} strokeWidth={2} />
      </button>
     </NavTooltip>
    ) : (
     <button type="button" onClick={() => setNotifOpen(true)}
      className="flex items-center gap-3 px-4 py-2.5 w-full text-left transition-colors hover:bg-sidebar2 text-white/70">
-     <Bell size={15} strokeWidth={1.75} className="flex-shrink-0" />
+     <Bell size={15} strokeWidth={2} className="flex-shrink-0" />
      <span className="font-body text-base">Notifications</span>
      <StatusPill tone="alert" dot={false} className="ml-auto">4</StatusPill>
     </button>
@@ -534,13 +534,13 @@ export default function Sidebar() {
     <NavTooltip label="Notifications">
      <button type="button" onClick={() => setNotifOpen(true)}
       className="flex items-center justify-center h-10 w-full text-white/50 hover:bg-sidebar2 hover:text-white transition-colors">
-      <Bell size={15} strokeWidth={1.75} />
+      <Bell size={15} strokeWidth={2} />
      </button>
     </NavTooltip>
    ) : (
     <button type="button" onClick={() => setNotifOpen(true)}
      className="flex items-center gap-3 px-4 py-2.5 w-full text-left transition-colors hover:bg-sidebar2 text-white/70">
-     <Bell size={15} strokeWidth={1.75} className="flex-shrink-0" />
+     <Bell size={15} strokeWidth={2} className="flex-shrink-0" />
      <span className="font-body text-base">Notifications</span>
      <StatusPill tone="alert" dot={false} className="ml-auto">4</StatusPill>
     </button>
@@ -583,7 +583,7 @@ export default function Sidebar() {
   <div className="flex-1 min-w-0">
   <div className="font-body text-white text-body font-medium">J. Crocker</div>
   <div className="font-body text-white/50 text-label">
-   {viewingRole === 'supervisor' ? <span className="text-ochre">Viewing as Kowalski</span> : viewingRole === 'operator-reyes' ? <span className="text-ochre">Viewing as C. Reyes</span> : viewingRole === 'operator-okonkwo' ? <span className="text-ochre">Viewing as P. Okonkwo</span> : 'Plant Director'}
+   {viewingRole === 'supervisor' ? <span className="text-signal">Viewing as Kowalski</span> : viewingRole === 'operator-reyes' ? <span className="text-signal">Viewing as C. Reyes</span> : viewingRole === 'operator-okonkwo' ? <span className="text-signal">Viewing as P. Okonkwo</span> : 'Plant Director'}
   </div>
   </div>
   <ChevronDown size={13} className={`text-white/50 flex-shrink-0 transition-transform duration-200 ease-spring ${userOpen ? 'rotate-180' : ''}`} />

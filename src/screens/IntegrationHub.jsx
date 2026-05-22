@@ -1,12 +1,12 @@
 import { useState } from 'react'
 import { connectors, integrationSummary, semanticConflicts, integrationCategories } from '../data/integrations'
 import { AlertTriangle, CheckCircle, Zap, Radio, Search, X } from 'lucide-react'
-import { SlidePanel, Tabs, StatusPill, Btn } from '../components/UI'
+import { SlidePanel, Tabs, StatusPill, Btn, AnimatedScore, StatGrid, SectionLabel, EmptyState } from '../components/UI'
 
 const STATUS_CFG = {
   active:    { label: 'Active',      dot: 'bg-ok',     text: 'text-ok',     badge: 'bg-ok/10 text-ok' },
   available: { label: 'Available',   dot: 'bg-muted',  text: 'text-muted',  badge: 'bg-stone3 text-muted' },
-  soon:      { label: 'Coming soon', dot: 'bg-ochre',  text: 'text-ochre',  badge: 'bg-ochre/10 text-ochre' },
+  soon:      { label: 'Coming soon', dot: 'bg-signal',  text: 'text-signal',  badge: 'bg-signal/10 text-signal' },
 }
 
 const STATUS_FILTERS = [
@@ -21,7 +21,7 @@ function ConnectorCard({ c, selected, onClick }) {
   return (
     <button type="button" onClick={onClick}
       className={`w-full text-left p-3 border transition-colors ${
-        selected ? 'border-ochre bg-stone2' : 'border-rule2 bg-stone hover:bg-stone2/70 hover:border-muted'
+        selected ? 'border-signal bg-stone2' : 'border-rule2 bg-stone hover:bg-stone2/70 hover:border-muted'
       }`}>
       <div className="flex items-start justify-between gap-2 mb-1.5">
         <div className="flex items-center gap-1.5">
@@ -40,18 +40,18 @@ function ConnectorCard({ c, selected, onClick }) {
         <div className="flex items-center gap-2">
           {c.quality != null && (
             <div className="h-1.5 bg-rule2 flex-1">
-              <div className={`h-full ${c.quality >= 95 ? 'bg-ok' : c.quality >= 85 ? 'bg-ochre' : 'bg-warn'}`}
+              <div className={`h-full ${c.quality >= 95 ? 'bg-ok' : c.quality >= 85 ? 'bg-signal' : 'bg-warn'}`}
                 style={{ width: `${c.quality}%` }} />
             </div>
           )}
-          <span className={`font-body text-label tabular-nums flex-shrink-0 ${c.quality >= 95 ? 'text-ok' : c.quality >= 85 ? 'text-ochre' : 'text-warn'}`}>
+          <span className={`font-body text-label tabular-nums flex-shrink-0 ${c.quality >= 95 ? 'text-ok' : c.quality >= 85 ? 'text-signal' : 'text-warn'}`}>
             {c.quality}%
           </span>
-          {c.streaming && <Zap size={8} className="text-ok flex-shrink-0" strokeWidth={2} />}
+          {c.streaming && <Zap size={10} className="text-ok flex-shrink-0" strokeWidth={2} />}
         </div>
       )}
       {(c.status === 'available' || c.status === 'soon') && (
-        <StatusPill tone={c.status === 'available' ? 'muted' : 'ochre'}>{cfg.label}</StatusPill>
+        <StatusPill tone={c.status === 'available' ? 'muted' : 'signal'}>{cfg.label}</StatusPill>
       )}
     </button>
   )
@@ -67,7 +67,7 @@ function ConnectorDetail({ c }) {
             {c.status === 'active' && c.streaming && <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-ok opacity-40" />}
             <span className={`relative inline-flex rounded-full h-2 w-2 ${cfg.dot}`} />
           </div>
-          <StatusPill tone={c.status === 'active' ? 'ok' : c.status === 'available' ? 'muted' : 'ochre'}>{cfg.label}</StatusPill>
+          <StatusPill tone={c.status === 'active' ? 'ok' : c.status === 'available' ? 'muted' : 'signal'}>{cfg.label}</StatusPill>
           {c.streaming && <span className="font-body text-ok text-label flex items-center gap-1"><Radio size={9} strokeWidth={2} />Streaming</span>}
         </div>
         <div className="font-display font-bold text-ink text-subhead leading-none mb-1">{c.name}</div>
@@ -75,21 +75,18 @@ function ConnectorDetail({ c }) {
       </div>
 
       {c.status === 'active' && (
-        <div className="grid grid-cols-3 gap-px bg-rule2">
+        <StatGrid cols={3} noBorder>
           {[
-            { label: 'Data quality',   val: c.quality != null ? `${c.quality}%` : '—', tone: c.quality >= 95 ? 'text-ok' : c.quality >= 85 ? 'text-ochre' : 'text-warn' },
+            { label: 'Data quality',   val: c.quality != null ? `${c.quality}%` : '—', tone: c.quality >= 95 ? 'text-ok' : c.quality >= 85 ? 'text-signal' : 'text-warn' },
             { label: 'Last sync',      val: c.lastSync ?? '—',                          tone: 'text-muted' },
             { label: 'Active signals', val: c.signals != null ? c.signals.toLocaleString() : '—', tone: 'text-ink' },
             { label: 'Latency',        val: c.latency ?? '—',                           tone: 'text-muted' },
             { label: 'Streaming',      val: c.streaming ? 'Yes' : 'Polling',            tone: c.streaming ? 'text-ok' : 'text-muted' },
             { label: 'Conflicts',      val: c.conflicts > 0 ? String(c.conflicts) : 'None', tone: c.conflicts > 0 ? 'text-warn' : 'text-ok' },
           ].map(({ label, val, tone }) => (
-            <div key={label} className="bg-stone px-3 py-2.5">
-              <div className="font-body text-muted text-label mb-0.5">{label}</div>
-              <div className={`display-num text-base ${tone}`}>{val}</div>
-            </div>
+            <StatGrid.Cell key={label} label={label} value={val} tone={tone} size="sm" />
           ))}
-        </div>
+        </StatGrid>
       )}
 
       {c.note && (
@@ -100,7 +97,7 @@ function ConnectorDetail({ c }) {
       )}
 
       {c.status === 'available' && (
-        <div className="px-4 py-4 border-l-2 border-l-ochre bg-stone2">
+        <div className="px-4 py-4 border-l-2 border-l-signal bg-stone2">
           <div className="font-body font-semibold text-ink text-base mb-1">Available — not connected</div>
           <div className="font-body text-muted text-label leading-relaxed mb-2">
             This connector is supported by the integration framework. Configuration is managed in the admin panel.
@@ -126,7 +123,7 @@ function ConflictsPanel({ resolved, onResolve }) {
   const resolvedList = semanticConflicts.filter(sc => resolved.has(sc.id))
 
   return (
-    <div className="flex-1 overflow-y-auto">
+    <div className="flex-1 overflow-y-auto page-rise">
       {unresolved.map(sc => (
         <div key={sc.id} className="border-b border-rule2 border-l-2 border-l-warn">
           <div className="px-4 py-3 space-y-2.5">
@@ -240,7 +237,7 @@ export default function IntegrationHub() {
         <div className="flex-shrink-0 px-5 py-4 border-b border-rule2 bg-stone2">
           <div className="flex items-center gap-2">
             <span className={`display-num text-score ${integrationSummary.active >= 30 ? 'text-ok' : 'text-warn'}`}>
-              {integrationSummary.active}
+              <AnimatedScore value={integrationSummary.active} effect="glow" />
             </span>
             <span className="font-body text-muted text-label">of {integrationSummary.total} active</span>
           </div>
@@ -266,7 +263,7 @@ export default function IntegrationHub() {
             onClick={() => { setSelectedCategory(null); setSelectedConnectorId(null); setActiveTab('sources') }}
             className={`w-full text-left px-4 py-2.5 border-b border-rule2 flex items-center justify-between transition-colors ${
               !selectedCategory && activeTab === 'sources'
-                ? 'bg-stone2 border-l-2 border-l-ochre'
+                ? 'bg-stone2 border-l-2 border-l-signal'
                 : 'hover:bg-stone2/50 border-l-2 border-l-transparent'
             }`}>
             <span className="font-body font-medium text-ink text-label">All sources</span>
@@ -277,7 +274,7 @@ export default function IntegrationHub() {
               onClick={() => { setSelectedCategory(cat.name); setSelectedConnectorId(null); setActiveTab('sources') }}
               className={`w-full text-left px-4 py-2.5 border-b border-rule2 flex items-center justify-between transition-colors ${
                 selectedCategory === cat.name && activeTab === 'sources'
-                  ? 'bg-stone2 border-l-2 border-l-ochre'
+                  ? 'bg-stone2 border-l-2 border-l-signal'
                   : 'hover:bg-stone2/50 border-l-2 border-l-transparent'
               }`}>
               <div>
@@ -325,7 +322,7 @@ export default function IntegrationHub() {
           <>
             {/* Search + status filter */}
             <div className="flex-shrink-0 border-b border-rule2 bg-stone2 px-3 pt-2 pb-2 space-y-2">
-              <div className="flex items-center gap-2 bg-stone border border-transparent focus-within:border-ochre/50 px-2.5 py-1.5 transition-colors">
+              <div className="flex items-center gap-2 bg-stone border border-transparent focus-within:border-signal/50 px-2.5 py-1.5 transition-colors">
                 <Search size={11} strokeWidth={2} className="text-muted flex-shrink-0" />
                 <input
                   type="text"
@@ -345,7 +342,7 @@ export default function IntegrationHub() {
                 {STATUS_FILTERS.map(f => (
                   <button key={f.key} type="button" onClick={() => setStatusFilter(f.key)}
                     className={`font-body text-label px-2.5 py-1 transition-colors ${
-                      statusFilter === f.key ? 'bg-ochre/10 text-ochre' : 'text-muted hover:text-ink'
+                      statusFilter === f.key ? 'bg-signal/10 text-signal' : 'text-muted hover:text-ink'
                     }`}>
                     {f.label}
                   </button>
@@ -356,17 +353,15 @@ export default function IntegrationHub() {
 
             <div className="flex-1 overflow-y-auto">
               {filtered.length > 0 ? (
-                <div className="grid grid-cols-2 gap-px bg-rule2 border-b border-rule2">
+                <StatGrid cols={2}>
                   {filtered.map(c => (
                     <ConnectorCard key={c.id} c={c}
                       selected={selectedConnectorId === c.id}
                       onClick={() => setSelectedConnectorId(c.id)} />
                   ))}
-                </div>
+                </StatGrid>
               ) : (
-                <div className="flex items-center justify-center h-24 font-body text-muted text-label">
-                  No connectors match "{searchQuery}"
-                </div>
+                <EmptyState message={`No connectors match "${searchQuery}"`} />
               )}
             </div>
           </>

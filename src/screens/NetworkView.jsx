@@ -304,7 +304,7 @@ function SupplierRegistry({ rows }) {
    {lockedSignals.length > 0 && (
     <div className="border-t border-rule2 flex-shrink-0">
      <div className="px-6 py-2 bg-stone2 border-b border-rule2 flex items-center gap-2">
-      <Brain size={10} strokeWidth={1.75} className="text-muted" />
+      <Brain size={10} strokeWidth={2} className="text-muted" />
       <span className="font-body text-muted text-label">
        {lockedSignals.length} intelligence signals locked — activate at 3 connected plants
       </span>

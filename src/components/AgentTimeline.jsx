@@ -20,7 +20,7 @@ function SparkBar({ height, active, title }) {
  return (
  <div
  title={title}
- className={`spark-bar ${active ? 'bg-ochre' : 'bg-rule'}`}
+ className={`spark-bar ${active ? 'bg-signal' : 'bg-rule'}`}
  style={{ height }}
  />
  )

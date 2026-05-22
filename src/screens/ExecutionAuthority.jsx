@@ -1,24 +1,24 @@
 import { useState } from 'react'
 import { executionLog, executionSummary, autonomyTiers, rollbackLog } from '../data/execution'
 import { CheckCircle2, AlertTriangle, Clock, RotateCcw, Zap, Eye, MessageSquare, Shield, ArrowRight } from 'lucide-react'
-import { SlidePanel, StatusPill, SceneHeader, SectionHeader, Btn } from '../components/UI'
+import { SlidePanel, StatusPill, SceneHeader, SectionHeader, Btn, StatGrid, EmptyState, SectionLabel } from '../components/UI'
 
 const TIER_ICONS = { observe: Eye, recommend: MessageSquare, execute: Zap, govern: Shield }
 
 const OUTCOME_CFG = {
   success:   { label: 'Success',     cls: 'bg-ok/10 text-ok',         dot: 'bg-ok' },
   escalated: { label: 'Escalated',   cls: 'bg-warn/10 text-warn',   dot: 'bg-warn' },
-  pending:   { label: 'Pending',     cls: 'bg-ochre/10 text-ochre', dot: 'bg-ochre' },
+  pending:   { label: 'Pending',     cls: 'bg-signal/10 text-signal', dot: 'bg-signal' },
   rollback:  { label: 'Rolled back', cls: 'bg-stone3 text-muted',      dot: 'bg-muted' },
 }
 
 function TierRow({ tier, isActive, isCeiling, isGovern, governCriteriaMet, onClick }) {
   const Icon = TIER_ICONS[tier.id]
-  const leftBorder = isCeiling ? 'border-l-ochre' : isActive ? 'border-l-transparent' : 'border-l-transparent'
+  const leftBorder = isCeiling ? 'border-l-signal' : isActive ? 'border-l-transparent' : 'border-l-transparent'
   const bg = isCeiling ? 'bg-stone2' : isGovern && governCriteriaMet ? 'bg-ok/[0.02]' : ''
 
   const statusBadge = isCeiling
-    ? <StatusPill tone="ochre" className="ml-auto flex-shrink-0">Active ceiling</StatusPill>
+    ? <StatusPill tone="signal" className="ml-auto flex-shrink-0">Active ceiling</StatusPill>
     : isGovern
       ? governCriteriaMet
         ? <StatusPill tone="ok" className="ml-auto flex-shrink-0">Ready to activate</StatusPill>
@@ -62,7 +62,7 @@ function LogRow({ entry, selected, onClick }) {
         selected ? 'bg-stone2' : 'hover:bg-stone2/50'
       }`}>
       <div className="mb-1">
-        <StatusPill tone={entry.outcome === 'success' ? 'ok' : entry.outcome === 'escalated' ? 'warn' : entry.outcome === 'pending' ? 'ochre' : 'muted'} className="mb-1.5">{out.label}</StatusPill>
+        <StatusPill tone={entry.outcome === 'success' ? 'ok' : entry.outcome === 'escalated' ? 'warn' : entry.outcome === 'pending' ? 'signal' : 'muted'} className="mb-1.5">{out.label}</StatusPill>
         <p className="font-body font-medium text-ink text-body leading-snug mb-0.5">{entry.action}</p>
         <div className="flex items-center gap-2">
           <span className="font-body text-muted text-label">{entry.agent}</span>
@@ -112,34 +112,31 @@ function ActionDetail({ entry }) {
         <div className="flex items-center gap-2 mb-2">
           <TierIcon size={10} strokeWidth={2} className="text-muted" />
           <span className="font-body text-muted text-label capitalize">{entry.tier} tier</span>
-          <StatusPill tone={entry.outcome === 'success' ? 'ok' : entry.outcome === 'escalated' ? 'warn' : entry.outcome === 'pending' ? 'ochre' : 'muted'} className="ml-auto">{out.label}</StatusPill>
+          <StatusPill tone={entry.outcome === 'success' ? 'ok' : entry.outcome === 'escalated' ? 'warn' : entry.outcome === 'pending' ? 'signal' : 'muted'} className="ml-auto">{out.label}</StatusPill>
         </div>
         <div className="font-display font-bold text-ink text-head leading-tight mb-1">{entry.action}</div>
         <div className="font-body text-muted text-label">{entry.agent} · {entry.timeLabel}</div>
       </div>
 
       {/* Rationale */}
-      <div className="px-4 py-3 bg-stone2 border-l-4 border-l-ochre">
+      <div className="px-4 py-3 bg-stone2 border-l-4 border-l-signal">
         <div className="font-body text-muted text-label mb-1">Agent rationale</div>
         <p className="font-display text-ink text-body leading-relaxed">{entry.rationale}</p>
       </div>
 
       {/* Metrics grid */}
-      <div className="grid grid-cols-3 gap-px bg-rule2">
+      <StatGrid cols={3} noBorder>
         {[
-          { label: 'Outcome', val: out.label, tone: entry.outcome === 'success' ? 'text-ok' : entry.outcome === 'escalated' ? 'text-warn' : 'text-ochre' },
+          { label: 'Outcome', val: out.label, tone: entry.outcome === 'success' ? 'text-ok' : entry.outcome === 'escalated' ? 'text-warn' : 'text-signal' },
           { label: 'Monitoring window', val: entry.monitoringWindow ?? 'N/A', tone: 'text-muted' },
           { label: 'Reversible', val: entry.reversible ? 'Yes' : 'No', tone: entry.reversible ? 'text-ok' : 'text-muted' },
           { label: 'Deviation detected', val: entry.deviation ? 'Yes' : 'No', tone: entry.deviation ? 'text-warn' : 'text-ok' },
           { label: 'Escalated', val: entry.escalated ? 'Yes' : 'No', tone: entry.escalated ? 'text-warn' : 'text-ok' },
           { label: 'Rollback available', val: entry.rollbackAvailable ? 'Yes' : 'No', tone: entry.rollbackAvailable ? 'text-ok' : 'text-muted' },
         ].map(({ label, val, tone }) => (
-          <div key={label} className="bg-stone px-3 py-2.5">
-            <div className="font-body text-muted text-label mb-0.5">{label}</div>
-            <div className={`display-num text-base ${tone}`}>{val}</div>
-          </div>
+          <StatGrid.Cell key={label} label={label} value={val} tone={tone} size="sm" />
         ))}
-      </div>
+      </StatGrid>
 
       {/* Impact */}
       {entry.impact && (
@@ -233,7 +230,7 @@ export default function ExecutionAuthority() {
           {/* Tier rows */}
           <div className="flex-1 overflow-y-auto">
             <button type="button" onClick={() => { setSelectedTier(null); setSelectedId(null) }}
-              className={`w-full text-left px-4 py-2.5 border-b border-rule2 border-l-4 transition-colors ${!selectedTier ? 'border-l-ochre bg-stone2' : 'border-l-transparent hover:bg-stone2/50'}`}>
+              className={`w-full text-left px-4 py-2.5 border-b border-rule2 border-l-4 transition-colors ${!selectedTier ? 'border-l-signal bg-stone2' : 'border-l-transparent hover:bg-stone2/50'}`}>
               <span className="font-body font-medium text-ink text-label">All events</span>
               <span className="font-body text-muted text-label ml-2">{executionLog.length}</span>
             </button>

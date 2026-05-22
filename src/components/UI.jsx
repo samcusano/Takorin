@@ -1,6 +1,7 @@
 // Shared primitive components — V2 precision + narrative fusion palette
 import { useRef, useEffect, useMemo, useId, useState, useCallback } from 'react'
-import { X, ArrowRight, ChevronRight, ChevronDown, Check } from 'lucide-react'
+import NumberFlow from '@number-flow/react'
+import { X, ArrowRight, ChevronRight, ChevronDown, Check, Brain, InspectionPanel } from 'lucide-react'
 import BoringAvatar from 'boring-avatars'
 import { useFocusTrap, useExitAnimation } from '../lib/utils'
 import { toneStyle } from '../lib/styles'
@@ -19,7 +20,7 @@ const TONE_COLOR = {
  danger: 'var(--color-danger)',
  warn:   'var(--color-warn)',
  ok:     'var(--color-ok)',
- ochre:  'var(--color-ochre)',
+ signal:  'var(--color-signal)',
  muted:  'var(--color-muted)',
 }
 export function toneColor(tone) { return TONE_COLOR[tone] || 'var(--color-ink)' }
@@ -62,7 +63,7 @@ export function SceneHeader({
     </div>
     {(live || timestamp) && (
      <div className="flex items-center gap-2">
-      {live && <div className="live-dot w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: 'var(--color-ochre)' }} />}
+      {live && <div className="live-dot w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: 'var(--color-signal)' }} />}
       {timestamp && <span className="font-body text-micro text-muted">{timestamp}</span>}
      </div>
     )}
@@ -96,7 +97,7 @@ export function SceneHeader({
          {meta.map(({ label, value, color: c }, i) => (
           <div key={i} className="flex items-center gap-1.5">
            <span className="font-body text-micro text-muted">{label}</span>
-           <span className="font-body text-micro" style={{ color: c || 'var(--color-ochre)' }}>{value}</span>
+           <span className="font-body text-micro" style={{ color: c || 'var(--color-signal)' }}>{value}</span>
           </div>
          ))}
         </div>
@@ -135,7 +136,7 @@ export function Checkbox({ checked, onChange, size = 'md', className = '', ...pr
  const sz = { sm: 'w-3 h-3', md: 'w-3.5 h-3.5', lg: 'w-4 h-4' }[size] ?? 'w-3.5 h-3.5'
  return (
   <input type="checkbox" checked={checked} onChange={onChange}
-   className={`cursor-pointer accent-ochre flex-shrink-0 ${sz} ${className}`}
+   className={`cursor-pointer accent-signal flex-shrink-0 ${sz} ${className}`}
    {...props} />
  )
 }
@@ -165,7 +166,7 @@ export function SectionHeader({ tone = 'muted', label, sub, title, icon: Icon, a
 // ── Stat bar cell
 export function StatCell({ label, value, sub, fill, tone = 'ok', badge }) {
  const toneColor = toneStyle(tone, 'dot')
- const toneBorder = { ok:'border-t-ok', warn:'border-t-warn', danger:'border-t-danger', ochre:'border-t-ochre' }[tone] || 'border-t-ok'
+ const toneBorder = { ok:'border-t-ok', warn:'border-t-warn', danger:'border-t-danger', signal:'border-t-signal' }[tone] || 'border-t-ok'
  return (
  <div className={`px-5 py-4 border-r border-rule2 last:border-r-0 border-t-2 ${toneBorder}`}>
  <div className="font-body text-micro text-muted mb-2">{label}</div>
@@ -248,7 +249,7 @@ export function ActionBanner({ tone = 'warn', headline, body, children, footer }
 export function Btn({ variant = 'primary', icon: Icon, onClick, disabled, children, className = '', style }) {
  const base = 'font-body font-medium text-body px-4 py-2.5 min-h-[40px] inline-flex items-center justify-center gap-2 transition-[background-color,box-shadow,opacity,transform] duration-100 ease-standard active:scale-[0.97] cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed rounded-btn'
  const cls = {
-  primary:   'bg-ochre text-stone hover:bg-ochre-dark hover:shadow-raise',
+  primary:   'bg-signal text-stone hover:bg-signal-dark hover:shadow-raise',
   secondary: 'border border-rule bg-stone2 text-ink hover:bg-stone3 hover:border-rule2',
   ghost:     'text-muted hover:text-ink',
  }[variant] ?? 'border border-rule bg-stone2 text-ink hover:bg-stone3 hover:border-rule2'
@@ -271,7 +272,7 @@ export function Tabs({ tabs, active, onChange, flush = false, className = '' }) 
    {tabs.map(t => (
     <button key={t.id} type="button" onClick={() => onChange(t.id)}
      className={`font-body text-label px-4 py-2.5 border-b-2 transition-colors flex-shrink-0 flex items-center gap-1.5 ${
-      active === t.id ? 'border-b-ochre text-ink' : 'border-b-transparent text-muted hover:text-muted'
+      active === t.id ? 'border-b-signal text-ink' : 'border-b-transparent text-muted hover:text-muted'
      }`}>
      {t.label}
      {t.dot && active !== t.id && <span className="w-1.5 h-1.5 rounded-full bg-danger flex-shrink-0" />}
@@ -296,7 +297,7 @@ export function SegmentedControl({ options, value, onChange }) {
       className={`inline-flex items-center gap-1.5 font-body text-label px-3 py-1.5 transition-colors ${
        active ? 'bg-stone4 text-ink' : 'text-muted hover:text-muted'
       }`}>
-      {Icon && <Icon size={12} strokeWidth={1.75} className="flex-shrink-0" />}
+      {Icon && <Icon size={12} strokeWidth={2} className="flex-shrink-0" />}
       {o.label}
      </button>
     )
@@ -323,7 +324,7 @@ export function Dot({ level = 'empty' }) {
 }
 
 // ── Page header
-export function PageHead({ over, title, accent = 'var(--color-ochre)', meta = [], children }) {
+export function PageHead({ over, title, accent = 'var(--color-signal)', meta = [], children }) {
  return (
  <div className="px-6 py-5 border-b border-rule2 bg-stone2 relative overflow-hidden" style={{ borderLeft: `3px solid ${accent}` }}>
  {over && <div className="font-body text-micro text-muted mb-2">{over}</div>}
@@ -365,7 +366,7 @@ export function RightRail({ children }) {
 }
 
 // ── Mini spark plot — smooth bezier curve, Google Finance style
-export function WaveformSparkline({ data, color = 'var(--color-ochre)', height = 44 }) {
+export function WaveformSparkline({ data, color = 'var(--color-signal)', height = 44 }) {
  if (!data || data.length < 2) return null
  const { d, fillPath } = useMemo(() => {
   const W = 100, pad = 3
@@ -680,59 +681,57 @@ export function AcceptanceGate({ incomingSupervisor, shiftTime, carryForwardCoun
  )
 }
 
-// ── CarryForwardItem — Dense row for each carry-forward risk
-// Severity border + title + impact + owner + action + acknowledgment control
+// ── CarryForwardItem — Scan-first row: title + one-liner, details in drawer
 export function CarryForwardItem({ item, acknowledged, onAcknowledge, onView }) {
  const borderColor = item.resolvedInShift ? 'border-l-ok'
   : { danger: 'border-l-danger', warn: 'border-l-warn', watch: 'border-l-rule2' }[item.urgency] || 'border-l-rule2'
 
- const actionColor = {
-  danger: 'text-danger',
-  warn: 'text-warn',
-  watch: 'text-muted',
- }[item.urgency] || 'text-muted'
+ const isClickable = onView && !item.resolvedInShift
 
  return (
-  <div className={`relative overflow-hidden border-l-2 ${borderColor} border-b border-rule2 px-4 py-3 flex gap-3 ${
-   item.resolvedInShift ? 'bg-ok/[0.03]' : acknowledged ? 'bg-ok/[0.03]' : 'bg-stone'
-  }`}>
+  <div
+   role={isClickable ? 'button' : undefined}
+   tabIndex={isClickable ? 0 : undefined}
+   onClick={isClickable ? onView : undefined}
+   onKeyDown={isClickable ? (e) => { if (e.key === 'Enter' || e.key === ' ') onView() } : undefined}
+   className={`relative overflow-hidden border-l-2 ${borderColor} border-b border-rule2 px-4 py-3 flex items-center gap-3 ${
+    item.resolvedInShift ? 'bg-ok/[0.03]' : acknowledged ? 'bg-ok/[0.03]' : 'bg-stone'
+   } ${isClickable ? 'cursor-pointer hover:bg-stone2 transition-colors' : ''}`}>
    {acknowledged && !item.resolvedInShift && <span className="flash-success" aria-hidden="true" />}
+
+   {/* Title + one-liner */}
    <div className="flex-1 min-w-0">
-    <div className="flex items-center gap-2 mb-1 flex-wrap">
-     <span className={`font-body font-medium text-body leading-snug ${item.resolvedInShift ? 'text-muted line-through' : 'text-ink'}`}>{item.title}</span>
+    <div className="flex items-center gap-2 mb-0.5">
+     <span className={`font-body font-medium text-body leading-snug ${item.resolvedInShift ? 'text-muted line-through' : 'text-ink'}`}>
+      {item.title}
+     </span>
+     {item.agentSourced && !item.resolvedInShift && (
+      <Brain size={9} strokeWidth={2} className="text-muted flex-shrink-0" aria-label="AI-synthesized" />
+     )}
      {item.resolvedInShift && (
       <span className="font-body text-ok text-label font-medium flex items-center gap-0.5 flex-shrink-0">
-       <Check size={10} strokeWidth={2.5} />
-       Resolved in ShiftIQ
+       <Check size={10} strokeWidth={2.5} /> Resolved
       </span>
      )}
     </div>
-    <div className="font-body text-muted text-label leading-snug mb-1">{item.operationalImpact}</div>
-    <div className="font-body text-muted text-label leading-snug mb-2">{item.ownerContext}</div>
-    {!item.resolvedInShift && <span className={`font-body font-medium text-label ${actionColor}`}>{item.recommendedAction}</span>}
-    {onView && !item.resolvedInShift && (
-     <button type="button" onClick={onView} className="font-body text-ochre text-label mt-1.5 flex items-center gap-1 hover:text-ink transition-colors">
-      <ArrowRight size={9} />View in ShiftIQ
-     </button>
-    )}
+    <p className="font-body text-muted text-label leading-snug m-0 line-clamp-1">{item.operationalImpact}</p>
    </div>
-   <div className="flex-shrink-0 flex items-center">
+
+   {/* Acknowledge button — stopPropagation so row click doesn't fire */}
+   <div className="flex-shrink-0" onClick={e => e.stopPropagation()}>
     {item.resolvedInShift ? (
-     <div className="flex items-center justify-center w-12 h-12 rounded-full border border-ok/20 bg-ok/5" aria-label="Resolved this shift">
-      <Check size={18} strokeWidth={2.5} className="text-ok" />
+     <div className="w-7 h-7 rounded-full border border-ok/20 bg-ok/5 flex items-center justify-center" aria-label="Resolved this shift">
+      <Check size={13} strokeWidth={2.5} className="text-ok" />
      </div>
     ) : !acknowledged ? (
-     <button
-      type="button"
-      onClick={() => onAcknowledge(item.id)}
-      className="flex items-center justify-center w-10 h-10 rounded-full border-2 border-rule2 bg-stone3 hover:border-muted transition-colors cursor-pointer"
-      aria-label={`Acknowledge: ${item.title}`}
-     >
-      <Check size={18} strokeWidth={2} className="text-ink" />
+     <button type="button" onClick={() => onAcknowledge(item.id)}
+      className="w-7 h-7 rounded-full border-2 border-rule2 bg-stone3 hover:border-ok hover:bg-ok/10 transition-colors flex items-center justify-center cursor-pointer"
+      aria-label={`Acknowledge: ${item.title}`}>
+      <Check size={13} strokeWidth={2} className="text-muted" />
      </button>
     ) : (
-     <div className="flex items-center justify-center w-12 h-12 rounded-full border border-ok/20 bg-ok/5" aria-label={`Acknowledged: ${item.title}`}>
-      <Check size={18} strokeWidth={2.5} className="text-ok" />
+     <div className="w-7 h-7 rounded-full border border-ok/20 bg-ok/5 flex items-center justify-center" aria-label={`Acknowledged: ${item.title}`}>
+      <Check size={13} strokeWidth={2.5} className="text-ok" />
      </div>
     )}
    </div>
@@ -801,10 +800,10 @@ const TONE_BADGE = {
  danger: 'bg-danger/[0.10] text-danger',
  warn:   'bg-warn/[0.10] text-warn',
  ok:     'bg-ok/[0.10] text-ok',
- ochre:  'bg-ochre/[0.10] text-ochre',
+ signal:  'bg-signal/[0.10] text-signal',
  muted:  'bg-stone3 text-muted',
 }
-const TONE_LABEL = { danger: 'Critical', warn: 'Warning', ok: 'Clear', ochre: 'Active', muted: '' }
+const TONE_LABEL = { danger: 'Critical', warn: 'Warning', ok: 'Clear', signal: 'Active', muted: '' }
 
 export function ActionCard({ tone = 'danger', title, subtitle, metadata, actions, status, children, icon: CardIcon, badgeLabel }) {
  const badge = badgeLabel !== undefined ? badgeLabel : (tone !== 'muted' ? TONE_LABEL[tone] : null)
@@ -832,7 +831,7 @@ export function ActionCard({ tone = 'danger', title, subtitle, metadata, actions
     </div>
     {(CardIcon || status) && (
      <div className="flex flex-col items-end gap-2 flex-shrink-0">
-      {CardIcon && <CardIcon size={22} strokeWidth={1.5} className="text-muted opacity-50" aria-hidden="true" />}
+      {CardIcon && <CardIcon size={20} strokeWidth={1.5} className="text-muted opacity-50" aria-hidden="true" />}
       {status && <div className="text-right">{status}</div>}
      </div>
     )}
@@ -984,7 +983,7 @@ export function SlidePanel({ title, subtitle, icon: Icon, accentColor, ariaLabel
     <div className="flex items-start justify-between px-5 py-4 border-b border-rule flex-shrink-0"
      style={{ background: 'var(--color-stone-3)', ...(accentColor ? { borderTop: `2px solid ${accentColor}` } : {}) }}>
      <div className="flex items-center gap-3 min-w-0">
-      {Icon && <Icon size={22} strokeWidth={1.5} className="text-ochre flex-shrink-0" aria-hidden="true" />}
+      {Icon && <Icon size={20} strokeWidth={1.5} className="text-signal flex-shrink-0" aria-hidden="true" />}
       <div className="min-w-0">
        {subtitle && <div className="font-body text-micro text-muted mb-1">{subtitle}</div>}
        <div className="font-display font-bold text-ink text-base leading-snug">{title}</div>
@@ -1003,3 +1002,157 @@ export function SlidePanel({ title, subtitle, icon: Icon, accentColor, ariaLabel
   </>
  )
 }
+
+
+// ── Animated hero number — counts 0 → value on mount ─────────────────────────
+// effect: 'none' | 'glow' (hero scores) | 'blur' (AI-derived values)
+// hero: true uses 650ms spring; default is 300ms for KPI grid cells
+export function AnimatedScore({ value, suffix, effect = 'none', hero = false }) {
+ const dur   = hero ? 650 : 300
+ const delay = hero ? 200 : 150
+ const [displayed, setDisplayed] = useState(0)
+ useEffect(() => {
+  const t = setTimeout(() => setDisplayed(value), delay)
+  return () => clearTimeout(t)
+ }, []) // empty deps — fires once on mount
+ const node = (
+  <NumberFlow
+   value={displayed} suffix={suffix}
+   transformTiming={{ duration: dur, easing: 'cubic-bezier(0.16, 1, 0.3, 1)' }}
+   opacityTiming={{ duration: Math.max(dur * 0.35, 60), easing: 'ease-out' }}
+  />
+ )
+ if (effect === 'glow') return (
+  <span style={{ animation: `numGlowFade ${dur + 800}ms ease-out ${delay}ms` }}>{node}</span>
+ )
+ if (effect === 'blur') return (
+  <span style={{ animation: `numBlurIn ${dur}ms ease-out ${delay}ms both` }}>{node}</span>
+ )
+ return node
+}
+
+// ── Page entrance — wraps content sections with entrance animation ─────────────
+// type: 'rise' | 'blur' | 'wipe' | 'fade'
+// index × stagger = animationDelay (creates natural cascade)
+export function PageEntrance({ children, index = 0, type = 'rise', stagger = 45, className = '', style = {} }) {
+ const cls = { rise: 'page-rise', blur: 'page-blur-in', wipe: 'page-wipe', fade: 'page-fade' }[type] || 'page-rise'
+ return (
+  <div className={`${cls} ${className}`} style={{ animationDelay: `${index * stagger}ms`, ...style }}>
+   {children}
+  </div>
+ )
+}
+
+// ── SectionLabel — lightweight divider used inside tab panels and drawers ───────
+// Distinct from SectionHeader (screen-level). Used for in-panel section breaks.
+// badgeTone: 'ok' | 'warn' | 'danger' | 'muted'
+export function SectionLabel({ label, badge, badgeTone = 'muted' }) {
+ const badgeCls = {
+  ok:     'text-ok',
+  warn:   'text-warn',
+  danger: 'text-danger',
+  muted:  'text-muted',
+ }[badgeTone] || 'text-muted'
+ return (
+  <div className="px-4 py-2 bg-stone2 border-b border-rule2 flex items-center gap-2">
+   <span className="font-body text-micro text-muted tracking-wide uppercase flex-1">{label}</span>
+   {badge && <span className={`font-body text-micro font-medium ${badgeCls}`}>{badge}</span>}
+  </div>
+ )
+}
+
+// ── EmptyState — ghost skeleton + centered message ───────────────────────────────
+// Renders faint placeholder rows so the panel communicates its structure before data loads.
+export function EmptyState({ icon: Icon, message, sub, action }) {
+ return (
+  <div className="flex flex-col items-center justify-center h-full px-8 py-12 text-center relative overflow-hidden">
+   {/* Ghost row skeleton — faint structural hint */}
+   <div className="absolute inset-x-0 top-0 pointer-events-none select-none" aria-hidden="true">
+    {[0.07, 0.05, 0.035, 0.025, 0.015].map((op, i) => (
+     <div key={i} className="flex items-center gap-3 px-5 py-3 border-b border-rule2" style={{ opacity: op }}>
+      <div className="w-1.5 h-1.5 rounded-full bg-muted flex-shrink-0" />
+      <div className="h-2 bg-muted rounded-sm flex-1" style={{ maxWidth: `${60 + (i % 3) * 15}%` }} />
+      <div className="h-2 bg-muted rounded-sm w-12 flex-shrink-0" />
+     </div>
+    ))}
+   </div>
+   {/* Message */}
+   <div className="relative z-10">
+    {Icon && <Icon size={20} strokeWidth={1.5} className="text-muted mb-3 mx-auto" />}
+    <div className="font-body text-muted text-body">{message}</div>
+    {sub && <div className="font-body text-muted text-label mt-1 opacity-60">{sub}</div>}
+    {action && <div className="mt-4">{action}</div>}
+   </div>
+  </div>
+ )
+}
+
+// ── AccentRow — border-left tone row with optional background tint ───────────────
+// tone: 'danger' | 'warn' | 'ok' | 'signal' | 'muted'
+// bg: true adds a subtle tone-matched background fill
+export function AccentRow({ tone = 'muted', bg = false, className = '', children }) {
+ const border = {
+  danger: 'border-l-danger',
+  warn:   'border-l-warn',
+  ok:     'border-l-ok',
+  signal:  'border-l-signal',
+  muted:  'border-l-rule2',
+ }[tone] || 'border-l-rule2'
+ const fill = bg ? {
+  danger: 'bg-danger/[0.03]',
+  warn:   'bg-warn/[0.02]',
+  ok:     'bg-ok/[0.03]',
+  signal:  'bg-signal/[0.03]',
+  muted:  '',
+ }[tone] || '' : ''
+ return (
+  <div className={`border-l-2 ${border} border-b border-rule2 ${fill} ${className}`}>
+   {children}
+  </div>
+ )
+}
+
+// ── StatGrid — metric strip with gap-px borders ──────────────────────────────────
+// cols: number of columns (default 4). Wrap StatGrid.Cell children inside.
+// size: 'sm' (15px base), 'md' (22px title, default for kpi grids), 'lg' (28px metric)
+function StatGridCell({ label, value, sub, tone = 'text-ink', size = 'md' }) {
+ const numCls = size === 'sm' ? 'text-base' : size === 'lg' ? 'text-metric' : 'text-title'
+ return (
+  <div className="bg-stone px-4 py-3 min-w-0">
+   <div className="font-body text-muted text-label mb-0.5">{label}</div>
+   <div className={`display-num ${numCls} font-bold leading-none ${tone}`}>{value}</div>
+   {sub && <div className={`font-body text-label mt-0.5 ${tone} opacity-80`}>{sub}</div>}
+  </div>
+ )
+}
+export function StatGrid({ cols = 4, children, className = '', noBorder = false }) {
+ return (
+  <div className={`flex-shrink-0 grid gap-px bg-rule2 ${noBorder ? '' : 'border-b border-rule2'} ${className}`}
+   style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}>
+   {children}
+  </div>
+ )
+}
+StatGrid.Cell = StatGridCell
+
+// ── MasterDetail — two-panel master list + detail layout ─────────────────────────
+// sidebarWidth: px value (240 | 280 | 360). Children: MasterDetail.Sidebar + MasterDetail.Content.
+function MasterDetailSidebar({ children, className = '' }) {
+ return <div className={`flex-shrink-0 border-r border-rule2 flex flex-col bg-stone overflow-hidden ${className}`}>{children}</div>
+}
+function MasterDetailContent({ children, className = '' }) {
+ return <div className={`flex-1 flex flex-col overflow-hidden ${className}`}>{children}</div>
+}
+export function MasterDetail({ sidebarWidth = 280, children, className = '' }) {
+ const kids = Array.isArray(children) ? children : [children]
+ const sidebar = kids.find(c => c?.type === MasterDetailSidebar)
+ const content = kids.find(c => c?.type === MasterDetailContent)
+ return (
+  <div className={`flex flex-1 overflow-hidden ${className}`}>
+   <div style={{ width: sidebarWidth }}>{sidebar}</div>
+   {content}
+  </div>
+ )
+}
+MasterDetail.Sidebar = MasterDetailSidebar
+MasterDetail.Content = MasterDetailContent

@@ -1,5 +1,6 @@
 import { createContext, useContext, useState } from 'react'
 import { readinessData, systemConfidenceScore } from '../data'
+import { seedObservations } from '../data/observations'
 
 const Ctx = createContext(null)
 
@@ -136,6 +137,19 @@ export function AppStateProvider({ children }) {
  ])
  const logActivity = (entry) => setActivityLog(p => [{ ...entry, time: new Date().toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' }) }, ...p])
 
+ // Field observations — floor walk notes from operators
+ const [fieldObservations, setFieldObservations] = useState(seedObservations)
+ const logObservation = ({ station, category, note, operator = 'C. Reyes' }) =>
+  setFieldObservations(p => [{
+   id: `obs-${Date.now()}`,
+   timeLabel: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+   operator, station, category, note, shiftId: 'am-0522',
+  }, ...p])
+
+ // Drift watch — acknowledged sub-threshold signals
+ const [acknowledgedDrifts, setAcknowledgedDrifts] = useState(new Set())
+ const acknowledgeDrift = (id) => setAcknowledgedDrifts(p => new Set([...p, id]))
+
  return (
  <Ctx.Provider value={{
  workerMode, setWorkerMode,
@@ -173,6 +187,8 @@ export function AppStateProvider({ children }) {
  carryForwardAcknowledged, setCarryForwardAcknowledged,
  commandAcknowledged, acknowledgeCommand,
  activityLog, logActivity,
+ fieldObservations, logObservation,
+ acknowledgedDrifts, acknowledgeDrift,
  currentPlant, setCurrentPlant,
  viewingRole, setViewingRole,
  signOffRequests, setSignOffRequests,

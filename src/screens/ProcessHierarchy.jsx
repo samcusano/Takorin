@@ -7,12 +7,12 @@
 import { useState, useRef, useEffect } from 'react'
 import { processHierarchy } from '../data/hierarchy'
 import { AlertTriangle, ChevronRight, ChevronDown, ArrowRight, ArrowDown, Activity, Zap, TrendingDown, Info } from 'lucide-react'
-import { SlidePanel, SegmentedControl, SectionHeader, Tabs } from '../components/UI'
+import { SlidePanel, SegmentedControl, SectionHeader, Tabs, AnimatedScore, StatGrid, EmptyState } from '../components/UI'
 import ShiftHero from '../components/ShiftHero'
 
-const scoreColor  = (s) => s >= 90 ? 'text-ok'     : s >= 80 ? 'text-ochre'   : s >= 70 ? 'text-warn'   : 'text-danger'
-const scoreBg     = (s) => s >= 90 ? 'bg-ok'        : s >= 80 ? 'bg-ochre'     : s >= 70 ? 'bg-warn'     : 'bg-danger'
-const pressureBg  = (s) => s >= 90 ? ''             : s >= 83 ? 'bg-ochre/[0.05]' : s >= 75 ? 'bg-warn/[0.10]' : 'bg-danger/[0.18]'
+const scoreColor  = (s) => s >= 90 ? 'text-ok'     : s >= 80 ? 'text-signal'   : s >= 70 ? 'text-warn'   : 'text-danger'
+const scoreBg     = (s) => s >= 90 ? 'bg-ok'        : s >= 80 ? 'bg-signal'     : s >= 70 ? 'bg-warn'     : 'bg-danger'
+const pressureBg  = (s) => s >= 90 ? ''             : s >= 83 ? 'bg-signal/[0.05]' : s >= 75 ? 'bg-warn/[0.10]' : 'bg-danger/[0.18]'
 const pressureRing = (s, hasAlert) => {
   if (hasAlert) return 'ring-2 ring-warn ring-offset-1 ring-offset-stone'
   if (s < 75) return 'ring-2 ring-danger/40 ring-offset-1 ring-offset-stone'
@@ -60,7 +60,7 @@ const STAGE_LABELS = {
   'unknown':   'Unknown',
 }
 const STAGE_COLORS = {
-  'primary':   'bg-ochre/10 text-ochre',
+  'primary':   'bg-signal/10 text-signal',
   'secondary': 'bg-ok/10 text-ok',
   'koji':      'bg-stone3 text-muted',
   'complete':  'bg-ok/10 text-ok',
@@ -170,12 +170,12 @@ const DEFAULT_REASONING = {
 }
 
 function ScoreDot({ score }) {
-  const color = score >= 90 ? 'bg-ok' : score >= 80 ? 'bg-ochre' : score >= 70 ? 'bg-warn' : 'bg-danger'
+  const color = score >= 90 ? 'bg-ok' : score >= 80 ? 'bg-signal' : score >= 70 ? 'bg-warn' : 'bg-danger'
   return <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${color}`} />
 }
 
 function ScoreBar({ score, width = 60 }) {
-  const color = score >= 90 ? 'bg-ok' : score >= 80 ? 'bg-ochre' : score >= 70 ? 'bg-warn' : 'bg-danger'
+  const color = score >= 90 ? 'bg-ok' : score >= 80 ? 'bg-signal' : score >= 70 ? 'bg-warn' : 'bg-danger'
   const textColor = scoreColor(score)
   return (
     <div className="flex items-center gap-2">
@@ -198,7 +198,7 @@ function EnvChip({ label, val, tone }) {
 
 function VesselGrid({ vessels }) {
   return (
-    <div className="grid grid-cols-3 gap-px bg-rule2">
+    <StatGrid cols={3} noBorder>
       {vessels.map(v => {
         const toneColor = v.tone === 'ok' ? 'text-ok' : v.tone === 'warn' ? 'text-warn' : 'text-muted'
         const isComplete = v.stage === 'complete'
@@ -210,17 +210,17 @@ function VesselGrid({ vessels }) {
             </div>
             <div className="font-body text-muted text-label truncate">{v.batch}</div>
             <div className="h-0.5 bg-rule2 mt-1.5 mb-1">
-              <div className={`h-full ${isComplete ? 'bg-ok' : 'bg-ochre/60'}`}
+              <div className={`h-full ${isComplete ? 'bg-ok' : 'bg-signal/60'}`}
                 style={{ width: `${Math.min(100, (v.daysElapsed / 185) * 100)}%` }} />
             </div>
             <div className="flex items-center justify-between">
               <span className="font-body text-muted text-micro">{v.daysElapsed}d</span>
-              {v.alert && <AlertTriangle size={8} className="text-warn flex-shrink-0" strokeWidth={2} />}
+              {v.alert && <AlertTriangle size={10} className="text-warn flex-shrink-0" strokeWidth={2} />}
             </div>
           </div>
         )
       })}
-    </div>
+    </StatGrid>
   )
 }
 
@@ -303,7 +303,7 @@ function CausalPanel({ zone, building }) {
   const causal = CAUSAL_MAP[zone.id] ?? DEFAULT_CAUSAL
   const allVessels = (zone.processes ?? []).flatMap(p => p.vessels ?? [])
   const statusLabel = zone.score >= 90 ? 'Clear' : zone.score >= 80 ? 'Watch' : zone.score >= 70 ? 'At risk' : 'Critical'
-  const statusColor = zone.score >= 90 ? 'text-ok' : zone.score >= 80 ? 'text-ochre' : zone.score >= 70 ? 'text-warn' : 'text-danger'
+  const statusColor = zone.score >= 90 ? 'text-ok' : zone.score >= 80 ? 'text-signal' : zone.score >= 70 ? 'text-warn' : 'text-danger'
 
   return (
     <div className="space-y-4">
@@ -314,7 +314,7 @@ function CausalPanel({ zone, building }) {
           <div className="font-body text-muted text-label">{zone.vessels} vessels · {zone.activeBatches} active batches</div>
         </div>
         <div className="text-right flex-shrink-0">
-          <div className={`display-num text-score leading-none ${scoreColor(zone.score)}`}>{zone.score}</div>
+          <div className={`display-num text-score leading-none ${scoreColor(zone.score)}`}><AnimatedScore value={zone.score} effect="glow" /></div>
           <div className={`font-body font-bold text-label ${statusColor}`}>{statusLabel}</div>
         </div>
       </div>
@@ -342,7 +342,7 @@ function CausalPanel({ zone, building }) {
             {causal.upstream.length > 0 && (
               <div className="mb-3">
                 <div className="font-body text-muted text-label mb-1.5 flex items-center gap-1">
-                  <ArrowDown size={8} className="text-muted rotate-180" />Upstream contributors
+                  <ArrowDown size={10} className="text-muted rotate-180" />Upstream contributors
                 </div>
                 <div className="space-y-1.5">
                   {causal.upstream.map((u, i) => (
@@ -367,7 +367,7 @@ function CausalPanel({ zone, building }) {
             {causal.downstream.length > 0 && (
               <div className="mt-3">
                 <div className="font-body text-muted text-label mb-1.5 flex items-center gap-1">
-                  <ArrowDown size={8} className="text-muted" />Downstream exposure
+                  <ArrowDown size={10} className="text-muted" />Downstream exposure
                 </div>
                 <div className="space-y-1.5">
                   {causal.downstream.map((d, i) => (
@@ -435,7 +435,7 @@ function CausalPanel({ zone, building }) {
 function ReasoningPanel({ zone, building }) {
   if (!zone) return (
     <div className="flex flex-col items-center justify-center h-full px-8 text-center gap-4">
-      <Activity size={24} className="text-muted/40" strokeWidth={1.5} />
+      <Activity size={20} className="text-muted/40" strokeWidth={1.5} />
       <div>
         <div className="font-body text-muted text-label leading-relaxed">Select a zone to see why the system thinks this</div>
       </div>
@@ -444,7 +444,7 @@ function ReasoningPanel({ zone, building }) {
 
   const r = REASONING_MAP[zone.id] ?? DEFAULT_REASONING
   const statusLabel = zone.score >= 90 ? 'Clear' : zone.score >= 80 ? 'Watch' : zone.score >= 70 ? 'At risk' : 'Critical'
-  const statusColor = zone.score >= 90 ? 'text-ok' : zone.score >= 80 ? 'text-ochre' : zone.score >= 70 ? 'text-warn' : 'text-danger'
+  const statusColor = zone.score >= 90 ? 'text-ok' : zone.score >= 80 ? 'text-signal' : zone.score >= 70 ? 'text-warn' : 'text-danger'
   const confColor = r.confidence != null ? (r.confidence >= 80 ? 'text-ok' : r.confidence >= 65 ? 'text-warn' : 'text-danger') : 'text-muted'
   const confBg = r.confidence != null ? (r.confidence >= 80 ? 'bg-ok' : r.confidence >= 65 ? 'bg-warn' : 'bg-danger') : 'bg-muted'
 
@@ -468,7 +468,7 @@ function ReasoningPanel({ zone, building }) {
           )}
         </div>
         <div className="text-right flex-shrink-0">
-          <div className={`display-num text-score leading-none ${scoreColor(zone.score)}`}>{zone.score}</div>
+          <div className={`display-num text-score leading-none ${scoreColor(zone.score)}`}><AnimatedScore value={zone.score} effect="glow" /></div>
           <div className={`font-body font-bold text-label ${statusColor}`}>{statusLabel}</div>
         </div>
       </div>
@@ -596,13 +596,13 @@ function StateFieldView({ site, variant, onVariantChange }) {
       <div className="flex flex-1 min-h-0 overflow-hidden">
 
         {/* State field */}
-        <div className="flex-1 overflow-y-auto p-6">
+        <div className="flex-1 overflow-y-auto p-6 page-rise">
           {/* Pressure legend */}
           <div className="flex items-center gap-4 mb-6">
             <span className="font-body text-muted text-label">Pressure intensity</span>
             {[
               { label: 'Clear',    color: 'bg-ok',     range: '90+' },
-              { label: 'Watch',    color: 'bg-ochre',  range: '80–89' },
+              { label: 'Watch',    color: 'bg-signal',  range: '80–89' },
               { label: 'At risk',  color: 'bg-warn',   range: '70–79' },
               { label: 'Critical', color: 'bg-danger', range: '<70' },
             ].map(({ label, color, range }) => (

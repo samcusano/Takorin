@@ -1,11 +1,11 @@
 import { useState } from 'react'
 import { deliverySummary, orders, demandForecast, carbonBreakdown, skuVolatility } from '../data/delivery'
 import { TrendingUp, TrendingDown, Leaf, Package, AlertTriangle, CheckCircle2 } from 'lucide-react'
-import { StatusPill, SectionHeader, Tabs } from '../components/UI'
+import { StatusPill, SectionHeader, Tabs, StatGrid, EmptyState } from '../components/UI'
 
 const STATUS_CFG = {
   'scheduled':     { label: 'Scheduled',     dot: 'bg-muted',  tone: 'muted' },
-  'in-production': { label: 'In production', dot: 'bg-ochre',  tone: 'ochre' },
+  'in-production': { label: 'In production', dot: 'bg-signal',  tone: 'signal' },
   'finishing':     { label: 'Finishing',     dot: 'bg-warn',   tone: 'warn' },
   'shipped':       { label: 'Shipped',       dot: 'bg-ok',     tone: 'ok' },
 }
@@ -48,14 +48,14 @@ function OrderRow({ order, selected, onClick }) {
   return (
     <button type="button" onClick={onClick}
       className={`w-full text-left px-4 py-3 border-b border-rule2 transition-colors ${
-        selected ? 'bg-stone2 border-l-4 border-l-ochre' : 'hover:bg-stone2/50 border-l-4 border-l-transparent'
+        selected ? 'bg-stone2 border-l-4 border-l-signal' : 'hover:bg-stone2/50 border-l-4 border-l-transparent'
       }`}>
       <div className="flex items-start gap-2 mb-1.5">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5 mb-0.5">
             <span className="font-body font-medium text-ink text-label">{order.id}</span>
             {!order.onTrack && (
-              <AlertTriangle size={8} className="text-warn flex-shrink-0" strokeWidth={2} />
+              <AlertTriangle size={10} className="text-warn flex-shrink-0" strokeWidth={2} />
             )}
           </div>
           <div className="font-body text-muted text-label">{order.customer} · {order.skuLabel}</div>
@@ -77,7 +77,7 @@ function OrderRow({ order, selected, onClick }) {
         {order.carbonPerUnit != null && (
           <>
             <span className="text-rule2">·</span>
-            <Leaf size={8} strokeWidth={2} className={carbonOver ? 'text-warn' : 'text-ok'} />
+            <Leaf size={10} strokeWidth={2} className={carbonOver ? 'text-warn' : 'text-ok'} />
             <span className={`font-body text-label tabular-nums ${carbonOver ? 'text-warn' : 'text-ok'}`}>{order.carbonPerUnit} kg</span>
           </>
         )}
@@ -114,29 +114,18 @@ function OrderDetail({ order }) {
       </div>
 
       {/* Key metrics */}
-      <div className="grid grid-cols-2 gap-px bg-rule2">
+      <StatGrid cols={2} noBorder>
         {[
           { label: 'SKU', val: order.skuLabel, tone: 'text-ink' },
           { label: 'Quantity', val: `${order.qty.toLocaleString()} units`, tone: 'text-ink' },
           { label: 'Target ship', val: order.targetShip, tone: !order.onTrack && order.status !== 'shipped' ? 'text-warn' : 'text-ink' },
           { label: 'Region', val: order.region, tone: 'text-muted' },
-          {
-            label: 'Lead time',
-            val: order.leadTimeDays != null ? `${order.leadTimeDays}d vs ${order.leadTimeTarget}d target` : 'Not started',
-            tone: leadOver ? 'text-warn' : 'text-ok',
-          },
-          {
-            label: 'Carbon / unit',
-            val: order.carbonPerUnit != null ? `${order.carbonPerUnit} kg CO₂e` : '—',
-            tone: carbonOver ? 'text-warn' : order.carbonPerUnit != null ? 'text-ok' : 'text-muted',
-          },
+          { label: 'Lead time', val: order.leadTimeDays != null ? `${order.leadTimeDays}d vs ${order.leadTimeTarget}d target` : 'Not started', tone: leadOver ? 'text-warn' : 'text-ok' },
+          { label: 'Carbon / unit', val: order.carbonPerUnit != null ? `${order.carbonPerUnit} kg CO₂e` : '—', tone: carbonOver ? 'text-warn' : order.carbonPerUnit != null ? 'text-ok' : 'text-muted' },
         ].map(({ label, val, tone }) => (
-          <div key={label} className="bg-stone px-3 py-2.5">
-            <div className="font-body text-muted text-label mb-0.5">{label}</div>
-            <div className={`font-body font-medium text-label ${tone}`}>{val}</div>
-          </div>
+          <StatGrid.Cell key={label} label={label} value={val} tone={tone} size="sm" />
         ))}
-      </div>
+      </StatGrid>
 
       {/* Carbon breakdown */}
       {order.carbonPerUnit != null && (
@@ -191,29 +180,11 @@ export default function ValueChain() {
         </div>
 
         {/* KPI strip */}
-        <div className="flex-shrink-0 grid grid-cols-1 gap-px bg-rule2 border-b border-rule2">
+        <StatGrid cols={1}>
           {[
-            {
-              label: 'On-time delivery',
-              val: `${deliverySummary.otd}%`,
-              sub: `Target ${deliverySummary.otdTarget}%`,
-              tone: otdOver ? 'text-warn' : 'text-ok',
-              icon: otdOver ? AlertTriangle : CheckCircle2,
-            },
-            {
-              label: 'Avg lead time',
-              val: `${deliverySummary.avgLeadTime} d`,
-              sub: `Target ${deliverySummary.leadTimeTarget} d`,
-              tone: leadOver ? 'text-warn' : 'text-ok',
-              icon: Package,
-            },
-            {
-              label: 'Carbon / unit',
-              val: `${deliverySummary.carbonPerUnit} kg CO₂e`,
-              sub: `Target ${deliverySummary.carbonTarget} kg`,
-              tone: carbonOver ? 'text-warn' : 'text-ok',
-              icon: Leaf,
-            },
+            { label: 'On-time delivery', val: `${deliverySummary.otd}%`, sub: `Target ${deliverySummary.otdTarget}%`, tone: otdOver ? 'text-warn' : 'text-ok', icon: otdOver ? AlertTriangle : CheckCircle2 },
+            { label: 'Avg lead time', val: `${deliverySummary.avgLeadTime} d`, sub: `Target ${deliverySummary.leadTimeTarget} d`, tone: leadOver ? 'text-warn' : 'text-ok', icon: Package },
+            { label: 'Carbon / unit', val: `${deliverySummary.carbonPerUnit} kg CO₂e`, sub: `Target ${deliverySummary.carbonTarget} kg`, tone: carbonOver ? 'text-warn' : 'text-ok', icon: Leaf },
           ].map(({ label, val, sub, tone, icon: Icon }) => (
             <div key={label} className="bg-stone px-4 py-3">
               <div className="flex items-center gap-1.5 mb-0.5">
@@ -224,7 +195,7 @@ export default function ValueChain() {
               <div className="font-body text-muted text-label">{sub}</div>
             </div>
           ))}
-        </div>
+        </StatGrid>
 
         {/* Demand chart */}
         <div className="flex-shrink-0 px-4 py-3 border-b border-rule2">
@@ -232,7 +203,7 @@ export default function ValueChain() {
           <MiniDemandChart />
           <div className="flex items-center gap-4 mt-2">
             <div className="flex items-center gap-1.5">
-              <div className="w-4 h-px bg-ochre" />
+              <div className="w-4 h-px bg-signal" />
               <span className="font-body text-muted text-micro">Actual</span>
             </div>
             <div className="flex items-center gap-1.5">

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { AlertTriangle, CheckCircle, ShieldAlert, RotateCcw, Bot, User, ArrowRight } from 'lucide-react'
-import { PageHead, StatusPill, ActionBanner, Btn, Tabs } from '../components/UI'
+import { PageHead, StatusPill, ActionBanner, Btn, Tabs, AnimatedScore } from '../components/UI'
 import { taskAllocationData } from '../data'
 import { useAppState } from '../context/AppState'
 
@@ -18,10 +18,10 @@ function AssigneeTag({ assignee }) {
     <div className={`inline-flex items-center gap-1.5 font-body text-label px-2 py-0.5 ${
       noBackup   ? 'bg-danger/[0.04] border-danger/30 text-danger'
       : certGap  ? 'bg-warn/10 text-warn'
-      : isRobot  ? 'bg-ochre/10 border-ochre/30 text-ochre'
+      : isRobot  ? 'bg-signal/10 border-signal/30 text-signal'
       : 'bg-stone3 border-rule2 text-muted'
     }`}>
-      <Icon size={10} strokeWidth={1.75} className="flex-shrink-0" />
+      <Icon size={10} strokeWidth={2} className="flex-shrink-0" />
       <span>{assignee.name}</span>
       {certGap && !noBackup && <span className="text-label opacity-70">· cert gap</span>}
       {!isRobot && !noBackup && assignee.cert && (
@@ -206,7 +206,7 @@ export default function ResourceAllocation() {
       <PageHead
         over="Task Allocation · Salina Campus · Human · Robot hybrid"
         title="Line 4 AM"
-        accent="var(--color-ochre)"
+        accent="var(--color-signal)"
         meta={[
           { role: 'Human tasks',   val: String(humanTasks)  },
           { role: 'Robot tasks',   val: String(robotTasks)  },
@@ -218,16 +218,16 @@ export default function ResourceAllocation() {
       {/* Stat bar */}
       <div className="flex border-b border-rule2 bg-stone flex-shrink-0">
         {[
-          { label: 'Robot tasks',   value: String(robotTasks),   sub: 'of total this shift',        fill: (robotTasks/tasks.length)*100,  tone: 'ok'     },
-          { label: 'Human tasks',   value: String(humanTasks),   sub: 'of total this shift',        fill: (humanTasks/tasks.length)*100,  tone: 'ok'     },
-          { label: 'Hard gaps',     value: String(gapCount),     sub: 'no qualified backup',        fill: null, tone: 'danger' },
-          { label: 'Cert gaps',     value: String(certGapCount), sub: 'fallback has cert mismatch', fill: null, tone: 'warn'   },
+          { label: 'Robot tasks',   value: robotTasks,   sub: 'of total this shift',        fill: (robotTasks/tasks.length)*100,  tone: 'ok'     },
+          { label: 'Human tasks',   value: humanTasks,   sub: 'of total this shift',        fill: (humanTasks/tasks.length)*100,  tone: 'ok'     },
+          { label: 'Hard gaps',     value: gapCount,     sub: 'no qualified backup',        fill: null, tone: 'danger' },
+          { label: 'Cert gaps',     value: certGapCount, sub: 'fallback has cert mismatch', fill: null, tone: 'warn'   },
         ].map(s => (
           <div key={s.label} className="flex-1 px-5 py-4 border-r border-rule2 last:border-0">
             <div className="font-body text-muted text-label mb-1">{s.label}</div>
             <div className={`display-num text-metric leading-none ${
               s.tone === 'danger' ? 'text-danger' : s.tone === 'warn' ? 'text-warn' : 'text-ink'
-            }`}>{s.value}</div>
+            }`}><AnimatedScore value={s.value} /></div>
             <div className="font-body text-muted text-label mt-0.5">{s.sub}</div>
           </div>
         ))}
@@ -241,7 +241,7 @@ export default function ResourceAllocation() {
         className="bg-stone2 flex-shrink-0"
       />
 
-      <div className="flex-1 overflow-y-auto bg-stone">
+      <div className="flex-1 overflow-y-auto bg-stone page-rise">
 
         {/* Task Matrix */}
         {tab === 'matrix' && (
@@ -262,7 +262,7 @@ export default function ResourceAllocation() {
             ))}
             <div className="flex items-center gap-5 px-5 py-2.5 bg-stone2 border-t border-rule2">
               <div className="flex items-center gap-4 text-label font-body text-muted">
-                <div className="flex items-center gap-1.5"><Bot size={10} className="text-ochre" /><span className="text-ochre">Robot primary</span></div>
+                <div className="flex items-center gap-1.5"><Bot size={10} className="text-signal" /><span className="text-signal">Robot primary</span></div>
                 <div className="flex items-center gap-1.5"><User size={10} /><span>Human primary</span></div>
                 <div className="flex items-center gap-1.5"><AlertTriangle size={10} className="text-danger" /><span className="text-danger">No qualified backup</span></div>
                 <div className="flex items-center gap-1.5"><span className="text-warn">Amber border</span><span>= cert gap</span></div>
@@ -340,7 +340,7 @@ export default function ResourceAllocation() {
               <div key={i} className="px-5 py-4 border-b border-rule2 last:border-0">
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
-                    <RotateCcw size={12} className="text-warn flex-shrink-0" strokeWidth={1.75} />
+                    <RotateCcw size={12} className="text-warn flex-shrink-0" strokeWidth={2} />
                     <span className="font-body font-medium text-ink text-body">{entry.action}</span>
                   </div>
                   <span className="font-body text-muted text-label">{entry.timestamp}</span>
@@ -352,7 +352,7 @@ export default function ResourceAllocation() {
                   </div>
                   <div>
                     <div className="font-body text-muted text-label mb-0.5">Robot</div>
-                    <div className="font-body text-ochre text-label">{entry.robotName} ({entry.robotId})</div>
+                    <div className="font-body text-signal text-label">{entry.robotName} ({entry.robotId})</div>
                   </div>
                   <div>
                     <div className="font-body text-muted text-label mb-0.5">Outcome</div>

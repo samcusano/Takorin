@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { equipment, recipes, spcData, runHistory } from '../data/equipment'
 import { AlertTriangle, CheckCircle2, Wrench, Activity, Clock, TrendingDown, CalendarClock, Zap } from 'lucide-react'
-import { SceneHeader, SectionHeader, StatusPill, Btn, SlidePanel } from '../components/UI'
+import { SceneHeader, SectionHeader, StatusPill, Btn, SlidePanel, AnimatedScore, Tabs, EmptyState, StatGrid, MasterDetail } from '../components/UI'
 import { useAppState } from '../context/AppState'
 
 // ─── Remaining Useful Life strip ──────────────────────────────────────────────
@@ -155,13 +155,13 @@ const SPC_CFG = {
 }
 
 function HealthBar({ score }) {
-  const tone = score >= 90 ? 'bg-ok' : score >= 75 ? 'bg-ochre' : 'bg-warn'
+  const tone = score >= 90 ? 'bg-ok' : score >= 75 ? 'bg-signal' : 'bg-warn'
   return (
     <div className="flex items-center gap-2">
       <div className="flex-1 h-1.5 bg-rule2">
         <div className={`h-full ${tone}`} style={{ width: `${score}%` }} />
       </div>
-      <span className={`font-body text-label tabular-nums w-6 text-right ${score >= 90 ? 'text-ok' : score >= 75 ? 'text-ochre' : 'text-warn'}`}>
+      <span className={`font-body text-label tabular-nums w-6 text-right ${score >= 90 ? 'text-ok' : score >= 75 ? 'text-signal' : 'text-warn'}`}>
         {score}
       </span>
     </div>
@@ -307,7 +307,7 @@ function RunHistory({ eqId }) {
   const runs = runHistory[eqId]
   if (!runs || runs.length === 0) return null
   const OUTCOME_CFG = {
-    'in-progress': { cls: 'bg-ochre/10 text-ochre', label: 'In progress' },
+    'in-progress': { cls: 'bg-signal/10 text-signal', label: 'In progress' },
     'pending-qp':  { cls: 'bg-warn/10 text-warn',   label: 'Pending QP' },
     'released':    { cls: 'bg-ok/10 text-ok',        label: 'Released' },
     'rejected':    { cls: 'bg-danger/10 text-danger', label: 'Rejected' },
@@ -325,7 +325,7 @@ function RunHistory({ eqId }) {
               <div className="font-body text-muted text-label">{r.recipe} · {r.startDate}{r.endDate ? ` → ${r.endDate}` : ' → present'}</div>
             </div>
             <div className="text-right flex-shrink-0">
-              <StatusPill tone={r.outcome === 'in-progress' ? 'ochre' : r.outcome === 'pending-qp' ? 'warn' : r.outcome === 'released' ? 'ok' : 'danger'}>{oc.label}</StatusPill>
+              <StatusPill tone={r.outcome === 'in-progress' ? 'signal' : r.outcome === 'pending-qp' ? 'warn' : r.outcome === 'released' ? 'ok' : 'danger'}>{oc.label}</StatusPill>
               {r.spcViolations > 0 && (
                 <div className="font-body text-warn text-micro">{r.spcViolations} SPC violation{r.spcViolations > 1 ? 's' : ''}</div>
               )}
@@ -340,12 +340,11 @@ function RunHistory({ eqId }) {
 function EquipmentDetail({ eq }) {
   const { maintenanceTickets, setMaintenanceTickets, logActivity } = useAppState()
   const [pmRequested, setPmRequested] = useState(false)
+  const [detailTab, setDetailTab] = useState('overview')
 
-  if (!eq) return (
-    <div className="flex items-center justify-center h-full font-body text-muted text-label">
-      Select equipment
-    </div>
-  )
+  const hasImpact = eq?.rul != null && eq.rul < 24 && eq?.productionImpact
+
+  if (!eq) return <EmptyState message="Select equipment" sub="Choose from the list to view details" />
   const cfg = STATUS_CFG[eq.status] ?? STATUS_CFG.idle
   const spcCfg = eq.spcStatus ? SPC_CFG[eq.spcStatus] : null
 
@@ -378,11 +377,6 @@ function EquipmentDetail({ eq }) {
           </div>
           {eq.status !== 'maintenance' && (
             <div className="flex items-center gap-2 flex-shrink-0">
-              {eq.maintenanceWindows?.length > 0 && (
-                <MaintenanceWindowOptimizer eq={eq} onSchedule={(w) => {
-                  logActivity?.({ actor: 'D. Kowalski', action: `Scheduled R-03 maintenance: ${w.label}`, item: eq.name, type: 'intervention' })
-                }} />
-              )}
               {existingTicket ? (
                 <span className="font-body text-label text-warn flex items-center gap-1 flex-shrink-0">
                   <Wrench size={10} strokeWidth={2} />PM requested
@@ -402,50 +396,63 @@ function EquipmentDetail({ eq }) {
       </div>
 
       {/* Metrics */}
-      <div className="flex-shrink-0 grid grid-cols-4 gap-px bg-rule2 border-b border-rule2">
+      <StatGrid cols={4}>
         {[
-          { label: 'Health', val: eq.status === 'active' ? `${eq.healthScore}` : '—', tone: eq.healthScore >= 90 ? 'text-ok' : eq.healthScore >= 75 ? 'text-ochre' : 'text-warn' },
+          { label: 'Health', val: eq.status === 'active' ? `${eq.healthScore}` : '—', raw: eq.status === 'active' ? eq.healthScore : null, tone: eq.healthScore >= 90 ? 'text-ok' : eq.healthScore >= 75 ? 'text-signal' : 'text-warn' },
           { label: 'Total runs', val: String(eq.totalRuns), tone: 'text-ink' },
           { label: 'Last PM', val: eq.lastPM, tone: 'text-muted' },
           { label: 'Next PM', val: eq.nextPM, tone: eq.status === 'maintenance' ? 'text-warn' : 'text-muted' },
-        ].map(({ label, val, tone }) => (
-          <div key={label} className="bg-stone px-3 py-2.5">
-            <div className="font-body text-muted text-label mb-0.5">{label}</div>
-            <div className={`display-num text-head ${tone}`}>{val}</div>
-          </div>
+        ].map(({ label, val, raw, tone }) => (
+          <StatGrid.Cell key={label} label={label} value={raw != null ? <AnimatedScore value={raw} effect="glow" /> : val} tone={tone} />
         ))}
-      </div>
+      </StatGrid>
 
-      {/* Remaining useful life — only for equipment with rul data */}
+      {/* RUL strip — always visible when data exists */}
       {eq.rul != null && <RULStrip eq={eq} />}
 
-      {/* Production impact — shown when rul < 24h */}
-      {eq.rul != null && eq.rul < 24 && eq.productionImpact && <ProductionImpactCard eq={eq} />}
-
-      {/* Before-context for agent-flagged equipment */}
-      {eq.before && (
-        <div className="flex-shrink-0 flex items-start gap-2 px-5 py-2.5 border-b border-rule2" style={{ background: 'rgba(196,132,78,0.04)' }}>
-          <span className="font-body text-label font-medium flex-shrink-0" style={{ color: 'var(--color-context)' }}>Before ·</span>
-          <p className="font-body text-label text-muted leading-relaxed m-0">{eq.before}</p>
-        </div>
+      {/* Tab bar — only when there's production impact data worth separating */}
+      {hasImpact && (
+        <Tabs
+          tabs={[{ id: 'overview', label: 'Overview' }, { id: 'impact', label: 'Impact' }]}
+          active={detailTab} onChange={setDetailTab}
+        />
       )}
 
-      {/* SPC chart */}
       <div className="flex-1 flex flex-col overflow-y-auto min-h-0">
-        {eq.status === 'active' && spcData[eq.id] ? (
-          <div className="h-[220px] flex-shrink-0">
-            <SPCChart eqId={eq.id} />
-          </div>
-        ) : (
-          <div className="h-16 flex items-center justify-center border-b border-rule2">
-            <span className="font-body text-muted text-label">
-              {eq.status === 'maintenance' ? 'Equipment in maintenance — SPC suspended' : 'No active run — SPC not available'}
-            </span>
-          </div>
+        {(!hasImpact || detailTab === 'overview') && (
+          <>
+            {eq.status === 'active' && spcData[eq.id] ? (
+              <div className="h-[220px] flex-shrink-0">
+                <SPCChart eqId={eq.id} />
+              </div>
+            ) : (
+              <div className="h-16 flex items-center justify-center border-b border-rule2">
+                <span className="font-body text-muted text-label">
+                  {eq.status === 'maintenance' ? 'Equipment in maintenance — SPC suspended' : 'No active run — SPC not available'}
+                </span>
+              </div>
+            )}
+            <RecipePanel recipeId={eq.activeRecipe} />
+            <RunHistory eqId={eq.id} />
+          </>
         )}
 
-        <RecipePanel recipeId={eq.activeRecipe} />
-        <RunHistory eqId={eq.id} />
+        {hasImpact && detailTab === 'impact' && (
+          <div className="p-4 space-y-4">
+            <ProductionImpactCard eq={eq} />
+            {eq.maintenanceWindows?.length > 0 && (
+              <MaintenanceWindowOptimizer eq={eq} onSchedule={(w) => {
+                logActivity?.({ actor: 'D. Kowalski', action: `Scheduled maintenance: ${w.label}`, item: eq.name, type: 'intervention' })
+              }} />
+            )}
+            {eq.before && (
+              <div className="flex items-start gap-2 px-4 py-3 border border-rule2" style={{ background: 'rgba(196,132,78,0.04)' }}>
+                <span className="font-body text-label font-medium flex-shrink-0" style={{ color: 'var(--color-context)' }}>Before ·</span>
+                <p className="font-body text-label text-muted leading-relaxed m-0">{eq.before}</p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   )
@@ -475,7 +482,7 @@ export default function EquipmentIntelligence() {
       {/* Left: equipment list */}
       <div className="w-[280px] flex-shrink-0 border-r border-rule2 flex flex-col bg-stone">
 
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto page-rise">
           {equipment.map(eq => (
             <EquipmentCard key={eq.id} eq={eq}
               selected={selectedId === eq.id}

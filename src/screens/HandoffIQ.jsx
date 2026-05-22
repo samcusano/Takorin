@@ -1,9 +1,9 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { handoffData, certExpiry, haccpData, robotFleetData } from '../data'
-import { Btn, PersonAvatar, CarryForwardItem, SlidePanel, StatusPill } from '../components/UI'
-import { Check, AlertTriangle, Clock, Brain, Bot, CheckCircle, Cpu, Zap } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
+import { Btn, PersonAvatar, CarryForwardItem, SlidePanel, StatusPill, Tabs, SectionLabel, EmptyState, AccentRow, StatGrid } from '../components/UI'
+import { Check, AlertTriangle, Clock, Brain, Bot, CheckCircle, Cpu, Zap, Eye } from 'lucide-react'
 import { useAppState } from '../context/AppState'
+import { OBSERVATION_CATEGORIES } from '../data/observations'
 
 const FINDING_TO_CASE = { sf1: 'I.', sf2: 'II.', sf3: 'II.' }
 
@@ -19,47 +19,110 @@ const SHIFT_EVENTS = [
   { time: '06:12', actor: 'ShiftIQ', text: 'Shift started — risk score 54, normal early-shift', type: 'system' },
 ]
 
-function LiveDocumentStrip({ activityLog }) {
-  const [expanded, setExpanded] = useState(false)
-  const eventCount = SHIFT_EVENTS.length
+function LiveDocOverlay({ triggerRef, onClose }) {
+  const ref = useRef(null)
+  const [pos, setPos] = useState({ top: 0, left: 0, right: 0 })
+
+  useEffect(() => {
+    if (triggerRef.current) {
+      const r = triggerRef.current.getBoundingClientRect()
+      setPos({ top: r.bottom, left: r.left, right: window.innerWidth - r.right })
+    }
+  }, [triggerRef])
+
+  useEffect(() => {
+    function handleClick(e) {
+      if (ref.current && !ref.current.contains(e.target) &&
+          triggerRef.current && !triggerRef.current.contains(e.target)) onClose()
+    }
+    function handleKey(e) { if (e.key === 'Escape') onClose() }
+    document.addEventListener('mousedown', handleClick)
+    document.addEventListener('keydown', handleKey)
+    return () => {
+      document.removeEventListener('mousedown', handleClick)
+      document.removeEventListener('keydown', handleKey)
+    }
+  }, [onClose, triggerRef])
+
   return (
-    <div className="flex-shrink-0 border-b-2 border-b-ok/20 bg-ok/[0.03]">
-      <button type="button" onClick={() => setExpanded(e => !e)}
-        className="w-full flex items-center gap-3 px-5 py-2.5 text-left hover:bg-ok/[0.04] transition-colors">
-        <div className="flex items-center gap-1.5">
+    <div ref={ref} className="fixed z-50 plant-drop-in"
+      style={{ top: pos.top, left: pos.left, right: pos.right }}>
+      <div className="plant-drop-in-content border border-rule2 shadow-raise overflow-hidden"
+        style={{ background: 'var(--color-stone-2)' }}>
+        <div className="flex items-center gap-3 px-5 py-3 border-b border-rule2"
+          style={{ background: 'var(--color-stone-3)' }}>
           <div className="w-1.5 h-1.5 rounded-full bg-ok live-dot flex-shrink-0" />
-          <span className="font-body font-medium text-ok text-label">Live · Document building in real time</span>
+          <span className="font-body font-medium text-ok text-body">Shift activity</span>
+          <span className="font-body text-muted text-label">{SHIFT_EVENTS.length} events · Last updated 14:02</span>
         </div>
-        <span className="font-body text-muted text-label">{eventCount} events captured this shift</span>
-        <span className="font-body text-muted text-label ml-auto">Last updated 14:02</span>
-        <span className="font-body text-muted text-label">{expanded ? '▲' : '▼'}</span>
-      </button>
-      {expanded && (
-        <div className="border-t border-ok/15 slide-in">
-          {SHIFT_EVENTS.slice(0, 5).map((ev, i) => (
-            <div key={i} className="flex items-start gap-3 px-5 py-2 border-b border-rule2/60 last:border-b-0">
+        <div className="overflow-y-auto" style={{ maxHeight: '60vh' }}>
+          {SHIFT_EVENTS.map((ev, i) => (
+            <div key={i} className="flex items-start gap-3 px-5 py-2.5 border-b border-rule2 last:border-b-0">
               <span className="font-body text-muted text-micro tabular-nums w-9 flex-shrink-0 mt-px">{ev.time}</span>
               {ev.type === 'agent'
-                ? <Zap size={9} strokeWidth={2} className="text-deep flex-shrink-0 mt-px" style={{ color: 'var(--color-deep)' }} />
+                ? <Zap size={9} strokeWidth={2} className="flex-shrink-0 mt-1" style={{ color: 'var(--color-deep)' }} />
                 : ev.type === 'human'
-                  ? <div className="w-1.5 h-1.5 rounded-full bg-ok flex-shrink-0 mt-1" />
-                  : <div className="w-1.5 h-1.5 rounded-full bg-muted flex-shrink-0 mt-1" />
+                  ? <div className="w-1.5 h-1.5 rounded-full bg-ok flex-shrink-0 mt-1.5" />
+                  : <div className="w-1.5 h-1.5 rounded-full bg-muted flex-shrink-0 mt-1.5" />
               }
               <div className="flex-1 min-w-0">
-                <span className="font-body text-label font-medium text-muted mr-1.5">{ev.actor}</span>
+                <span className="font-body text-label font-medium text-ink mr-1.5">{ev.actor}</span>
                 <span className="font-body text-label text-muted">{ev.text}</span>
               </div>
             </div>
           ))}
         </div>
-      )}
+      </div>
     </div>
   )
 }
 
-function CarryForwardDetailPanel({ item, onClose }) {
+function LiveDocumentStrip() {
+  const [open, setOpen] = useState(false)
+  const triggerRef = useRef(null)
+  return (
+    <>
+      <div className="flex-shrink-0 border-b-2 border-b-ok/20 bg-ok/[0.03]">
+        <button ref={triggerRef} type="button" onClick={() => setOpen(o => !o)}
+          className="w-full flex items-center gap-3 px-5 py-2.5 text-left hover:bg-ok/[0.04] transition-colors">
+          <div className="flex items-center gap-1.5">
+            <div className="w-1.5 h-1.5 rounded-full bg-ok live-dot flex-shrink-0" />
+            <span className="font-body font-medium text-ok text-label">Live · Document building in real time</span>
+          </div>
+          <span className="font-body text-muted text-label">{SHIFT_EVENTS.length} events captured this shift</span>
+          <span className="font-body text-muted text-label ml-auto">Last updated 14:02</span>
+        </button>
+      </div>
+      {open && <LiveDocOverlay triggerRef={triggerRef} onClose={() => setOpen(false)} />}
+    </>
+  )
+}
+
+function CarryForwardDetailPanel({ item, onClose, acknowledged, onAcknowledge }) {
  if (!item) return null
  const accentColor = item.urgency === 'danger' ? 'var(--color-danger)' : 'var(--color-warn)'
+ const canAcknowledge = !item.resolvedInShift && !acknowledged
+
+ const footer = (
+  <div className="flex items-center justify-between">
+   <span className="font-body text-muted text-label">
+    {item.resolvedInShift ? 'Actioned this shift' : acknowledged ? 'Acknowledged' : 'Acknowledge to accept handoff'}
+   </span>
+   {item.resolvedInShift || acknowledged ? (
+    <div className="w-8 h-8 rounded-full border border-ok/20 bg-ok/5 flex items-center justify-center" aria-label="Acknowledged">
+     <Check size={14} strokeWidth={2.5} className="text-ok" />
+    </div>
+   ) : (
+    <button type="button"
+     onClick={() => { onAcknowledge(item.id) }}
+     className="w-8 h-8 rounded-full border-2 border-rule2 bg-stone3 hover:border-ok hover:bg-ok/10 transition-colors flex items-center justify-center cursor-pointer"
+     aria-label={`Acknowledge: ${item.title}`}>
+     <Check size={14} strokeWidth={2} className="text-muted" />
+    </button>
+   )}
+  </div>
+ )
+
  return (
   <SlidePanel
    title={item.title}
@@ -67,7 +130,7 @@ function CarryForwardDetailPanel({ item, onClose }) {
    accentColor={accentColor}
    ariaLabel={`Carry-forward context — ${item.title}`}
    onClose={onClose}
-   footer={<Btn variant="secondary" onClick={onClose}>Close</Btn>}
+   footer={footer}
   >
    <div>
     <div className="font-body text-muted text-label mb-1">Operational impact</div>
@@ -95,18 +158,6 @@ function CarryForwardDetailPanel({ item, onClose }) {
 
 
 // ── Section block — accent bar + bold label header ───────────────────────────
-function SectionBlock({ label, accent = 'muted', children }) {
- const bar = { danger: 'bg-danger', warn: 'bg-warn', ok: 'bg-ok', ochre: 'bg-ochre', muted: 'bg-rule2' }[accent] || 'bg-rule2'
- return (
-  <div className="border-b border-rule2 last:border-b-0">
-   <div className="flex items-center gap-2.5 px-4 py-2 border-b border-rule2">
-    <div className={`w-[3px] h-3.5 flex-shrink-0 ${bar}`} />
-    <span className="font-body font-semibold text-micro text-muted uppercase">{label}</span>
-   </div>
-   {children}
-  </div>
- )
-}
 
 function ForecastRow({ row }) {
  const sc = row.score >= 75 ? 'text-danger' : row.score >= 60 ? 'text-warn' : 'text-ok'
@@ -134,137 +185,181 @@ function ForecastRow({ row }) {
 }
 
 
+function FloorObservationsSection() {
+ const { fieldObservations } = useAppState()
+ const [expanded, setExpanded] = useState(true)
+ const obs = fieldObservations.filter(o => o.shiftId === 'am-0522')
+ if (obs.length === 0) return null
+ return (
+  <div className="border-t border-rule2">
+   <button type="button" onClick={() => setExpanded(p => !p)}
+    className="w-full flex items-center gap-2 px-4 py-2.5 bg-stone2 hover:bg-stone3 transition-colors text-left">
+    <Eye size={10} strokeWidth={2} className="text-muted flex-shrink-0" />
+    <span className="font-body text-micro text-muted tracking-wide flex-1">FLOOR OBSERVATIONS · {obs.length}</span>
+    <span className="font-body text-micro text-muted">{expanded ? '↑' : '↓'}</span>
+   </button>
+   {expanded && obs.map(o => {
+    const cat = OBSERVATION_CATEGORIES.find(c => c.id === o.category)
+    return (
+     <div key={o.id} className="px-4 py-3 border-b border-rule2 last:border-b-0">
+      <div className="flex items-center gap-2 mb-1.5">
+       {cat && <span className={`font-body text-micro px-1.5 py-0.5 ${cat.bgCls} ${cat.textCls}`}>{cat.label}</span>}
+       <span className="font-body text-micro text-muted">{o.timeLabel} · {o.operator} · {o.station}</span>
+      </div>
+      <p className="font-body text-label text-muted leading-snug m-0">{o.note}</p>
+     </div>
+    )
+   })}
+  </div>
+ )
+}
+
 function LayoutGrid({ d, currentPlant, carryForwardItems, acknowledgedCount, carryForwardCount, allAcknowledged, carryForwardAcknowledged, handleAcknowledgeCarryForward }) {
- const navigate = useNavigate()
+ const [activeTab, setActiveTab] = useState('carry-forward')
  const [viewingItem, setViewingItem] = useState(null)
+
+ const certGaps = certExpiry.filter(c => c.tone !== 'ok')
  const criticalCount = carryForwardItems.filter(i => i.urgency === 'danger').length
  const pendingItems = carryForwardItems.filter(item => !carryForwardAcknowledged.has(item.id))
+
+ const TABS = [
+  { id: 'carry-forward', label: criticalCount > 0 ? `Carry-forward · ${criticalCount} critical` : `Carry-forward · ${carryForwardCount}` },
+  { id: 'context',       label: 'Context' },
+  { id: 'coverage',      label: certGaps.length > 0 ? `Coverage · ${certGaps.length} gap${certGaps.length > 1 ? 's' : ''}` : 'Coverage' },
+ ]
+
  return (
   <>
-  <CarryForwardDetailPanel item={viewingItem} onClose={() => setViewingItem(null)} />
+   <CarryForwardDetailPanel
+    item={viewingItem}
+    onClose={() => setViewingItem(null)}
+    acknowledged={viewingItem ? carryForwardAcknowledged.has(viewingItem.id) : false}
+    onAcknowledge={handleAcknowledgeCarryForward}
+   />
 
    {/* ── Live document strip — shift event capture ──────────────── */}
-   <LiveDocumentStrip activityLog={[]} />
+   <LiveDocumentStrip />
 
    {/* ── Handoff summary stats ────────────────────────────────────── */}
-   <div className="flex-shrink-0 flex divide-x divide-rule2 border-b border-rule2 bg-stone">
-    <div className="px-5 py-4 min-w-0">
-     <div className="font-body text-muted text-label mb-1">Carry-forward</div>
-     <div className={`display-num text-title font-bold leading-none ${criticalCount > 0 ? 'text-danger' : carryForwardCount > 0 ? 'text-warn' : 'text-ok'}`}>{carryForwardCount}</div>
-     <div className={`font-body text-label mt-0.5 ${criticalCount > 0 ? 'text-danger' : carryForwardCount > 0 ? 'text-warn' : 'text-ok'}`}>
-      {criticalCount > 0 ? `${criticalCount} critical` : carryForwardCount > 0 ? 'watch' : 'all clear'}
-     </div>
-    </div>
-    <div className="px-5 py-4 min-w-0">
-     <div className="font-body text-muted text-label mb-1">Acknowledged</div>
-     <div className={`display-num text-title font-bold leading-none ${allAcknowledged ? 'text-ok' : 'text-muted'}`}>{acknowledgedCount}<span className="opacity-40">/{carryForwardCount}</span></div>
-     <div className={`font-body text-label mt-0.5 ${allAcknowledged ? 'text-ok' : 'text-muted'}`}>{allAcknowledged ? 'ready' : 'pending'}</div>
-    </div>
-    <div className="px-5 py-4 min-w-0">
-     <div className="font-body text-muted text-label mb-1">Synthesis confidence</div>
-     <div className="display-num text-title font-bold leading-none text-ok">91%</div>
-     <div className="font-body text-muted text-label mt-0.5">4 of 5 sources fresh</div>
-    </div>
-    <div className="px-5 py-4 min-w-0">
-     <div className="font-body text-muted text-label mb-1">Cert coverage</div>
-     <div className="display-num text-title font-bold leading-none text-warn">1 gap</div>
-     <div className="font-body text-muted text-label mt-0.5">Sauce Dosing L2</div>
-    </div>
-    <div className="px-5 py-4 min-w-0 flex-1">
-     <div className="font-body text-muted text-label mb-1">Risk at handoff</div>
-     <div className="display-num text-title font-bold leading-none text-danger">78</div>
-     <div className="font-body text-danger text-label mt-0.5">at risk</div>
-    </div>
-   </div>
+   <StatGrid cols={5}>
+    <StatGrid.Cell label="Carry-forward" value={carryForwardCount}
+     tone={criticalCount > 0 ? 'text-danger' : carryForwardCount > 0 ? 'text-warn' : 'text-ok'}
+     sub={criticalCount > 0 ? `${criticalCount} critical` : carryForwardCount > 0 ? 'watch' : 'all clear'} />
+    <StatGrid.Cell label="Acknowledged" value={`${acknowledgedCount}/${carryForwardCount}`}
+     tone={allAcknowledged ? 'text-ok' : 'text-muted'}
+     sub={allAcknowledged ? 'ready' : 'pending'} />
+    <StatGrid.Cell label="Synthesis confidence" value="91%" tone="text-ok" sub="4 of 5 sources fresh" />
+    <StatGrid.Cell label="Cert coverage" value="1 gap" tone="text-warn" sub="Sauce Dosing L2" />
+    <StatGrid.Cell label="Risk at handoff" value={78} tone="text-danger" sub="at risk" />
+   </StatGrid>
 
-   <div className="flex flex-1 overflow-hidden">
+   {/* ── 5-tab bar ──────────────────────────────────────────────── */}
+   <Tabs tabs={TABS} active={activeTab} onChange={setActiveTab} />
 
-    {/* Left: carry-forward queue */}
-    <div className="w-[55%] border-r border-rule2 flex flex-col">
-     <div className="px-4 py-3 bg-stone2 border-b border-rule2 flex-shrink-0">
-      <div className="flex items-baseline justify-between gap-3 mb-1.5">
-       <div className="font-body font-medium text-ink text-body">
-        Carry-forward · {carryForwardCount} item{carryForwardCount !== 1 ? 's' : ''}
-       </div>
-       <span className="font-body text-muted text-label flex-shrink-0">{acknowledgedCount}/{carryForwardCount} acknowledged</span>
-      </div>
-      {criticalCount > 0 && (
-       <div className="flex items-center gap-1.5 mb-1.5">
-        <div className="w-1.5 h-1.5 rounded-full bg-danger flex-shrink-0" />
-        <span className="font-body text-danger text-label">{criticalCount} critical — action required in the first 20 minutes</span>
-       </div>
-      )}
-      <div className="flex items-center gap-1.5">
-       <Brain size={9} strokeWidth={1.75} className="text-muted flex-shrink-0" />
-       <span className="font-body text-muted text-label">91% synthesis confidence · urgency from shift findings and cert records</span>
-      </div>
-     </div>
-     {/* Stale data warning — per source */}
-     <div className="px-4 py-3 bg-stone2 border-b border-rule2 flex-shrink-0">
-      <div className="font-body text-muted text-label mb-2">Data freshness</div>
-      {[
-       { source: 'Sensor A-7', age: '8 min', stale: false },
-       { source: 'CAPA-2604-001', age: '22 min', stale: false },
-       { source: 'Lindqvist cert status', age: '4h 12min', stale: true },
-       { source: 'R-03 telemetry', age: '4 min', stale: false },
-      ].map(s => (
-       <div key={s.source} className={`flex items-center gap-2 py-1.5 px-2 -mx-2 mb-px last:mb-0 ${s.stale ? 'bg-warn/[0.10] border-l-2 border-l-warn' : ''}`}>
-        <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${s.stale ? 'bg-warn' : 'bg-ok'}`} />
-        <span className={`font-body text-label flex-1 ${s.stale ? 'text-ink font-medium' : 'text-muted'}`}>{s.source}</span>
-        <span className={`font-body text-label tabular-nums ${s.stale ? 'text-warn font-medium' : 'text-muted'}`}>
-         {s.age}{s.stale ? ' · verify before signing' : ''}
-        </span>
-       </div>
-      ))}
-     </div>
-     <div className="overflow-y-auto flex-1">
-      {pendingItems.length > 0 ? pendingItems.map(item => (
-       <CarryForwardItem
-        key={item.id}
-        item={item}
-        acknowledged={false}
-        onAcknowledge={handleAcknowledgeCarryForward}
-        onView={() => setViewingItem(item)}
-       />
-      )) : (
-       <div className="px-4 py-10 text-center">
-        <Check size={20} strokeWidth={2} className="text-ok mx-auto mb-3" />
-        <div className="font-body text-ok text-body">
-         {carryForwardCount > 0 ? 'All items acknowledged' : 'No carry-forward items'}
+   {/* ── Tab content ────────────────────────────────────────────── */}
+   <div className="flex-1 overflow-y-auto">
+
+    {activeTab === 'carry-forward' && (
+     <>
+      <div className="px-4 py-3 bg-stone2 border-b border-rule2">
+       <div className="flex items-baseline justify-between gap-3 mb-1.5">
+        <div className="font-body font-medium text-ink text-body">
+         Carry-forward · {carryForwardCount} item{carryForwardCount !== 1 ? 's' : ''}
         </div>
-        <div className="font-body text-muted text-label mt-1">Shift handed off cleanly</div>
+        <span className="font-body text-muted text-label flex-shrink-0">{acknowledgedCount}/{carryForwardCount} acknowledged</span>
        </div>
-      )}
-     </div>
-    </div>
-
-    {/* Right: context cards */}
-    <div className="w-[45%] overflow-y-auto flex flex-col">
-     {/* Shift notes — primary narrative, heavier treatment */}
-     <div className="border-b border-rule2">
-      <div className="px-4 py-3 border-b border-rule2 bg-stone2">
-       <div className="font-display font-semibold text-ink text-base">Shift notes</div>
-      </div>
-      <div className="px-4 pt-3 pb-1">
-       <div className="flex items-center gap-2 mb-3">
-        <PersonAvatar name={d.shiftNotes.author} size={20} />
-        <div>
-         <span className="font-body font-medium text-ink text-label">{d.shiftNotes.author}</span>
-         <span className="font-body text-muted text-label ml-1.5">{d.shiftNotes.time}</span>
+       {criticalCount > 0 && (
+        <div className="flex items-center gap-1.5 mb-1.5">
+         <div className="w-1.5 h-1.5 rounded-full bg-danger flex-shrink-0" />
+         <span className="font-body text-danger text-label">{criticalCount} critical — action required in the first 20 minutes</span>
         </div>
+       )}
+       <div className="flex items-center gap-1.5">
+        <Brain size={9} strokeWidth={2} className="text-muted flex-shrink-0" />
+        <span className="font-body text-muted text-label">91% synthesis confidence · urgency from shift findings and cert records</span>
        </div>
-       <ul className="space-y-2 pb-3">
+      </div>
+      {(() => {
+       const SOURCES = [
+        { source: 'Sensor A-7',            age: '8 min',    stale: false },
+        { source: 'CAPA-2604-001',          age: '22 min',   stale: false },
+        { source: 'Lindqvist cert status',  age: '4h 12min', stale: true  },
+        { source: 'R-03 telemetry',         age: '4 min',    stale: false },
+       ]
+       const staleCount = SOURCES.filter(s => s.stale).length
+       const cfg = staleCount === 0
+        ? { bg: 'bg-ok/[0.05] border-ok/20',       dot: 'bg-ok',   text: 'text-ok',   label: 'Data: Fresh' }
+        : staleCount < SOURCES.length
+         ? { bg: 'bg-warn/[0.06] border-warn/20',   dot: 'bg-warn', text: 'text-warn', label: `Data: ${staleCount} source${staleCount > 1 ? 's' : ''} stale` }
+         : { bg: 'bg-danger/[0.04] border-danger/20', dot: 'bg-danger', text: 'text-danger', label: 'Data: Stale' }
+       return (
+        <div className={`flex items-center gap-3 px-4 py-2 border-b ${cfg.bg}`}>
+         <div className="flex items-center gap-1.5 flex-shrink-0">
+          <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${cfg.dot}`} />
+          <span className={`font-body font-medium text-label ${cfg.text}`}>{cfg.label}</span>
+         </div>
+         {SOURCES.filter(s => s.stale).map(s => (
+          <div key={s.source} className="h-3 w-px bg-rule flex-shrink-0" />
+         ))}
+         {SOURCES.filter(s => s.stale).map(s => (
+          <span key={s.source} className="flex items-center gap-1.5 font-body text-label text-warn flex-shrink-0">
+           <span className="opacity-60">{s.source}</span>
+           <span className="font-medium">{s.age}</span>
+           <span className="opacity-50">· verify before signing</span>
+          </span>
+         ))}
+         <span className="ml-auto font-body text-label text-muted flex-shrink-0">
+          {SOURCES.length - staleCount} of {SOURCES.length} sources current · synthesized 14:02
+         </span>
+        </div>
+       )
+      })()}
+      {(() => {
+       const openItems     = pendingItems.filter(i => !i.resolvedInShift)
+       const resolvedItems = carryForwardItems.filter(i => i.resolvedInShift)
+       return (
+        <>
+         {openItems.length > 0 ? openItems.map(item => (
+          <CarryForwardItem
+           key={item.id} item={item} acknowledged={false}
+           onAcknowledge={handleAcknowledgeCarryForward}
+           onView={() => setViewingItem(item)}
+          />
+         )) : (
+          <EmptyState icon={Check} message="All open items acknowledged" />
+         )}
+         {resolvedItems.length > 0 && (
+          <>
+           <SectionLabel label={`Closed this shift · ${resolvedItems.length}`} />
+           {resolvedItems.map(item => (
+            <CarryForwardItem
+             key={item.id} item={item} acknowledged
+             onAcknowledge={() => {}} onView={() => setViewingItem(item)}
+            />
+           ))}
+          </>
+         )}
+        </>
+       )
+      })()}
+      <FloorObservationsSection />
+     </>
+    )}
+
+    {activeTab === 'context' && (
+     <>
+      <SectionLabel label="Shift notes" badge={`${d.shiftNotes.author} · ${d.shiftNotes.time}`} />
+      <div className="px-5 py-4 border-b border-rule2">
+       <ul className="space-y-3">
         {d.shiftNotes.body.map((note, i) => (
-         <li key={i} className="flex items-start gap-2">
-          <div className="w-1 h-1 rounded-full bg-muted flex-shrink-0 mt-1.5" />
-          <span className="font-display text-muted text-body leading-relaxed">{note}</span>
+         <li key={i} className="flex items-start gap-3">
+          <div className="w-1 h-1 rounded-full bg-muted flex-shrink-0 mt-2" />
+          <span className="font-display text-ink text-body leading-relaxed">{note}</span>
          </li>
         ))}
        </ul>
       </div>
-     </div>
-     {/* ── Operator briefing ──────────────────────────── */}
-     <SectionBlock label="Operator briefing" accent="ochre">
+      <SectionLabel label="Incoming briefing" />
       <div className="flex items-center gap-4 px-4 py-3 border-b border-rule2">
        <PersonAvatar name="M. Santos" size={40} />
        <div className="flex-1 min-w-0">
@@ -272,8 +367,9 @@ function LayoutGrid({ d, currentPlant, carryForwardItems, acknowledgedCount, car
         <div className="font-body text-micro text-muted mt-1">Incoming PM supervisor · Line 4 · 14:00–22:00</div>
        </div>
       </div>
+      <SectionLabel label="CCP critical points to brief" />
       {haccpData.ccps.map((ccp, i) => (
-       <div key={i} className="flex items-start gap-3 px-4 py-2.5 border-b border-rule2 last:border-b-0 border-l-2 border-l-warn">
+       <AccentRow key={i} tone="warn" className="flex items-start gap-3 px-4 py-2.5 last:border-b-0">
         <div className="font-body font-bold text-base text-warn flex-shrink-0 w-4 leading-tight tabular-nums mt-px">{i + 1}</div>
         <div className="flex-1 min-w-0">
          <div className="font-body font-semibold text-body text-ink leading-snug">
@@ -281,14 +377,25 @@ function LayoutGrid({ d, currentPlant, carryForwardItems, acknowledgedCount, car
          </div>
          <div className="font-body text-micro text-muted mt-0.5">{ccp.limit}</div>
         </div>
-       </div>
+       </AccentRow>
       ))}
-     </SectionBlock>
+     </>
+    )}
 
-     {/* ── Cert alerts ────────────────────────────────── */}
-     <SectionBlock label="Cert alerts" accent={certExpiry.filter(c => c.tone !== 'ok').some(c => c.tone === 'danger') ? 'danger' : 'warn'}>
-      {certExpiry.filter(c => c.tone !== 'ok').map((c, i) => (
-       <div key={i} className={`flex items-center gap-5 px-4 py-3 border-b border-rule2 last:border-b-0 border-l-2 ${c.tone === 'danger' ? 'border-l-danger bg-danger/[0.03]' : 'border-l-warn'}`}>
+    {activeTab === 'coverage' && (
+     <>
+      <SectionLabel label="Staffing" />
+      <div className="border-b border-rule2">
+       {d.forecast.map((row, i) => <ForecastRow key={i} row={row} />)}
+      </div>
+      <SectionLabel label="Certifications"
+       badge={certGaps.length > 0 ? `${certGaps.length} gap${certGaps.length > 1 ? 's' : ''} — verify before signing off` : undefined}
+       badgeTone="warn" />
+      {certGaps.length === 0 ? (
+       <EmptyState icon={Check} message="All certs current" />
+      ) : certGaps.map((c, i) => (
+       <AccentRow key={i} tone={c.tone === 'danger' ? 'danger' : 'warn'} bg
+        className="flex items-center gap-5 px-4 py-3 last:border-b-0">
         <div className="flex-shrink-0 w-12">
          <div className={`display-num text-head leading-none tabular-nums ${c.tone === 'danger' ? 'text-danger' : 'text-warn'}`}>{c.expiresIn}</div>
          <div className="font-body text-micro text-muted mt-0.5">days</div>
@@ -298,15 +405,10 @@ function LayoutGrid({ d, currentPlant, carryForwardItems, acknowledgedCount, car
          <div className="font-body text-label text-muted">{c.cert}</div>
          {c.note && <div className={`font-body text-micro mt-0.5 ${c.tone === 'danger' ? 'text-danger/70' : 'text-muted'}`}>{c.note}</div>}
         </div>
-       </div>
+       </AccentRow>
       ))}
-     </SectionBlock>
-
-     {/* ── Upcoming staffing ──────────────────────────── */}
-     <SectionBlock label="Upcoming staffing" accent="muted">
-      {d.forecast.map((row, i) => <ForecastRow key={i} row={row} />)}
-     </SectionBlock>
-    </div>
+     </>
+    )}
 
    </div>
   </>
@@ -354,13 +456,13 @@ function MachineStateHandoff() {
    </div>
 
    {/* ── AI synthesis banner ─────────────────────────────────────── */}
-   <div className="flex-shrink-0 flex items-center gap-3 px-5 py-3 border-b border-rule2 bg-ochre/[0.06] border-b-2 border-b-ochre/30">
-    <Cpu size={13} className="text-ochre flex-shrink-0" strokeWidth={1.75} />
+   <div className="flex-shrink-0 flex items-center gap-3 px-5 py-3 border-b border-rule2 bg-signal/[0.06] border-b-2 border-b-signal/30">
+    <Cpu size={13} className="text-signal flex-shrink-0" strokeWidth={2} />
     <div className="flex-1">
      <span className="font-body font-semibold text-ink text-body">Handoff Synthesis Agent — pre-populated from live fleet data</span>
      <div className="font-body text-muted text-label mt-0.5">4 items synthesized · 1 requires director review · Generated 13:15</div>
     </div>
-    <span className="font-body text-ochre text-label px-2 py-0.5 bg-ochre/10">Review &amp; validate</span>
+    <span className="font-body text-signal text-label px-2 py-0.5 bg-signal/10">Review &amp; validate</span>
    </div>
 
    {/* ── Two-column body ─────────────────────────────────────────── */}
@@ -377,7 +479,7 @@ function MachineStateHandoff() {
        <div className="border-b border-rule2">
         {faults.map((f, i) => (
          <div key={i} className={`flex items-start gap-4 px-5 py-3.5 border-b border-rule2 last:border-0 border-l-4 ${f.severity === 'danger' ? 'border-l-danger bg-danger/[0.03]' : 'border-l-warn bg-warn/[0.02]'}`}>
-          <AlertTriangle size={13} className={`mt-0.5 flex-shrink-0 ${f.severity === 'danger' ? 'text-danger' : 'text-warn'}`} strokeWidth={1.75} />
+          <AlertTriangle size={13} className={`mt-0.5 flex-shrink-0 ${f.severity === 'danger' ? 'text-danger' : 'text-warn'}`} strokeWidth={2} />
           <div className="flex-1">
            <div className={`font-body font-medium text-body ${f.severity === 'danger' ? 'text-danger' : 'text-ink'}`}>{f.unit} — {f.fault}</div>
            {f.techAssigned && <div className="font-body text-muted text-label mt-0.5">Tech: {f.techAssigned}{f.eta ? ` · ETA ${f.eta}` : ''}</div>}
@@ -443,7 +545,7 @@ function MachineStateHandoff() {
    }`}>
     {systemValidated
      ? <CheckCircle size={13} className="text-ok flex-shrink-0" strokeWidth={2} />
-     : <Cpu size={13} className="text-muted flex-shrink-0" strokeWidth={1.75} />
+     : <Cpu size={13} className="text-muted flex-shrink-0" strokeWidth={2} />
     }
     <div className="flex-1">
      <span className={`font-body font-semibold text-body ${systemValidated ? 'text-ok' : 'text-ink'}`}>

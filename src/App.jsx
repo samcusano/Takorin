@@ -1,5 +1,14 @@
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, useEffect } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
+
+// Track which routes have been visited in this JS session so entrance
+// animations only play on first mount — not every time you navigate back.
+const _visited = new Set()
+function Guard({ k, children }) {
+  const first = !_visited.has(k)
+  useEffect(() => { _visited.add(k) }, [k])
+  return <div className={first ? '' : 'skip-animations'} style={{ display: 'contents' }}>{children}</div>
+}
 import Sidebar from './components/Sidebar'
 import ErrorBoundary from './components/ErrorBoundary'
 import TrustStrip from './components/TrustStrip'
@@ -51,32 +60,32 @@ export default function App() {
  <Suspense fallback={<ScreenLoader />}>
  <Routes>
  <Route path="/" element={<Navigate to="/overview" replace />} />
- <Route path="/overview" element={<ErrorBoundary><PlantOverview /></ErrorBoundary>} />
+ <Route path="/overview" element={<Guard k="overview"><ErrorBoundary><PlantOverview /></ErrorBoundary></Guard>} />
  <Route path="/plant" element={<Navigate to="/overview" replace />} />
- <Route path="/shift" element={<ErrorBoundary><ShiftIQ /></ErrorBoundary>} />
+ <Route path="/shift" element={<Guard k="shift"><ErrorBoundary><ShiftIQ /></ErrorBoundary></Guard>} />
  <Route path="/handoff" element={<Navigate to="/shift" replace />} />
- <Route path="/supplier" element={<ErrorBoundary><SupplierIQ /></ErrorBoundary>} />
- <Route path="/capa" element={<ErrorBoundary><CAPAEngine /></ErrorBoundary>} />
- <Route path="/readiness" element={<ErrorBoundary><DataReadiness /></ErrorBoundary>} />
+ <Route path="/supplier" element={<Guard k="supplier"><ErrorBoundary><SupplierIQ /></ErrorBoundary></Guard>} />
+ <Route path="/capa" element={<Guard k="capa"><ErrorBoundary><CAPAEngine /></ErrorBoundary></Guard>} />
+ <Route path="/readiness" element={<Guard k="readiness"><ErrorBoundary><DataReadiness /></ErrorBoundary></Guard>} />
  <Route path="/network" element={<Navigate to="/supplier" replace />} />
- <Route path="/operator" element={<ErrorBoundary><OperatorView role={viewingRole} /></ErrorBoundary>} />
- <Route path="/analytics" element={<ErrorBoundary><Analytics /></ErrorBoundary>} />
+ <Route path="/operator" element={<Guard k="operator"><ErrorBoundary><OperatorView role={viewingRole} /></ErrorBoundary></Guard>} />
+ <Route path="/analytics" element={<Guard k="analytics"><ErrorBoundary><Analytics /></ErrorBoundary></Guard>} />
  <Route path="/digest" element={<Navigate to="/analytics" replace />} />
- <Route path="/notifications" element={<ErrorBoundary><NotificationCenter /></ErrorBoundary>} />
+ <Route path="/notifications" element={<Guard k="notifications"><ErrorBoundary><NotificationCenter /></ErrorBoundary></Guard>} />
  <Route path="/robots" element={<Navigate to="/shift" replace />} />
  <Route path="/allocation" element={<Navigate to="/shift" replace />} />
- <Route path="/agents" element={<ErrorBoundary><AgentControl /></ErrorBoundary>} />
+ <Route path="/agents" element={<Guard k="agents"><ErrorBoundary><AgentControl /></ErrorBoundary></Guard>} />
 
- <Route path="/batch"       element={<ErrorBoundary><BatchIntelligence /></ErrorBoundary>} />
- <Route path="/compliance"  element={<ErrorBoundary><CompliancePolicy /></ErrorBoundary>} />
- <Route path="/hierarchy"   element={<ErrorBoundary><ProcessHierarchy /></ErrorBoundary>} />
- <Route path="/integration" element={<ErrorBoundary><IntegrationHub /></ErrorBoundary>} />
- <Route path="/knowledge"   element={<ErrorBoundary><KnowledgeVault /></ErrorBoundary>} />
- <Route path="/execution"   element={<ErrorBoundary><ExecutionAuthority /></ErrorBoundary>} />
- <Route path="/records"     element={<ErrorBoundary><RecordVault /></ErrorBoundary>} />
- <Route path="/delivery"    element={<ErrorBoundary><ValueChain /></ErrorBoundary>} />
- <Route path="/equipment"   element={<ErrorBoundary><EquipmentIntelligence /></ErrorBoundary>} />
- <Route path="/outcomes"    element={<ErrorBoundary><ImpactLoop /></ErrorBoundary>} />
+ <Route path="/batch"       element={<Guard k="batch"><ErrorBoundary><BatchIntelligence /></ErrorBoundary></Guard>} />
+ <Route path="/compliance"  element={<Guard k="compliance"><ErrorBoundary><CompliancePolicy /></ErrorBoundary></Guard>} />
+ <Route path="/hierarchy"   element={<Guard k="hierarchy"><ErrorBoundary><ProcessHierarchy /></ErrorBoundary></Guard>} />
+ <Route path="/integration" element={<Guard k="integration"><ErrorBoundary><IntegrationHub /></ErrorBoundary></Guard>} />
+ <Route path="/knowledge"   element={<Guard k="knowledge"><ErrorBoundary><KnowledgeVault /></ErrorBoundary></Guard>} />
+ <Route path="/execution"   element={<Guard k="execution"><ErrorBoundary><ExecutionAuthority /></ErrorBoundary></Guard>} />
+ <Route path="/records"     element={<Guard k="records"><ErrorBoundary><RecordVault /></ErrorBoundary></Guard>} />
+ <Route path="/delivery"    element={<Guard k="delivery"><ErrorBoundary><ValueChain /></ErrorBoundary></Guard>} />
+ <Route path="/equipment"   element={<Guard k="equipment"><ErrorBoundary><EquipmentIntelligence /></ErrorBoundary></Guard>} />
+ <Route path="/outcomes"    element={<Guard k="outcomes"><ErrorBoundary><ImpactLoop /></ErrorBoundary></Guard>} />
  <Route path="/impact"      element={<Navigate to="/outcomes" replace />} />
  </Routes>
  </Suspense>

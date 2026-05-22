@@ -75,9 +75,9 @@ export const compliancePolicies = [
     jurisdiction: 'European Union',
     status: 'monitoring',
     activeSince: null,
-    color: 'text-ochre',
-    bg: 'bg-ochre/[0.04]',
-    border: 'border-l-ochre',
+    color: 'text-signal',
+    bg: 'bg-signal/[0.04]',
+    border: 'border-l-signal',
     frameworks: [
       { id: 'ifs8',  name: 'IFS Food 8',       code: 'IFS v8.0', status: 'monitoring', description: 'International Featured Standards — food safety and quality' },
       { id: 'ec852', name: 'EC 852/2004',       code: 'EC 852',   status: 'monitoring', description: 'EU hygiene regulation for foodstuffs' },

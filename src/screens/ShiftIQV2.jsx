@@ -1,10 +1,11 @@
 import { useState } from 'react'
-import { Brain, Check, Users } from 'lucide-react'
-import { Btn } from '../components/UI'
+import { Brain, Check, Users, TrendingUp, TrendingDown, Eye } from 'lucide-react'
+import { Btn, AnimatedScore, SlidePanel } from '../components/UI'
 import { Link } from 'react-router-dom'
 import { useAppState } from '../context/AppState'
 import { crew, agentEvents } from '../data/shift'
 import { shiftData } from '../data'
+import { driftSignals } from '../data/driftWatch'
 
 // ── Color palette — design tokens ──────────────────────────────────────────────
 const P = {
@@ -25,7 +26,7 @@ const P = {
 }
 
 const sColor = (s) => s >= 75 ? P.rust : s >= 60 ? P.amber : P.sage
-const sLabel = (s) => s >= 75 ? 'AT RISK' : s >= 60 ? 'WATCH' : 'CLEAR'
+const sLabel = (s) => s >= 75 ? 'At risk' : s >= 60 ? 'Watch' : 'Clear'
 
 // ── Score factors ──────────────────────────────────────────────────────────────
 const SCORE_FACTORS = [
@@ -240,6 +241,56 @@ function ScoreExplainer({ score }) {
   )
 }
 
+// ── Trend Watch — sub-threshold drifts, below alert level ────────────────────
+function TrendWatch() {
+  const { acknowledgedDrifts, acknowledgeDrift } = useAppState()
+  const visible = driftSignals.filter(s => !acknowledgedDrifts.has(s.id))
+  if (visible.length === 0) return null
+  return (
+    <>
+      <div style={{ padding: '18px 24px 0' }}>
+        <div className="flex items-center gap-2 mb-3">
+          <Eye size={10} strokeWidth={2} style={{ color: P.clay }} />
+          <span className="font-body text-micro" style={{ color: P.clay }}>Trend watch · {visible.length} sub-threshold</span>
+        </div>
+        {visible.map((s, i) => {
+          const pct = Math.round((s.consecutiveBatches / s.thresholdBatches) * 100)
+          const DirIcon = s.direction === 'up' ? TrendingUp : TrendingDown
+          return (
+            <div key={s.id} className="v2-row-in" style={{
+              animationDelay: `${i * 50}ms`, padding: '12px 14px', marginBottom: 8,
+              background: P.surface, border: `1px solid ${P.border}`,
+              borderLeft: `3px solid ${P.clay}`,
+            }}>
+              <div className="flex items-start gap-2 mb-1.5">
+                <DirIcon size={10} strokeWidth={2} style={{ color: P.clay, marginTop: 2, flexShrink: 0 }} />
+                <div className="flex-1 min-w-0">
+                  <div className="font-body font-medium text-label leading-snug" style={{ color: P.bone }}>{s.signal}</div>
+                  <div className="font-body text-micro text-muted mt-0.5">{s.source} · {s.consecutiveBatches} consecutive batches</div>
+                </div>
+              </div>
+              <div className="font-body text-micro text-muted mb-2 leading-snug" style={{ paddingLeft: 18 }}>{s.currentReading} · {s.note}</div>
+              <div style={{ paddingLeft: 18 }}>
+                <div style={{ height: 2, background: P.border, borderRadius: 1, marginBottom: 8 }}>
+                  <div style={{ height: '100%', width: `${pct}%`, background: P.clay, borderRadius: 1, transition: 'width 600ms cubic-bezier(0.16,1,0.3,1)' }} />
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="font-body text-micro text-muted">{s.thresholdBatches - s.consecutiveBatches} batches from threshold</span>
+                  <button type="button" onClick={() => acknowledgeDrift(s.id)}
+                    className="font-body text-micro hover:opacity-70 transition-opacity" style={{ color: P.clay, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+                    Acknowledge
+                  </button>
+                </div>
+              </div>
+            </div>
+          )
+        })}
+      </div>
+      <div style={{ height: 1, background: P.border, margin: '12px 24px 0' }} />
+    </>
+  )
+}
+
 // ── Supervisor: My queue ──────────────────────────────────────────────────────
 function SupervisorQueue({ findings, signOffRequests, setSignOffRequests, logActivity, supervisor }) {
   const actNow  = findings.filter(f => f.urgency === 'danger')
@@ -255,7 +306,7 @@ function SupervisorQueue({ findings, signOffRequests, setSignOffRequests, logAct
   }
 
   return (
-    <div className="flex-1 overflow-y-auto" style={{ borderRight: `1px solid ${P.border}` }}>
+    <div className="flex-1 overflow-y-auto page-rise" style={{ borderRight: `1px solid ${P.border}` }}>
       <div style={{ padding: '20px 24px 0' }}>
         <div className="font-body text-micro text-muted mb-3">Act now · {actNow.length} item{actNow.length !== 1 ? 's' : ''}</div>
         {actNow.map((f, i) => (
@@ -313,6 +364,7 @@ function SupervisorQueue({ findings, signOffRequests, setSignOffRequests, logAct
           </div>
         ))}
       </div>
+      <TrendWatch />
     </div>
   )
 }
@@ -403,6 +455,7 @@ export default function ShiftIQV2({ score = 78, lineLabel = 'Line 4 · AM Shift'
   const { checklistSigned, allergenOverride, taskAssignments, setTaskAssignments, logActivity,
     signOffRequests, setSignOffRequests, escalatedToDirector, setEscalatedToDirector } = useAppState()
   const [scoreOverlayOpen, setScoreOverlayOpen] = useState(false)
+  const [timelineOpen, setTimelineOpen] = useState(false)
 
   const signedCount = 7 + Object.keys(checklistSigned).length
   const allergenSigned = !!checklistSigned['allergen'] || !!allergenOverride
@@ -478,7 +531,7 @@ export default function ShiftIQV2({ score = 78, lineLabel = 'Line 4 · AM Shift'
             {/* Score block */}
             <div style={{ flexShrink: 0 }}>
               <div className="display-num text-score leading-none" style={{ color: riskC }}>
-                {score}
+                <AnimatedScore value={score} effect="glow" hero />
               </div>
               <div className="flex items-center gap-1.5 mt-2">
                 <div style={{ width: 5, height: 5, borderRadius: '50%', background: riskC }} />
@@ -566,8 +619,15 @@ export default function ShiftIQV2({ score = 78, lineLabel = 'Line 4 · AM Shift'
 
             {/* Intelligence */}
             <div style={{ padding: '20px 24px 16px' }}>
-              <div className="font-body text-micro text-muted mb-3">
-                Intelligence · {richFindings.length} findings
+              <div className="flex items-center justify-between mb-3">
+                <div className="font-body text-micro text-muted">
+                  Intelligence · {richFindings.length} findings
+                </div>
+                <button type="button" onClick={() => setTimelineOpen(true)}
+                  className="font-body text-micro hover:opacity-70 transition-opacity"
+                  style={{ color: P.dim, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+                  Agent timeline
+                </button>
               </div>
               {richFindings.map((f, i) => (
                 <FindingCard key={f.id} f={f} index={i}
@@ -619,15 +679,18 @@ export default function ShiftIQV2({ score = 78, lineLabel = 'Line 4 · AM Shift'
             </div>
           </div>
 
-          {/* RIGHT: Timeline + Score breakdown */}
-          <div style={{ width: 304, flexShrink: 0, overflowY: 'auto', background: P.bg }}>
-            <div style={{ padding: '20px 20px 16px' }}>
-              <div className="font-body text-micro text-muted mb-3">Agent · Timeline</div>
+          {timelineOpen && (
+            <SlidePanel
+              onClose={() => setTimelineOpen(false)}
+              title="Agent timeline"
+              subtitle="This shift · Line 4"
+              maxWidth="400px"
+            >
               {agentEvents.map((ev, i) => (
                 <TimelineEntry key={i} ev={ev} index={i} total={agentEvents.length} />
               ))}
-            </div>
-          </div>
+            </SlidePanel>
+          )}
 
           </>
           )}

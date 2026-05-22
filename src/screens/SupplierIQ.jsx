@@ -6,7 +6,7 @@ import NetworkView from './NetworkView'
 import { useNavigate, Link } from 'react-router-dom'
 import { supplierData, supplierAudits, empResultsHistory } from '../data'
 import { useAppState } from '../context/AppState'
-import { StatusPill, SectionHeader, Btn, ActionBanner, Spinner, AnimatedCheck, MetadataRow, ExpandableMetadata, SlidePanel, Tabs } from '../components/UI'
+import { StatusPill, SectionHeader, Btn, ActionBanner, Spinner, AnimatedCheck, MetadataRow, ExpandableMetadata, SlidePanel, Tabs, StatGrid, SectionLabel } from '../components/UI'
 import StatBar from '../components/StatBar.jsx'
 
 // ── LotTicketPanel ────────────────────────────────────────────────────────────
@@ -20,7 +20,7 @@ function LotTicketPanel({ lot, onClose, coaRequested, setCoaRequested }) {
   const supplierName = lot.supplier.split(' · ')[0]
   const lotCode      = lot.supplier.split(' · ')[1] || lot.delivery
   const accentColor  = lot.coaTone === 'ok' ? 'var(--color-ok)' : lot.coaTone === 'danger' ? 'var(--color-danger)' : 'var(--color-warn)'
-  const deliveryTextCls = lot.deliveryTone === 'ok' ? 'text-ink' : lot.deliveryTone === 'warn' ? 'text-warn' : 'text-ochre'
+  const deliveryTextCls = lot.deliveryTone === 'ok' ? 'text-ink' : lot.deliveryTone === 'warn' ? 'text-warn' : 'text-signal'
 
   const steps = [
     { label: `Confirm COA from ${supplierName}`, done: coaPass },
@@ -62,7 +62,7 @@ function LotTicketPanel({ lot, onClose, coaRequested, setCoaRequested }) {
         </div>
 
         {/* ── Key metrics ──────────────────────────────────────────── */}
-        <div className="grid grid-cols-2 gap-px bg-rule2 border-b border-rule2">
+        <StatGrid cols={2}>
           <div className={`px-5 py-4 ${lot.deliveryTone !== 'ok' ? 'bg-warn/[0.02]' : 'bg-stone'}`}>
             <div className="font-body text-micro text-muted mb-1.5">Expected Arrival</div>
             <div className={`font-body font-medium text-body ${deliveryTextCls}`}>{lot.deliveryTime}</div>
@@ -79,23 +79,20 @@ function LotTicketPanel({ lot, onClose, coaRequested, setCoaRequested }) {
               <span className="font-body text-label font-normal text-muted ml-1.5">of 45 days ({shelfPct}%)</span>
             </div>
           </div>
-        </div>
+        </StatGrid>
 
         {/* ── Release readiness ─────────────────────────────────────── */}
         <div>
-          <div className="flex items-center justify-between px-5 py-2.5 bg-stone2 border-b border-rule2">
-            <span className="font-display font-semibold text-ink text-body">Release Readiness</span>
-            <span className={`font-body text-label ${completedCount === steps.length ? 'text-ok' : 'text-muted'}`}>
-              <span className="display-num text-base">{completedCount}</span> of {steps.length} steps complete
-            </span>
-          </div>
+          <SectionLabel label="Release Readiness"
+            badge={`${completedCount} of ${steps.length} steps complete`}
+            badgeTone={completedCount === steps.length ? 'ok' : 'muted'} />
           <div className="divide-y divide-rule2">
             {steps.map((step, i) => (
               <div key={i} className={`flex items-center gap-3.5 px-5 py-3 ${step.done ? 'bg-ok/[0.02]' : ''}`}>
                 <div className={`w-5 h-5 rounded-full border-2 flex-shrink-0 flex items-center justify-center ${
                   step.done ? 'bg-ok border-ok' : 'border-rule'
                 }`}>
-                  {step.done && <Check size={10} strokeWidth={3} className="text-stone" />}
+                  {step.done && <Check size={10} strokeWidth={2.5} className="text-stone" />}
                 </div>
                 <span className={`font-body text-body leading-snug ${step.done ? 'text-muted' : 'text-ink'}`}>
                   {step.label}
@@ -396,7 +393,7 @@ export default function SupplierIQ() {
                 desc="Network signal · 3 non-conformances in last 30 days across 14 plants"
                 evidence="High confidence · Network intelligence · 14 plants · Pattern: delivery delays → scrap spikes"
                 actions={
-                  <Link to="/network" className="font-body text-ochre text-label flex items-center gap-1 hover:text-ink transition-colors">
+                  <Link to="/network" className="font-body text-signal text-label flex items-center gap-1 hover:text-ink transition-colors">
                     <ArrowRight size={9} />View in Network
                   </Link>
                 }

@@ -15,8 +15,8 @@ export const autonomyTiers = [
     agentCount: 8,
     actionCount: 124,
     approvalRate: 0.91,
-    color: 'text-ochre',
-    dot: 'bg-ochre',
+    color: 'text-signal',
+    dot: 'bg-signal',
   },
   {
     id: 'execute',

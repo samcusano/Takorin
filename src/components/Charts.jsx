@@ -6,7 +6,7 @@ const C = {
   ok:     'var(--color-ok)',
   warn:   'var(--color-warn)',
   danger: 'var(--color-danger)',
-  ochre:  'var(--color-ochre)',
+  signal:  'var(--color-signal)',
   muted:  'var(--color-muted)',
   ink:    'var(--color-ink)',
   rule2:  'var(--color-stone-2)',
@@ -81,7 +81,7 @@ function buildAlluvialLayout(interventions) {
     const y1 = col2[decision].y + col2[decision].inOff
     col1[agent].outOff    += srcH
     col2[decision].inOff  += tgtH
-    const color = decision === 'approved' ? C.ok : decision === 'auto-executed' ? C.ochre : C.warn
+    const color = decision === 'approved' ? C.ok : decision === 'auto-executed' ? C.signal : C.warn
     links1.push({ path: ribbon(XA + ALLUVIAL_W, y0, srcH, XD, y1, tgtH), color })
   })
 
@@ -95,13 +95,13 @@ function buildAlluvialLayout(interventions) {
     const y1 = col3[outcome].y  + col3[outcome].inOff
     col2[decision].outOff += srcH
     col3[outcome].inOff   += tgtH
-    const color = outcome === 'positive' ? C.ok : outcome === 'unclear' ? C.ochre : C.danger
+    const color = outcome === 'positive' ? C.ok : outcome === 'unclear' ? C.signal : C.danger
     links2.push({ path: ribbon(XD + ALLUVIAL_W, y0, srcH, XO, y1, tgtH), color })
   })
 
-  const AGENT_COLOR = { QualityGuard: C.ochre, ScheduleOptimizer: C.muted, SupplierBroker: C.muted, CAPAEngine: C.muted }
-  const DEC_COLOR   = { approved: C.ok, 'auto-executed': C.ochre, rejected: C.warn, overridden: C.muted }
-  const OUT_COLOR   = { positive: C.ok, unclear: C.ochre, negative: C.danger, harmful: C.danger }
+  const AGENT_COLOR = { QualityGuard: C.signal, ScheduleOptimizer: C.muted, SupplierBroker: C.muted, CAPAEngine: C.muted }
+  const DEC_COLOR   = { approved: C.ok, 'auto-executed': C.signal, rejected: C.warn, overridden: C.muted }
+  const OUT_COLOR   = { positive: C.ok, unclear: C.signal, negative: C.danger, harmful: C.danger }
 
   return { col1, col2, col3, links1, links2, AGENT_COLOR, DEC_COLOR, OUT_COLOR, total }
 }
@@ -233,8 +233,8 @@ export function GanttChart({ forecast }) {
 
       {/* "Now" marker */}
       <line x1={NOW_X} x2={NOW_X} y1={padT - 14} y2={H - padB}
-        stroke={C.ochre} strokeWidth="1" opacity="0.55" />
-      <circle cx={NOW_X} cy={padT - 14} r="2.5" fill={C.ochre} opacity="0.7" />
+        stroke={C.signal} strokeWidth="1" opacity="0.55" />
+      <circle cx={NOW_X} cy={padT - 14} r="2.5" fill={C.signal} opacity="0.7" />
 
       {/* Shift bars */}
       {forecast.map((shift, i) => {
@@ -296,7 +296,7 @@ export function GanttChart({ forecast }) {
       })}
 
       {/* Legend */}
-      {[[C.danger, 'High risk'], [C.warn, 'Watch'], [C.ok, 'Clear'], [C.ochre, 'Now']].map(([col, lbl], i) => (
+      {[[C.danger, 'High risk'], [C.warn, 'Watch'], [C.ok, 'Clear'], [C.signal, 'Now']].map(([col, lbl], i) => (
         <g key={lbl} transform={`translate(${padL + i * 72}, ${H - 4})`}>
           <circle cx="3.5" cy="0" r="3" fill={col} opacity="0.85" />
           <text x="9" y="3.5" fontSize="7" fill={C.dim} fontFamily={FONT}>{lbl}</text>
@@ -379,7 +379,7 @@ export function RadarChart({ crew }) {
 
   // Grid rings
   const rings = [0.25, 0.5, 0.75, 1]
-  const COLORS = ['var(--color-ok)', 'var(--color-ochre)', 'var(--color-warn)', 'var(--color-muted)']
+  const COLORS = ['var(--color-ok)', 'var(--color-signal)', 'var(--color-warn)', 'var(--color-muted)']
 
   const crewToShow = (crew || []).filter(m => m.dots)
 
@@ -505,7 +505,7 @@ export function KnowledgeTreemap({ domains, enriched }) {
 
   const rects = binaryTreemap(items, pad, pad, svgW - pad * 2, svgH - pad * 2)
 
-  const confColor = (c) => c >= 90 ? C.ok : c >= 80 ? C.ochre : C.warn
+  const confColor = (c) => c >= 90 ? C.ok : c >= 80 ? C.signal : C.warn
 
   return (
     <svg width="100%" viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="xMidYMid meet"

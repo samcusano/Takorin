@@ -20,9 +20,9 @@ export const color = {
   danger:  '#DE6C4E',
   dangerDim: '#2A100A',
   // Primary accent — steel blue
-  ochre:     '#4B9CE4',
-  ochreDim:  '#0D1E38',
-  ochreDark: '#2A6AAD',
+  signal:     '#4B9CE4',
+  signalDim:  '#0D1E38',
+  signalDark: '#2A6AAD',
   // Narrative accent — clay
   context:    '#C4844E',
   contextDim: '#2A1808',

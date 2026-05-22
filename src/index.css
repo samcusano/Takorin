@@ -40,8 +40,8 @@
     --color-ok:      #5FA877;
     --color-warn:    #C98E2A;
     --color-danger:  #DE6C4E;
-    --color-ochre:   #4B9CE4;
-    --color-ochre-dark: #2A6AAD;
+    --color-signal:   #4B9CE4;
+    --color-signal-dark: #2A6AAD;
     /* ── Narrative accent ────────────────────────────────────────────── */
     --color-context: #C4844E;
     --color-deep:    #7C86E8;
@@ -59,7 +59,7 @@
   }
 
   :focus-visible {
-    outline: 2px solid var(--color-ochre);
+    outline: 2px solid var(--color-signal);
     outline-offset: 2px;
     transition: outline-offset var(--dur-fast) var(--ease-enter);
   }
@@ -68,7 +68,7 @@
 
   body {
     margin: 0;
-    font-family: 'Inter', system-ui, sans-serif;
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
     background: var(--color-stone);
     color: var(--color-ink);
     -webkit-font-smoothing: antialiased;
@@ -113,12 +113,13 @@
 
   /* ── Display type — tabular numeric data values ────────────────────────── */
   .display-num {
-    font-family: 'DM Mono', 'Menlo', 'Courier New', monospace;
+    font-family: 'JetBrains Mono', 'Menlo', monospace;
     font-weight: 500;
     font-style: normal;
     letter-spacing: -0.01em;
     line-height: 1;
     font-variant-numeric: tabular-nums;
+    font-variant-ligatures: none;
   }
 
   /* ── Plant mode — high-contrast for wall-mounted displays ──────────────── */
@@ -341,6 +342,42 @@
     animation-delay: 160ms;
   }
 
+  /* ── Page entrance — screen-level entrance animations ──────────────────────── */
+  @keyframes pageRise {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: none; }
+  }
+  @keyframes pageBlurIn {
+    from { opacity: 0; filter: blur(8px); }
+    to   { opacity: 1; filter: none; }
+  }
+  @keyframes pageWipe {
+    from { clip-path: inset(0 100% 0 0); }
+    to   { clip-path: inset(0 0% 0 0); }
+  }
+  @keyframes pageFade {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+  @keyframes numGlowFade {
+    0%   { text-shadow: 0 0 14px currentColor, 0 0 30px currentColor; }
+    100% { text-shadow: 0 0 0 transparent; }
+  }
+  @keyframes numBlurIn {
+    from { opacity: 0; filter: blur(8px); }
+    to   { opacity: 1; filter: none; }
+  }
+  .page-rise    { animation: pageRise   200ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+  .page-blur-in { animation: pageBlurIn 260ms cubic-bezier(0, 0, 0.2, 1) both; }
+  .page-wipe    { animation: pageWipe   240ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+  .page-fade    { animation: pageFade   180ms ease-out both; }
+
+  /* Returning visits — skip entrance animations after first mount per session */
+  .skip-animations .page-rise,
+  .skip-animations .page-blur-in,
+  .skip-animations .page-wipe,
+  .skip-animations .page-fade { animation: none; }
+
   /* ── Card lift — hover elevation for interactive cards ────────────────────── */
   .card-lift {
     transition: transform 120ms var(--ease-enter), box-shadow 120ms var(--ease-enter);
@@ -368,6 +405,7 @@
     .atmo-glow-danger, .atmo-glow-warn, .atmo-glow-ok { animation: none; opacity: 0.05; }
     .row-in   { animation: none; opacity: 1; transform: none; }
     .metric-in { animation: none; opacity: 1; transform: none; }
+    .page-rise, .page-blur-in, .page-wipe, .page-fade { animation: none; opacity: 1; transform: none; filter: none; clip-path: none; }
     .bar-grow  { animation: none; transform: none; }
     .card-lift, .card-lift:hover, .card-lift:active { transform: none; box-shadow: none; }
   }

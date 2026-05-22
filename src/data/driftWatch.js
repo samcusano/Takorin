@@ -1,0 +1,51 @@
+// Sub-threshold drift signals — patterns that haven't breached a threshold
+// but are directionally wrong across consecutive batches.
+// These are what Dao notices before an alert fires.
+
+export const driftSignals = [
+  {
+    id: 'drift-001',
+    signal: 'Chamber 3A deposition temperature',
+    source: 'Historian · Line 4',
+    line: 'l4',
+    station: 'Deposition',
+    direction: 'up',
+    currentReading: '+4°C above baseline',
+    baseline: '308°C nominal',
+    consecutiveBatches: 6,
+    thresholdBatches: 10,
+    note: 'Trend consistent across all six batches. No single batch is out of spec. Root cause unknown — gas flow or cooling?',
+    firstSeen: '11:42',
+    lastSeen: '14:28',
+  },
+  {
+    id: 'drift-002',
+    signal: 'Wafer contact resistance — Xi\'an Lot L-4482',
+    source: 'LIMS · Incoming QC',
+    line: 'l6',
+    station: 'Incoming inspection',
+    direction: 'up',
+    currentReading: '+2.3% above spec midpoint',
+    baseline: '0.85 Ω/sq nominal',
+    consecutiveBatches: 8,
+    thresholdBatches: 12,
+    note: 'Pattern limited to Xi\'an supplier lots only. Two other supplier lots within normal range this week.',
+    firstSeen: '08:15',
+    lastSeen: '14:10',
+  },
+  {
+    id: 'drift-003',
+    signal: 'Line 3 first-pass yield',
+    source: 'MES · Line 3',
+    line: 'l3',
+    station: 'Final inspection',
+    direction: 'down',
+    currentReading: '−1.4% below 4-week average',
+    baseline: '96.2% avg',
+    consecutiveBatches: 4,
+    thresholdBatches: 8,
+    note: 'Decline began after last changeover. Correlates with new packaging film supplier — cross-reference in progress.',
+    firstSeen: '09:30',
+    lastSeen: '13:55',
+  },
+]

@@ -26,7 +26,7 @@ const HERO_CSS = `
 `
 
 const sColor = (s) => s >= 75 ? P.rust : s >= 60 ? P.amber : P.sage
-const sLabel = (s) => s >= 75 ? 'AT RISK' : s >= 60 ? 'WATCH' : 'CLEAR'
+const sLabel = (s) => s >= 75 ? 'At risk' : s >= 60 ? 'Watch' : 'Clear'
 
 // Sparkline shapes keyed to trend direction
 const SPARK_POINTS = {
@@ -80,7 +80,7 @@ export default function ShiftHero({
         <div style={{ display: 'flex', alignItems: 'center', gap: 32, padding: '20px 24px 16px', position: 'relative' }}>
           {/* Score block */}
           <div style={{ flexShrink: 0 }}>
-            <div className="font-body font-bold text-titan leading-noneer" style={{ color: riskC }}>
+            <div className="display-num text-score leading-none" style={{ color: riskC }}>
               {score}
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginTop: 8 }}>

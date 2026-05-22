@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { compliancePolicies, multiRegulatoryCoverage } from '../data/compliance'
 import { AlertTriangle, ArrowRight, ClipboardCheck, CheckCircle2, XCircle, AlertCircle, Play } from 'lucide-react'
-import { SceneHeader, StatusPill, Btn, SlidePanel } from '../components/UI'
+import { SceneHeader, StatusPill, Btn, SlidePanel, AnimatedScore } from '../components/UI'
 
 // ─── FDA Inspection Simulation data ──────────────────────────────────────────
 
@@ -38,7 +38,7 @@ function AuditSimPanel({ onClose }) {
     >
       {/* Score header */}
       <div className="flex items-center gap-4 px-4 py-4 bg-stone2 border border-rule2 mb-4">
-        <div className={`display-num text-score leading-none ${scoreColor}`}>{score}%</div>
+        <div className={`display-num text-score leading-none ${scoreColor}`}><AnimatedScore value={score} suffix="%" effect="glow" hero /></div>
         <div className="flex-1 min-w-0">
           <div className={`font-body font-semibold text-body ${scoreColor}`}>
             {score >= 80 ? 'Likely ready for inspection' : score >= 60 ? 'Not ready — blocking gaps must close first' : 'At risk — multiple critical gaps'}
@@ -76,9 +76,9 @@ function AuditSimPanel({ onClose }) {
 }
 
 const STATUS_LABEL  = { active: 'Active', inactive: 'Inactive', monitoring: 'Monitoring' }
-const STATUS_COLOR  = { active: 'text-ok', inactive: 'text-muted', monitoring: 'text-ochre' }
-const STATUS_DOT    = { active: 'bg-ok',   inactive: 'bg-rule2',   monitoring: 'bg-ochre'  }
-const STATUS_BORDER = { active: 'border-l-ok', inactive: 'border-l-rule2', monitoring: 'border-l-ochre' }
+const STATUS_COLOR  = { active: 'text-ok', inactive: 'text-muted', monitoring: 'text-signal' }
+const STATUS_DOT    = { active: 'bg-ok',   inactive: 'bg-rule2',   monitoring: 'bg-signal'  }
+const STATUS_BORDER = { active: 'border-l-ok', inactive: 'border-l-rule2', monitoring: 'border-l-signal' }
 
 // ─── Section header ───────────────────────────────────────────────────────────
 
@@ -108,7 +108,7 @@ function FrameworkRow({ f, index = 0 }) {
         </div>
         <div className="font-body text-muted text-label leading-snug">{f.description}</div>
       </div>
-      <StatusPill tone={f.status === 'active' ? 'ok' : f.status === 'inactive' ? 'muted' : 'ochre'} className="flex-shrink-0">{STATUS_LABEL[f.status] ?? f.status}</StatusPill>
+      <StatusPill tone={f.status === 'active' ? 'ok' : f.status === 'inactive' ? 'muted' : 'signal'} className="flex-shrink-0">{STATUS_LABEL[f.status] ?? f.status}</StatusPill>
     </div>
   )
 }
@@ -227,7 +227,7 @@ export default function CompliancePolicy() {
         </div>
 
         {/* Policy list */}
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto page-wipe">
           {compliancePolicies.map(p => {
             const isSelected = selectedId === p.id
             const borderColor = STATUS_BORDER[p.status] ?? 'border-l-rule2'
@@ -309,7 +309,7 @@ export default function CompliancePolicy() {
             {/* Frameworks + Evidence — two columns */}
             <div className="flex border-b border-rule2">
               <div className="flex-1 border-r border-rule2">
-                <SectionHeader label="Frameworks" count={`${policy.frameworks.length} configured`} accent="bg-ochre" />
+                <SectionHeader label="Frameworks" count={`${policy.frameworks.length} configured`} accent="bg-signal" />
                 {policy.frameworks.map((f, i) => <FrameworkRow key={f.id} f={f} index={i} />)}
               </div>
               <div className="flex-1">
@@ -337,7 +337,7 @@ export default function CompliancePolicy() {
 
             {/* Inactive policy CTA */}
             {policy.status === 'inactive' && (
-              <div className="mx-6 my-6 px-5 py-4 border-l-4 border-l-ochre bg-ochre/[0.06]">
+              <div className="mx-6 my-6 px-5 py-4 border-l-4 border-l-signal bg-signal/[0.06]">
                 <div className="font-body font-semibold text-ink text-base mb-1">Activate this policy</div>
                 <div className="font-body text-muted text-label leading-relaxed mb-3">
                   All {policy.frameworks.length} frameworks will be added to your compliance dashboard. Evidence requirements and escalation rules will be enforced immediately.

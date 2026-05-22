@@ -5,7 +5,7 @@ import { openCases, benchmarks } from '../data/capa.js'
 import { goalsData, facility, agentConfigData } from '../data'
 import { interventionSummary, interventions } from '../data/interventions'
 import { ChevronDown, ChevronUp, Download, Lock, ArrowRight, Check } from 'lucide-react'
-import { FilterDropdown, MultiFilterDropdown, StatusPill } from '../components/UI'
+import { FilterDropdown, MultiFilterDropdown, StatusPill, AnimatedScore, StatGrid } from '../components/UI'
 
 // ── Bullet chart for Q2 Goals ─────────────────────────────────────────────────
 function BulletChart({ current, target, direction, unit }) {
@@ -237,7 +237,7 @@ function BenchmarkBlock({ b }) {
       <div className="w-44 flex-shrink-0">
         <div className="font-body text-muted text-label mb-1">{b.metric}</div>
         <div className="flex items-baseline gap-2">
-          <span className="display-num text-metric font-bold text-ink leading-none">{b.score}</span>
+          <span className="display-num text-metric font-bold text-ink leading-none"><AnimatedScore value={b.score} /></span>
           <span className={`font-body text-label font-medium ${b.deltaDir === 'up' ? 'text-ok' : 'text-danger'}`}>
             {b.deltaDir === 'up' ? '↑' : '↓'} {b.delta}
           </span>
@@ -247,7 +247,7 @@ function BenchmarkBlock({ b }) {
       <div className="flex-1 min-w-0">
         <div className="relative h-1.5 bg-rule2 rounded-full overflow-hidden mb-1.5">
           <div className="absolute inset-y-0 left-0 rounded-full bg-ink/15" style={{ width: `${b.percentile}%` }} />
-          <div className="absolute inset-y-0 w-0.5 bg-ochre" style={{ left: `${b.percentile}%` }} />
+          <div className="absolute inset-y-0 w-0.5 bg-signal" style={{ left: `${b.percentile}%` }} />
         </div>
         <div className="font-body text-muted text-label">{b.percentile}th percentile · {b.total} plants</div>
       </div>
@@ -375,7 +375,7 @@ export default function Analytics() {
           return (
             <button key={p.id} type="button" onClick={() => setScopePlant(p.id)}
               className={`flex-1 flex items-center justify-between px-5 py-2.5 border-r border-rule2 last:border-r-0 border-b-2 transition-colors text-left ${
-                isActive ? 'border-b-ochre bg-stone' : 'border-b-transparent hover:bg-stone3'
+                isActive ? 'border-b-signal bg-stone' : 'border-b-transparent hover:bg-stone3'
               } ${dimmed ? 'opacity-45' : ''}`}>
               <div>
                 <div className="font-body text-muted text-label mb-0.5">{p.code} · {p.name}</div>
@@ -395,7 +395,7 @@ export default function Analytics() {
       </div>
 
       {/* ── Scrollable body ────────────────────────────────────────────────── */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto page-rise">
         <div className="max-w-[900px] mx-auto px-8 py-8">
 
           {/* ── Attribution hero ─────────────────────────────────────────── */}
@@ -412,7 +412,7 @@ export default function Analytics() {
             {/* Supporting data strip */}
             <div className="flex items-center gap-5 mb-5 pb-5 border-b border-rule2">
               <div>
-                <div className="display-num text-hero font-bold text-ink leading-none">{attr.actual}%</div>
+                <div className="display-num text-hero font-bold text-ink leading-none"><AnimatedScore value={attr.actual} suffix="%" effect="glow" hero /></div>
                 <div className="font-body text-muted text-label mt-1">Actual OEE</div>
               </div>
               <div className="h-10 w-px bg-rule2" />
@@ -525,19 +525,16 @@ export default function Analytics() {
                 return (
                   <div>
                     {/* Stat grid */}
-                    <div className="grid grid-cols-4 gap-px bg-rule2 border-b border-rule2">
+                    <StatGrid cols={4}>
                       {[
                         { label: 'Decisions this shift', val: String(totalDecisions), tone: 'text-ink' },
                         { label: 'Compliance decisions', val: String(complianceDecisions), tone: 'text-warn' },
                         { label: 'Review time — high', val: `${avgDwellSec}s`, tone: avgDwellSec >= 15 ? 'text-ok' : avgDwellSec >= 5 ? 'text-warn' : 'text-danger' },
                         { label: 'Quick approvals', val: String(lowDwellCount), tone: lowDwellCount > 0 ? 'text-danger' : 'text-ok' },
                       ].map(({ label, val, tone }) => (
-                        <div key={label} className="bg-stone px-5 py-3.5">
-                          <div className="font-body text-muted text-label mb-1">{label}</div>
-                          <div className={`display-num text-subhead leading-none ${tone}`}>{val}</div>
-                        </div>
+                        <StatGrid.Cell key={label} label={label} value={val} tone={tone} />
                       ))}
-                    </div>
+                    </StatGrid>
                     {/* Decision distribution by consequence */}
                     <div className="px-5 py-4 border-b border-rule2">
                       <div className="font-body text-muted text-label mb-3">Decision distribution by consequence</div>
@@ -587,33 +584,30 @@ export default function Analytics() {
                 return (
                   <div>
                     {/* Stat grid */}
-                    <div className="grid grid-cols-3 gap-px bg-rule2 border-b border-rule2">
+                    <StatGrid cols={3}>
                       {[
                         { label: 'Positive outcomes', val: `${positiveCount}/${interventionSummary.total}`, tone: 'text-ok' },
                         { label: 'Avg confidence', val: `${avgConf}%`, tone: avgConf >= 70 ? 'text-ok' : avgConf >= 50 ? 'text-warn' : 'text-danger' },
                         { label: 'Operator confirmed', val: `${confirmRate}%`, tone: confirmRate >= 60 ? 'text-ok' : 'text-warn' },
-                        { label: 'Auto-run', val: String(interventionSummary.autoExecuted), tone: 'text-ochre' },
+                        { label: 'Auto-run', val: String(interventionSummary.autoExecuted), tone: 'text-signal' },
                         { label: 'Reversed', val: String(interventionSummary.reversed), tone: interventionSummary.reversed > 0 ? 'text-warn' : 'text-muted' },
                         { label: 'Quick approvals', val: String(interventionSummary.lowDwellDecisions), tone: interventionSummary.lowDwellDecisions > 0 ? 'text-danger' : 'text-ok' },
                       ].map(({ label, val, tone }) => (
-                        <div key={label} className="bg-stone px-5 py-3.5">
-                          <div className="font-body text-muted text-label mb-1">{label}</div>
-                          <div className={`display-num text-subhead leading-none ${tone}`}>{val}</div>
-                        </div>
+                        <StatGrid.Cell key={label} label={label} value={val} tone={tone} />
                       ))}
-                    </div>
+                    </StatGrid>
                     {/* Outcome distribution bar */}
                     <div className="px-5 py-4 border-b border-rule2">
                       <div className="font-body text-muted text-label mb-3">Outcome distribution</div>
                       <div className="h-4 bg-rule2 flex overflow-hidden mb-2">
                         {positiveCount > 0 && <div className="h-full bg-ok/70" style={{ width: `${(positiveCount/interventionSummary.total)*100}%` }} />}
-                        {unclearCount > 0  && <div className="h-full bg-ochre/60" style={{ width: `${(unclearCount/interventionSummary.total)*100}%` }} />}
+                        {unclearCount > 0  && <div className="h-full bg-signal/60" style={{ width: `${(unclearCount/interventionSummary.total)*100}%` }} />}
                         {negativeCount > 0 && <div className="h-full bg-danger/60" style={{ width: `${(negativeCount/interventionSummary.total)*100}%` }} />}
                       </div>
                       <div className="flex items-center gap-4">
                         {[
                           { label: `Positive (${positiveCount})`, color: 'bg-ok/70'     },
-                          { label: `Unclear (${unclearCount})`,   color: 'bg-ochre/60'  },
+                          { label: `Unclear (${unclearCount})`,   color: 'bg-signal/60'  },
                           { label: `Negative (${negativeCount})`, color: 'bg-danger/60' },
                         ].map(l => (
                           <span key={l.label} className="flex items-center gap-1.5 font-body text-muted text-label">

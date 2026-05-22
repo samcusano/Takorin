@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { useFocusTrap, useExitAnimation } from '../lib/utils'
 import { FileText, BarChart2, ShieldCheck, Clock, Brain, Search, Zap } from 'lucide-react'
 import { Check, X, AlertTriangle, ArrowRight, TrendingUp } from 'lucide-react'
-import { StatusPill, SP, ActionBanner, Btn, HoldButton, Tabs, SceneHeader, SectionHeader, Checkbox } from '../components/UI'
+import { StatusPill, SP, ActionBanner, Btn, HoldButton, Tabs, SceneHeader, SectionHeader, Checkbox, AnimatedScore, StatGrid, EmptyState, SectionLabel } from '../components/UI'
 import { openCases, patternRows, benchmarks } from '../data/capa.js'
 import { haccpData, goalsData } from '../data'
 import { useAppState } from '../context/AppState'
@@ -178,7 +178,7 @@ function CollapsibleSection({ label, isOpen, onToggle, children }) {
 
 function PriorityQueueRow({ c, isSelected, onSelect, isEscalated, isResolved, index = 0 }) {
  const score = c.priorityScore || 0
- const rowBg = isSelected ? 'bg-ochre/[0.04]'
+ const rowBg = isSelected ? 'bg-signal/[0.04]'
  : score >= 80 && !isResolved && !isEscalated ? 'bg-danger/[0.015]' : ''
 
  return (
@@ -197,7 +197,7 @@ function PriorityQueueRow({ c, isSelected, onSelect, isEscalated, isResolved, in
    </span>
   )}
   {c.directorTurn && !isResolved && !isEscalated && (
-   <span className="font-body text-label bg-ochre/10 text-ochre px-1.5 py-0.5">Your turn</span>
+   <span className="font-body text-label bg-signal/10 text-signal px-1.5 py-0.5">Your turn</span>
   )}
   {c.currentOwner && !c.directorTurn && !isResolved && !isEscalated && (
    <span className="font-body text-muted text-label">{c.currentOwner}</span>
@@ -225,7 +225,7 @@ function PriorityQueueRow({ c, isSelected, onSelect, isEscalated, isResolved, in
   <div className={`display-num text-head font-bold flex-shrink-0 tabular-nums leading-none mt-0.5 ${
    score >= 80 ? 'text-danger' : score >= 55 ? 'text-warn' : 'text-muted/60'
   }`}>
-   {score}
+   <AnimatedScore value={score} />
   </div>
  )}
  </div>
@@ -369,7 +369,7 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
   </div>
  </div>
 
- <div ref={containerRef} className="flex-1 overflow-y-auto">
+ <div ref={containerRef} className="flex-1 overflow-y-auto page-rise">
  {/* ── Directed handoff banner — shown when it's the director's turn ── */}
  {c.directorTurn && !isClosed && !actionTaken && (
   <ActionBanner
@@ -424,7 +424,7 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
 
  {/* Two-column impact context — tinted by outcome */}
  {(c.expectedImpact || c.riskIfIgnored) && (
- <div className="grid grid-cols-2 gap-px bg-rule2 mb-4">
+ <StatGrid cols={2} noBorder className="mb-4">
  {c.expectedImpact && (
  <div className="bg-ok/[0.05] px-3 py-3">
   <div className="flex items-center gap-1.5 mb-1.5">
@@ -443,7 +443,7 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
   <div className="font-display text-muted text-body leading-snug">{c.riskIfIgnored}</div>
  </div>
  )}
- </div>
+ </StatGrid>
  )}
 
  {/* Recommended action button — below impact context */}
@@ -468,7 +468,7 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
     onChange={e => setCorrectiveMeasure(e.target.value)}
     placeholder="Describe what was done to resolve this case and prevent recurrence…"
     rows={3}
-    className="w-full font-body text-ink text-label bg-stone border border-rule2 px-3 py-2 resize-none placeholder:text-muted/60 focus:border-ochre focus:outline-none"
+    className="w-full font-body text-ink text-label bg-stone border border-rule2 px-3 py-2 resize-none placeholder:text-muted/60 focus:border-signal focus:outline-none"
    />
   </div>
   {/* Evidence declaration checklist — required before close */}
@@ -679,7 +679,7 @@ function LayoutQueue({ visibleCases, blockingEvidenceUploaded, setBlockingEviden
 
  {/* Search */}
  <div className="px-3 py-2 border-b border-rule2 flex-shrink-0">
-  <div className="flex items-center gap-2 bg-stone2 border border-rule px-2 py-1.5 focus-within:border-ochre/50 transition-colors">
+  <div className="flex items-center gap-2 bg-stone2 border border-rule px-2 py-1.5 focus-within:border-signal/50 transition-colors">
    <Search size={11} strokeWidth={2} className="text-muted flex-shrink-0" />
    <input
     type="text"
@@ -699,7 +699,7 @@ function LayoutQueue({ visibleCases, blockingEvidenceUploaded, setBlockingEviden
 
  {/* Model ranking signal */}
  <div className="px-4 py-2.5 border-b border-rule2 bg-stone2 flex items-center gap-2 flex-shrink-0">
-  <Brain size={10} strokeWidth={1.75} className="text-muted flex-shrink-0" />
+  <Brain size={10} strokeWidth={2} className="text-muted flex-shrink-0" />
   <span className="font-body text-muted text-label">
    Ranked by priority score · <span className="text-muted font-medium">88%</span> model confidence · FDA deadline + evidence gaps weighted highest
   </span>

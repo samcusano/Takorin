@@ -10,7 +10,7 @@ import {
  StatusPill, SectionHeader, Tabs,
  Btn, ConsequenceNotice, PageHead, ActionBanner,
  PersonAvatar, Modal, WaveformSparkline, AnimatedCheck, Spinner,
- VaulDrawer, HoldButton
+ VaulDrawer, HoldButton, EmptyState
 } from '../components/UI'
 import { Flag, ChevronRight, ChevronDown, AlertTriangle, Check, X, TrendingDown, RotateCcw, Wrench, Package, HelpCircle, ListChecks, Brain, Shield, RefreshCw, ChevronUp, BarChart2, ArrowRight, Moon, Activity } from 'lucide-react'
 import { useAppState } from '../context/AppState'
@@ -35,15 +35,6 @@ const FLAG_REASONS = [
 ]
 
 
-function EmptyLine({ name }) {
- return (
- <div className="flex flex-col items-center justify-center h-full py-12 px-4">
- <div className="font-body text-muted text-body text-center leading-relaxed">
- No data for {name}<br />Pilot runs on Line 4 only
- </div>
- </div>
- )
-}
 
 function ScoreBadge({ score }) {
  return (
@@ -83,7 +74,7 @@ function AgentTimeline({ timeline, sparkline, score }) {
  <div key={i} className="flex gap-2.5 px-4 py-3 border-b border-rule2 last:border-b-0">
  <div className="font-body text-muted text-label w-11 flex-shrink-0 mt-0.5">{row.time}</div>
  <div className={`w-2 h-2 rounded-full flex-shrink-0 mt-1.5 ${
- row.level === 'now' ? 'bg-ochre' : row.level === 'warn' ? 'bg-warn' : row.level === 'ok' ? 'bg-ok' : 'bg-rule'
+ row.level === 'now' ? 'bg-signal' : row.level === 'warn' ? 'bg-warn' : row.level === 'ok' ? 'bg-ok' : 'bg-rule'
  }`} />
  <div className="flex-1">
  <p className="font-body text-ink-2 text-label leading-relaxed">
@@ -122,7 +113,7 @@ function ScoreExplainer({ score, open, onToggle }) {
     className="w-full flex items-center justify-between px-4 py-2.5 bg-stone2 hover:bg-stone3 transition-colors group"
    >
     <div className="flex items-center gap-2">
-     <Brain size={11} strokeWidth={1.75} className="text-muted" />
+     <Brain size={11} strokeWidth={2} className="text-muted" />
      <span className="font-body text-muted text-label">Why {score}?</span>
     </div>
     {open
@@ -189,7 +180,7 @@ function SignalCard({ sig }) {
    <div className={`flex h-[48px] w-[48px] flex-shrink-0 items-center justify-center ${
     stale ? 'bg-danger/[0.055]' : 'bg-ok/[0.09]'
    }`}>
-    <Activity size={16} strokeWidth={2.2} className={stale ? 'text-danger' : 'text-ok'} aria-hidden="true" />
+    <Activity size={16} strokeWidth={2} className={stale ? 'text-danger' : 'text-ok'} aria-hidden="true" />
    </div>
    <div className="min-w-0 flex-1">
     <div className="truncate font-body text-body font-semibold leading-[1.15] text-ink">{sig.name}</div>
@@ -357,7 +348,7 @@ function OperatorPanel({ name, onClose, onSelectOperator }) {
     className={`flex items-center justify-center w-9 h-9 rounded-full border-2 transition-colors ${name === opName ? 'border-ink bg-ink/10' : 'border-rule2 hover:border-muted'}`}
     title={opName}
     aria-label={`View ${opName}'s details`}>
-    <PersonAvatar name={opName} size={24} />
+    <PersonAvatar name={opName} size={20} />
    </button>
   ))}
  </div>
@@ -382,7 +373,7 @@ function CrewRow({ m, onView }) {
  )}
  <div className="flex gap-1" title={`Skill level: ${m.dots.filter(Boolean).length} of ${m.dots.length}`} aria-label={`Skill level ${m.dots.filter(Boolean).length} of ${m.dots.length}`}>
  {m.dots.map((d, i) => (
- <div key={i} className={`w-2 h-2 ${d ? 'bg-ochre' : 'bg-rule2'}`} />
+ <div key={i} className={`w-2 h-2 ${d ? 'bg-signal' : 'bg-rule2'}`} />
  ))}
  </div>
 
@@ -550,7 +541,7 @@ function Finding({ f, onAct, onDismiss, onDelegate, dismissed }) {
           <div className="flex items-center gap-2 mb-2.5">
            <span className="font-body text-muted text-label flex-shrink-0">Due</span>
            <select value={delegateDue} onChange={e => setDelegateDue(e.target.value)}
-            className="flex-1 font-body text-ink text-label bg-stone border border-rule2 px-2 py-1 focus:border-ochre focus:outline-none">
+            className="flex-1 font-body text-ink text-label bg-stone border border-rule2 px-2 py-1 focus:border-signal focus:outline-none">
             <option>End of shift</option>
             <option>Next 30 min</option>
             <option>Next 2 hours</option>
@@ -690,7 +681,7 @@ function LineDropdown({ lines, activeLine, onSelect, triggerRef, onClose }) {
          ) : (
           <span className="font-body text-sidebar-ghost/40 text-label">No data</span>
          )}
-         {isActive && <div className="w-1.5 h-1.5 rounded-full bg-ochre flex-shrink-0" />}
+         {isActive && <div className="w-1.5 h-1.5 rounded-full bg-signal flex-shrink-0" />}
         </div>
        </button>
       )
@@ -723,7 +714,7 @@ function PrepareView({ forecast = [] }) {
         disabled={done}
         onClick={() => setConfirmed(p => ({...p, [row.name + i]: true}))}
         className={`w-5 h-5 rounded-full flex-shrink-0 flex items-center justify-center mt-0.5 transition-colors ${
-         done ? 'bg-ok' : row.critical ? 'border-2 border-danger hover:border-ok hover:bg-ok/10 cursor-pointer' : 'border-2 border-rule2 hover:border-ochre cursor-pointer'
+         done ? 'bg-ok' : row.critical ? 'border-2 border-danger hover:border-ok hover:bg-ok/10 cursor-pointer' : 'border-2 border-rule2 hover:border-signal cursor-pointer'
         }`}>
         {done && <Check size={11} strokeWidth={2.5} className="text-stone" />}
        </button>
@@ -897,14 +888,14 @@ export default function ShiftIQ() {
     value={quietForm.reason}
     onChange={e => setQuietForm(p => ({...p, reason: e.target.value}))}
     placeholder="Reason (e.g. Allergen changeover)"
-    className="font-body text-ink text-label bg-stone border border-rule2 px-2 py-1 flex-1 placeholder:text-muted/60 focus:border-ochre focus:outline-none"
+    className="font-body text-ink text-label bg-stone border border-rule2 px-2 py-1 flex-1 placeholder:text-muted/60 focus:border-signal focus:outline-none"
    />
    <input
     type="text"
     value={quietForm.endTime}
     onChange={e => setQuietForm(p => ({...p, endTime: e.target.value}))}
     placeholder="Until (e.g. 10:30)"
-    className="font-body text-ink text-label bg-stone border border-rule2 px-2 py-1 w-24 placeholder:text-muted/60 focus:border-ochre focus:outline-none"
+    className="font-body text-ink text-label bg-stone border border-rule2 px-2 py-1 w-24 placeholder:text-muted/60 focus:border-signal focus:outline-none"
    />
    <Btn variant="secondary" onClick={handleSetQuietPeriod} className="!bg-ink !text-stone hover:!bg-ink/90 !border-ink !px-3 !min-h-0 !py-1">Set</Btn>
    <Btn variant="ghost" onClick={() => setQuietForm({ open:false, reason:'', endTime:'' })}>Cancel</Btn>

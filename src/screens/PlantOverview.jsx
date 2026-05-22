@@ -8,7 +8,7 @@ import {
   Activity, CircleDot, ChevronDown, ChevronUp, ArrowRight, ExternalLink, X,
 } from 'lucide-react'
 import { interventionSummary, interventions } from '../data/interventions'
-import { FilterDropdown, SlidePanel, Btn, SegmentedControl, Checkbox } from '../components/UI'
+import { FilterDropdown, SlidePanel, Btn, SegmentedControl, Checkbox, AnimatedScore } from '../components/UI'
 
 // ─── Before-narratives — one sentence per line describing normal baseline ─────
 const LINE_BEFORE = {
@@ -29,7 +29,7 @@ const ACTOR_MODE = { human: 'human', robot: 'robot', hybrid: 'hybrid' }
 function ActorBadge({ mode }) {
   if (!mode || mode === 'human') return null
   const cfg = {
-    robot:  { Icon: Bot,   label: 'Automated', color: 'var(--color-ochre)' },
+    robot:  { Icon: Bot,   label: 'Automated', color: 'var(--color-signal)' },
     hybrid: { Icon: Users, label: 'Hybrid',    color: 'var(--color-deep)'  },
   }[mode]
   if (!cfg) return null
@@ -346,7 +346,7 @@ export default function PlantOverview() {
               <>
                 <span className="w-px h-3 bg-rule2" />
                 <span className="flex items-center gap-1 font-body text-danger text-label">
-                  <AlertTriangle size={8} strokeWidth={2} />
+                  <AlertTriangle size={10} strokeWidth={2} />
                   {interventionSummary.lowDwellDecisions} low-dwell
                 </span>
               </>
@@ -506,7 +506,7 @@ export default function PlantOverview() {
                       <MiniSparkline data={meta?.sparkline} color={riskBgColor(line.score)} />
                     </div>
                     <div className={`font-display font-bold text-display leading-none tabular-nums mb-0.5 ${riskColorClass(line.score)}`}>
-                      {line.score}
+                      <AnimatedScore value={line.score} effect="glow" hero />
                     </div>
                     <div className={`font-body font-medium text-label mb-3 ${
                       delta > 0 ? 'text-danger' : delta < 0 ? 'text-ok' : 'text-muted'
@@ -547,7 +547,7 @@ export default function PlantOverview() {
       )}
 
       {/* ── Scrollable grid + findings ───────────────────────────────────── */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto page-rise">
 
         {domainGroups.length === 0 ? (
           <div className="flex items-center gap-3 px-5 py-12">
@@ -556,7 +556,7 @@ export default function PlantOverview() {
             </span>
             <button type="button"
               onClick={() => { setZoneFilter('all'); setAreaFilter('all'); setFindingsFilter('all') }}
-              className="font-body text-label text-ochre hover:text-ink transition-colors">
+              className="font-body text-label text-signal hover:text-ink transition-colors">
               Clear filters
             </button>
           </div>
@@ -620,7 +620,7 @@ export default function PlantOverview() {
                         <button
                           type="button"
                           className={`flex-1 flex items-center gap-3 ${mode === 'compare' ? 'pl-2 pr-4' : 'px-4'} py-2.5 text-left transition-colors ${
-                            mode === 'compare' && isCompSel ? 'bg-ochre/[0.03]' : 'hover:bg-stone2/50'
+                            mode === 'compare' && isCompSel ? 'bg-signal/[0.03]' : 'hover:bg-stone2/50'
                           }`}
                           onClick={() => mode === 'compare' ? toggleCompare(line.id) : navigate(`/shift?line=${line.id}`)}
                           aria-label={`${line.name} — score ${eff}${mode === 'compare' ? (isCompSel ? ', selected' : ', click to select') : ', open ShiftIQ'}`}
@@ -694,20 +694,13 @@ export default function PlantOverview() {
                             <input
                               type="range" min={0} max={100} value={sliderVal}
                               onChange={e => setWhatIfScores(s => ({ ...s, [line.id]: Number(e.target.value) }))}
-                              className="flex-1 cursor-pointer accent-ochre"
+                              className="flex-1 cursor-pointer accent-signal"
                               style={{ height: 2 }}
                             />
                           </div>
                         )}
                         </div>{/* end inner flex row */}
 
-                        {/* Before-narrative — shown for lines under pressure */}
-                        {eff >= 60 && LINE_BEFORE[line.id] && mode === 'normal' && (
-                          <div className="flex items-start gap-2 px-4 py-1.5 border-t border-rule2/40" style={{ background: 'rgba(196,132,78,0.04)' }}>
-                            <span className="font-body text-micro flex-shrink-0 mt-px" style={{ color: 'var(--color-context)' }}>Before ·</span>
-                            <span className="font-body text-micro leading-relaxed text-muted">{LINE_BEFORE[line.id]}</span>
-                          </div>
-                        )}
                       </div>
                     )
                   })}
@@ -740,7 +733,7 @@ export default function PlantOverview() {
             <div key={action.id}
               className="flex items-start gap-4 px-5 py-3.5 border-b border-rule2"
               style={{ background: 'rgba(124,134,232,0.04)' }}>
-              <Brain size={14} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--color-deep)' }} strokeWidth={1.75} aria-hidden="true" />
+              <Brain size={14} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--color-deep)' }} strokeWidth={2} aria-hidden="true" />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-0.5 flex-wrap">
                   <span className="font-body text-label font-medium" style={{ color: 'var(--color-deep)' }}>{action.agentName}</span>
@@ -764,7 +757,7 @@ export default function PlantOverview() {
                   }`}>
                   <AlertTriangle size={16}
                     className={`mt-0.5 flex-shrink-0 ${f.urgency === 'danger' ? 'text-danger' : 'text-warn'}`}
-                    strokeWidth={1.75} />
+                    strokeWidth={2} />
                   <div className="flex-1 min-w-0">
                     <div className="font-body font-medium text-ink text-body leading-snug">{f.title}</div>
                     <div className="font-body text-muted text-label mt-0.5">

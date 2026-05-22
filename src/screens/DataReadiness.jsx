@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import { readinessData } from '../data'
 import { useAppState } from '../context/AppState'
-import { HoldButton, Btn, SectionHeader, StatusPill } from '../components/UI'
+import { HoldButton, Btn, SectionHeader, StatusPill, AnimatedScore } from '../components/UI'
 import { Check, AlertTriangle, ChevronDown, ChevronUp, Zap, Clock, Link2, Layers } from 'lucide-react'
 
 // ── Resolution queue data ─────────────────────────────────────────────────────
@@ -251,7 +251,7 @@ function ReadinessInstrument({ score, resolved }) {
 
       {/* Score */}
       <div className="flex items-baseline gap-3 mb-1">
-        <span key={score} className={`display-num text-score leading-none score-tick ${zoneText}`}>{score}</span>
+        <span className={`display-num text-score leading-none ${zoneText}`}><AnimatedScore value={score} effect="blur" /></span>
         <div className="pb-1">
           <div className={`font-body font-semibold text-body ${zoneText}`}>{zone}</div>
         </div>
@@ -306,7 +306,7 @@ function QueueClusterRow({ cluster, resolved, selected, onSelect }) {
   return (
     <button type="button" onClick={() => onSelect(cluster.id)}
       className={`w-full text-left px-4 py-3.5 border-b border-rule2 border-l-[3px] transition-colors ${
-        isSelected        ? 'border-l-ochre bg-ochre/[0.06]'
+        isSelected        ? 'border-l-signal bg-signal/[0.06]'
         : allResolved     ? 'border-l-ok opacity-40'
         : 'border-l-warn bg-warn/[0.02] hover:bg-stone2'
       }`}>
@@ -314,7 +314,7 @@ function QueueClusterRow({ cluster, resolved, selected, onSelect }) {
       <div className="flex items-center gap-1.5 mb-1.5">
         {allResolved
           ? <StatusPill tone="ok">Resolved</StatusPill>
-          : <span className="font-body text-label px-1.5 py-px font-semibold bg-ochre/15 text-ochre">High impact cluster</span>
+          : <span className="font-body text-label px-1.5 py-px font-semibold bg-signal/15 text-signal">High impact cluster</span>
         }
       </div>
       <div className={`font-body font-medium text-body leading-snug mb-1 ${allResolved ? 'text-muted line-through' : 'text-ink'}`}>
@@ -322,13 +322,13 @@ function QueueClusterRow({ cluster, resolved, selected, onSelect }) {
       </div>
       {!allResolved && (
         <>
-          <div className="font-body text-ochre text-body font-medium mb-1.5">Resolve together → {cluster.gainLabel}</div>
+          <div className="font-body text-signal text-body font-medium mb-1.5">Resolve together → {cluster.gainLabel}</div>
           <div className="space-y-0.5">
             {cluster.memberLabels.map((m, i) => (
               <div key={m.key} className="flex items-center gap-1.5">
                 <span className="font-body text-muted text-label">{i + 1}.</span>
                 <span className={`font-body text-label ${resolved[m.key] ? 'text-ok line-through' : 'text-muted'}`}>{m.label}</span>
-                {resolved[m.key] && <Check size={8} strokeWidth={2.5} className="text-ok" />}
+                {resolved[m.key] && <Check size={10} strokeWidth={2.5} className="text-ok" />}
               </div>
             ))}
           </div>
@@ -341,7 +341,7 @@ function QueueClusterRow({ cluster, resolved, selected, onSelect }) {
 function QueueIssueRow({ item, resolved, selected, onSelect }) {
   const isResolved = !item.permanent && resolved[item.key]
   const isSelected = selected === item.id
-  const borderColor = isSelected   ? 'border-l-ochre'
+  const borderColor = isSelected   ? 'border-l-signal'
     : isResolved   ? 'border-l-ok'
     : item.severity === 'high' ? 'border-l-danger'
     : item.permanent ? 'border-l-warn'
@@ -349,7 +349,7 @@ function QueueIssueRow({ item, resolved, selected, onSelect }) {
   return (
     <button type="button" onClick={() => onSelect(item.id)}
       className={`w-full text-left px-4 py-3 border-b border-rule2 border-l-2 transition-colors ${borderColor} ${
-        isSelected ? 'bg-ochre/[0.06]' : isResolved ? 'opacity-40' : 'hover:bg-stone2'
+        isSelected ? 'bg-signal/[0.06]' : isResolved ? 'opacity-40' : 'hover:bg-stone2'
       }`}>
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
@@ -379,8 +379,8 @@ function QueueIssueRow({ item, resolved, selected, onSelect }) {
 function ResolutionQueue({ selected, onSelect, resolved }) {
   const [advisoryOpen, setAdvisoryOpen] = useState(false)
   return (
-    <div className="flex-1 overflow-y-auto">
-      <SectionHeader tone="ochre" label="Start here" sub="Highest impact" />
+    <div className="flex-1 overflow-y-auto page-blur-in">
+      <SectionHeader tone="signal" label="Start here" sub="Highest impact" />
 
       {/* Cluster */}
       <QueueClusterRow cluster={CLUSTER_A} resolved={resolved} selected={selected} onSelect={onSelect} />
@@ -560,7 +560,7 @@ function WorkspacePanel({ item, isCluster, resolved, onResolve, onResolveCluster
             {isCluster && item.why && (
               <div className="border border-rule2 bg-stone2 px-4 py-4">
                 <div className="flex items-center gap-2 mb-3">
-                  <Link2 size={12} strokeWidth={2} className="text-ochre flex-shrink-0" />
+                  <Link2 size={12} strokeWidth={2} className="text-signal flex-shrink-0" />
                   <span className="font-body font-semibold text-ink text-body">Why these are linked</span>
                 </div>
                 <p className="font-body text-muted text-label leading-relaxed">{item.why}</p>
@@ -570,10 +570,10 @@ function WorkspacePanel({ item, isCluster, resolved, onResolve, onResolveCluster
               <div className="border border-rule2 bg-stone2 px-4 py-4">
                 <div className="flex items-center justify-between gap-3 mb-3">
                   <div className="flex items-center gap-2">
-                    <Layers size={12} strokeWidth={2} className="text-ochre flex-shrink-0" />
+                    <Layers size={12} strokeWidth={2} className="text-signal flex-shrink-0" />
                     <span className="font-body font-semibold text-ink text-body">Why this happened</span>
                   </div>
-                  <span className="font-body text-label font-bold text-ochre px-2 py-0.5 bg-ochre/10 flex-shrink-0 whitespace-nowrap">
+                  <span className="font-body text-label font-bold text-signal px-2 py-0.5 bg-signal/10 flex-shrink-0 whitespace-nowrap">
                     {item.aiAssessment.confidence}% confidence
                   </span>
                 </div>
@@ -590,7 +590,7 @@ function WorkspacePanel({ item, isCluster, resolved, onResolve, onResolveCluster
             <div className="space-y-2">
               {item.fixSequence.map((step, i) => (
                 <div key={i} className="flex items-center gap-4 px-4 py-3 bg-stone2 border border-rule2">
-                  <span className="display-num text-[11px] font-bold text-stone bg-ochre w-5 h-5 flex items-center justify-center flex-shrink-0 tabular-nums">{i + 1}</span>
+                  <span className="display-num text-[11px] font-bold text-stone bg-signal w-5 h-5 flex items-center justify-center flex-shrink-0 tabular-nums">{i + 1}</span>
                   <span className="font-body text-ink text-body flex-1 leading-snug">{step.step}</span>
                   <span className="font-body text-muted text-label flex-shrink-0">{step.duration}</span>
                 </div>
@@ -612,7 +612,7 @@ function WorkspacePanel({ item, isCluster, resolved, onResolve, onResolveCluster
             <SectionHeader tone="muted" label="AI can fix this" className="mb-2" />
             <div className="border border-rule2 bg-stone px-4 py-4">
               <div className="flex items-center gap-2 mb-3">
-                <Zap size={12} strokeWidth={2} className="text-ochre flex-shrink-0" />
+                <Zap size={12} strokeWidth={2} className="text-signal flex-shrink-0" />
                 <span className="font-body font-semibold text-ink text-body">Can be fixed automatically</span>
               </div>
               <div className="space-y-1 mb-4">

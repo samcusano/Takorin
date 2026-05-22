@@ -2,13 +2,13 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { interventions, kpiTargets } from '../data/interventions'
 import { AlertTriangle, CheckCircle2, ArrowRight, RotateCcw, AlertCircle, TrendingUp, TrendingDown } from 'lucide-react'
-import { StatusPill, SceneHeader, Btn } from '../components/UI'
+import { StatusPill, SceneHeader, Btn, AnimatedScore, StatGrid, EmptyState } from '../components/UI'
 
 const OUTCOME_CFG = {
   positive: { label: 'Positive', tone: 'ok',     dot: 'bg-ok',     border: 'border-l-ok',     chip: 'bg-ok/10 text-ok'           },
   negative: { label: 'Negative', tone: 'danger', dot: 'bg-danger', border: 'border-l-danger', chip: 'bg-danger/[0.04] text-danger',
               desc: null },
-  unclear:  { label: 'Inconclusive', tone: 'ochre', dot: 'bg-ochre', border: 'border-l-ochre', chip: 'bg-ochre/10 text-ochre',
+  unclear:  { label: 'Inconclusive', tone: 'signal', dot: 'bg-signal', border: 'border-l-signal', chip: 'bg-signal/10 text-signal',
               desc: "Effect couldn't be isolated — multiple concurrent changes affected this outcome simultaneously. Attribution confidence is reduced." },
   harmful:  { label: 'Harmful',  tone: 'danger', dot: 'bg-danger', border: 'border-l-danger', chip: 'bg-danger/[0.04] text-danger',
               desc: null },
@@ -17,7 +17,7 @@ const OUTCOME_CFG = {
 const DECISION_CFG = {
   approved:        { label: 'Approved',   cls: 'text-ok'    },
   rejected:        { label: 'Rejected',   cls: 'text-warn'  },
-  'auto-executed': { label: 'Auto-run',   cls: 'text-ochre' },
+  'auto-executed': { label: 'Auto-run',   cls: 'text-signal' },
   overridden:      { label: 'Overridden', cls: 'text-muted' },
 }
 
@@ -57,9 +57,9 @@ function EventChain({ entry, compact = false }) {
     return (
       <div className="flex items-center gap-1.5 text-label font-body flex-wrap">
         <span className="text-muted">{entry.agent}</span>
-        <ArrowRight size={8} className="text-rule2 flex-shrink-0" />
+        <ArrowRight size={10} className="text-rule2 flex-shrink-0" />
         <span className={dc.cls}>{dc.label}</span>
-        <ArrowRight size={8} className="text-rule2 flex-shrink-0" />
+        <ArrowRight size={10} className="text-rule2 flex-shrink-0" />
         <span className={oc.dot.replace('bg-', 'text-')}>{oc.label}</span>
       </div>
     )
@@ -87,14 +87,14 @@ function EventChain({ entry, compact = false }) {
       </div>
       <div className={`flex-1 min-w-0 px-3 py-2.5 border ${
         entry.outcomeClassification === 'positive' ? 'bg-ok/[0.04] border-ok/20' :
-        entry.outcomeClassification === 'unclear'  ? 'bg-ochre/[0.04] border-ochre/30' :
+        entry.outcomeClassification === 'unclear'  ? 'bg-signal/[0.04] border-signal/30' :
         'bg-stone2 border-rule2'
       }`}>
         <div className="font-body text-muted text-micro mb-0.5">Consequence</div>
         <div className="font-body font-medium text-label">
           <span className={`inline-flex items-center gap-1 ${
             entry.outcomeClassification === 'positive' ? 'text-ok' :
-            entry.outcomeClassification === 'unclear'  ? 'text-ochre' : 'text-muted'
+            entry.outcomeClassification === 'unclear'  ? 'text-signal' : 'text-muted'
           }`}>
             <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${oc.dot}`} />
             {oc.label}
@@ -129,7 +129,7 @@ function InterventionCard({ entry, selected, onClick, index = 0 }) {
       <EventChain entry={entry} compact />
       {entry.cautionNote && (
         <div className="flex items-center gap-1 mt-1.5">
-          <AlertCircle size={8} className="text-warn flex-shrink-0" />
+          <AlertCircle size={10} className="text-warn flex-shrink-0" />
           <span className="font-body text-warn text-label">{entry.cautionNote}</span>
         </div>
       )}
@@ -150,11 +150,7 @@ function InterventionCard({ entry, selected, onClick, index = 0 }) {
 }
 
 function InterventionDetail({ entry }) {
-  if (!entry) return (
-    <div className="flex items-center justify-center h-full font-body text-muted text-label">
-      Select an intervention to read the full story arc
-    </div>
-  )
+  if (!entry) return <EmptyState message="Select an intervention" sub="Read the full story arc" />
 
   const oc  = OUTCOME_CFG[entry.outcomeClassification]  ?? OUTCOME_CFG.unclear
   const dc  = DECISION_CFG[entry.decision]               ?? DECISION_CFG.approved
@@ -173,11 +169,11 @@ function InterventionDetail({ entry }) {
           : `Attribution is ${Math.round(entry.attributionConfidence * 100)}% — moderate confidence. Gather more confirmation before treating this as a validated pattern.`
 
   const consequenceAccent = entry.outcomeClassification === 'positive' ? 'bg-ok'
-    : entry.outcomeClassification === 'unclear' ? 'bg-ochre'
+    : entry.outcomeClassification === 'unclear' ? 'bg-signal'
     : 'bg-danger'
 
   return (
-    <div className="flex-1 overflow-y-auto">
+    <div className="flex-1 overflow-y-auto page-rise">
 
       {/* ── Header ─────────────────────────────────────────────────── */}
       <div className="px-6 py-5 border-b border-rule2">
@@ -186,23 +182,23 @@ function InterventionDetail({ entry }) {
           <span className="font-body text-muted text-label">{entry.agent} · {entry.agentTier} tier</span>
           {entry.wasReversed && (
             <span className="flex items-center gap-1 font-body text-muted text-label ml-auto">
-              <RotateCcw size={8} strokeWidth={2} />Reversed
+              <RotateCcw size={10} strokeWidth={2} />Reversed
             </span>
           )}
         </div>
         <div className="font-display font-bold text-ink text-subhead leading-tight">{entry.action}</div>
         <div className="font-body text-muted text-label mt-0.5">{entry.recommendedLabel}</div>
         {oc.desc && (
-          <div className="font-body text-muted text-label mt-2 pl-3 border-l-2 border-ochre/40 leading-snug">{oc.desc}</div>
+          <div className="font-body text-muted text-label mt-2 pl-3 border-l-2 border-signal/40 leading-snug">{oc.desc}</div>
         )}
       </div>
 
       {/* ── Chapter 1: The deviation ───────────────────────────────── */}
       <div className="px-6 py-5 border-b border-rule2">
-        <ChapterHeader label="Deviation" accent="bg-ochre" />
+        <ChapterHeader label="Deviation" accent="bg-signal" />
 
         {/* What the AI detected */}
-        <div className="px-4 py-3 bg-stone2 border-l-4 border-l-ochre mb-4">
+        <div className="px-4 py-3 bg-stone2 border-l-4 border-l-signal mb-4">
           <div className="font-body text-muted text-label mb-1">What the AI detected</div>
           <p className="font-display text-ink text-body leading-relaxed">{entry.rationaleText}</p>
         </div>
@@ -276,7 +272,7 @@ function InterventionDetail({ entry }) {
         {entry.metricsAfter && (
           <div className="mb-4">
             <div className="font-body text-muted text-label mb-2">Before → After · {entry.metricsUpdatedLabel}</div>
-            <div className="grid grid-cols-2 gap-px bg-rule2">
+            <StatGrid cols={2} noBorder>
               <div className="bg-stone px-3 py-2">
                 <div className="font-body text-muted text-label mb-2">Before</div>
                 {Object.entries(entry.metricsBefore).map(([k, v]) => (
@@ -295,7 +291,7 @@ function InterventionDetail({ entry }) {
                   </div>
                 ))}
               </div>
-            </div>
+            </StatGrid>
           </div>
         )}
 
@@ -316,7 +312,7 @@ function InterventionDetail({ entry }) {
               }`}>{entry.kpiDelta.after}</span>
               {entry.kpiDelta.pct !== undefined && (
                 <span className={`font-body text-label ${entry.kpiDelta.pct > 0 ? 'text-ok' : 'text-warn'}`}>
-                  {entry.kpiDelta.pct > 0 ? '+' : ''}{entry.kpiDelta.pct}%
+                  {entry.kpiDelta.pct > 0 ? '+' : ''}<AnimatedScore value={entry.kpiDelta.pct} suffix="%" />
                 </span>
               )}
             </div>
