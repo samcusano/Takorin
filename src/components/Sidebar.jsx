@@ -514,7 +514,7 @@ export default function Sidebar() {
      <SideItem to="/compliance"  id="compliance"  icon={Scale}           label="Compliance"   badge={null} collapsed={collapsed} />
      <SideItem to="/hierarchy"   id="hierarchy"   icon={LayoutDashboard} label="Site"         badge={null} collapsed={collapsed} />
      <SideItem to="/knowledge"   id="knowledge"   icon={BookOpen}        label="Knowledge"    badge={null} collapsed={collapsed} />
-     <SideItem to="/execution"   id="execution"   icon={Workflow}        label="Execution"    badge={null} collapsed={collapsed} />
+     <SideItem to="/execution"   id="execution"   icon={Workflow}        label="Autonomy"     badge={null} collapsed={collapsed} />
      {currentPlant?.sector === 'pharma' && (
       <SideItem to="/records"   id="records"    icon={FileLock2}  label="Records"     badge={null} collapsed={collapsed} />
      )}
