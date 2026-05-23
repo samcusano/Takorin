@@ -240,9 +240,9 @@ function LedgerRow({ pa, agent, onInvestigate, onApprove, onOverrideRequest, sel
         <div className="w-3.5 flex-shrink-0" />
         <div className={`h-1.5 w-1.5 rounded-full flex-shrink-0 ${pa._decided === 'approved' ? 'bg-ok' : 'bg-muted'}`} />
         <span className="font-body text-muted text-label flex-1 truncate opacity-50">{meta.verbFirst}</span>
-        <span className={`font-body text-label opacity-50 ${pa._decided === 'approved' ? 'text-ok' : 'text-muted'}`}>
+        <StatusPill tone={pa._decided === 'approved' ? 'ok' : 'muted'} className="opacity-50">
           {pa._decided === 'approved' ? 'Approved' : 'Overridden'}
-        </span>
+        </StatusPill>
         {pa._decided === 'approved' && navigate && (
           <button type="button" onClick={() => navigate('/outcomes')}
             className="flex items-center gap-1 font-body text-label text-signal hover:text-ink transition-colors flex-shrink-0"
@@ -258,16 +258,13 @@ function LedgerRow({ pa, agent, onInvestigate, onApprove, onOverrideRequest, sel
   return (
     <div className={`border-b border-rule2 last:border-0 ${open ? cfg.bg : ''} ${inGroup ? '' : `border-l ${cfg.borderW} ${cfg.border}`}`}>
       {/* Main row */}
-      <div className="flex items-center gap-2.5 px-4 py-2.5 hover:bg-stone2 transition-colors min-h-[44px]">
+      <div className="flex items-center gap-2.5 px-4 py-2.5 hover:bg-stone2 transition-colors">
         {/* Row checkbox */}
         <Checkbox
           checked={selected}
           onChange={() => onToggleSelect(pa._key)}
           aria-label="Select action"
         />
-
-        {/* Agent icon */}
-        <Icon size={10} className="text-muted flex-shrink-0" />
 
         {/* Action text (verb-first) + inline reason */}
         <button type="button" onClick={() => setOpen(o => !o)}
@@ -673,17 +670,17 @@ function InvestigationPanel({ pa, agent, agentActions }) {
                     <div className="font-body text-muted text-label mb-2">Causal signals</div>
                     <div className="border border-rule2 divide-y divide-rule2">
                       {pa.evidence.causalSignals.map((s, i) => {
-                        const c = s.status === 'breach' || s.status === 'stale' ? 'text-danger' : s.status === 'warn' ? 'text-warn' : s.status === 'eligible' ? 'text-ok' : 'text-ok'
-                        const l = s.status === 'breach' ? 'Breach' : s.status === 'stale' ? 'Stale' : s.status === 'warn' ? 'Watch' : s.status === 'eligible' ? 'Eligible' : 'OK'
+                        const tone = s.status === 'breach' || s.status === 'stale' ? 'danger' : s.status === 'warn' ? 'warn' : 'ok'
+                        const label = s.status === 'breach' ? 'Breach' : s.status === 'stale' ? 'Stale' : s.status === 'warn' ? 'Watch' : s.status === 'eligible' ? 'Eligible' : 'OK'
                         return (
-                          <div key={i} className="grid grid-cols-[140px_1fr_80px] gap-3 px-3 py-2.5 items-start">
+                          <div key={i} className="grid grid-cols-[140px_1fr_auto] gap-3 px-3 py-2.5 items-start">
                             <div className="font-body text-muted text-label pt-px">{s.signal}</div>
                             <div>
                               <div className="font-body text-ink text-label font-medium">{s.reading}</div>
                               {s.threshold && <div className="font-body text-muted text-label mt-0.5">vs. {s.threshold}</div>}
                               {s.note && <div className="font-body text-muted text-label mt-0.5 leading-snug">{s.note}</div>}
                             </div>
-                            <div className={`font-body text-label font-medium text-right ${c}`}>{l}</div>
+                            <StatusPill tone={tone}>{label}</StatusPill>
                           </div>
                         )
                       })}
@@ -695,17 +692,15 @@ function InvestigationPanel({ pa, agent, agentActions }) {
                     <div className="font-body text-muted text-label mb-2">Dependencies</div>
                     <div className="border border-rule2 divide-y divide-rule2">
                       {pa.evidence.dependencies.map((d, i) => {
-                        const dot = d.status === 'required' ? 'bg-warn' : d.status === 'blocked' ? 'bg-danger' : d.status === 'eligible' ? 'bg-ok' : 'bg-muted'
-                        const lc = d.status === 'required' ? 'text-warn' : d.status === 'blocked' ? 'text-danger' : d.status === 'eligible' ? 'text-ok' : 'text-muted'
-                        const ll = { required: 'Required', blocked: 'Blocked', eligible: 'Eligible', contingent: 'Contingent', pending: 'Pending', 'not-required': 'Not required' }[d.status] ?? d.status
+                        const depTone = d.status === 'blocked' ? 'danger' : d.status === 'required' ? 'warn' : d.status === 'eligible' ? 'ok' : 'muted'
+                        const depLabel = { required: 'Required', blocked: 'Blocked', eligible: 'Eligible', contingent: 'Contingent', pending: 'Pending', 'not-required': 'Not required' }[d.status] ?? d.status
                         return (
                           <div key={i} className="flex items-start gap-3 px-3 py-2.5">
-                            <div className={`h-1.5 w-1.5 rounded-full flex-shrink-0 mt-1 ${dot}`} />
                             <div className="flex-1 min-w-0">
                               <div className="font-body text-ink text-label font-medium">{d.label}</div>
                               {d.note && <div className="font-body text-muted text-label mt-0.5 leading-snug">{d.note}</div>}
                             </div>
-                            <div className={`font-body text-label flex-shrink-0 ${lc}`}>{ll}</div>
+                            <StatusPill tone={depTone}>{depLabel}</StatusPill>
                           </div>
                         )
                       })}
@@ -851,162 +846,7 @@ function ActivityLog({ agentActions }) {
 
 const STALE_AGENTS = new Set(['pre-shift', 'resource', 'handoff'])
 
-// ─── Agent trust score miniature sparkline ────────────────────────────────────
-
-function TrustSparkline({ data, color }) {
-  if (!data || data.length < 2) return null
-  const min = Math.min(...data) - 2
-  const max = Math.max(...data) + 2
-  const range = max - min || 1
-  const w = 48, h = 16
-  const pts = data.map((v, i) => {
-    const x = (i / (data.length - 1)) * w
-    const y = h - ((v - min) / range) * h
-    return `${x},${y}`
-  }).join(' ')
-  return (
-    <svg width={w} height={h} aria-hidden="true">
-      <polyline points={pts} fill="none" stroke={color} strokeWidth="1.2"
-        strokeLinecap="round" strokeLinejoin="round" opacity="0.8" />
-      {/* Last point dot */}
-      {(() => {
-        const lastX = w; const lastV = data[data.length - 1]
-        const lastY = h - ((lastV - min) / range) * h
-        return <circle cx={lastX} cy={lastY} r="2" fill={color} />
-      })()}
-    </svg>
-  )
-}
-
-// ─── Trust score tiles strip ─────────────────────────────────────────────────
-
-function TrustTilesStrip({ agents }) {
-  const highlight = agents.filter(a => a.trustScore != null).slice(0, 5)
-  return (
-    <div className="flex-shrink-0 flex items-stretch border-b border-rule2 overflow-x-auto bg-stone">
-      {highlight.map((agent, i) => {
-        const score = agent.trustScore ?? 80
-        const color = score >= 85 ? 'var(--color-ok)' : score >= 70 ? 'var(--color-warn)' : 'var(--color-danger)'
-        const Icon  = ICON_MAP[agent.icon] || Shield
-        return (
-          <div key={agent.id} className="flex items-center gap-3 px-4 py-3 border-r border-rule2 flex-shrink-0 min-w-[160px]">
-            <Icon size={11} className="text-muted flex-shrink-0" aria-hidden="true" />
-            <div className="flex-1 min-w-0">
-              <div className="font-body text-muted text-label truncate">{agent.name.split(' ')[0]}</div>
-              <div className="flex items-center gap-2 mt-0.5">
-                <span className="display-num text-base font-medium" style={{ color }}>{score}</span>
-                <TrustSparkline data={agent.trustTrajectory} color={color} />
-              </div>
-            </div>
-          </div>
-        )
-      })}
-      <div className="flex items-center px-4 py-3 flex-shrink-0 ml-auto">
-        <span className="font-body text-muted text-label">Trust ·&nbsp;</span>
-        <span className="font-body text-muted text-label">rolling 10-shift attribution score</span>
-      </div>
-    </div>
-  )
-}
-
-function FleetStrip({ agents }) {
-  const staleSources = dataSourceHealth?.filter(s => s.status === 'stale') ?? []
-  const staleSource = staleSources[0]
-
-  const enabledAgents = agents.filter(a => a.enabled)
-  const disabledCount = agents.length - enabledAgents.length
-
-  const summaries = enabledAgents.map(agent => {
-    const conf = agent.confidenceThreshold ?? 80
-    const confVal = agent.pendingActions?.[0]?.confidence ?? conf + 10
-    const isStale = !!staleSource && STALE_AGENTS.has(agent.id)
-    return { agent, isReady: confVal >= conf && !isStale }
-  })
-
-  const readyCount = summaries.filter(s => s.isReady).length
-  const total = summaries.length
-  const degraded = summaries.filter(s => !s.isReady).map(s => s.agent)
-  const allReady = readyCount === total
-
-  const headlineColor = allReady ? 'text-ok' : staleSources.length > 0 ? 'text-warn' : 'text-danger'
-  const headlineText = allReady
-    ? `Fleet ready — all ${total} agents above threshold`
-    : `Fleet at ${readyCount} of ${total} agents above threshold`
-
-  const details = []
-  if (degraded.length > 0) details.push(`${degraded.map(a => a.name.split(' ')[0]).join(', ')} degraded`)
-  if (staleSources.length > 0) details.push(`${staleSources.length} source${staleSources.length !== 1 ? 's' : ''} stale`)
-  if (disabledCount > 0) details.push(`${disabledCount} disabled`)
-
-  return (
-    <div className="flex-shrink-0 px-5 py-2.5 border-t border-b border-rule2 bg-stone2">
-      <div className={`font-body font-medium text-body leading-snug ${headlineColor}`}>{headlineText}</div>
-      {details.length > 0 && (
-        <div className="font-body text-muted text-label mt-0.5">{details.join(' · ')}</div>
-      )}
-    </div>
-  )
-}
-
-// ─── Autonomous tier budget strip ────────────────────────────────────────────
-
 const TIER2_BUDGET = 8
-
-function AgentTierStrip({ tier0Count, tier1Items, tier2Items, tier3Items, tier1Open, onToggleTier1, tier1BtnRef }) {
-  const tier2Undecided = tier2Items.filter(p => !p._decided).length
-  const tier3Undecided = tier3Items.filter(p => !p._decided).length
-  const tier2Pct = Math.min(100, (tier2Undecided / TIER2_BUDGET) * 100)
-  const tier2BarColor = tier2Undecided > TIER2_BUDGET ? 'bg-danger' : tier2Undecided >= Math.ceil(TIER2_BUDGET * 0.75) ? 'bg-warn' : 'bg-ok'
-
-  return (
-    <div className="flex-shrink-0 flex items-stretch border-b border-rule2 bg-stone2 overflow-x-auto">
-      {/* Tier 0 — fully autonomous */}
-      <div className="flex items-center gap-2.5 px-4 py-3 border-r border-rule2 flex-shrink-0">
-        <div className="w-1.5 h-1.5 rounded-full bg-ok flex-shrink-0" />
-        <div>
-          <div className="font-body text-muted text-label mb-0.5">Tier 0</div>
-          <div className="font-body text-ink text-body font-medium">{tier0Count} auto</div>
-        </div>
-      </div>
-      {/* Tier 1 — notify only (overlay on click) */}
-      <button ref={tier1BtnRef} type="button" onClick={onToggleTier1}
-        className={`flex items-center gap-2.5 px-4 py-3 border-r border-rule2 flex-shrink-0 hover:bg-stone3 transition-colors text-left ${tier1Open ? 'bg-stone3' : ''}`}>
-        <div className="w-1.5 h-1.5 rounded-full bg-signal flex-shrink-0" />
-        <div>
-          <div className="font-body text-muted text-label mb-0.5">Tier 1</div>
-          <div className="font-body text-ink text-body font-medium">{tier1Items.length} informed</div>
-        </div>
-        <ChevronDown size={9} className={`text-muted flex-shrink-0 transition-transform ${tier1Open ? 'rotate-180' : ''}`} />
-      </button>
-      {/* Tier 2 — budgeted approval with shift budget bar */}
-      <div className="flex items-center gap-3 px-4 py-3 border-r border-rule2 flex-1 min-w-[180px]">
-        <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${tier2Undecided > TIER2_BUDGET ? 'bg-danger' : 'bg-warn'}`} />
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between gap-2 mb-1.5">
-            <div className="font-body text-muted text-label">Tier 2</div>
-            <div className={`font-body text-body tabular-nums font-medium ${tier2Undecided > TIER2_BUDGET ? 'text-danger' : 'text-muted'}`}>
-              {tier2Undecided}/{TIER2_BUDGET}
-              {tier2Undecided > TIER2_BUDGET && ' — over budget'}
-            </div>
-          </div>
-          <div className="h-1.5 bg-rule2 overflow-hidden">
-            <div className={`h-full transition-[width] ${tier2BarColor}`} style={{ width: `${tier2Pct}%` }} />
-          </div>
-        </div>
-      </div>
-      {/* Tier 3 — compliance lock */}
-      <div className={`flex items-center gap-2.5 px-4 py-3 flex-shrink-0 border-l-2 ${tier3Undecided > 0 ? 'bg-danger/[0.05] border-l-danger' : 'border-l-transparent'}`}>
-        <div className={`w-2 h-2 rounded-full flex-shrink-0 ${tier3Undecided > 0 ? 'bg-danger animate-pulse' : 'bg-muted'}`} />
-        <div>
-          <div className="font-body text-muted text-label mb-0.5">Tier 3</div>
-          <div className={`font-body text-body font-medium ${tier3Undecided > 0 ? 'text-danger' : 'text-muted'}`}>
-            {tier3Undecided > 0 ? `${tier3Undecided} pending` : tier3Items.length > 0 ? `${tier3Items.length} reviewed` : 'None'}
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
 
 // ─── Tier 1 overlay ──────────────────────────────────────────────────────────
 
@@ -1051,12 +891,11 @@ function Tier1Overlay({ items, agents, btnRef, onClose }) {
           const Icon = ICON_MAP[agent.icon] || Shield
           return (
             <div key={pa._key} className="flex items-center gap-3 px-4 py-2.5">
-              <Icon size={10} className="text-muted flex-shrink-0" />
               <div className="flex-1 min-w-0">
                 <div className="font-body text-muted text-label">{agent.name}</div>
                 <div className="font-body text-ink text-label leading-snug">{pa._meta.verbFirst}</div>
               </div>
-              <span className="font-body text-label text-muted px-1.5 py-0.5 bg-stone3 flex-shrink-0">Notified</span>
+              <StatusPill tone="muted">Notified</StatusPill>
             </div>
           )
         })}
@@ -1095,6 +934,7 @@ export default function AgentControl() {
   const [tier1Open, setTier1Open]         = useState(false)
   const tier1BtnRef                       = useRef(null)
   const [detailTab, setDetailTab]         = useState('evidence')
+  const [freshnessOpen, setFreshnessOpen] = useState(false)
 
   useEffect(() => { setDetailTab('evidence') }, [splitFocused])
 
@@ -1191,49 +1031,105 @@ export default function AgentControl() {
   return (
     <div className="flex flex-col h-full overflow-hidden content-reveal">
 
-      {/* ── System confidence header ─────────────────────────────────── */}
+      {/* ── Merged command strip: confidence + tiers ───────────────────── */}
+      {freshnessOpen && (
+        <SlidePanel title="Data sources" subtitle="Freshness at time of last decision" onClose={() => setFreshnessOpen(false)} maxWidth="360px">
+          <div className="grid grid-cols-2 gap-px bg-rule2 -mx-5 -mt-5">
+            {dataSourceHealth?.map(s => {
+              const age = s.ageMin < 60 ? `${s.ageMin}m` : `${Math.floor(s.ageMin / 60)}h ${s.ageMin % 60}m`
+              const tone = s.status === 'stale' ? 'text-danger' : s.status === 'warn' ? 'text-warn' : 'text-ok'
+              const dot  = s.status === 'stale' ? 'bg-danger' : s.status === 'warn' ? 'bg-warn' : 'bg-ok'
+              const statusTone = s.status === 'stale' ? 'danger' : s.status === 'warn' ? 'warn' : 'ok'
+              const statusLabel = s.status === 'stale' ? 'Stale' : s.status === 'warn' ? 'Degraded' : 'Fresh'
+              return (
+                <div key={s.source} className="bg-stone px-4 py-4">
+                  <div className="font-body text-muted text-label mb-2">{s.source.split('/')[0].trim()}</div>
+                  <div className={`display-num text-head font-bold leading-none mb-2 ${tone}`}>{age}</div>
+                  <StatusPill tone={statusTone}>{statusLabel}</StatusPill>
+                </div>
+              )
+            })}
+          </div>
+        </SlidePanel>
+      )}
+
       <div className="flex-shrink-0 flex items-stretch border-b border-rule2 bg-stone">
-        <div className="px-5 py-3 border-r border-rule2 flex-shrink-0">
-          <div className="items-baseline gap-2">
-            <div className={`display-num text-score leading-none ${confColor}`}>
+        {/* Confidence — button opens source freshness drawer */}
+        <button type="button" onClick={() => setFreshnessOpen(true)}
+          className="flex items-center gap-3 px-4 py-2.5 border-r border-rule2 flex-shrink-0 hover:bg-stone2 transition-colors text-left">
+          <div>
+            <div className={`display-num text-head leading-none ${confColor}`}>
               <AnimatedScore value={systemConfidence ?? 79} suffix="%" effect="blur" />
             </div>
-            <span className="font-body font-normal text-muted text-label">system confidence</span>
+            <div className="font-body text-muted text-label">system conf</div>
+          </div>
+          {staleSource && (
+            <span className="flex items-center gap-1 font-body text-warn text-label">
+              <AlertTriangle size={10} strokeWidth={2} className="flex-shrink-0" />
+              {dataSourceHealth?.filter(s => s.status === 'stale').length} stale
+            </span>
+          )}
+        </button>
+
+        {/* Tier 0 — autonomous */}
+        <div className="flex items-center gap-2.5 px-4 py-2.5 border-r border-rule2 flex-1">
+          <div className="w-1.5 h-1.5 rounded-full bg-ok flex-shrink-0" />
+          <div>
+            <div className="font-body text-muted text-label">Tier 0</div>
+            <div className="font-body text-ink text-body font-medium">{tier0Count} auto</div>
           </div>
         </div>
-        <div className="flex items-stretch overflow-x-auto flex-1">
-          {dataSourceHealth?.map(s => (
-            <div key={s.source} className="px-3 py-2.5 border-r border-rule2 flex-shrink-0 flex flex-col justify-center">
-              <div className="font-body text-muted text-label mb-0.5 whitespace-nowrap">{s.source.split('/')[0].trim()}</div>
-              <div className={`font-body font-medium text-label whitespace-nowrap ${s.status === 'stale' ? 'text-danger' : s.status === 'warn' ? 'text-warn' : 'text-ok'}`}>
-                {s.ageMin < 60 ? `${s.ageMin}m` : `${Math.floor(s.ageMin / 60)}h ${s.ageMin % 60}m`}
+
+        {/* Tier 1 — notify only */}
+        <button ref={tier1BtnRef} type="button" onClick={() => setTier1Open(o => !o)}
+          className={`flex items-center gap-2.5 px-4 py-2.5 border-r border-rule2 flex-1 hover:bg-stone2 transition-colors text-left ${tier1Open ? 'bg-stone2' : ''}`}>
+          <div className="w-1.5 h-1.5 rounded-full bg-signal flex-shrink-0" />
+          <div>
+            <div className="font-body text-muted text-label">Tier 1</div>
+            <div className="font-body text-ink text-body font-medium">{tier1Items.length} informed</div>
+          </div>
+          <ChevronDown size={9} strokeWidth={2} className={`text-muted flex-shrink-0 ml-auto transition-transform ${tier1Open ? 'rotate-180' : ''}`} />
+        </button>
+
+        {/* Tier 2 — budgeted approval */}
+        {(() => {
+          const undecided = tier2Items.filter(p => !p._decided).length
+          const pct = Math.min(100, (undecided / TIER2_BUDGET) * 100)
+          const barColor = undecided > TIER2_BUDGET ? 'bg-danger' : undecided >= Math.ceil(TIER2_BUDGET * 0.75) ? 'bg-warn' : 'bg-ok'
+          return (
+            <div className="flex items-center gap-3 px-4 py-2.5 border-r border-rule2 flex-1">
+              <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${undecided > TIER2_BUDGET ? 'bg-danger' : 'bg-warn'}`} />
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between gap-3 mb-1">
+                  <div className="font-body text-muted text-label">Tier 2</div>
+                  <div className={`font-body text-label font-medium tabular-nums ${undecided > TIER2_BUDGET ? 'text-danger' : 'text-muted'}`}>
+                    {undecided}/{TIER2_BUDGET}
+                  </div>
+                </div>
+                <div className="h-1 bg-rule2 overflow-hidden">
+                  <div className={`h-full transition-[width] ${barColor}`} style={{ width: `${pct}%` }} />
+                </div>
               </div>
             </div>
-          ))}
-        </div>
-        {staleSource && (
-          <div className="px-4 flex items-center gap-1.5 flex-shrink-0 border-l border-rule2">
-            <AlertTriangle size={10} className="text-danger flex-shrink-0" />
-            <span className="font-body text-danger text-label whitespace-nowrap">
-              {staleSource.dependents?.length ?? 3} agents degraded
-            </span>
-          </div>
-        )}
+          )
+        })()}
+
+        {/* Tier 3 — compliance lock */}
+        {(() => {
+          const undecided = tier3Items.filter(p => !p._decided).length
+          return (
+            <div className={`flex items-center gap-2.5 px-4 py-2.5 flex-1 border-l-2 ${undecided > 0 ? 'bg-danger/[0.05] border-l-danger' : 'border-l-transparent'}`}>
+              <div className={`w-2 h-2 rounded-full flex-shrink-0 ${undecided > 0 ? 'bg-danger animate-pulse' : 'bg-muted'}`} />
+              <div>
+                <div className="font-body text-muted text-label">Tier 3</div>
+                <div className={`font-body text-body font-medium ${undecided > 0 ? 'text-danger' : 'text-muted'}`}>
+                  {undecided > 0 ? `${undecided} pending` : tier3Items.length > 0 ? `${tier3Items.length} reviewed` : 'None'}
+                </div>
+              </div>
+            </div>
+          )
+        })()}
       </div>
-
-      {/* ── Trust score tiles — agent reliability at a glance ───────── */}
-      <TrustTilesStrip agents={agents} />
-
-      {/* ── Autonomous tier budget ───────────────────────────────────── */}
-      <AgentTierStrip
-        tier0Count={tier0Count}
-        tier1Items={tier1Items}
-        tier2Items={tier2Items}
-        tier3Items={tier3Items}
-        tier1Open={tier1Open}
-        tier1BtnRef={tier1BtnRef}
-        onToggleTier1={() => setTier1Open(o => !o)}
-      />
 
       {tier1Open && tier1Items.length > 0 && (
         <Tier1Overlay
@@ -1305,9 +1201,9 @@ export default function AgentControl() {
                                 {pa._meta.verbFirst}
                               </div>
                               {pa._decided ? (
-                                <span className={`font-body text-label ${pa._decided === 'approved' ? 'text-ok' : 'text-muted'}`}>
+                                <StatusPill tone={pa._decided === 'approved' ? 'ok' : 'muted'} className="mt-0.5">
                                   {pa._decided === 'approved' ? 'Approved' : 'Overridden'}
-                                </span>
+                                </StatusPill>
                               ) : pa._meta.showExpiry ? (
                                 <StatusPill tone={pa._meta.consequence === 'critical' ? 'danger' : 'warn'} className="whitespace-nowrap mt-0.5">
                                   {pa._meta.expiresLabel}
@@ -1350,12 +1246,16 @@ export default function AgentControl() {
                 return (
                   <>
                     {/* Sticky header */}
-                    <div className="flex-shrink-0 flex items-start gap-4 px-6 py-4 border-b border-rule2 bg-stone">
-                      <div className={`w-12 h-12 flex items-center justify-center flex-shrink-0 border-l-[3px] ${cfg.border} bg-stone2`}>
-                        <Icon size={16} className="text-muted" />
-                      </div>
+                    <div className={`flex-shrink-0 flex items-start gap-4 px-6 py-4 border-b border-rule2 bg-stone border-l-[3px] ${cfg.border}`}>
                       <div className="flex-1 min-w-0">
-                        <div className="font-body text-muted text-label mb-0.5">{agent.name} · {cfg.label} consequence</div>
+                        <div className="font-body text-muted text-label mb-0.5">
+                          {agent.name} · {cfg.label} consequence
+                          {agent.trustScore != null && (
+                            <span className={`ml-2 display-num text-label ${agent.trustScore >= 85 ? 'text-ok' : agent.trustScore >= 70 ? 'text-warn' : 'text-danger'}`}>
+                              {agent.trustScore} trust
+                            </span>
+                          )}
+                        </div>
                         <div className="font-display font-bold text-ink text-head leading-snug">{pa._meta.verbFirst}</div>
                         {pa._decided && (
                           <div className={`font-body text-label mt-0.5 ${pa._decided === 'approved' ? 'text-ok' : 'text-muted'}`}>
@@ -1421,25 +1321,21 @@ export default function AgentControl() {
                                     <div className="font-body text-muted text-label mb-2">Signal pipeline</div>
                                     <div className="border border-rule2 divide-y divide-rule2">
                                       {active.map((s, i) => {
-                                        const c = s.status === 'breach' || s.status === 'stale' ? 'text-danger' : s.status === 'warn' ? 'text-warn' : 'text-ok'
-                                        const l = s.status === 'breach' ? 'Breach' : s.status === 'stale' ? 'Stale' : s.status === 'warn' ? 'Watch' : 'OK'
+                                        const sigTone = s.status === 'breach' || s.status === 'stale' ? 'danger' : s.status === 'warn' ? 'warn' : 'ok'
+                                        const sigLabel = s.status === 'breach' ? 'Breach' : s.status === 'stale' ? 'Stale' : s.status === 'warn' ? 'Watch' : 'OK'
+                                        const stageTone = s.stage === 'correlated' ? 'info' : 'ok'
                                         const stageLabel = s.stage === 'correlated' ? 'Correlated' : 'Qualified'
-                                        const stageIsCorrelated = s.stage === 'correlated'
                                         return (
                                           <div key={i} className="flex items-start gap-3 px-4 py-2.5">
                                             <div className="flex-1 min-w-0">
                                               <div className="flex items-center gap-1.5 mb-0.5">
                                                 <div className="font-body text-muted text-label">{s.signal}</div>
-                                                {s.stage && (
-                                                  stageIsCorrelated
-                                                    ? <span className="font-body text-micro px-1 py-0.5 font-medium bg-signal/10 text-signal">{stageLabel}</span>
-                                                    : <StatusPill tone="ok">{stageLabel}</StatusPill>
-                                                )}
+                                                {s.stage && <StatusPill tone={stageTone}>{stageLabel}</StatusPill>}
                                               </div>
                                               <div className="font-body text-ink text-label font-medium">{s.reading}</div>
                                               {s.note && <div className="font-body text-muted text-label leading-snug">{s.note}</div>}
                                             </div>
-                                            <span className={`font-body text-label font-medium flex-shrink-0 ${c}`}>{l}</span>
+                                            <StatusPill tone={sigTone}>{sigLabel}</StatusPill>
                                           </div>
                                         )
                                       })}
@@ -1597,7 +1493,6 @@ export default function AgentControl() {
                                 </div>
                               )}
                               <div className="flex items-start gap-2 mb-2">
-                                <Icon size={14} className="text-muted flex-shrink-0 mt-0.5" />
                                 <div className="flex-1 min-w-0">
                                   <div className="font-body text-muted text-label">{agent.name}</div>
                                   <div className="font-display font-bold text-ink text-base leading-snug mt-0.5">{pa._meta.verbFirst}</div>

@@ -82,10 +82,9 @@ const STATUS_BORDER = { active: 'border-l-ok', inactive: 'border-l-rule2', monit
 
 // ─── Section header ───────────────────────────────────────────────────────────
 
-function SectionHeader({ label, count, accent = 'bg-rule2' }) {
+function SectionHeader({ label, count }) {
   return (
     <div className="flex items-center gap-3 px-5 py-2.5 border-b border-rule2">
-      <div className={`w-0.5 h-3.5 flex-shrink-0 rounded-sm ${accent}`} />
       <span className="font-body text-label font-semibold text-muted">{label}</span>
       <div className="flex-1 h-px bg-rule2" />
       {count != null && <span className="font-body text-muted text-label">{count}</span>}
@@ -124,7 +123,7 @@ function EvidenceRow({ e, index = 0 }) {
         <div className="font-body text-muted text-label mt-0.5 leading-snug">{e.requirement}</div>
       </div>
       {e.required
-        ? <StatusPill tone="ok" className="flex-shrink-0 whitespace-nowrap mt-0.5">REQUIRED</StatusPill>
+        ? <StatusPill tone="ok" className="flex-shrink-0 whitespace-nowrap mt-0.5">Required</StatusPill>
         : <StatusPill tone="muted" className="flex-shrink-0 mt-0.5">Optional</StatusPill>
       }
     </div>
@@ -277,7 +276,7 @@ export default function CompliancePolicy() {
           {auditOpen && <AuditSimPanel onClose={() => setAuditOpen(false)} />}
 
           <SceneHeader
-            module="COMPLIANCE"
+            module="Compliance"
             context={`${policy.name} · ${policy.jurisdiction}`}
             metric={heroMetric}
             metricLabel={heroLabel}
@@ -297,7 +296,7 @@ export default function CompliancePolicy() {
                 <span className="font-body text-muted text-label">— 2 blocking gaps require resolution before arrival</span>
               </div>
               <Btn variant="secondary" onClick={() => setAuditOpen(true)}>
-                <Play size={10} strokeWidth={2} />Run audit simulation
+              Simulate audit
               </Btn>
             </div>
           )}
@@ -309,18 +308,18 @@ export default function CompliancePolicy() {
             {/* Frameworks + Evidence — two columns */}
             <div className="flex border-b border-rule2">
               <div className="flex-1 border-r border-rule2">
-                <SectionHeader label="Frameworks" count={`${policy.frameworks.length} configured`} accent="bg-signal" />
+                <SectionHeader label="Frameworks" count={`${policy.frameworks.length} configured`} />
                 {policy.frameworks.map((f, i) => <FrameworkRow key={f.id} f={f} index={i} />)}
               </div>
               <div className="flex-1">
-                <SectionHeader label="Evidence" count={`${policy.evidenceRequirements.length} requirements`} accent="bg-ok" />
+                <SectionHeader label="Evidence" count={`${policy.evidenceRequirements.length} requirements`} />
                 {policy.evidenceRequirements.map((e, i) => <EvidenceRow key={i} e={e} index={i} />)}
               </div>
             </div>
 
             {/* Reporting templates */}
             <div>
-              <SectionHeader label="Reporting" count={`${policy.reportingTemplates.length} templates`} accent="bg-muted" />
+              <SectionHeader label="Reporting" count={`${policy.reportingTemplates.length} templates`} />
               {policy.reportingTemplates.map(t => (
                 <div key={t.id} className="flex items-center gap-3 px-5 py-3 border-b border-rule2 last:border-0 hover:bg-stone2 transition-colors">
                   <div className="flex-1 min-w-0">

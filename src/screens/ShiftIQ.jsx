@@ -461,14 +461,7 @@ function Finding({ f, onAct, onDismiss, onDelegate, dismissed }) {
        <>
         {/* Header: urgency chip + source */}
         <div className="flex items-center justify-between px-4 pt-3 pb-1.5">
-         <div className="flex items-center gap-1.5">
-          <StatusPill tone={f.urgency === 'danger' ? 'danger' : f.urgency === 'warn' ? 'warn' : 'ok'}>{urgencyLabel}</StatusPill>
-          {f.recurring && (
-           <Link to={`/capa?finding=${f.id}`} className="font-body text-warn text-label flex items-center gap-1 hover:text-ink transition-colors" title="Open root cause investigation in CAPA">
-            <RefreshCw size={9} strokeWidth={2} />Recurring · {f.recurring.count} of {f.recurring.window} shifts
-           </Link>
-          )}
-         </div>
+         <StatusPill tone={f.urgency === 'danger' ? 'danger' : f.urgency === 'warn' ? 'warn' : 'ok'}>{urgencyLabel}</StatusPill>
          <div className="flex items-center gap-1.5">
           {f.source && <StatusPill tone="muted">{f.source}</StatusPill>}
           {f.capaId && (
@@ -480,8 +473,15 @@ function Finding({ f, onAct, onDismiss, onDelegate, dismissed }) {
         </div>
         {/* Body: title + desc + evidence */}
         <div className="px-4 pb-3 space-y-1.5">
-         <p className="font-body text-ink font-medium text-base leading-snug">{f.title}</p>
-         <p className="font-body text-ink-2 text-body leading-relaxed">{f.desc}</p>
+         <div className="flex items-start justify-between gap-3">
+          <p className="font-body text-ink font-medium text-base leading-snug">{f.title}</p>
+          {f.recurring && (
+           <Link to={`/capa?finding=${f.id}`} className="flex-shrink-0 mt-px" title="Open root cause investigation in CAPA">
+            <StatusPill tone="warn"><RefreshCw size={9} strokeWidth={2} className="inline mr-1 -mt-px" />Recurring</StatusPill>
+           </Link>
+          )}
+         </div>
+         <p className="font-body text-ink text-body leading-relaxed">{f.desc}</p>
          {f.evidence && (() => {
           const isPrecedent = f.evidence.toLowerCase().startsWith('precedent:')
           const sourceLine = f.evidence.match(/Line\s\d+/)?.[0] || null

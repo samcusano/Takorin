@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useFocusTrap, useExitAnimation } from '../lib/utils'
-import { FileText, BarChart2, ShieldCheck, Clock, Brain, Search, Zap } from 'lucide-react'
+import { FileText, BarChart2, ShieldCheck, Clock, Brain, Search, Cpu } from 'lucide-react'
 import { Check, X, AlertTriangle, ArrowRight, TrendingUp } from 'lucide-react'
 import { StatusPill, SP, ActionBanner, Btn, HoldButton, Tabs, SceneHeader, SectionHeader, Checkbox, AnimatedScore, StatGrid, EmptyState, SectionLabel } from '../components/UI'
 import { openCases, patternRows, benchmarks } from '../data/capa.js'
@@ -59,7 +59,7 @@ function CaseDetailPanel({ caseData, onClose }) {
  <div className="font-body text-label text-muted mb-1">{m.l}</div>
  {m.agent ? (
   <div className="flex items-center gap-1.5">
-   <Zap size={10} strokeWidth={2} style={{ color: 'var(--color-deep)', flexShrink: 0 }} aria-hidden="true" />
+   <Cpu size={10} strokeWidth={2} style={{ color: 'var(--color-deep)', flexShrink: 0 }} aria-hidden="true" />
    <span className="font-body text-label font-medium" style={{ color: 'var(--color-deep)' }}>{m.v}</span>
   </div>
  ) : (
@@ -193,7 +193,7 @@ function PriorityQueueRow({ c, isSelected, onSelect, isEscalated, isResolved, in
   </StatusPill>
   {c.source?.startsWith('Auto-created') && !isResolved && !isEscalated && (
    <span className="flex items-center gap-1 font-body text-label px-1.5 py-0.5 flex-shrink-0" style={{ color: 'var(--color-deep)', background: 'rgba(124,134,232,0.10)', border: '1px solid rgba(124,134,232,0.22)' }}>
-    <Zap size={9} strokeWidth={2} aria-hidden="true" />Agent-opened
+    <Cpu size={8} strokeWidth={2} aria-hidden="true" />Agent-opened
    </span>
   )}
   {c.directorTurn && !isResolved && !isEscalated && (
@@ -416,8 +416,6 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
  {!isClosed && !actionTaken && (
  <div ref={recommendedActionRef}>
  <SectionHeader
-  label={isBlocking ? 'Blocking' : c.type === 'ca' ? 'Ready to close' : 'Action required'}
-  tone={isBlocking ? 'danger' : c.type === 'ca' ? 'ok' : 'warn'}
   sub="Recommended action"
  />
  <div className={`px-4 py-4 border-b border-rule2 ${isBlocking ? 'bg-danger/[0.025]' : c.type === 'ca' ? 'bg-ok/[0.02]' : ''}`}>
@@ -428,8 +426,8 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
  {c.expectedImpact && (
  <div className="bg-ok/[0.05] px-3 py-3">
   <div className="flex items-center gap-1.5 mb-1.5">
-   <Check size={11} strokeWidth={2.5} className="text-ok flex-shrink-0" />
-   <span className="font-body text-ok text-label font-medium">If you act</span>
+   
+   <StatusPill tone="ok"><Check size={8} strokeWidth={2} aria-hidden="true" />If you act</StatusPill>
   </div>
   <div className="font-display text-muted text-body leading-snug">{c.expectedImpact}</div>
  </div>
@@ -437,8 +435,8 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
  {c.riskIfIgnored && (
  <div className="bg-danger/[0.04] px-3 py-3">
   <div className="flex items-center gap-1.5 mb-1.5">
-   <X size={11} strokeWidth={2.5} className="text-danger flex-shrink-0" />
-   <span className="font-body text-danger text-label font-medium">If you delay</span>
+   
+   <StatusPill tone="danger"><X size={8} strokeWidth={2} aria-hidden="true" />If you delay</StatusPill>
   </div>
   <div className="font-display text-muted text-body leading-snug">{c.riskIfIgnored}</div>
  </div>
@@ -450,7 +448,7 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
  {isBlocking ? (
  <>
  <input ref={fileInputRef} type="file" className="hidden" onChange={handleUpload} />
- <Btn variant="primary" onClick={() => fileInputRef.current?.click()} className="w-full !justify-between !rounded-none">
+ <Btn variant="primary" onClick={() => fileInputRef.current?.click()} className="w-full">
   <span>{c.recommendedAction}</span>
  </Btn>
  </>
@@ -505,12 +503,12 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
   <Btn variant="ghost" onClick={() => setClosureStep(null)}>← Back</Btn>
  </div>
  ) : (
- <Btn variant="primary" onClick={() => setClosureStep('measure')} className="w-full !justify-between !rounded-none">
+ <Btn variant="primary" onClick={() => setClosureStep('measure')} className="w-full">
   <span>{c.recommendedAction || 'Approve & close case'}</span>
  </Btn>
  )
  ) : (
- <Btn variant="primary" onClick={handleEscalate} className="w-full !justify-between !rounded-none">
+ <Btn variant="primary" onClick={handleEscalate} className="w-full">
   <span>{c.recommendedAction || c.primaryLabel}</span>
  </Btn>
  )}

@@ -3,7 +3,7 @@
 
 import { useState } from 'react'
 import { batches, batchSummary } from '../data/batches'
-import { CheckCircle, AlertTriangle, TrendingUp, TrendingDown, Minus } from 'lucide-react'
+import { CheckCircle, AlertTriangle, TrendingUp, TrendingDown, Minus, Calendar, CalendarClock, Weight } from 'lucide-react'
 import { sensoryReadings, expertAnnotations, craftPriors, seasonalBaselines } from '../data/quality'
 import { compliancePolicies } from '../data/compliance'
 import { Tabs, SectionHeader, StatusPill, SceneHeader, toneColor, AnimatedScore } from '../components/UI'
@@ -39,7 +39,6 @@ function ConfidenceChart({ trajectory, forecast }) {
   const cx = toX(trajectory.length - 1)
   const cy = toY(lastActual.val)
 
-  // Area fill under actual trajectory
   const fillPts = [
     `${toX(0)},${H - pad}`,
     ...trajectory.map((p, i) => `${toX(i)},${toY(p.val)}`),
@@ -55,23 +54,17 @@ function ConfidenceChart({ trajectory, forecast }) {
           <stop offset="100%" stopColor="var(--color-ok)" stopOpacity="0" />
         </linearGradient>
       </defs>
-      {/* Grid lines */}
       {[60, 70, 80, 90].map(v => (
         <line key={v} x1={pad} x2={W - pad} y1={toY(v)} y2={toY(v)}
           stroke="var(--color-rule-2)" strokeWidth={2} />
       ))}
-      {/* Area fill */}
       <polygon points={fillPts} fill="url(#trajFill)" />
-      {/* Forecast (dashed) */}
       <polyline points={forecPts} fill="none" stroke="var(--color-signal)"
         strokeWidth={1.5} strokeDasharray="4 3" opacity={0.6} />
-      {/* Actual trajectory */}
       <polyline points={trajPts} fill="none" stroke="var(--color-ok)"
         strokeWidth={2} strokeLinecap="round" />
-      {/* Current point */}
       <circle cx={cx} cy={cy} r={4} fill="var(--color-ok)" />
       <circle cx={cx} cy={cy} r={7} fill="var(--color-ok)" opacity={0.2} />
-      {/* Labels */}
       {[60, 80, 100].map(v => (
         <text key={v} x={4} y={toY(v) + 3} fontSize={8}
           fill="var(--color-dim, #4A5D74)" fontFamily="'IBM Plex Sans'">{v}%</text>
@@ -186,17 +179,23 @@ function QualityTab() {
                       <div className="font-body text-muted text-label mt-0.5">{r.gradeProjection} · {r.confidence}% conf</div>
                     </div>
                   </div>
-                  <div className="divide-y divide-rule2">
+                  <div className="px-3 pb-3 grid gap-2" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(176px, 1fr))' }}>
                     {r.compounds.map((c, i) => {
                       const tc = c.tone === 'ok' ? 'text-ok' : c.tone === 'warn' ? 'text-warn' : 'text-danger'
+                      const borderCls = c.tone === 'ok' ? 'border-l-ok' : c.tone === 'warn' ? 'border-l-warn' : 'border-l-danger'
                       const Arrow = c.direction === 'up' ? TrendingUp : c.direction === 'down' ? TrendingDown : Minus
                       const arrowColor = c.direction === 'up' ? 'text-ok' : c.direction === 'down' ? 'text-warn' : 'text-muted'
                       return (
-                        <div key={i} className="flex items-center gap-3 px-4 py-2.5">
-                          <span className="font-body text-ink text-label flex-1 truncate">{c.name}</span>
-                          <span className="font-body text-muted text-micro">{c.baseline}</span>
-                          <Arrow size={10} className={arrowColor} strokeWidth={2} />
-                          <span className={`display-num text-base tabular-nums ${tc} w-24 text-right`}>{c.val} {c.unit}</span>
+                        <div key={i} className={`border border-rule2 border-l-4 ${borderCls} p-3`}>
+                          <div className="flex items-start justify-between gap-1 mb-1.5">
+                            <span className="font-body text-muted text-label leading-snug flex-1">{c.name}</span>
+                            <Arrow size={9} className={`${arrowColor} flex-shrink-0 mt-0.5`} strokeWidth={2} />
+                          </div>
+                          <div className={`display-num text-title leading-none tabular-nums ${tc}`}>
+                            {c.val} <span className="font-body text-micro text-muted font-normal">{c.unit}</span>
+                          </div>
+                          <div className="font-body text-muted text-micro mt-1">{c.baseline}</div>
+                          {c.note && <div className="font-body text-muted text-label mt-1.5 leading-snug">{c.note}</div>}
                         </div>
                       )
                     })}
@@ -264,20 +263,18 @@ function QualityTab() {
           </div>
         )}
         {qTab === 'baselines' && (
-          <div className="grid grid-cols-2 divide-x divide-y divide-rule2 border-b border-rule2">
+          <div className="p-4 grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))' }}>
             {seasonalBaselines.map((s, i) => (
-              <div key={i} className={`px-6 py-5 ${s.tone === 'warn' ? 'bg-warn/[0.02]' : ''}`}>
-                <div className="flex items-start justify-between gap-2 mb-4">
-                  <div>
-                    <div className="font-body font-bold text-ink text-base">{s.season}</div>
-                    <div className="font-body text-muted text-micro mt-1">{s.ambientTempRange} ambient</div>
-                  </div>
+              <div key={i} className={`border border-rule2 border-l-4 ${s.tone === 'warn' ? 'border-l-warn' : 'border-l-ok'} p-4`}>
+                <div className="flex items-start justify-between gap-2 mb-3">
+                  <div className="font-body font-bold text-ink text-base">{s.season}</div>
                   <StatusPill tone={s.tone === 'warn' ? 'warn' : 'ok'}>
                     {s.tone === 'warn' ? 'Watch' : 'Nominal'}
                   </StatusPill>
                 </div>
-                <div className="space-y-3">
+                <div className="space-y-2.5 mb-3">
                   {[
+                    { label: 'Ambient',             val: s.ambientTempRange },
                     { label: 'Fermentation target', val: s.fermentationTempTarget },
                     { label: 'Expected amino N',    val: s.expectedAmino },
                     { label: 'Expected aroma',      val: s.expectedAroma },
@@ -287,9 +284,9 @@ function QualityTab() {
                       <div className="font-body font-medium text-ink text-body mt-0.5">{val}</div>
                     </div>
                   ))}
-                  <div className="pt-3 border-t border-rule2">
-                    <p className="font-display text-muted text-body leading-relaxed">{s.notes}</p>
-                  </div>
+                </div>
+                <div className="border-t border-rule2 pt-2.5">
+                  <p className="font-body text-muted text-label leading-relaxed">{s.notes}</p>
                 </div>
               </div>
             ))}
@@ -377,9 +374,9 @@ export default function BatchIntelligence() {
           statement={statement}
           tone={scoreTone}
           meta={[
-            { label: 'Start', value: fmtDate(batch.startDate) },
-            { label: batch.stage === 'complete' ? 'Completed' : 'Projected', value: fmtDate(batch.stage === 'complete' ? batch.completedDate : batch.predictedCompletionDate) },
-            { label: 'Volume', value: batch.volume },
+            { label: <Calendar size={9} />, value: fmtDate(batch.startDate) },
+            { label: <CalendarClock size={9} />, value: fmtDate(batch.stage === 'complete' ? batch.completedDate : batch.predictedCompletionDate) },
+            { label: <Weight size={9} />, value: batch.volume },
           ]}
         >
           {activePolicies.map(p => (
@@ -389,11 +386,10 @@ export default function BatchIntelligence() {
 
         {/* Lifecycle progress */}
         <div className="flex-shrink-0 px-6 py-3 border-b border-rule2 bg-stone2">
-          <SectionHeader
-            title="Lifecycle"
-            badge={<span className="font-body text-muted text-label">{batch.daysElapsed} of {batch.totalDays} days · {pct}%</span>}
-            className="px-0 py-0 border-0 mb-3"
-          />
+          <div className="flex items-center justify-between mb-3">
+            <span className="font-display font-semibold text-ink text-base">Lifecycle</span>
+            <span className="font-body text-muted text-label">{batch.daysElapsed} of {batch.totalDays} days · {pct}%</span>
+          </div>
           <StageTracker stages={batch.stages} />
         </div>
 
@@ -448,11 +444,11 @@ export default function BatchIntelligence() {
                 <div>
                   <div className="font-body text-muted text-label mb-2.5">Sensory scores</div>
                   {[
-                    { label: 'Aroma',  val: batch.qualityPrediction.aroma },
-                    { label: 'Color',  val: batch.qualityPrediction.color },
-                    { label: 'Umami',  val: batch.qualityPrediction.taste.umami },
-                    { label: 'Salt balance', val: batch.qualityPrediction.taste.salt },
-                    { label: 'Sweet',  val: batch.qualityPrediction.taste.sweet },
+                    { label: 'Aroma',       val: batch.qualityPrediction.aroma },
+                    { label: 'Color',       val: batch.qualityPrediction.color },
+                    { label: 'Umami',       val: batch.qualityPrediction.taste.umami },
+                    { label: 'Salt balance',val: batch.qualityPrediction.taste.salt },
+                    { label: 'Sweet',       val: batch.qualityPrediction.taste.sweet },
                   ].map(({ label, val }) => (
                     <div key={label} className="flex items-center gap-2 mb-2">
                       <span className="font-body text-muted text-label w-20 flex-shrink-0">{label}</span>

@@ -139,7 +139,7 @@ function SupplierCard({ tone = 'warn', title, desc, evidence, children, actions,
     <div className="row-in" style={{ background: SC.surface, border: `1px solid ${SC.border}`, borderLeft: `3px solid ${accent}`, marginBottom: 10, animationDelay: `${delay}ms` }}>
       <div style={{ padding: '14px 16px 10px' }}>
         <div className="font-display font-semibold text-base text-ink leading-snug mb-2">{title}</div>
-        {desc && <p className="font-display text-body leading-relaxed m-0" style={{ color: SC.context }}>{desc}</p>}
+        {desc && <p className="font-display text-body text-ink leading-relaxed m-0">{desc}</p>}
       </div>
       {evidence && (
         <div style={{ padding: '8px 16px', borderTop: `1px solid ${SC.border2}`, borderBottom: `1px solid ${SC.border2}` }}>
@@ -157,7 +157,7 @@ function SupplierCard({ tone = 'warn', title, desc, evidence, children, actions,
 }
 
 // ── SupplierRow — OperatorRow grammar for supplier standings ──────────────────
-function SupplierRow({ s, audit, isDanger, index, total }) {
+function SupplierRow({ s, audit, isDanger, certGap, index, total }) {
   const scoreColor = s.score >= 90 ? SC.sage : s.score >= 80 ? SC.amber : SC.rust
   const hasFlag = isDanger || audit?.result === 'Conditional' || audit?.needsAction
   const flagLabel = audit?.needsAction ? 'Needs action' : isDanger ? 'At risk' : 'Conditional'
@@ -179,6 +179,7 @@ function SupplierRow({ s, audit, isDanger, index, total }) {
         </div>
         <span className="font-body text-label" style={{ minWidth: 28, textAlign: 'right', color: scoreColor }}>{s.score}</span>
       </div>
+      {certGap && <StatusPill tone="warn">{certGap.badge} cert</StatusPill>}
       {hasFlag && (
         <span className="font-body text-micro flex-shrink-0 px-1.5 py-0.5"
           style={{ color: flagColor, background: `${flagColor}18`, border: `1px solid ${flagColor}40` }}>
@@ -239,43 +240,12 @@ export default function SupplierIQ() {
 
   const resolveCount = blockingLots.length + auditActionSuppliers.length
 
-  // ── Right rail ────────────────────────────────────────────────────────────
-  const side = (
-    <>
-      {/* Open gaps — severity-weighted */}
-      <div className="border-b border-rule2">
-        <div className="px-5 py-3 border-b border-rule2 flex items-baseline justify-between">
-          <span className="font-display font-semibold text-ink text-base">Open gaps</span>
-          <span className="font-body text-muted text-label">3 active</span>
-        </div>
-        {d.gaps.map((g, i) => {
-          const isBlock = g.tone === 'block'
-          const isWarn  = g.tone === 'warn'
-          return (
-            <div key={i} className={`border-b border-rule2 last:border-b-0 ${
-              isBlock ? 'bg-danger/[0.035]' : ''
-            } ${isBlock ? 'px-4 py-4' : 'px-4 py-3'}`}>
-              {/* Badge row */}
-              <div className="mb-2">
-                <span className={`font-body font-semibold text-label inline-flex items-center gap-1.5 px-2 py-0.5 ${
-                  isBlock ? 'bg-danger/15 text-danger' : isWarn ? 'bg-warn/10 text-warn' : 'bg-ok/10 text-ok'
-                }`}>
-                  {isBlock && <span className="w-1.5 h-1.5 rounded-full bg-danger inline-block animate-pulse" />}
-                  {g.badge}
-                </span>
-              </div>
-              {/* Title */}
-              <div className={`font-display font-semibold leading-tight ${
-                isBlock ? 'text-base text-danger' : 'text-body text-ink'
-              }`}>{g.title}</div>
-              {/* Sub */}
-              <div className="font-body text-muted text-label mt-1">{g.sub}</div>
-            </div>
-          )
-        })}
-      </div>
-    </>
-  )
+  // Map cert-type gaps (warn tone) to their supplier by name match
+  const certGapBySupplier = {}
+  d.gaps.filter(g => g.tone === 'warn').forEach(g => {
+    const match = d.suppliers.find(s => g.title.includes(s.name))
+    if (match) certGapBySupplier[match.name] = g
+  })
 
   return (
     <>
@@ -293,7 +263,7 @@ export default function SupplierIQ() {
       {activeTab === 'suppliers' && <>
 
       <div className="flex flex-1 min-h-0 overflow-hidden">
-      <div className="flex-1 overflow-y-auto" style={{ borderRight: `1px solid ${SC.border}` }}>
+      <div className="flex-1 overflow-y-auto">
 
         {/* ── Resolve now ── */}
         {resolveCount > 0 && (
@@ -427,6 +397,7 @@ export default function SupplierIQ() {
                 s={s}
                 audit={supplierAudits[s.name]}
                 isDanger={s.tierTone === 'danger'}
+                certGap={certGapBySupplier[s.name]}
                 index={i}
                 total={sortedSuppliers.length}
               />
@@ -434,11 +405,6 @@ export default function SupplierIQ() {
           </div>
         </div>
 
-      </div>
-
-      {/* Right column — Open gaps */}
-      <div style={{ width: 304, flexShrink: 0, overflowY: 'auto', background: SC.bg }}>
-        {side}
       </div>
 
       </div>

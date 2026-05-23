@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { Brain, Check, Users, TrendingUp, TrendingDown, Eye } from 'lucide-react'
-import { Btn, AnimatedScore, SlidePanel } from '../components/UI'
+import { Brain, Check, Users, TrendingUp, TrendingDown, Eye, RefreshCw } from 'lucide-react'
+import { Btn, AnimatedScore, SlidePanel, StatusPill } from '../components/UI'
 import { Link } from 'react-router-dom'
 import { useAppState } from '../context/AppState'
 import { crew, agentEvents } from '../data/shift'
@@ -85,24 +85,20 @@ function FindingCard({ f, index, onAct, onDelegate }) {
 
       {/* Header */}
       <div style={{ padding: '14px 16px 10px' }}>
-        <div className="font-display font-semibold text-base text-ink leading-snug mb-2">
-          {f.title}
+        <div className="flex items-start justify-between gap-3 mb-2">
+          <div className="font-display font-semibold text-base text-ink leading-snug">
+            {f.title}
+          </div>
+          {f.recurring && (
+            <Link to={`/capa?finding=${f.id}`} className="flex-shrink-0 mt-px" title="Open root cause investigation in CAPA">
+              <StatusPill tone="warn"><RefreshCw size={9} strokeWidth={2} className="inline mr-1 -mt-px" />Recurring</StatusPill>
+            </Link>
+          )}
         </div>
-        <p className="font-display text-body leading-relaxed" style={{ margin: 0, color: P.clay }}>
+        <p className="font-display text-body text-ink leading-relaxed" style={{ margin: 0 }}>
           {f.desc}
         </p>
       </div>
-
-      {/* Pattern indicator */}
-      {f.recurring && (
-        <div style={{ padding: '6px 16px', borderTop: `1px solid ${P.border2}` }}>
-          <Link
-            to={`/capa?finding=${f.id}`}
-            className="font-body text-label text-warn bg-warn/10 px-1.5 py-px hover:bg-warn/20 transition-colors inline-flex items-center gap-1">
-            Recurring · {f.recurring.count} of {f.recurring.window} shifts
-          </Link>
-        </div>
-      )}
 
       {/* Evidence */}
       <div style={{ padding: '8px 16px', borderTop: `1px solid ${P.border2}`, borderBottom: `1px solid ${P.border2}` }}>
@@ -135,7 +131,7 @@ function FindingCard({ f, index, onAct, onDelegate }) {
             <Btn variant="secondary" onClick={() => setDismissed(true)}>{f.actions[1]}</Btn>
           )}
           {(f.delegateTo?.length > 0) && (
-            <Btn variant="ghost" onClick={() => setDelegating(true)} className="ml-auto !px-2 !min-h-0 flex items-center gap-1">
+            <Btn variant="ghost" onClick={() => setDelegating(true)} className="ml-auto !px-2 !min-h-0 flex items-center gap-1 whitespace-nowrap">
               <Users size={10} strokeWidth={2} />Assign
             </Btn>
           )}

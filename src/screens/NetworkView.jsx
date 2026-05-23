@@ -157,9 +157,8 @@ function ExposureOverlay({ triggerRef, active, actions, onAction, onBulkAction, 
  )
 }
 
-function ExposureCommandSurface({ exposures, actions, containmentMode, onAction, onBulkAction }) {
+function ExposureCommandSurface({ exposures, actions, containmentMode, onAction, onBulkAction, open, onToggle, onClose }) {
  const active = exposures.filter(e => !actions[e.lotId])
- const [open, setOpen] = useState(false)
  const triggerRef = useRef(null)
 
  if (active.length === 0) return null
@@ -171,7 +170,7 @@ function ExposureCommandSurface({ exposures, actions, containmentMode, onAction,
   <>
    <button type="button"
     ref={triggerRef}
-    onClick={() => setOpen(o => !o)}
+    onClick={onToggle}
     className="w-full flex items-center gap-3 px-6 py-3.5 border-b-2 border-b-danger/30 bg-danger/[0.025] flex-shrink-0 text-left"
    >
     <div className="w-2 h-2 rounded-full bg-danger flex-shrink-0 beat" />
@@ -194,125 +193,109 @@ function ExposureCommandSurface({ exposures, actions, containmentMode, onAction,
      actions={actions}
      onAction={onAction}
      onBulkAction={onBulkAction}
-     onClose={() => setOpen(false)}
+     onClose={onClose}
     />
    )}
   </>
  )
 }
 
-// ── Layer 2: Supplier Risk Registry ───────────────────────────────────────────
-// Persistent. Analytical. System of record.
-// Rows scale to N suppliers. Affected plants always inline — never hidden.
+// Supplier name aliases — exposure data uses short names, registry uses full names
+const SUPPLIER_ALIAS = {
+ 'ConAgra': 'ConAgra Foods',
+ 'ADM':     'ADM Foods',
+}
 
-const COL = '1fr 72px 96px 160px 90px 76px'
+// ── Layer 2: Supplier Risk Registry — tile grid ───────────────────────────────
+
+function RiskBar({ value }) {
+ const clr = value < 40 ? 'bg-danger' : value < 65 ? 'bg-warn' : 'bg-ok'
+ const txt = value < 40 ? 'text-danger' : value < 65 ? 'text-warn' : 'text-ok'
+ return (
+  <div className="flex items-center gap-2 mt-1.5">
+   <div className="h-[3px] flex-1 bg-stone3 overflow-hidden">
+    <div className={`h-full ${clr} transition-[width] duration-500`} style={{ width: `${value}%` }} />
+   </div>
+   <span className={`display-num text-label w-7 text-right flex-shrink-0 tabular-nums ${txt}`}>{value}</span>
+  </div>
+ )
+}
 
 function SupplierRegistry({ rows }) {
  const lockedSignals = NETWORK_SIGNALS.filter(s => s.locked)
  return (
-  <div className="flex-1 overflow-y-auto flex flex-col">
-   {/* Column headers */}
-   <div className="grid px-6 py-2 bg-stone2 border-b border-rule2 flex-shrink-0"
-    style={{ gridTemplateColumns: COL }}>
-    <span className="font-body text-muted text-label">Supplier</span>
-    <span className="font-body text-muted text-label text-right">Net. Risk</span>
-    <span className="font-body text-muted text-label text-center">Exposures</span>
-    <span className="font-body text-muted text-label">Affected Plants</span>
-    <span className="font-body text-muted text-label text-right">Trend</span>
-    <span className="font-body text-muted text-label text-right">Confidence</span>
-   </div>
-
-   {/* Supplier rows */}
-   <div className="flex-1">
+  <div className="flex-1 overflow-y-auto">
+   {/* Tile grid */}
+   <div className="p-4 grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))' }}>
     {rows.map(s => {
-     const riskColor  = s.networkRisk < 40 ? 'text-danger' : s.networkRisk < 65 ? 'text-warn' : 'text-ok'
      const hasExposure = s.activeExposureCount > 0
+     const borderCls = hasExposure ? 'border-l-danger' : s.tone === 'warn' ? 'border-l-warn' : 'border-l-ok'
+     const bgCls     = hasExposure ? 'bg-danger/[0.025]' : ''
+     const riskTxt   = s.networkRisk < 40 ? 'text-danger' : s.networkRisk < 65 ? 'text-warn' : 'text-ok'
+     const trendTxt  = hasExposure || s.tone === 'danger' ? 'text-danger' : s.tone === 'warn' ? 'text-warn' : 'text-muted'
+     const trendLabel = s.trend === 'down' ? 'Declining' : s.trend === 'up' ? 'Improving' : 'Stable'
      return (
-      <div key={s.name}
-       className={`grid items-center px-6 py-3.5 border-b border-rule2 border-l-2 ${
-        hasExposure ? 'border-l-danger bg-danger/[0.02]' : 'border-l-transparent'
-       }`}
-       style={{ gridTemplateColumns: COL }}>
-
-       {/* Supplier */}
-       <div className="flex items-center gap-2 min-w-0 pr-3">
-        {hasExposure && <div className="w-1.5 h-1.5 rounded-full bg-danger flex-shrink-0 beat" />}
+      <div key={s.name} className={`border border-rule2 border-l-4 ${borderCls} ${bgCls} p-4`}>
+       {/* Top row — name + dot */}
+       <div className="flex items-start justify-between gap-2 mb-2.5">
         <div className="min-w-0">
-         <div className={`font-body font-medium text-body truncate ${hasExposure ? 'text-danger' : 'text-ink'}`}>
+         <div className={`font-display font-bold text-base leading-none mb-0.5 ${hasExposure ? 'text-danger' : 'text-ink'}`}>
           {s.name}
          </div>
-         {s.note && (
-          <div className={`font-body text-label mt-0.5 truncate ${hasExposure ? 'text-danger/70' : 'text-muted'}`}>
-           {s.note}
-          </div>
-         )}
+         <div className="font-body text-muted text-label">{s.note ?? 'No active alerts'}</div>
         </div>
-       </div>
-
-       {/* Network Risk — worst score across connected plants */}
-       <div className={`display-num text-head font-bold text-right ${riskColor}`}>
-        {s.networkRisk}
-       </div>
-
-       {/* Exposure Count */}
-       <div className="flex justify-center">
-        {s.activeExposureCount > 0 ? (
-         <StatusPill tone="danger">{s.activeExposureCount} active</StatusPill>
-        ) : (
-         <span className="font-body text-muted text-label">—</span>
-        )}
-       </div>
-
-       {/* Affected Plants — always inline, never hidden */}
-       <div className="font-body text-label min-w-0">
-        {s.affectedPlantCodes.length > 0 ? (
-         <span className={hasExposure ? 'text-danger' : 'text-ink'}>
-          {s.affectedPlantCodes.join(' · ')}
-         </span>
-        ) : (
-         <span className="text-muted">—</span>
-        )}
-       </div>
-
-       {/* Trend */}
-       <div className="flex items-center justify-end gap-1">
-        {s.trend === 'down' && <TrendingDown size={10} strokeWidth={2} className="text-danger flex-shrink-0" />}
-        <span className={`font-body text-label ${
-         hasExposure || s.tone === 'danger' ? 'text-danger' :
-         s.tone === 'warn' ? 'text-warn' : 'text-muted'
-        }`}>
-         {s.trend === 'down' ? 'Declining' : s.trend === 'up' ? 'Improving' : 'Stable'}
+        <span className="relative flex h-2 w-2 flex-shrink-0 mt-0.5">
+         {hasExposure && <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-danger opacity-40" />}
+         <span className={`relative inline-flex rounded-full h-2 w-2 ${hasExposure ? 'bg-danger' : s.tone === 'warn' ? 'bg-warn' : 'bg-ok'}`} />
         </span>
        </div>
 
-       {/* Confidence — from intelligence signal if applicable */}
-       <div className="text-right">
-        {s.confidence != null ? (
-         <span className={`display-num text-body font-bold ${
-          s.confidence >= 85 ? 'text-danger' : s.confidence >= 70 ? 'text-warn' : 'text-muted'
-         }`}>{s.confidence}%</span>
-        ) : (
-         <span className="font-body text-muted text-label">—</span>
+       {/* Network risk */}
+       <div className="mb-1">
+        <div className="font-body text-muted text-label">Network risk</div>
+        <RiskBar value={s.networkRisk} />
+       </div>
+
+       {/* Trend + confidence */}
+       <div className={`font-body font-medium text-label ${trendTxt} mb-2.5`}>
+        {s.trend === 'down' && <TrendingDown size={9} strokeWidth={2} className="inline mr-1 mb-px" />}
+        {trendLabel}
+        {s.confidence != null && (
+         <span className={`ml-2 font-normal ${s.confidence >= 85 ? 'text-danger' : s.confidence >= 70 ? 'text-warn' : 'text-muted'}`}>
+          · {s.confidence}% conf
+         </span>
         )}
        </div>
+
+       {/* Affected plants */}
+       {s.affectedPlantCodes.length > 0 && (
+        <div className="flex gap-1.5 flex-wrap">
+         {s.affectedPlantCodes.map(code => (
+          <StatusPill key={code} tone="danger">{code}</StatusPill>
+         ))}
+         {s.activeExposureCount > 0 && (
+          <StatusPill tone="danger">{s.activeExposureCount} exposure{s.activeExposureCount > 1 ? 's' : ''}</StatusPill>
+         )}
+        </div>
+       )}
       </div>
      )
     })}
    </div>
 
-   {/* Locked intelligence signals — growth indicators */}
+   {/* Locked intelligence signals */}
    {lockedSignals.length > 0 && (
-    <div className="border-t border-rule2 flex-shrink-0">
-     <div className="px-6 py-2 bg-stone2 border-b border-rule2 flex items-center gap-2">
+    <div className="border-t border-rule2 mx-4 mb-4">
+     <div className="py-2 border-b border-rule2 flex items-center gap-2">
       <Brain size={10} strokeWidth={2} className="text-muted" />
       <span className="font-body text-muted text-label">
-       {lockedSignals.length} intelligence signals locked — activate at 3 connected plants
+       {lockedSignals.length} signals locked — activate at 3 connected plants
       </span>
      </div>
      {lockedSignals.map(sig => (
-      <div key={sig.id} className="flex items-start gap-3 px-6 py-3 border-b border-rule2 last:border-b-0 opacity-40">
+      <div key={sig.id} className="flex items-start gap-3 py-3 border-b border-rule2 last:border-b-0 opacity-40">
        <Lock size={10} strokeWidth={2} className="text-muted flex-shrink-0 mt-0.5" />
-       <div className="flex-1 min-w-0">
+       <div className="min-w-0">
         <div className="font-body text-muted text-label leading-snug">{sig.label}</div>
         <div className="font-body text-muted text-label mt-0.5">{sig.detail}</div>
        </div>
@@ -321,10 +304,9 @@ function SupplierRegistry({ rows }) {
     </div>
    )}
 
-   {/* Registry footer */}
-   <div className="px-6 py-2 border-t border-rule2 bg-stone2 flex-shrink-0">
+   <div className="px-4 pb-3">
     <span className="font-body text-muted text-label">
-     Net. Risk = lowest percentile rank across connected plants · Updated weekly · Confidence = AI signal strength
+     Net. risk = lowest percentile rank across connected plants · Confidence = AI signal strength
     </span>
    </div>
   </div>
@@ -405,6 +387,7 @@ function NetworkSummaryBar({ activeExposures, containmentMode }) {
 export default function NetworkView() {
  const { plantActions, setPlantActions } = useAppState()
 
+
  const exposures       = [...(networkData.sharedExposure || []), ...EXTRA_EXPOSURES]
  const activeExposures = exposures.filter(e => !plantActions[e.lotId])
  const containmentMode = exposures.length > 0 && exposures.every(e => plantActions[e.lotId] === 'hold')
@@ -423,7 +406,7 @@ export default function NetworkView() {
  // Compute registry rows — network risk = worst score, confidence from signals, plants always inline
  const registryRows = SUPPLIER_NETWORK.map(s => {
   const networkRisk = Math.min(s.salina, s.wichita)
-  const supplierActive = activeExposures.filter(e => e.supplier === s.name)
+  const supplierActive = activeExposures.filter(e => (SUPPLIER_ALIAS[e.supplier] ?? e.supplier) === s.name)
   const affectedPlantCodes = [...new Set(supplierActive.flatMap(e =>
    e.affectedPlants.map(id => PLANT_CODE[id] || id)
   ))]
@@ -437,13 +420,6 @@ export default function NetworkView() {
  return (
   <div className="flex flex-col h-full overflow-hidden content-reveal">
    <NetworkSummaryBar activeExposures={activeExposures} containmentMode={containmentMode} />
-   <ExposureCommandSurface
-    exposures={exposures}
-    actions={plantActions}
-    containmentMode={containmentMode}
-    onAction={handleAction}
-    onBulkAction={handleBulkAction}
-   />
    <SupplierRegistry rows={registryRows} />
   </div>
  )

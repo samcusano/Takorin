@@ -249,7 +249,7 @@ export function ActionBanner({ tone = 'warn', headline, body, children, footer }
 export function Btn({ variant = 'primary', icon: Icon, onClick, disabled, children, className = '', style }) {
  const base = 'font-body font-medium text-body px-4 py-2.5 min-h-[40px] inline-flex items-center justify-center gap-2 transition-[background-color,box-shadow,opacity,transform] duration-100 ease-standard active:scale-[0.97] cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed rounded-btn'
  const cls = {
-  primary:   'bg-signal text-stone hover:bg-signal-dark hover:shadow-raise',
+  primary:   'bg-signal text-white hover:bg-signal-dark hover:shadow-raise',
   secondary: 'border border-rule bg-stone2 text-ink hover:bg-stone3 hover:border-rule2',
   ghost:     'text-muted hover:text-ink',
  }[variant] ?? 'border border-rule bg-stone2 text-ink hover:bg-stone3 hover:border-rule2'
