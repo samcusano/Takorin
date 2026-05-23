@@ -641,13 +641,12 @@ function DecisionReplay({ pa, agent }) {
 // ─── Investigation panel (inside SlidePanel) ──────────────────────────────────
 
 function InvestigationPanel({ pa, agent, agentActions }) {
-  const [tab, setTab] = useState('evidence')
+  const [tab, setTab] = useState('signals')
   const prompt = agentPrompts[agent.id]
   const recentActions = (agentActions ?? []).filter(a => a.agentId === agent.id).slice(0, 5)
 
   const TABS = [
-    { id: 'evidence',    label: 'Evidence'    },
-    { id: 'impact',      label: 'Impact'      },
+    { id: 'signals',     label: 'Signals'     },
     { id: 'action-log',  label: 'Action log'  },
     { id: 'diagnostics', label: 'Diagnostics' },
   ]
@@ -657,104 +656,81 @@ function InvestigationPanel({ pa, agent, agentActions }) {
       <Tabs tabs={TABS} active={tab} onChange={setTab} flush />
 
       <div>
-        {tab === 'evidence' && (
+        {tab === 'signals' && (
           <div className="space-y-5">
-            {pa.evidence ? (
+            {pa.evidence?.causalSignals?.length > 0 ? (
               <>
-                <div>
-                  <div className="font-body text-muted text-label mb-2">Summary</div>
-                  <p className="font-body text-ink text-body leading-relaxed">{pa.evidence.summary}</p>
-                </div>
-                {pa.evidence.causalSignals?.length > 0 && (
-                  <div>
-                    <div className="font-body text-muted text-label mb-2">Causal signals</div>
-                    <div className="border border-rule2 divide-y divide-rule2">
-                      {pa.evidence.causalSignals.map((s, i) => {
-                        const tone = s.status === 'breach' || s.status === 'stale' ? 'danger' : s.status === 'warn' ? 'warn' : 'ok'
-                        const label = s.status === 'breach' ? 'Breach' : s.status === 'stale' ? 'Stale' : s.status === 'warn' ? 'Watch' : s.status === 'eligible' ? 'Eligible' : 'OK'
-                        return (
-                          <div key={i} className="grid grid-cols-[140px_1fr_auto] gap-3 px-3 py-2.5 items-start">
-                            <div className="font-body text-muted text-label pt-px">{s.signal}</div>
-                            <div>
-                              <div className="font-body text-ink text-label font-medium">{s.reading}</div>
-                              {s.threshold && <div className="font-body text-muted text-label mt-0.5">vs. {s.threshold}</div>}
-                              {s.note && <div className="font-body text-muted text-label mt-0.5 leading-snug">{s.note}</div>}
-                            </div>
-                            <StatusPill tone={tone}>{label}</StatusPill>
+                {(() => {
+                  const active     = pa.evidence.causalSignals.filter(s => s.stage !== 'suppressed')
+                  const suppressed = pa.evidence.causalSignals.filter(s => s.stage === 'suppressed')
+                  return (
+                    <>
+                      {active.length > 0 && (
+                        <div>
+                          <div className="font-body text-muted text-label mb-2">Signals used</div>
+                          <div className="border border-rule2 divide-y divide-rule2">
+                            {active.map((s, i) => {
+                              const tone  = s.status === 'breach' || s.status === 'stale' ? 'danger' : s.status === 'warn' ? 'warn' : 'ok'
+                              const label = s.status === 'breach' ? 'Breach' : s.status === 'stale' ? 'Stale' : s.status === 'warn' ? 'Watch' : 'OK'
+                              return (
+                                <div key={i} className="grid grid-cols-[140px_1fr_auto] gap-3 px-3 py-2.5 items-start">
+                                  <div className="font-body text-muted text-label pt-px">{s.signal}</div>
+                                  <div>
+                                    <div className="font-body text-ink text-label font-medium">{s.reading}</div>
+                                    {s.threshold && <div className="font-body text-muted text-label mt-0.5">vs. {s.threshold}</div>}
+                                    {s.note && <div className="font-body text-muted text-label mt-0.5 leading-snug">{s.note}</div>}
+                                  </div>
+                                  <StatusPill tone={tone}>{label}</StatusPill>
+                                </div>
+                              )
+                            })}
                           </div>
-                        )
-                      })}
-                    </div>
-                  </div>
-                )}
-                {pa.evidence.dependencies?.length > 0 && (
-                  <div>
-                    <div className="font-body text-muted text-label mb-2">Dependencies</div>
-                    <div className="border border-rule2 divide-y divide-rule2">
-                      {pa.evidence.dependencies.map((d, i) => {
-                        const depTone = d.status === 'blocked' ? 'danger' : d.status === 'required' ? 'warn' : d.status === 'eligible' ? 'ok' : 'muted'
-                        const depLabel = { required: 'Required', blocked: 'Blocked', eligible: 'Eligible', contingent: 'Contingent', pending: 'Pending', 'not-required': 'Not required' }[d.status] ?? d.status
-                        return (
-                          <div key={i} className="flex items-start gap-3 px-3 py-2.5">
-                            <div className="flex-1 min-w-0">
-                              <div className="font-body text-ink text-label font-medium">{d.label}</div>
-                              {d.note && <div className="font-body text-muted text-label mt-0.5 leading-snug">{d.note}</div>}
-                            </div>
-                            <StatusPill tone={depTone}>{depLabel}</StatusPill>
+                        </div>
+                      )}
+                      {suppressed.length > 0 && (
+                        <div>
+                          <div className="font-body text-muted text-label mb-2">Signals ruled out</div>
+                          <div className="border border-rule2 divide-y divide-rule2 opacity-60">
+                            {suppressed.map((s, i) => (
+                              <div key={i} className="flex items-start gap-3 px-3 py-2.5">
+                                <div className="flex-1 min-w-0">
+                                  <div className="font-body text-muted text-label">{s.signal} — {s.reading}</div>
+                                  {s.suppressReason && <div className="font-body text-muted text-label mt-0.5 leading-snug">{s.suppressReason}</div>}
+                                </div>
+                                <StatusPill tone="muted">Excluded</StatusPill>
+                              </div>
+                            ))}
                           </div>
-                        )
-                      })}
-                    </div>
-                  </div>
-                )}
-                {pa.evidence.riskForecast && (
-                  <div>
-                    <div className="font-body text-muted text-label mb-2">Risk forecast</div>
-                    <div className="border border-rule2 bg-stone2 px-4 py-3">
-                      <p className="font-body text-ink text-body leading-relaxed">{pa.evidence.riskForecast}</p>
-                    </div>
-                  </div>
-                )}
+                        </div>
+                      )}
+                    </>
+                  )
+                })()}
               </>
             ) : (
-              <div className="font-body text-muted text-label">No structured evidence available.</div>
+              <div className="font-body text-muted text-label">No signal data available.</div>
             )}
-          </div>
-        )}
 
-        {tab === 'impact' && (
-          <div className="space-y-4">
-            <div>
-              <div className="font-body text-muted text-label mb-2">If approved — downstream effects</div>
-              {pa.impactPreview?.length > 0 ? (
+            {pa.evidence?.dependencies?.length > 0 && (
+              <div>
+                <div className="font-body text-muted text-label mb-2">Dependencies</div>
                 <div className="border border-rule2 divide-y divide-rule2">
-                  {pa.impactPreview.map((line, i) => (
-                    <div key={i} className={`px-3 py-2.5 font-body text-label leading-snug ${
-                      line.toLowerCase().includes('liability') || line.toLowerCase().includes('legal') ? 'text-danger'
-                        : line.toLowerCase().includes('stale') || line.toLowerCase().includes('⚠') ? 'text-warn' : 'text-muted'
-                    }`}>{line}</div>
-                  ))}
+                  {pa.evidence.dependencies.map((d, i) => {
+                    const depTone  = d.status === 'blocked' ? 'danger' : d.status === 'required' ? 'warn' : d.status === 'eligible' ? 'ok' : 'muted'
+                    const depLabel = { required: 'Required', blocked: 'Blocked', eligible: 'Eligible', contingent: 'Contingent', pending: 'Pending', 'not-required': 'Not required' }[d.status] ?? d.status
+                    return (
+                      <div key={i} className="flex items-start gap-3 px-3 py-2.5">
+                        <div className="flex-1 min-w-0">
+                          <div className="font-body text-ink text-label font-medium">{d.label}</div>
+                          {d.note && <div className="font-body text-muted text-label mt-0.5 leading-snug">{d.note}</div>}
+                        </div>
+                        <StatusPill tone={depTone}>{depLabel}</StatusPill>
+                      </div>
+                    )
+                  })}
                 </div>
-              ) : (
-                <div className="font-body text-muted text-label">No impact preview available.</div>
-              )}
-            </div>
-            <div>
-              <div className="font-body text-muted text-label mb-2">Confidence</div>
-              <div className="flex items-center gap-3">
-                <div className="flex-1 h-1.5 bg-stone3 relative">
-                  <div className={`h-full ${pa.confidence >= 85 ? 'bg-ok' : pa.confidence >= 65 ? 'bg-warn' : 'bg-danger'}`}
-                    style={{ width: `${pa.confidence}%` }} />
-                  <div className="absolute top-0 bottom-0 w-px bg-ink/40" style={{ left: `${agent.confidenceThreshold ?? 80}%` }} />
-                </div>
-                <span className={`font-body text-label font-medium tabular-nums ${pa.confidence >= (agent.confidenceThreshold ?? 80) ? 'text-ok' : 'text-warn'}`}>
-                  {pa.confidence}%
-                </span>
               </div>
-              {agent.confidenceMethodology && (
-                <p className="font-body text-muted text-label mt-2 leading-relaxed">{agent.confidenceMethodology}</p>
-              )}
-            </div>
+            )}
           </div>
         )}
 
@@ -933,10 +909,10 @@ export default function AgentControl() {
   const [splitChecked, setSplitChecked]   = useState(new Set())
   const [tier1Open, setTier1Open]         = useState(false)
   const tier1BtnRef                       = useRef(null)
-  const [detailTab, setDetailTab]         = useState('evidence')
+  const [detailTab, setDetailTab]         = useState('why')
   const [freshnessOpen, setFreshnessOpen] = useState(false)
 
-  useEffect(() => { setDetailTab('evidence') }, [splitFocused])
+  useEffect(() => { setDetailTab('why') }, [splitFocused])
 
   const tier1Items = pending.filter(p => p._meta.tier === 1)
   const tier2Items = pending.filter(p => p._meta.tier === 2)
@@ -1290,111 +1266,123 @@ export default function AgentControl() {
                     </div>
 
                     <Tabs
-                      tabs={[{ id: 'evidence', label: 'Evidence' }, { id: 'trace', label: 'Decision trace' }]}
+                      tabs={[{ id: 'why', label: 'Why' }, { id: 'approved', label: 'If approved' }]}
                       active={detailTab}
                       onChange={setDetailTab}
                       className="flex-shrink-0 bg-stone"
                     />
+
                     {/* Scrollable body */}
                     <div className="flex-1 overflow-y-auto page-blur-in">
-                      {detailTab === 'trace' ? (
-                        <div className="px-6 py-5">
-                          <DecisionReplay pa={pa} agent={agent} />
-                        </div>
-                      ) : (
-                      <div className="px-6 py-5 space-y-5">
-                      {pa.rationale && (
-                        <div className="px-4 py-3 bg-stone2">
-                          <div className="font-body text-muted text-label mb-1">AI rationale</div>
-                          <p className="font-body text-ink text-body leading-relaxed">{pa.rationale}</p>
-                        </div>
-                      )}
-                      {pa.evidence?.causalSignals?.length > 0 && (
-                        <div className="space-y-3">
+
+                      {/* ── Why tab ── */}
+                      {detailTab === 'why' && (
+                        <div className="px-6 py-5 space-y-5">
+
+                          {/* Rationale — dominant */}
+                          {pa.rationale && (
+                            <div className="px-4 py-4 bg-stone2 border-l-4 border-l-signal">
+                              <div className="font-body font-semibold text-muted text-label mb-2">Agent rationale</div>
+                              <p className="font-body text-ink text-body leading-relaxed">{pa.rationale}</p>
+                            </div>
+                          )}
+
+                          {/* What triggered this — active signals only */}
                           {(() => {
-                            const active = pa.evidence.causalSignals.filter(s => s.stage !== 'suppressed')
-                            const suppressed = pa.evidence.causalSignals.filter(s => s.stage === 'suppressed')
+                            const active = (pa.evidence?.causalSignals ?? []).filter(s => s.stage !== 'suppressed')
+                            if (active.length === 0) return null
                             return (
-                              <>
-                                {active.length > 0 && (
-                                  <div>
-                                    <div className="font-body text-muted text-label mb-2">Signal pipeline</div>
-                                    <div className="border border-rule2 divide-y divide-rule2">
-                                      {active.map((s, i) => {
-                                        const sigTone = s.status === 'breach' || s.status === 'stale' ? 'danger' : s.status === 'warn' ? 'warn' : 'ok'
-                                        const sigLabel = s.status === 'breach' ? 'Breach' : s.status === 'stale' ? 'Stale' : s.status === 'warn' ? 'Watch' : 'OK'
-                                        const stageTone = s.stage === 'correlated' ? 'info' : 'ok'
-                                        const stageLabel = s.stage === 'correlated' ? 'Correlated' : 'Qualified'
-                                        return (
-                                          <div key={i} className="flex items-start gap-3 px-4 py-2.5">
-                                            <div className="flex-1 min-w-0">
-                                              <div className="flex items-center gap-1.5 mb-0.5">
-                                                <div className="font-body text-muted text-label">{s.signal}</div>
-                                                {s.stage && <StatusPill tone={stageTone}>{stageLabel}</StatusPill>}
-                                              </div>
-                                              <div className="font-body text-ink text-label font-medium">{s.reading}</div>
-                                              {s.note && <div className="font-body text-muted text-label leading-snug">{s.note}</div>}
-                                            </div>
-                                            <StatusPill tone={sigTone}>{sigLabel}</StatusPill>
-                                          </div>
-                                        )
-                                      })}
-                                    </div>
-                                  </div>
-                                )}
-                                {suppressed.length > 0 && (
-                                  <div>
-                                    <div className="font-body text-muted text-label mb-2">Excluded from reasoning</div>
-                                    <div className="border border-rule2 divide-y divide-rule2 opacity-60">
-                                      {suppressed.map((s, i) => (
-                                        <div key={i} className="flex items-start gap-3 px-4 py-2">
-                                          <div className="w-1.5 h-1.5 rounded-full border border-muted/30 flex-shrink-0 mt-1.5" />
-                                          <div className="flex-1 min-w-0">
-                                            <div className="font-body text-muted text-label">{s.signal} — {s.reading}</div>
-                                            {s.suppressReason && <div className="font-body text-muted/60 text-label leading-snug">{s.suppressReason}</div>}
-                                          </div>
+                              <div>
+                                <div className="font-body text-muted text-label mb-2">What triggered this</div>
+                                <div className="divide-y divide-rule2 border-y border-rule2">
+                                  {active.map((s, i) => {
+                                    const tone = s.status === 'breach' || s.status === 'stale' ? 'danger' : s.status === 'warn' ? 'warn' : 'ok'
+                                    const label = s.status === 'breach' ? 'Breach' : s.status === 'stale' ? 'Stale' : s.status === 'warn' ? 'Watch' : 'OK'
+                                    return (
+                                      <div key={i} className="flex items-start gap-3 px-4 py-2.5">
+                                        <div className="flex-1 min-w-0">
+                                          <div className="font-body text-muted text-label mb-0.5">{s.signal}</div>
+                                          <div className="font-body text-ink text-body font-medium">{s.reading}</div>
+                                          {s.threshold && <div className="font-body text-muted text-label">vs. {s.threshold}</div>}
                                         </div>
-                                      ))}
-                                    </div>
-                                  </div>
-                                )}
-                              </>
+                                        <StatusPill tone={tone}>{label}</StatusPill>
+                                      </div>
+                                    )
+                                  })}
+                                </div>
+                              </div>
+                            )
+                          })()}
+
+                          {/* Confidence — verdict, not breakdown */}
+                          {(() => {
+                            const threshold = agent.confidenceThreshold ?? 80
+                            const delta = pa.confidence - threshold
+                            const above = delta >= 0
+                            return (
+                              <div className="flex items-center gap-4 px-4 py-3 border border-rule2">
+                                <div className="flex-1 h-1 bg-stone3 relative">
+                                  <div className={`h-full ${pa.confidence >= 85 ? 'bg-ok' : pa.confidence >= 65 ? 'bg-warn' : 'bg-danger'}`}
+                                    style={{ width: `${pa.confidence}%` }} />
+                                  <div className="absolute top-0 bottom-0 w-px bg-ink/40" style={{ left: `${threshold}%` }} />
+                                </div>
+                                <span className={`font-body text-label font-medium flex-shrink-0 ${above ? 'text-ok' : 'text-warn'}`}>
+                                  {pa.confidence}% — {above ? `+${delta}pts above` : `${delta}pts below`} threshold
+                                </span>
+                              </div>
                             )
                           })()}
                         </div>
                       )}
-                      {pa.impactPreview?.length > 0 && (
-                        <div>
-                          <div className="font-body text-muted text-label mb-2">If approved</div>
-                          <div className="border border-rule2 divide-y divide-rule2">
-                            {pa.impactPreview.map((line, i) => (
-                              <div key={i} className="px-4 py-2 font-body text-label text-muted leading-snug">{line}</div>
-                            ))}
-                          </div>
+
+                      {/* ── If approved tab ── */}
+                      {detailTab === 'approved' && (
+                        <div className="px-6 py-5 space-y-5">
+
+                          {/* What happens next */}
+                          {pa.impactPreview?.length > 0 && (
+                            <div>
+                              <div className="font-body text-muted text-label mb-2">What happens next</div>
+                              <div className="divide-y divide-rule2 border-y border-rule2">
+                                {pa.impactPreview.map((line, i) => {
+                                  const isNeg = /delay|liability|legal|loss|risk/i.test(line)
+                                  const isWarn = /stale|⚠/.test(line)
+                                  return (
+                                    <div key={i} className="flex items-start gap-3 px-4 py-2.5">
+                                      <div className={`w-1 h-1 rounded-full flex-shrink-0 mt-1.5 ${isNeg || isWarn ? 'bg-warn' : 'bg-ok'}`} />
+                                      <span className={`font-body text-label leading-snug ${isNeg ? 'text-warn' : 'text-ink'}`}>{line}</span>
+                                    </div>
+                                  )
+                                })}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Risk if not approved */}
+                          {pa.evidence?.riskForecast && (
+                            <div className="px-4 py-4 bg-warn/[0.04] border-l-4 border-l-warn">
+                              <div className="font-body font-semibold text-muted text-label mb-2">Risk if not approved</div>
+                              <p className="font-display text-ink text-body leading-relaxed">{pa.evidence.riskForecast}</p>
+                            </div>
+                          )}
+
+                          {/* Agent track record */}
+                          {agent.trustScore != null && (
+                            <div className="divide-y divide-rule2 border-y border-rule2">
+                              <div className="flex items-center px-4 py-2.5">
+                                <span className="font-body text-muted text-label flex-1">Agent trust score</span>
+                                <span className={`font-body text-label font-medium ${agent.trustScore >= 85 ? 'text-ok' : agent.trustScore >= 70 ? 'text-warn' : 'text-danger'}`}>
+                                  {agent.trustScore}%
+                                </span>
+                              </div>
+                              {agent.confidenceMethodology && (
+                                <div className="px-4 py-2.5">
+                                  <p className="font-body text-muted text-label leading-snug">{agent.confidenceMethodology}</p>
+                                </div>
+                              )}
+                            </div>
+                          )}
                         </div>
-                      )}
-                      <div>
-                        <div className="font-body text-muted text-label mb-2">Confidence vs threshold</div>
-                        <div className="flex items-center gap-3">
-                          <div className="flex-1 h-1.5 bg-stone3 relative">
-                            <div className={`h-full ${pa.confidence >= 85 ? 'bg-ok' : pa.confidence >= 65 ? 'bg-warn' : 'bg-danger'}`}
-                              style={{ width: `${pa.confidence}%` }} />
-                            <div className="absolute top-0 bottom-0 w-px bg-ink/40" style={{ left: `${agent.confidenceThreshold ?? 80}%` }} />
-                          </div>
-                          <span className={`font-body text-label font-medium tabular-nums ${pa.confidence >= (agent.confidenceThreshold ?? 80) ? 'text-ok' : 'text-warn'}`}>{pa.confidence}%</span>
-                          <span className="font-body text-muted text-label">vs {agent.confidenceThreshold ?? 80}% required</span>
-                        </div>
-                        {agent.confidenceMethodology && (
-                          <p className="font-body text-muted text-label mt-2 leading-relaxed">{agent.confidenceMethodology}</p>
-                        )}
-                      </div>
-                      {pa.evidence?.riskForecast && (
-                        <div>
-                          <div className="font-body text-muted text-label mb-2">Risk if deferred</div>
-                          <p className="font-display text-muted text-body leading-relaxed px-4 py-3 bg-stone2">{pa.evidence.riskForecast}</p>
-                        </div>
-                      )}
-                      </div>
                       )}
                     </div>
 
