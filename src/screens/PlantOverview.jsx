@@ -23,6 +23,34 @@ const LINE_BEFORE = {
   d2: 'Best-performing line across all three plants · T. Reeves crew at 94% certified for 6 weeks',
 }
 
+// ─── Director action queue — ranked items requiring director decision now ─────
+const DIRECTOR_QUEUE = [
+  {
+    tier: 'T3', urgency: 'danger',
+    action: 'Approve COA hold — Supplier Lot #4821-C',
+    note: 'Blocks Line 4 start',
+    owner: 'D. Kowalski', timeWindow: '47 min', route: '/supplier',
+  },
+  {
+    tier: 'T3', urgency: 'danger',
+    action: 'Resolve FSMA 204 traceability gap — $85K exposure',
+    note: 'FDA audit risk · open since yesterday',
+    owner: 'QA Lead', timeWindow: '2 h', route: '/compliance',
+  },
+  {
+    tier: 'T2', urgency: 'warn',
+    action: 'Approve Predictive Maintenance expansion to Line 6',
+    note: 'Agent queued 3 days — window closes end of shift',
+    owner: 'Maintenance', timeWindow: 'This shift', route: '/agents',
+  },
+  {
+    tier: 'T2', urgency: 'warn',
+    action: 'CAPA-2604-001 response overdue — allergen deviation',
+    note: '5-day SLA breach · escalation pending',
+    owner: 'D. Kowalski', timeWindow: 'Today', route: '/capa',
+  },
+]
+
 // ─── Actor mode badge — shows who is executing on a line ─────────────────────
 const ACTOR_MODE = { human: 'human', robot: 'robot', hybrid: 'hybrid' }
 
@@ -484,6 +512,39 @@ export default function PlantOverview() {
           value={mode}
           onChange={switchMode}
         />
+      </div>
+
+      {/* ── Director action queue ───────────────────────────────────────── */}
+      <div className="flex-shrink-0 border-b border-rule2 bg-stone">
+        <div className="flex items-center gap-3 px-5 py-2 border-b border-rule2">
+          <span className="font-body text-label text-ink font-medium">Action queue</span>
+          <span className="font-body text-micro text-danger bg-danger/10 px-1.5 py-0.5 tabular-nums">
+            {DIRECTOR_QUEUE.filter(q => q.urgency === 'danger').length} critical
+          </span>
+          <span className="font-body text-micro text-warn bg-warn/10 px-1.5 py-0.5 tabular-nums">
+            {DIRECTOR_QUEUE.filter(q => q.urgency === 'warn').length} pending
+          </span>
+        </div>
+        <div className="divide-y divide-rule2">
+          {DIRECTOR_QUEUE.map((item, i) => (
+            <Link key={i} to={item.route}
+              className="flex items-center gap-4 px-5 py-2.5 hover:bg-stone2 transition-colors group"
+              style={{ borderLeft: `3px solid var(--color-${item.urgency})` }}>
+              <span className={`font-body text-micro font-medium tabular-nums flex-shrink-0 ${item.urgency === 'danger' ? 'text-danger' : 'text-warn'}`}>
+                {item.tier}
+              </span>
+              <div className="flex-1 min-w-0">
+                <div className="font-body text-label text-ink font-medium truncate">{item.action}</div>
+                <div className="font-body text-micro text-muted truncate">{item.note}</div>
+              </div>
+              <span className="font-body text-micro text-muted flex-shrink-0 hidden sm:block">{item.owner}</span>
+              <span className={`font-body text-micro tabular-nums flex-shrink-0 ${item.urgency === 'danger' ? 'text-danger' : 'text-warn'}`}>
+                {item.timeWindow}
+              </span>
+              <ArrowRight size={10} className="text-muted group-hover:text-ink flex-shrink-0 transition-colors" />
+            </Link>
+          ))}
+        </div>
       </div>
 
       {/* ── Impact Loop strip ───────────────────────────────────────────── */}

@@ -961,7 +961,7 @@ export default function DataReadiness() {
 
   const [selectedId, setSelectedId] = useState(CLUSTER_A.id)
   const [resolvedFeedback, setResolvedFeedback] = useState(null)
-  const [mode, setMode] = useState('compliance')
+  const [mode, setMode] = useState('ai')
   const location = useLocation()
 
   useEffect(() => {

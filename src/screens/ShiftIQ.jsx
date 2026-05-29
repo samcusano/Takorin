@@ -694,6 +694,12 @@ function LineDropdown({ lines, activeLine, onSelect, triggerRef, onClose }) {
 
 // ── PrepareView — pre-shift staffing preparation ─────────────────────────────
 
+const PRE_SHIFT_VERIFICATION = {
+ certReadiness: { ready: 3, total: 4, note: 'Reyes (L1) assigned L2 station — mismatch', tone: 'warn' },
+ sensorHealth:  { nominal: 5, total: 6, staleLabel: 'Oven B', note: 'Last reading 2h 14m ago — model accuracy reduced', tone: 'warn' },
+ checklist:     { complete: 9, total: 13, note: '4 items outstanding before shift start', tone: 'warn' },
+}
+
 const DEMAND_SIGNAL = {
  scheduledCases: 4200, forecastCases: 3850, unit: 'cases',
  variance: +350, variancePct: 9,
@@ -708,6 +714,46 @@ function PrepareView({ forecast = [] }) {
  const actionRows = forecast.filter(r => r.action)
  return (
   <div className="flex flex-col flex-1 overflow-hidden content-reveal">
+
+   {/* Pre-shift verification */}
+   <div className="flex-shrink-0 border-b border-rule2">
+    <div className="px-5 py-2 bg-stone2 border-b border-rule2 flex items-center justify-between">
+     <span className="font-body text-muted text-label font-medium">Pre-shift verification</span>
+     <span className="font-body text-muted text-label">T−30 min · auto-checked 05:45</span>
+    </div>
+    <div className="flex">
+     {[
+      {
+       label: 'Cert readiness',
+       value: `${PRE_SHIFT_VERIFICATION.certReadiness.ready} of ${PRE_SHIFT_VERIFICATION.certReadiness.total}`,
+       sub: 'operators robot-ready',
+       note: PRE_SHIFT_VERIFICATION.certReadiness.note,
+       tone: 'text-warn',
+      },
+      {
+       label: 'Sensor health',
+       value: `${PRE_SHIFT_VERIFICATION.sensorHealth.nominal} of ${PRE_SHIFT_VERIFICATION.sensorHealth.total}`,
+       sub: `signals nominal · ${PRE_SHIFT_VERIFICATION.sensorHealth.staleLabel} stale`,
+       note: PRE_SHIFT_VERIFICATION.sensorHealth.note,
+       tone: 'text-warn',
+      },
+      {
+       label: 'Checklist status',
+       value: `${PRE_SHIFT_VERIFICATION.checklist.complete} of ${PRE_SHIFT_VERIFICATION.checklist.total}`,
+       sub: 'items complete',
+       note: PRE_SHIFT_VERIFICATION.checklist.note,
+       tone: 'text-warn',
+      },
+     ].map((cell, i) => (
+      <div key={i} className="flex-1 px-4 py-3 border-r border-rule2 last:border-r-0">
+       <div className="font-body text-muted text-label mb-0.5">{cell.label}</div>
+       <div className={`display-num text-head font-bold leading-none tabular-nums ${cell.tone}`}>{cell.value}</div>
+       <div className="font-body text-muted text-label mt-0.5">{cell.sub}</div>
+       <div className="font-body text-micro text-muted mt-1 leading-snug">{cell.note}</div>
+      </div>
+     ))}
+    </div>
+   </div>
 
    {/* Demand alignment */}
    <div className="flex-shrink-0 border-b border-rule2">

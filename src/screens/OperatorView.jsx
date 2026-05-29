@@ -204,21 +204,31 @@ function MyProgress({ operator, op }) {
      <div className="h-full transition-all duration-500" style={{ width: `${op.certPct}%`, background: certC }} />
     </div>
    </div>
-   {steps.length > 0 && (
-    <div className="px-5 py-3">
-     <div className="font-body text-muted text-label mb-2.5">What's next</div>
-     <div className="space-y-2">
-      {steps.map((step, i) => (
-       <div key={i} className="flex items-start gap-2">
-        <div className="w-4 h-4 rounded-full border-2 border-rule2 flex-shrink-0 mt-0.5 flex items-center justify-center">
-         <span className="font-body text-muted text-micro leading-none">{i + 1}</span>
+   {steps.length > 0 && (() => {
+    const milestones = steps.filter(s => s.startsWith('Assessment window'))
+    const tasks = steps.filter(s => !s.startsWith('Assessment window'))
+    return (
+     <div className="px-5 py-3">
+      <div className="font-body text-muted text-label mb-2.5">What's next</div>
+      <div className="space-y-2 mb-3">
+       {tasks.map((step, i) => (
+        <div key={i} className="flex items-start gap-2">
+         <div className="w-4 h-4 rounded-full border-2 border-rule2 flex-shrink-0 mt-0.5 flex items-center justify-center">
+          <span className="font-body text-muted text-micro leading-none">{i + 1}</span>
+         </div>
+         <span className="font-body text-ink text-label leading-snug">{step}</span>
         </div>
-        <span className="font-body text-ink text-label leading-snug">{step}</span>
+       ))}
+      </div>
+      {milestones.map((m, i) => (
+       <div key={i} className="flex items-center gap-2 border border-signal/30 bg-signal/[0.04] px-3 py-2">
+        <Flag size={10} className="text-signal flex-shrink-0" />
+        <span className="font-body text-signal text-label font-medium">{m}</span>
        </div>
       ))}
      </div>
-    </div>
-   )}
+    )
+   })()}
   </div>
  )
 }

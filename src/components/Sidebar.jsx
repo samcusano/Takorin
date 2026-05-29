@@ -392,6 +392,10 @@ export default function Sidebar() {
  const complianceState = currentPlant?.id === 'ks' ? 'clear' : (!blockingEvidenceUploaded ? 'blocked' : !allergenSigned ? 'attention' : 'clear')
  const complianceLabel = complianceState === 'blocked' ? 'Blocked' : complianceState === 'attention' ? 'Attention' : 'Clear'
  const complianceColor = complianceState === 'blocked' ? 'text-danger bg-danger/[0.04]' : complianceState === 'attention' ? 'text-warn bg-warn/10' : 'text-ok bg-ok/10'
+ const platformConf = complianceState === 'blocked' ? 'degraded' : agentPendingCount > 0 ? 'warn' : 'ok'
+ const platformConfLabel = platformConf === 'degraded' ? 'Degraded' : platformConf === 'warn' ? 'Partial' : 'Ready'
+ const platformConfColor = platformConf === 'degraded' ? 'text-danger bg-danger/[0.04]' : platformConf === 'warn' ? 'text-warn bg-warn/10' : 'text-ok bg-ok/10'
+ const platformConfNote = platformConf === 'degraded' ? 'SCADA stale · 2 critical decisions pending' : platformConf === 'warn' ? `${agentPendingCount} decision${agentPendingCount !== 1 ? 's' : ''} pending · data nominal` : 'All agents nominal · data fresh'
  // Standing compliance items (2 always present + 1 evidence gap if not yet uploaded)
  // plus dynamic safety events the director hasn't seen
  const standingCount = blockingEvidenceUploaded ? 2 : 3
@@ -569,6 +573,15 @@ export default function Sidebar() {
  {complianceState === 'blocked' && 'CAPA-2604-006 evidence missing · FDA export blocked'}
  {complianceState === 'attention' && 'Allergen changeover log unsigned · Line 4'}
  {complianceState === 'clear' && 'No blocking compliance items · 18d to FDA inspection'}
+ </div>
+ <div className="flex items-center justify-between mt-2">
+  <span className="font-body text-white/50 text-label">Platform</span>
+  <span className={`font-body font-medium text-label px-2 py-0.5 ${platformConfColor}`}>
+   {platformConfLabel}
+  </span>
+ </div>
+ <div className="font-body text-white/50 text-label mt-0.5 leading-relaxed">
+  {platformConfNote}
  </div>
  </div>}
 

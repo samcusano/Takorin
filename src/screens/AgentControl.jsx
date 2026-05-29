@@ -1397,6 +1397,23 @@ export default function AgentControl() {
           )}
         </div>
 
+        {/* ── T3 critical banner — shown only when undecided T3 items exist ── */}
+        {agentView === 'queue' && (() => {
+          const undecidedT3 = tier3Items.filter(p => !p._decided)
+          if (!undecidedT3.length) return null
+          return (
+            <div className="flex-shrink-0 flex items-center gap-3 px-5 py-2.5 bg-danger/[0.06] border-b border-danger/20">
+              <div className="w-1.5 h-1.5 rounded-full bg-danger animate-pulse flex-shrink-0" />
+              <span className="font-body text-danger text-label font-medium flex-1">
+                {undecidedT3.length} critical decision{undecidedT3.length !== 1 ? 's' : ''} require your attention
+              </span>
+              <span className="font-body text-danger/70 text-micro tabular-nums">
+                {undecidedT3[0]?._meta?.consequence === 'critical' ? 'FDA lock risk' : 'Action required'}
+              </span>
+            </div>
+          )
+        })()}
+
         {/* ── Split Decision Panel / Scale Readiness ───────────────── */}
         {agentView === 'scale' ? <ScaleReadiness /> : (
           <div className="flex flex-1 min-h-0 overflow-hidden">

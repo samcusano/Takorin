@@ -781,8 +781,8 @@ export default function Analytics() {
                       <span className="font-body text-label text-muted tabular-nums">{p.adoption}% of plants</span>
                       <span className="font-body text-ok text-label leading-snug">{p.lift}</span>
                       <div className="flex justify-end">
-                        <Link to={p.route} className="flex items-center gap-1 font-body text-muted text-label hover:text-ink transition-colors">
-                          {p.module} <ArrowRight size={9} />
+                        <Link to={p.route} className="flex items-center gap-1 font-body text-signal text-label font-medium hover:text-ink transition-colors">
+                          Apply this week <ArrowRight size={9} />
                         </Link>
                       </div>
                     </div>

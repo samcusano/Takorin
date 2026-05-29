@@ -48,7 +48,7 @@ function InterventionCard({ entry, selected, onClick }) {
       </div>
       <div className="font-body font-medium text-ink text-body leading-snug mb-1">{entry.action}</div>
       <div className="flex items-center gap-1.5">
-        <span className="font-body text-muted text-label">{entry.agent}</span>
+        <span className="font-body text-ink text-label font-medium">{entry.agent}</span>
         <span className="font-body text-muted text-label opacity-40">·</span>
         <span className={`font-body text-label ${dc.cls}`}>{dc.label}</span>
       </div>
@@ -535,7 +535,7 @@ export default function ImpactLoop() {
 
       <div className="flex-shrink-0 border-b border-rule2">
         <Tabs
-          tabs={[{ id: 'log', label: 'Impact log' }, { id: 'case', label: 'Business case' }]}
+          tabs={[{ id: 'log', label: 'Outcomes' }, { id: 'case', label: 'Business case' }]}
           active={mainView}
           onChange={setMainView}
         />
