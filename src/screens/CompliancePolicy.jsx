@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { compliancePolicies, multiRegulatoryCoverage } from '../data/compliance'
 import { AlertTriangle, ArrowRight, ClipboardCheck, CheckCircle2, XCircle, AlertCircle, Play } from 'lucide-react'
-import { SceneHeader, StatusPill, Btn, SlidePanel, AnimatedScore } from '../components/UI'
+import { SceneHeader, StatusPill, Btn, SlidePanel, AnimatedScore, Tabs } from '../components/UI'
 
 // ─── FDA Inspection Simulation data ──────────────────────────────────────────
 
@@ -169,11 +169,143 @@ function EscalationStrip({ steps }) {
   )
 }
 
+// ─── Risk Exposure data + component ──────────────────────────────────────────
+
+const fmtRisk = n => n >= 1000 ? `$${Math.round(n / 1000)}K` : n > 0 ? `$${n}` : '—'
+
+const RISK_FINDINGS = [
+  {
+    id: 'rf-capa',
+    title: 'CAPA Register — overdue case',
+    rule: 'FDA 21 CFR 820.100',
+    requirement: 'Corrective and preventive actions must be completed within established timeframes',
+    severity: 'critical',
+    auditFinding: 'CAPA-2604-001 overdue 7 days — auditor will flag as systemic CAPA failure requiring a written response within 15 days of inspection close',
+    recallRisk: 0,
+    marketAccessRisk: 15000,
+    closurePath: 'Close CAPA-2604-001 within 48h · submit evidence package to CAPA Engine',
+    daysToClose: 2,
+  },
+  {
+    id: 'rf-fsma',
+    title: 'FSMA 204 — lot traceability chain incomplete',
+    rule: 'FSMA 204 (FDA Food Traceability Rule)',
+    requirement: 'Complete traceability chain required from supplier through finished product lot',
+    severity: 'critical',
+    auditFinding: 'TS-8811 naming conflict across MES, ERP, and supplier portal breaks lot chain at 2 handoffs. Auditor will require remediation plan and may place a hold on affected production runs.',
+    recallRisk: 85000,
+    marketAccessRisk: 40000,
+    closurePath: 'Resolve TS-8811 conflict in Data Readiness · rebuild affected lot chain before inspection',
+    daysToClose: 5,
+  },
+  {
+    id: 'rf-coa',
+    title: 'COA Documentation — ingredient pending',
+    rule: 'FDA 21 CFR 111.75',
+    requirement: 'Certificate of Analysis required before ingredient use in production',
+    severity: 'moderate',
+    auditFinding: 'ConAgra TS-8811 COA pending with production scheduled tomorrow. If production ran without COA, auditor will classify as a corrective action item with 30-day response window.',
+    recallRisk: 32000,
+    marketAccessRisk: 0,
+    closurePath: 'Delay production until COA received · document hold decision in supplier log',
+    daysToClose: 1,
+  },
+  {
+    id: 'rf-cert',
+    title: 'Personnel Certifications — 2 expiring within inspection window',
+    rule: 'SQF Code 2.8.3',
+    requirement: 'Operators must maintain current certifications for assigned production roles',
+    severity: 'moderate',
+    auditFinding: 'Kowalski L4 expires Jun 1 · Okonkwo L2 expires Jun 15 — both within the 18-day inspection window. Auditor will request full certification roster for all active lines.',
+    recallRisk: 0,
+    marketAccessRisk: 8000,
+    closurePath: 'Schedule both renewal sessions this week · confirm enrollment before Jun 1',
+    daysToClose: 7,
+  },
+]
+
+function RiskExposure() {
+  const critical    = RISK_FINDINGS.filter(f => f.severity === 'critical')
+  const moderate    = RISK_FINDINGS.filter(f => f.severity === 'moderate')
+  const totalRecall = RISK_FINDINGS.reduce((s, f) => s + f.recallRisk, 0)
+  const totalMarket = RISK_FINDINGS.reduce((s, f) => s + f.marketAccessRisk, 0)
+
+  return (
+    <div className="flex-1 overflow-y-auto">
+
+      {/* Summary strip */}
+      <div className="flex border-b border-rule2 flex-shrink-0">
+        {[
+          { label: 'Critical findings',  value: String(critical.length),   tone: critical.length > 0 ? 'text-danger' : 'text-ok', sub: 'if audited today'         },
+          { label: 'Moderate findings',  value: String(moderate.length),   tone: moderate.length > 0 ? 'text-warn'   : 'text-ok', sub: 'flagged for follow-up'    },
+          { label: 'Recall exposure',    value: fmtRisk(totalRecall),      tone: totalRecall > 0   ? 'text-danger' : 'text-ok', sub: 'estimated recall cost'     },
+          { label: 'Market access risk', value: fmtRisk(totalMarket),      tone: totalMarket > 0   ? 'text-warn'   : 'text-ok', sub: 'buyer / retailer impact'   },
+        ].map((cell, i) => (
+          <div key={i} className={`flex-1 px-5 py-4 border-r border-rule2 last:border-r-0 ${i === 0 && critical.length > 0 ? 'bg-danger/[0.025]' : ''}`}>
+            <div className="font-body text-muted text-label mb-1">{cell.label}</div>
+            <div className={`display-num text-metric font-bold leading-none tabular-nums ${cell.tone}`}>{cell.value}</div>
+            <div className="font-body text-muted text-label mt-1">{cell.sub}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Scenario framing */}
+      <div className="px-5 py-3 border-b border-rule2 bg-stone2">
+        <span className="font-body text-warn text-label font-medium">If audited today — </span>
+        <span className="font-body text-muted text-label">2 findings require immediate written response · 2 would be flagged with a 15-day remediation window</span>
+      </div>
+
+      {/* Finding cards */}
+      <div className="divide-y divide-rule2">
+        {RISK_FINDINGS.map(f => {
+          const sev = f.severity === 'critical'
+            ? { border: 'border-l-danger', bg: 'bg-danger/[0.02]', dot: 'bg-danger', label: 'Critical finding', tone: 'text-danger' }
+            : { border: 'border-l-warn',   bg: '',                  dot: 'bg-warn',   label: 'Moderate finding', tone: 'text-warn'   }
+          return (
+            <div key={f.id} className={`border-l-[3px] ${sev.border} ${sev.bg} px-5 py-4`}>
+              <div className="flex items-start gap-3">
+                <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 mt-1.5 ${sev.dot}`} />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap mb-1">
+                    <span className="font-body font-medium text-ink text-body">{f.title}</span>
+                    <span className={`font-body text-label font-medium ${sev.tone}`}>{sev.label}</span>
+                    <span className="font-body text-micro text-muted bg-stone3 px-1.5 py-0.5 leading-none">{f.rule}</span>
+                  </div>
+                  <div className="font-body text-muted text-label mb-2 leading-snug">{f.requirement}</div>
+                  <div className={`font-body text-label leading-snug mb-3 ${sev.tone}`}>→ {f.auditFinding}</div>
+                  <div className="flex items-center gap-6 mb-2">
+                    {f.recallRisk > 0 && (
+                      <span className="font-body text-label">
+                        <span className="text-muted">Recall: </span>
+                        <span className="font-medium text-danger tabular-nums">{fmtRisk(f.recallRisk)}</span>
+                      </span>
+                    )}
+                    {f.marketAccessRisk > 0 && (
+                      <span className="font-body text-label">
+                        <span className="text-muted">Market access: </span>
+                        <span className="font-medium text-warn tabular-nums">{fmtRisk(f.marketAccessRisk)}</span>
+                      </span>
+                    )}
+                  </div>
+                  <div className="font-body text-label text-muted">
+                    Close in <span className="font-medium text-ink">{f.daysToClose}d:</span> {f.closurePath}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
 // ─── Root ─────────────────────────────────────────────────────────────────────
 
 export default function CompliancePolicy() {
   const [selectedId, setSelectedId] = useState('fda-us')
   const [auditOpen, setAuditOpen] = useState(false)
+  const [policyView, setPolicyView] = useState('detail')
   const policy = compliancePolicies.find(p => p.id === selectedId)
 
   // Hero metric: inspection countdown > CAPA count > framework count
@@ -303,6 +435,15 @@ export default function CompliancePolicy() {
 
           <EscalationStrip steps={policy.escalationLogic} />
 
+          <div className="flex-shrink-0 border-b border-rule2 px-5">
+            <Tabs
+              tabs={[{ id: 'detail', label: 'Policy detail' }, { id: 'exposure', label: 'Risk exposure' }]}
+              active={policyView}
+              onChange={setPolicyView}
+            />
+          </div>
+
+          {policyView === 'exposure' ? <RiskExposure /> : (
           <div className="flex-1 overflow-y-auto">
 
             {/* Frameworks + Evidence — two columns */}
@@ -346,6 +487,7 @@ export default function CompliancePolicy() {
             )}
 
           </div>
+          )}
         </div>
       )}
     </div>

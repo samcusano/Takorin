@@ -696,6 +696,123 @@ function TaskSection({ selected, station, tasks, linkedTasks, flags, nearMisses,
  )
 }
 
+// ── Transition Readiness data + component ────────────────────────────────────
+
+const TRANSITION_DATA = {
+ 'C. Reyes': {
+  hybridCertified: false, robotSafetyZone: false,
+  certGap: 'L2 Sauce Dosing (28% to next level)',
+  fatigueRisk: 'moderate', onAutomatingLine: true,
+  safetyNote: 'Safety zone protocol unsigned — required before robot deployment on Line 4',
+  readiness: 24, readinessLabel: 'Not ready',
+ },
+ 'P. Okonkwo': {
+  hybridCertified: true, robotSafetyZone: true,
+  certGap: null,
+  fatigueRisk: 'low', onAutomatingLine: true,
+  safetyNote: null,
+  readiness: 78, readinessLabel: 'Ready',
+ },
+ 'F. Adeyemi': {
+  hybridCertified: false, robotSafetyZone: false,
+  certGap: 'L2 QA Inspector (40% to next level)',
+  fatigueRisk: 'low', onAutomatingLine: false,
+  safetyNote: 'Not on automating line — safety zone training scheduled Jul 2026',
+  readiness: 38, readinessLabel: 'In progress',
+ },
+}
+
+function TransitionTab({ selected, isDirector }) {
+ const t = TRANSITION_DATA[selected] || {}
+ const readinessTone = t.readiness >= 70 ? 'text-ok' : t.readiness >= 40 ? 'text-warn' : 'text-danger'
+ const readinessBorder = t.readiness >= 70 ? 'border-l-ok' : t.readiness >= 40 ? 'border-l-warn' : 'border-l-danger'
+
+ if (isDirector) {
+  const all = OPERATORS.map(o => ({ ...o, t: TRANSITION_DATA[o.name] || {} }))
+  const readyCount  = all.filter(o => (o.t.readiness || 0) >= 70).length
+  const safetyCount = all.filter(o => o.t.robotSafetyZone).length
+  const autoCount   = all.filter(o => o.t.onAutomatingLine).length
+  return (
+   <div>
+    <div className="flex border-b border-rule2">
+     {[
+      { label: 'Hybrid-ready',       value: `${readyCount} of ${all.length}`,  tone: readyCount === all.length  ? 'text-ok' : 'text-warn' },
+      { label: 'Safety zone signed', value: `${safetyCount} of ${all.length}`, tone: safetyCount === all.length ? 'text-ok' : 'text-warn' },
+      { label: 'On automating lines', value: `${autoCount} of ${all.length}`,  tone: 'text-ink' },
+     ].map((cell, i) => (
+      <div key={i} className="flex-1 px-5 py-4 border-r border-rule2 last:border-r-0">
+       <div className="font-body text-muted text-label mb-1">{cell.label}</div>
+       <div className={`display-num text-metric font-bold leading-none ${cell.tone}`}>{cell.value}</div>
+      </div>
+     ))}
+    </div>
+    {all.map(o => {
+     const ot  = o.t
+     const rt  = ot.readiness >= 70 ? 'text-ok' : ot.readiness >= 40 ? 'text-warn' : 'text-danger'
+     const bl  = ot.readiness >= 70 ? 'border-l-ok' : ot.readiness >= 40 ? 'border-l-warn' : 'border-l-danger'
+     const isSel = o.name === selected
+     return (
+      <div key={o.name} className={`border-b border-rule2 border-l-[3px] ${bl} px-5 py-4 ${isSel ? 'bg-stone2' : ''}`}>
+       <div className="flex items-start justify-between mb-2">
+        <div>
+         <span className="font-body font-medium text-ink text-body">{o.name}</span>
+         <span className="font-body text-muted text-label ml-2">{o.role}</span>
+         {isSel && <span className="font-body text-signal text-label ml-2">· selected</span>}
+        </div>
+        <div className="text-right">
+         <div className={`display-num text-head font-bold leading-none tabular-nums ${rt}`}>{ot.readiness}%</div>
+         <div className={`font-body text-label mt-0.5 ${rt}`}>{ot.readinessLabel}</div>
+        </div>
+       </div>
+       <div className="flex items-center gap-2 flex-wrap mb-2">
+        {[
+         { ok: ot.hybridCertified,   label: ot.hybridCertified   ? 'Hybrid cert ✓' : 'Hybrid cert ✗'   },
+         { ok: ot.robotSafetyZone,   label: ot.robotSafetyZone   ? 'Safety zone ✓' : 'Safety zone ✗'   },
+        ].map(chip => (
+         <span key={chip.label} className={`font-body text-label px-2 py-0.5 leading-tight ${chip.ok ? 'bg-ok/[0.08] text-ok' : 'bg-warn/[0.06] text-warn'}`}>
+          {chip.label}
+         </span>
+        ))}
+        {ot.onAutomatingLine && (
+         <span className="font-body text-label px-2 py-0.5 leading-tight bg-signal/[0.08] text-signal">On automating line</span>
+        )}
+       </div>
+       {ot.certGap && <div className="font-body text-warn text-label">→ {ot.certGap}</div>}
+       {ot.safetyNote && !ot.robotSafetyZone && <div className="font-body text-muted text-label mt-0.5">→ {ot.safetyNote}</div>}
+      </div>
+     )
+    })}
+   </div>
+  )
+ }
+
+ // Individual operator view
+ return (
+  <div className="px-5 py-5">
+   <div className="mb-5">
+    <div className="font-body text-muted text-label mb-2">Automation transition readiness</div>
+    <div className={`display-num text-score font-bold leading-none tabular-nums mb-1 ${readinessTone}`}>{t.readiness}%</div>
+    <div className={`font-body text-label ${readinessTone}`}>{t.readinessLabel}</div>
+   </div>
+   <div className={`border-l-[3px] ${readinessBorder} pl-4 space-y-3`}>
+    {[
+     { label: 'Hybrid certification', value: t.hybridCertified ? 'Complete' : 'Not yet — ' + (t.certGap || 'in progress'), ok: t.hybridCertified },
+     { label: 'Safety zone protocol', value: t.robotSafetyZone ? 'Signed' : 'Not signed', ok: t.robotSafetyZone },
+     { label: 'Line status', value: t.onAutomatingLine ? 'On automating line' : 'Not on automating line yet', ok: !t.onAutomatingLine },
+    ].map(row => (
+     <div key={row.label} className="flex items-center justify-between">
+      <span className="font-body text-ink text-body">{row.label}</span>
+      <span className={`font-body font-medium text-body ${row.ok ? 'text-ok' : 'text-warn'}`}>{row.value}</span>
+     </div>
+    ))}
+    {t.safetyNote && !t.robotSafetyZone && (
+     <div className="font-body text-muted text-label leading-snug pt-1">→ {t.safetyNote}</div>
+    )}
+   </div>
+  </div>
+ )
+}
+
 // Training pathway and Roster Overview have been removed from the operational view.
 // Training belongs in a between-shift development surface.
 // Roster/absence/fatigue belongs in ShiftIQ supervisor context.
@@ -879,9 +996,10 @@ export default function OperatorView({ role }) {
 
     <Tabs
      tabs={[
-      { id: 'today',    label: 'Today',    badge: tasks.filter(t => !t.done).length + linkedTasks.filter(t => !t.done).length },
-      { id: 'progress', label: 'Progress', badge: 0 },
-      { id: 'schedule', label: 'Schedule', badge: 0 },
+      { id: 'today',      label: 'Today',      badge: tasks.filter(t => !t.done).length + linkedTasks.filter(t => !t.done).length },
+      { id: 'progress',   label: 'Progress',   badge: 0 },
+      { id: 'schedule',   label: 'Schedule',   badge: 0 },
+      { id: 'transition', label: 'Transition', badge: 0 },
      ]}
      active={opTab}
      onChange={setOpTab}
@@ -921,6 +1039,9 @@ export default function OperatorView({ role }) {
 
     {/* Progress — cert level + next steps */}
     {opTab === 'progress' && <MyProgress operator={selected} op={op} />}
+
+    {/* Transition — automation readiness */}
+    {opTab === 'transition' && <TransitionTab selected={selected} isDirector={!isOperatorRole} />}
 
     {/* Schedule — fatigue + hours */}
     {opTab === 'schedule' && (() => {

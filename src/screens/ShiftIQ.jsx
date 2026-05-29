@@ -693,11 +693,50 @@ function LineDropdown({ lines, activeLine, onSelect, triggerRef, onClose }) {
 }
 
 // ── PrepareView — pre-shift staffing preparation ─────────────────────────────
+
+const DEMAND_SIGNAL = {
+ scheduledCases: 4200, forecastCases: 3850, unit: 'cases',
+ variance: +350, variancePct: 9,
+ recommendation: 'Reduce Line 4 to 85% capacity or reallocate 1 operator to Line 3 packaging backlog',
+ confidence: 81,
+ source: 'Distribution forecast · 3-day rolling avg · updated 05:30',
+}
+
 function PrepareView({ forecast = [] }) {
  const [confirmed, setConfirmed] = useState({})
  const actionRows = forecast.filter(r => r.action)
  return (
   <div className="flex flex-col flex-1 overflow-hidden content-reveal">
+
+   {/* Demand alignment */}
+   <div className="flex-shrink-0 border-b border-rule2">
+    <div className="px-5 py-2 bg-stone2 border-b border-rule2 flex items-center justify-between">
+     <span className="font-body text-muted text-label font-medium">Demand alignment</span>
+     <span className="font-body text-muted text-label">{DEMAND_SIGNAL.source}</span>
+    </div>
+    <div className="flex border-b border-rule2">
+     {[
+      { label: 'Scheduled output', value: `${(DEMAND_SIGNAL.scheduledCases / 1000).toFixed(1)}K`, sub: DEMAND_SIGNAL.unit, tone: 'text-ink' },
+      { label: 'Forecasted demand', value: `${(DEMAND_SIGNAL.forecastCases / 1000).toFixed(1)}K`, sub: DEMAND_SIGNAL.unit, tone: 'text-ink' },
+      { label: 'Variance',         value: `+${DEMAND_SIGNAL.variancePct}%`,                       sub: `${DEMAND_SIGNAL.variance} cases over`, tone: 'text-warn' },
+      { label: 'Signal confidence', value: `${DEMAND_SIGNAL.confidence}%`,                        sub: 'distribution forecast', tone: 'text-muted' },
+     ].map((cell, i) => (
+      <div key={i} className="flex-1 px-4 py-3 border-r border-rule2 last:border-r-0">
+       <div className="font-body text-muted text-label mb-0.5">{cell.label}</div>
+       <div className={`display-num text-head font-bold leading-none tabular-nums ${cell.tone}`}>{cell.value}</div>
+       <div className="font-body text-muted text-label mt-0.5">{cell.sub}</div>
+      </div>
+     ))}
+    </div>
+    <div className="px-5 py-3 flex items-start gap-2.5">
+     <div className="w-1.5 h-1.5 rounded-full bg-warn flex-shrink-0 mt-1.5" />
+     <div>
+      <span className="font-body text-warn text-label font-medium">Over-scheduled — </span>
+      <span className="font-body text-muted text-label">{DEMAND_SIGNAL.recommendation}</span>
+     </div>
+    </div>
+   </div>
+
    {/* Gantt — upcoming shift forecast */}
    <div className="flex-shrink-0 px-5 py-4 border-b border-rule2">
     <div className="font-body text-micro text-muted mb-3">Upcoming shift forecast</div>

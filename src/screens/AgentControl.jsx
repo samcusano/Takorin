@@ -880,6 +880,218 @@ function Tier1Overlay({ items, agents, btnRef, onClose }) {
   )
 }
 
+// ─── Scale Readiness view ─────────────────────────────────────────────────────
+
+const SCALE_PHASE_CFG = {
+  production: { label: 'Live',      tone: 'ok'     },
+  readiness:  { label: 'Readiness', tone: 'signal' },
+  pilot:      { label: 'Pilot',     tone: 'warn'   },
+}
+
+const SCALE_AGENTS = [
+  {
+    id: 'pre-shift', name: 'Pre-Shift Verification', phase: 'production',
+    deployedOn: 'Line 4 AM/PM — all operators',
+    expandTo: ['Line 6 AM', 'Line 3 AM/PM'],
+    gates: [
+      { label: 'Accuracy ≥85% over 14d',     status: 'pass', value: '91% · 42d streak' },
+      { label: 'Operator adoption ≥60%',      status: 'pass', value: '78% avg approval rate' },
+      { label: 'Data signal coverage ≥90%',   status: 'pass', value: '94%' },
+    ],
+    canExpand: true, expandNote: '2 lines ready for rollout',
+  },
+  {
+    id: 'compliance', name: 'Compliance Monitor', phase: 'production',
+    deployedOn: 'Salina Campus — all lines',
+    expandTo: ['Södertälje pharma', 'Amberg electronics'],
+    gates: [
+      { label: 'Accuracy ≥85% over 14d',          status: 'pass', value: '88% · 61d streak' },
+      { label: 'Operator adoption ≥60%',           status: 'pass', value: '84% approval rate' },
+      { label: 'Regulatory mapping complete',      status: 'pass', value: 'FDA 21 CFR 110, FSMA 204' },
+    ],
+    canExpand: true, expandNote: 'Cross-facility expansion ready',
+  },
+  {
+    id: 'handoff', name: 'Handoff Synthesis', phase: 'production',
+    deployedOn: 'Line 4 — all shifts',
+    expandTo: ['Line 6', 'Line 3'],
+    gates: [
+      { label: 'Accuracy ≥85% over 14d',       status: 'pass', value: '87% · 28d streak' },
+      { label: 'Supervisor time saved ≥15 min', status: 'pass', value: '28 min avg per transition' },
+      { label: 'Data signal coverage ≥90%',     status: 'pass', value: '91%' },
+    ],
+    canExpand: true, expandNote: '2 lines ready for rollout',
+  },
+  {
+    id: 'risk', name: 'Risk Escalation', phase: 'production',
+    deployedOn: 'Salina Campus — all finding types',
+    expandTo: ['Multi-facility escalation chain'],
+    gates: [
+      { label: 'Accuracy ≥85% over 14d',          status: 'pass', value: '90% · 35d streak' },
+      { label: 'Escalation chain configured',      status: 'pass', value: '4-tier chain active' },
+      { label: 'Mean response time <2h',           status: 'pass', value: '1.4h avg' },
+    ],
+    canExpand: true, expandNote: 'Multi-facility expansion ready',
+  },
+  {
+    id: 'resource', name: 'Resource Allocation', phase: 'readiness',
+    deployedOn: 'Pilot — Line 4 AM shift only',
+    expandTo: ['Line 4 all shifts', 'Facility-wide'],
+    gates: [
+      { label: 'Accuracy ≥85% over 14d',        status: 'pass', value: '86% · 18d streak' },
+      { label: 'Operator adoption ≥60%',         status: 'warn', value: '52% — need 60%' },
+      { label: 'Workforce data complete',        status: 'warn', value: '3 cert records missing' },
+    ],
+    canExpand: false, expandNote: 'Raise adoption rate + complete cert records first',
+  },
+  {
+    id: 'supplier', name: 'Supplier Intelligence', phase: 'pilot',
+    deployedOn: 'Pilot — ConAgra, ADM suppliers',
+    expandTo: ['All 14 active suppliers'],
+    gates: [
+      { label: 'Accuracy ≥85% over 14d',    status: 'pass', value: '88% · 12d streak' },
+      { label: 'COA data completeness ≥95%', status: 'fail', value: '76% — 3 lots missing metadata' },
+      { label: 'ERP integration stable',     status: 'fail', value: 'Schema mismatch — 14 records unlinked' },
+    ],
+    canExpand: false, expandNote: 'Resolve ERP schema + lot metadata — see Data Readiness',
+  },
+  {
+    id: 'maintenance', name: 'Predictive Maintenance', phase: 'pilot',
+    deployedOn: 'Pilot — Oven B, Pump Station 2',
+    expandTo: ['All 8 oven stations', 'Full equipment fleet'],
+    gates: [
+      { label: 'Accuracy ≥85% over 14d',      status: 'warn', value: '81% · 8d streak — trending up' },
+      { label: 'SCADA data stable',            status: 'fail', value: 'Oven B feed degraded — MT-2604-019' },
+      { label: 'Equipment telemetry coverage', status: 'warn', value: '2 of 8 stations instrumented' },
+    ],
+    canExpand: false, expandNote: 'Resolve SCADA gap first — see Data Readiness',
+  },
+  {
+    id: 'capa-closure', name: 'CAPA Closure', phase: 'pilot',
+    deployedOn: 'Pilot — last 14 CAPAs',
+    expandTo: ['All CAPA types and severity levels'],
+    gates: [
+      { label: 'Accuracy ≥85% over 14d',   status: 'warn', value: '82% · 14d streak' },
+      { label: 'Validation window (60d)',   status: 'warn', value: '14 of 60 days validated' },
+      { label: 'LIMS data integration',    status: 'fail', value: 'Lab data manual — LIMS integration Q3' },
+    ],
+    canExpand: false, expandNote: 'Need 60-day validation + LIMS integration (Q3)',
+  },
+]
+
+function PhaseTrack({ phase }) {
+  const phases = ['pilot', 'readiness', 'production']
+  const labels = { pilot: 'Pilot', readiness: 'Readiness', production: 'Live' }
+  const current = phases.indexOf(phase)
+
+  return (
+    <div className="py-3">
+      <div className="flex items-center">
+        {phases.map((p, i) => {
+          const isPast   = i < current
+          const isActive = i === current
+          const isLast   = i === phases.length - 1
+          return (
+            <div key={p} className={`flex items-center ${isLast ? '' : 'flex-1'}`}>
+              <div className={`w-2.5 h-2.5 rounded-full border-2 flex-shrink-0 ${
+                isActive ? 'bg-signal border-signal' : isPast ? 'bg-ok border-ok' : 'bg-stone2 border-rule2'
+              }`} />
+              {!isLast && <div className={`flex-1 h-px mx-1 ${isPast ? 'bg-ok/50' : 'bg-rule2'}`} />}
+            </div>
+          )
+        })}
+      </div>
+      <div className="flex items-center mt-1.5">
+        {phases.map((p, i) => {
+          const isPast   = i < current
+          const isActive = i === current
+          const isLast   = i === phases.length - 1
+          return (
+            <span key={p} className={`font-body text-micro ${isLast ? '' : 'flex-1'} ${
+              isActive ? 'text-signal font-semibold' : isPast ? 'text-ok' : 'text-muted'
+            }`}>{labels[p]}</span>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+function GateRow({ gate }) {
+  const dotColor = gate.status === 'pass' ? 'bg-ok' : gate.status === 'warn' ? 'bg-warn' : 'bg-danger'
+  const textColor = gate.status === 'pass' ? 'text-ok' : gate.status === 'warn' ? 'text-warn' : 'text-danger'
+  return (
+    <div className="flex items-start gap-2 py-1.5">
+      <div className={`w-2 h-2 rounded-full flex-shrink-0 mt-1 ${dotColor}`} />
+      <div className="flex-1 min-w-0">
+        <div className="font-body text-muted text-label leading-snug">{gate.label}</div>
+        <div className={`font-body text-label leading-snug ${textColor}`}>{gate.value}</div>
+      </div>
+    </div>
+  )
+}
+
+function AgentScaleCard({ agent }) {
+  const phaseCfg = SCALE_PHASE_CFG[agent.phase]
+  return (
+    <div className={`border overflow-hidden ${agent.canExpand ? 'border-ok/25' : 'border-rule2'}`}>
+      <div className="flex items-start justify-between gap-3 px-4 py-3 border-b border-rule2 bg-stone2">
+        <div className="flex-1 min-w-0">
+          <div className="font-body font-semibold text-ink text-body">{agent.name}</div>
+          <div className="font-body text-muted text-label mt-0.5 leading-snug">{agent.deployedOn}</div>
+        </div>
+        <StatusPill tone={phaseCfg.tone}>{phaseCfg.label}</StatusPill>
+      </div>
+      <div className="px-4">
+        <PhaseTrack phase={agent.phase} />
+      </div>
+      <div className="px-4 pb-3 border-t border-rule2">
+        <div className="font-body text-micro font-semibold text-muted tracking-wider pt-2.5 mb-0.5">Gates to next phase</div>
+        {agent.gates.map((g, i) => <GateRow key={i} gate={g} />)}
+      </div>
+      <div className={`flex items-center justify-between gap-3 px-4 py-2.5 border-t border-rule2 ${agent.canExpand ? 'bg-ok/[0.03]' : ''}`}>
+        <span className="font-body text-label text-muted leading-snug flex-1 min-w-0">{agent.expandNote}</span>
+        {agent.expandTo.length > 0 && (
+          <div className="flex-shrink-0 text-right">
+            <div className="font-body text-muted text-micro">Next: {agent.expandTo[0]}</div>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function ScaleReadiness() {
+  const byPhase = (p) => SCALE_AGENTS.filter(a => a.phase === p).length
+  return (
+    <div className="flex-1 overflow-hidden flex flex-col">
+      {/* Summary strip */}
+      <div className="flex-shrink-0 flex items-stretch divide-x divide-rule2 border-b border-rule2">
+        {[
+          { label: 'In production',   count: byPhase('production'), tone: 'text-ok' },
+          { label: 'In readiness',    count: byPhase('readiness'),  tone: 'text-signal' },
+          { label: 'In pilot',        count: byPhase('pilot'),      tone: 'text-warn' },
+          { label: 'Ready to expand', count: SCALE_AGENTS.filter(a => a.canExpand).length, tone: 'text-ok' },
+        ].map(s => (
+          <div key={s.label} className="flex-1 px-5 py-3">
+            <div className="font-body text-muted text-label mb-0.5">{s.label}</div>
+            <div className={`display-num text-head font-bold ${s.tone}`}>{s.count}</div>
+          </div>
+        ))}
+      </div>
+      {/* Agent grid */}
+      <div className="flex-1 overflow-y-auto p-5">
+        <div className="grid grid-cols-2 gap-4">
+          {SCALE_AGENTS
+            .slice()
+            .sort((a, b) => ({ production: 0, readiness: 1, pilot: 2 }[a.phase] - { production: 0, readiness: 1, pilot: 2 }[b.phase]))
+            .map(agent => <AgentScaleCard key={agent.id} agent={agent} />)}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ─── Root ─────────────────────────────────────────────────────────────────────
 
 export default function AgentControl() {
@@ -908,6 +1120,7 @@ export default function AgentControl() {
   const [splitFocused, setSplitFocused]   = useState(null)
   const [splitChecked, setSplitChecked]   = useState(new Set())
   const [tier1Open, setTier1Open]         = useState(false)
+  const [agentView, setAgentView]         = useState('queue')
   const tier1BtnRef                       = useRef(null)
   const [detailTab, setDetailTab]         = useState('why')
   const [freshnessOpen, setFreshnessOpen] = useState(false)
@@ -1119,22 +1332,30 @@ export default function AgentControl() {
       {/* ── Priority-weighted ledger ──────────────────────────────────── */}
       <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
 
-        {/* Queue header */}
-        <div className="flex-shrink-0 flex items-center justify-between px-5 py-2 border-b border-rule2 bg-stone">
-          <div className="flex items-center gap-2.5">
-            <span className="font-body font-medium text-label text-ink">For your review</span>
-            {undecidedCount > 0 && (
-              <span className="font-body text-label text-warn bg-warn/[0.08] px-1.5 py-0.5">{undecidedCount} awaiting</span>
-            )}
+        {/* Queue header / view switcher */}
+        <div className="flex-shrink-0 flex items-center border-b border-rule2 bg-stone">
+          <div className="flex items-stretch flex-shrink-0">
+            {[{ id: 'queue', label: 'Decision queue' }, { id: 'scale', label: 'Scale readiness' }].map(v => (
+              <button key={v.id} type="button" onClick={() => setAgentView(v.id)}
+                className={`font-body text-label px-4 py-2.5 border-b-2 transition-colors flex-shrink-0 ${
+                  agentView === v.id ? 'border-b-signal text-ink' : 'border-b-transparent text-muted hover:text-ink'
+                }`}>
+                {v.label}
+              </button>
+            ))}
           </div>
-          <div className="flex items-center gap-2">
-            <span className="font-body text-muted text-label">Ranked by urgency and consequence</span>
-            <Btn variant="ghost" onClick={() => setActivityDrawer(true)}>Activity</Btn>
-          </div>
+          {agentView === 'queue' && (
+            <div className="flex items-center gap-2 ml-auto px-5">
+              {undecidedCount > 0 && (
+                <span className="font-body text-label text-warn bg-warn/[0.08] px-1.5 py-0.5">{undecidedCount} awaiting</span>
+              )}
+              <Btn variant="ghost" onClick={() => setActivityDrawer(true)}>Activity</Btn>
+            </div>
+          )}
         </div>
 
-        {/* ── Split Decision Panel ─────────────────────────────────── */}
-        {(
+        {/* ── Split Decision Panel / Scale Readiness ───────────────── */}
+        {agentView === 'scale' ? <ScaleReadiness /> : (
           <div className="flex flex-1 min-h-0 overflow-hidden">
             {/* Left: compact selection list with checkboxes */}
             <div className="w-[280px] flex-shrink-0 border-r border-rule2 flex flex-col overflow-hidden">

@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { shiftData, line6Data, wichitaData, denverData, facility } from '../data'
 import { useAppState } from '../context/AppState'
 import { riskColorClass, riskLabel, riskBgColor } from '../lib/utils'
@@ -8,7 +8,7 @@ import {
   Activity, CircleDot, ChevronDown, ChevronUp, ArrowRight, ExternalLink, X,
 } from 'lucide-react'
 import { interventionSummary, interventions } from '../data/interventions'
-import { FilterDropdown, SlidePanel, Btn, SegmentedControl, Checkbox, AnimatedScore } from '../components/UI'
+import { FilterDropdown, SlidePanel, Btn, SegmentedControl, Checkbox, AnimatedScore, Tabs } from '../components/UI'
 
 // ─── Before-narratives — one sentence per line describing normal baseline ─────
 const LINE_BEFORE = {
@@ -165,6 +165,134 @@ function pressureClass(score) {
   return score >= 75 ? 'shadow-card-alert' : ''
 }
 
+// ─── Digital Maturity Map ─────────────────────────────────────────────────────
+
+const MATURITY_STAGES = ['Manual', 'Connected', 'Monitored', 'Predictive', 'Autonomous']
+
+const MATURITY_DIMS = ['Data infrastructure', 'Workforce model', 'Process intelligence', 'Compliance posture']
+
+const MATURITY_BY_PLANT = {
+  sl: {
+    scores: [3, 3, 3, 3],
+    notes: [
+      'Real-time sensors on 3 of 4 lines · SCADA gap on Oven B blocking Predictive accuracy',
+      'Cert tracking active · hybrid mode configured but not yet deployed on floor',
+      '8 AI agents running · shift predictions active · expansion gate under review',
+      'FSMA 204 monitored · CAPA engine active · FDA inspection simulation enabled',
+    ],
+    nextStep: { action: 'Restore Oven B SCADA sensor feed', lift: 'Unblocks Predictive Maintenance at full accuracy (+11pp model confidence)', route: '/readiness', module: 'Data Readiness' },
+  },
+  ks: {
+    scores: [2, 3, 2, 2],
+    notes: [
+      'MES connected · ERP integration partial · no AI-ready data pipeline yet',
+      'Hybrid workforce deployed at 94% coverage · cert tracking active across shifts',
+      'Manual process monitoring · AI agents not yet onboarded for this plant',
+      'SQF certified · FSMA compliance tracked · CAPA engine not yet integrated',
+    ],
+    nextStep: { action: 'Complete ERP–MES data pipeline integration', lift: 'Enables AI agent deployment at Wichita — mirrors Salina architecture', route: '/readiness', module: 'Data Readiness' },
+  },
+  co: {
+    scores: [4, 4, 4, 3],
+    notes: [
+      'Full sensor coverage · SCADA integrated · real-time lot traceability across all lines',
+      'Hybrid crew 94% certified · robot workflow protocols defined · transition active',
+      'Predictive Maintenance and Pre-Shift AI live · pilot week 3 · model accuracy 91%',
+      'FSMA 204 monitored · compliance automation partial · CAPA evidence still manual',
+    ],
+    nextStep: { action: 'Activate automated CAPA evidence packaging', lift: 'Closes last gap to Predictive stage across all 4 dimensions', route: '/compliance', module: 'Compliance' },
+  },
+}
+
+function DigitalMaturityMap({ plantId }) {
+  const data = MATURITY_BY_PLANT[plantId] || MATURITY_BY_PLANT.sl
+  const avg  = data.scores.reduce((a, b) => a + b, 0) / data.scores.length
+  const stageIdx = Math.round(avg) - 1
+  const stageName = MATURITY_STAGES[Math.max(0, Math.min(4, stageIdx))]
+  const minScore = Math.min(...data.scores)
+
+  return (
+    <div className="flex-1 overflow-y-auto page-rise">
+      <div className="max-w-[820px] mx-auto px-8 py-8">
+
+        {/* Hero interpretation */}
+        <div className="mb-8">
+          <div className="font-body text-muted text-label mb-3">
+            Digital maturity · {MATURITY_STAGES.join(' → ')}
+          </div>
+          <div className="font-display font-bold text-head text-ink leading-snug mb-2">
+            This plant is at the <span className="text-signal">{stageName}</span> stage — averaging {avg.toFixed(1)} of 5 across dimensions.
+          </div>
+          <div className="font-body text-muted text-body leading-relaxed">
+            Each dimension tracks independently. Advancing the lowest-scoring dimension first delivers the most compounding lift across agents and output.
+          </div>
+        </div>
+
+        {/* Dimension matrix */}
+        <div className="space-y-px mb-8">
+          {MATURITY_DIMS.map((dim, i) => {
+            const score    = data.scores[i]
+            const note     = data.notes[i]
+            const isLagging = score === minScore
+            return (
+              <div key={dim} className={`border border-rule2 bg-stone px-5 py-4 ${isLagging ? 'border-l-[3px] border-l-warn' : ''}`}>
+                <div className="flex items-center justify-between mb-2.5">
+                  <div>
+                    <span className="font-body font-medium text-ink text-body">{dim}</span>
+                    {isLagging && <span className="font-body text-warn text-label ml-2">· lagging dimension</span>}
+                  </div>
+                  <span className="font-body text-muted text-label">{MATURITY_STAGES[score - 1]} · stage {score} of 5</span>
+                </div>
+                {/* Stage track */}
+                <div className="flex gap-1 mb-2.5">
+                  {MATURITY_STAGES.map((stage, j) => {
+                    const filled = j < score
+                    const active = j === score - 1
+                    return (
+                      <div key={j} className="flex-1 flex flex-col items-center gap-1">
+                        <div className={`w-full h-[4px] ${active ? 'bg-signal' : filled ? 'bg-ok/60' : 'bg-rule2'}`} />
+                        <span className={`font-body text-micro leading-none ${active ? 'text-signal font-medium' : filled ? 'text-ok' : 'text-muted/40'}`}>
+                          {stage}
+                        </span>
+                      </div>
+                    )
+                  })}
+                </div>
+                <div className="font-body text-muted text-label leading-snug">{note}</div>
+              </div>
+            )
+          })}
+        </div>
+
+        {/* Next recommended step */}
+        <div className="border border-rule2 border-l-[3px] border-l-signal bg-signal/[0.04] px-5 py-4 mb-6">
+          <div className="font-body text-signal text-label font-medium mb-1">Next recommended step</div>
+          <div className="font-body font-medium text-ink text-body mb-1">{data.nextStep.action}</div>
+          <div className="font-body text-muted text-label mb-3 leading-snug">{data.nextStep.lift}</div>
+          <Link to={data.nextStep.route}
+            className="flex items-center gap-1.5 font-body text-muted text-label hover:text-ink transition-colors">
+            Open {data.nextStep.module} <ArrowRight size={9} />
+          </Link>
+        </div>
+
+        {/* Legend */}
+        <div className="flex items-center gap-6">
+          {[
+            { label: 'Completed',      color: 'bg-ok/60'  },
+            { label: 'Current stage',  color: 'bg-signal' },
+            { label: 'Not yet reached', color: 'bg-rule2' },
+          ].map(l => (
+            <span key={l.label} className="flex items-center gap-1.5 font-body text-muted text-label">
+              <span className={`w-6 h-[4px] flex-shrink-0 ${l.color}`} />{l.label}
+            </span>
+          ))}
+        </div>
+
+      </div>
+    </div>
+  )
+}
+
 // ─── Root ─────────────────────────────────────────────────────────────────────
 
 export default function PlantOverview() {
@@ -179,6 +307,7 @@ export default function PlantOverview() {
   const [zoneFilter, setZoneFilter]             = useState('all')
   const [areaFilter, setAreaFilter]             = useState('all')
   const [findingsFilter, setFindingsFilter]     = useState('all')
+  const [plantView, setPlantView]               = useState('lines')
 
   const isWichita = currentPlant?.id === 'ks'
   const isDenver  = currentPlant?.id === 'co'
@@ -286,6 +415,19 @@ export default function PlantOverview() {
 
   return (<>
     <div className="flex flex-col h-full overflow-hidden content-reveal">
+
+      {/* ── View switcher ─────────────────────────────────────────────────── */}
+      <div className="flex-shrink-0 border-b border-rule2 px-5">
+        <Tabs
+          tabs={[{ id: 'lines', label: 'Live view' }, { id: 'maturity', label: 'Maturity map' }]}
+          active={plantView}
+          onChange={setPlantView}
+        />
+      </div>
+
+      {plantView === 'maturity'
+        ? <DigitalMaturityMap plantId={currentPlant?.id || 'sl'} />
+        : (<>
 
       {/* ── Compact status bar — director scanning glance ───────────────── */}
       <div className="flex-shrink-0 flex items-center gap-4 px-5 py-3 border-b border-rule2 bg-stone">
@@ -781,6 +923,8 @@ export default function PlantOverview() {
         </section>
 
       </div>
+
+      </>)}
     </div>
 
     {/* ── Finding action drawer — stays in overview context ────────────── */}

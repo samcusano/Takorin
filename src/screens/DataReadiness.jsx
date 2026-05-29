@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import { readinessData } from '../data'
 import { useAppState } from '../context/AppState'
-import { HoldButton, Btn, SectionHeader, StatusPill, AnimatedScore } from '../components/UI'
+import { HoldButton, Btn, SectionHeader, StatusPill, AnimatedScore, Tabs } from '../components/UI'
 import { Check, AlertTriangle, ChevronDown, ChevronUp, Zap, Clock, Link2, Layers } from 'lucide-react'
 
 // ── Resolution queue data ─────────────────────────────────────────────────────
@@ -729,6 +729,206 @@ function EmptyWorkspace() {
   )
 }
 
+// ── Advisory items (compliance readiness) ─────────────────────────────────────
+
+const ADVISORY_ITEMS = [
+  { key: 'adv-1', label: 'Operator e-signature policy review',        detail: 'Last reviewed 8 months ago — consider refreshing before next audit window' },
+  { key: 'adv-2', label: 'Backup lot traceability export format',     detail: 'Current export format is CSV; FDA may request XML in future cycles' },
+  { key: 'adv-3', label: 'Sensor calibration schedule alignment',     detail: 'Annual calibration cycle misaligned with FSMA review period by ~6 weeks' },
+]
+
+// ── AI Readiness tab ──────────────────────────────────────────────────────────
+
+const AI_DIMENSIONS = [
+  { key: 'completeness', label: 'Data completeness', score: 68, note: '12% of expected signals not arriving — SCADA gap + checklist sync lag' },
+  { key: 'freshness',    label: 'Data freshness',    score: 71, note: '3 sources updating >10 min behind expected interval' },
+  { key: 'consistency',  label: 'Schema consistency', score: 54, note: 'ERP field format mismatch affects 14 ingredient records' },
+  { key: 'coverage',     label: 'Integration coverage', score: 62, note: 'MES, ERP, SCADA connected — warehouse + quality lab not yet integrated' },
+]
+const AI_WEIGHTS = [0.30, 0.25, 0.25, 0.20]
+const AI_SCORE = Math.round(AI_DIMENSIONS.reduce((s, d, i) => s + d.score * AI_WEIGHTS[i], 0))
+
+const AI_GAPS = [
+  {
+    id: 'scada-ai', label: 'SCADA feed degraded — Oven B', dimension: 'Data completeness', severity: 'high',
+    agents: ['Predictive Maintenance'],
+    impact: 'Predictive Maintenance running at 71% confidence — full accuracy requires a stable Oven B signal.',
+    fix: 'Resolve maintenance ticket MT-2604-019 to restore feed stability.',
+    blockedBy: 'MT-2604-019',
+  },
+  {
+    id: 'erp-schema', label: 'ERP schema inconsistency', dimension: 'Schema consistency', severity: 'high',
+    agents: ['Supplier Intelligence', 'Risk Escalation'],
+    impact: 'Ingredient-to-supplier linkage broken for 14 records — chain-of-custody gap reduces accuracy in 2 agents.',
+    fix: 'Resolve ERP ingredient map in Compliance Readiness queue (~30 min).',
+  },
+  {
+    id: 'lot-meta', label: 'Supplier lot metadata incomplete', dimension: 'Data completeness', severity: 'moderate',
+    agents: ['Supplier Intelligence'],
+    impact: '3 active lots missing COA metadata — reduces recommendation quality and FSMA traceability confidence.',
+    fix: 'Contact ConAgra and ADM for missing harvest date + handler certification fields.',
+  },
+  {
+    id: 'warehouse', label: 'Warehouse management not integrated', dimension: 'Integration coverage', severity: 'moderate',
+    agents: ['Resource Allocation', 'Handoff Synthesis'],
+    impact: 'Finished goods movement and inventory signals missing — handoff completeness is reduced.',
+    fix: 'Connect WMS API to integration layer — requires IT ticket.',
+  },
+  {
+    id: 'lims', label: 'Quality lab LIMS not connected', dimension: 'Integration coverage', severity: 'moderate',
+    agents: ['Compliance Monitor', 'CAPA Closure'],
+    impact: 'Lab test results entered manually — 4–8h lag between test result and agent awareness.',
+    fix: 'LIMS integration in Q3 roadmap — manual entry workaround active in the interim.',
+  },
+]
+
+const AI_AGENTS = [
+  { name: 'Pre-Shift Verification', status: 'full',    note: 'All required data sources connected and fresh' },
+  { name: 'Handoff Synthesis',      status: 'full',    note: 'All required signals connected' },
+  { name: 'Risk Escalation',        status: 'partial', note: 'ERP schema gap affects some signal paths' },
+  { name: 'Compliance Monitor',     status: 'partial', note: 'LIMS lag (4–8h) reduces real-time lab coverage' },
+  { name: 'Supplier Intelligence',  status: 'partial', note: 'ERP schema mismatch + 3 lots missing COA metadata' },
+  { name: 'Resource Allocation',    status: 'partial', note: 'Warehouse management signals missing' },
+  { name: 'Predictive Maintenance', status: 'partial', note: 'SCADA feed degraded — Oven B signal unreliable' },
+  { name: 'CAPA Closure',          status: 'partial', note: 'LIMS integration pending — lab data via manual entry' },
+]
+
+function AIReadinessInstrument() {
+  const zone = AI_SCORE >= 75 ? 'Ready' : AI_SCORE >= 55 ? 'Partially ready' : 'Not ready'
+  const zoneTone = AI_SCORE >= 75 ? 'text-ok' : AI_SCORE >= 55 ? 'text-warn' : 'text-danger'
+  const fullCount    = AI_AGENTS.filter(a => a.status === 'full').length
+  const partialCount = AI_AGENTS.filter(a => a.status === 'partial').length
+
+  return (
+    <div className="flex flex-col overflow-hidden">
+      {/* Score */}
+      <div className="px-5 pt-5 pb-4 border-b border-rule2 flex-shrink-0">
+        <div className="font-body text-muted text-label mb-3">AI Readiness</div>
+        <div className="flex items-baseline gap-3 mb-1">
+          <span className={`display-num text-score leading-none ${zoneTone}`}>
+            <AnimatedScore value={AI_SCORE} effect="blur" />
+          </span>
+          <div className="pb-1">
+            <div className={`font-body font-semibold text-body ${zoneTone}`}>{zone}</div>
+          </div>
+        </div>
+        <div className="space-y-3 mt-4">
+          {AI_DIMENSIONS.map((d, i) => {
+            const tone     = d.score >= 75 ? 'bg-ok' : d.score >= 55 ? 'bg-warn' : 'bg-danger'
+            const textTone = d.score >= 75 ? 'text-ok' : d.score >= 55 ? 'text-warn' : 'text-danger'
+            return (
+              <div key={d.key}>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="font-body text-muted text-label">{d.label}</span>
+                  <span className={`display-num text-label font-bold tabular-nums ${textTone}`}>{d.score}</span>
+                </div>
+                <div className="h-[2px] bg-rule2">
+                  <div className={`h-full ${tone} transition-[width]`} style={{ width: `${d.score}%` }} />
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </div>
+      {/* Agent summary */}
+      <div className="px-5 py-4 border-b border-rule2 flex-shrink-0">
+        <div className="font-body text-muted text-label mb-3">Agent data coverage</div>
+        <div className="space-y-1.5">
+          <div className="flex items-baseline justify-between">
+            <span className="font-body text-muted text-label">Full data access</span>
+            <span className="display-num text-body font-bold text-ok tabular-nums">{fullCount} agents</span>
+          </div>
+          <div className="flex items-baseline justify-between">
+            <span className="font-body text-muted text-label">Partial access</span>
+            <span className="display-num text-body font-bold text-warn tabular-nums">{partialCount} agents</span>
+          </div>
+        </div>
+      </div>
+      {/* Gap summary */}
+      <div className="px-5 py-4 flex-shrink-0">
+        <div className="flex items-baseline justify-between mb-2">
+          <span className="font-body text-muted text-label">Active gaps</span>
+          <span className="display-num text-body font-bold text-warn tabular-nums">{AI_GAPS.length}</span>
+        </div>
+        <div className="flex items-baseline justify-between">
+          <span className="font-body text-muted text-label">High severity</span>
+          <span className="display-num text-body font-bold text-danger tabular-nums">{AI_GAPS.filter(g => g.severity === 'high').length}</span>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function AIReadinessPanel() {
+  const [rightTab, setRightTab] = useState('gaps')
+
+  return (
+    <div className="flex-1 overflow-hidden flex flex-col bg-stone">
+      <div className="flex-shrink-0 flex border-b border-rule2">
+        {[{ id: 'gaps', label: 'Data gaps' }, { id: 'agents', label: 'Agent coverage' }].map(t => (
+          <button key={t.id} type="button" onClick={() => setRightTab(t.id)}
+            className={`font-body text-label px-4 py-2.5 border-b-2 transition-colors flex-shrink-0 ${
+              rightTab === t.id ? 'border-b-signal text-ink' : 'border-b-transparent text-muted hover:text-ink'
+            }`}>
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      <div className="flex-1 overflow-y-auto">
+        {rightTab === 'gaps' && (
+          <div className="max-w-[720px] px-8 py-6 space-y-4">
+            {AI_GAPS.map(gap => (
+              <div key={gap.id} className={`border overflow-hidden ${gap.severity === 'high' ? 'border-danger/30' : 'border-rule2'}`}>
+                <div className={`flex items-start justify-between gap-4 px-4 py-3 border-b border-rule2 ${gap.severity === 'high' ? 'bg-danger/[0.02]' : 'bg-stone2'}`}>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-body font-medium text-ink text-body leading-snug">{gap.label}</div>
+                    <div className="font-body text-muted text-label mt-0.5">Dimension: {gap.dimension}</div>
+                  </div>
+                  <StatusPill tone={gap.severity === 'high' ? 'danger' : 'warn'}>{gap.severity === 'high' ? 'High' : 'Moderate'}</StatusPill>
+                </div>
+                <div className="px-4 py-3 border-b border-rule2">
+                  <div className="font-body text-muted text-label mb-1.5">Affected agents</div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {gap.agents.map(a => (
+                      <span key={a} className="font-body text-label text-signal bg-signal/10 px-2 py-0.5">{a}</span>
+                    ))}
+                  </div>
+                </div>
+                <div className="px-4 py-3">
+                  <p className="font-body text-muted text-label leading-relaxed mb-2">{gap.impact}</p>
+                  <div className="flex items-start gap-2">
+                    <Zap size={10} strokeWidth={2} className="text-ok flex-shrink-0 mt-0.5" />
+                    <span className="font-body text-ok text-label leading-snug">{gap.fix}</span>
+                  </div>
+                  {gap.blockedBy && (
+                    <div className="font-body text-muted text-label mt-1">Blocked by: {gap.blockedBy}</div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {rightTab === 'agents' && (
+          <div className="divide-y divide-rule2">
+            {AI_AGENTS.map(a => (
+              <div key={a.name} className="flex items-center gap-4 px-5 py-3.5">
+                <div className={`w-2 h-2 rounded-full flex-shrink-0 ${a.status === 'full' ? 'bg-ok' : 'bg-warn'}`} />
+                <div className="flex-1 min-w-0">
+                  <div className="font-body font-medium text-ink text-body">{a.name}</div>
+                  <div className="font-body text-muted text-label mt-0.5">{a.note}</div>
+                </div>
+                <StatusPill tone={a.status === 'full' ? 'ok' : 'warn'}>{a.status === 'full' ? 'Full access' : 'Partial'}</StatusPill>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
 // ── Main ──────────────────────────────────────────────────────────────────────
 
 export default function DataReadiness() {
@@ -738,6 +938,7 @@ export default function DataReadiness() {
 
   const [selectedId, setSelectedId] = useState(CLUSTER_A.id)
   const [resolvedFeedback, setResolvedFeedback] = useState(null)
+  const [mode, setMode] = useState('compliance')
   const location = useLocation()
 
   useEffect(() => {
@@ -798,6 +999,27 @@ export default function DataReadiness() {
 
   return (
     <div className="flex flex-col h-full overflow-hidden content-reveal">
+
+      {/* Mode tab switcher */}
+      <div className="flex-shrink-0 border-b border-rule2">
+        <Tabs
+          tabs={[
+            { id: 'compliance', label: 'Compliance readiness' },
+            { id: 'ai',         label: 'AI readiness'        },
+          ]}
+          active={mode}
+          onChange={setMode}
+        />
+      </div>
+
+      {mode === 'ai' ? (
+        <div className="flex flex-1 min-h-0 overflow-hidden">
+          <div className="w-[280px] flex-shrink-0 border-r border-rule2 flex flex-col overflow-hidden bg-stone">
+            <AIReadinessInstrument />
+          </div>
+          <AIReadinessPanel />
+        </div>
+      ) : (
       <div className="flex flex-1 min-h-0 overflow-hidden">
 
       {/* Left rail */}
@@ -825,6 +1047,7 @@ export default function DataReadiness() {
       </div>
 
       </div>
+      )}
     </div>
   )
 }

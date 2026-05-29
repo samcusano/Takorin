@@ -7,6 +7,21 @@ import { interventionSummary, interventions } from '../data/interventions'
 import { ChevronDown, ChevronUp, Download, Lock, ArrowRight, Check } from 'lucide-react'
 import { FilterDropdown, MultiFilterDropdown, StatusPill, AnimatedScore, StatGrid } from '../components/UI'
 
+// ── Peer cohort options + top quartile practices ─────────────────────────────
+
+const COHORT_OPTIONS = [
+  { id: 'similar', label: 'Similar plants',   desc: '100 plants · 100–500 workers · baked goods · FDA-regulated' },
+  { id: 'sector',  label: 'Sector peers',     desc: '340 plants · food & beverage manufacturing · all sizes'     },
+  { id: 'all',     label: 'All manufacturers', desc: '2,400 facilities · cross-sector · FDA-regulated'           },
+]
+
+const TOP_QUARTILE = [
+  { area: 'OEE',          practice: 'Pre-shift AI readiness checks on all lines',    adoption: 82, lift: '+4.2pp avg OEE vs cohort median',   route: '/shift',      module: 'ShiftIQ'       },
+  { area: 'CAPA',         practice: 'Automated evidence packaging at case open',      adoption: 74, lift: '38% faster closure vs cohort median',route: '/capa',       module: 'CAPA Engine'   },
+  { area: 'Downtime',     practice: 'Sensor-driven predictive maintenance schedule',  adoption: 68, lift: '23% fewer unplanned stops',          route: '/agents',     module: 'Agent Control' },
+  { area: 'Traceability', practice: 'Real-time lot chain reconciliation on inbound',  adoption: 61, lift: '2.1h faster recall response window', route: '/readiness',  module: 'Data Readiness'},
+]
+
 // ── Bullet chart for Q2 Goals ─────────────────────────────────────────────────
 function BulletChart({ current, target, direction, unit }) {
   const max = unit === '%' ? 100 : Math.ceil(Math.max(current, target) * 1.8)
@@ -303,6 +318,7 @@ export default function Analytics() {
   const [timeGrain, setTimeGrain]   = useState('shift')
   const [compare, setCompare]       = useState([])
   const [exportState, setExportState] = useState('idle')
+  const [cohort, setCohort]         = useState('similar')
 
   const plantMeta   = ATTR[scopePlant] || ATTR.sl
   const grainData   = plantMeta[timeGrain] || plantMeta.shift
@@ -694,7 +710,21 @@ export default function Analytics() {
               </div>
             </Module>
 
-            <Module title="Industry Benchmarks" badge={`${benchmarks.length} metrics · vs 100 comparable plants`}>
+            <Module title="Industry Benchmarks" badge={`${benchmarks.length} metrics · ${COHORT_OPTIONS.find(c => c.id === cohort)?.desc ?? ''}`}>
+              {/* Cohort selector */}
+              <div className="flex items-center gap-2 px-5 py-3 border-b border-rule2 bg-stone2 flex-wrap">
+                <span className="font-body text-muted text-label">Compare against</span>
+                {COHORT_OPTIONS.map(opt => (
+                  <button key={opt.id} type="button" onClick={() => setCohort(opt.id)}
+                    className={`font-body text-label px-3 py-1 border transition-colors ${
+                      cohort === opt.id
+                        ? 'border-ink/30 text-ink bg-stone3'
+                        : 'border-rule2 text-muted hover:border-ink/20 hover:text-ink'
+                    }`}>
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
               {/* Column headers */}
               <div className="grid px-5 py-2 bg-stone2 border-b border-rule2"
                 style={{ gridTemplateColumns: '1fr 1fr 56px 56px 160px' }}>
@@ -731,6 +761,31 @@ export default function Analytics() {
               <div className="px-5 py-2 bg-stone2 border-t border-rule2 flex items-center gap-2">
                 <div className="w-px h-[8px] bg-muted/30 flex-shrink-0" />
                 <span className="font-body text-muted text-label">Median reference · 50th percentile</span>
+              </div>
+              {/* Top quartile practices */}
+              <div className="border-t-2 border-rule2">
+                <div className="px-5 py-2.5 bg-stone2 border-b border-rule2">
+                  <span className="font-body text-muted text-label font-medium">What the top quartile does differently</span>
+                </div>
+                <div className="divide-y divide-rule2">
+                  {TOP_QUARTILE.map((p, i) => (
+                    <div key={i} className="grid items-center px-5 py-3 border-l-2 border-l-ok/30"
+                      style={{ gridTemplateColumns: '76px 1fr 56px 1fr 120px' }}>
+                      <span className="font-body text-muted text-label">{p.area}</span>
+                      <span className="font-body text-label font-medium text-ink pr-4 leading-snug">{p.practice}</span>
+                      <span className="font-body text-label text-muted tabular-nums">{p.adoption}%</span>
+                      <span className="font-body text-ok text-label leading-snug">{p.lift}</span>
+                      <div className="flex justify-end">
+                        <Link to={p.route} className="flex items-center gap-1 font-body text-muted text-label hover:text-ink transition-colors">
+                          {p.module} <ArrowRight size={9} />
+                        </Link>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="px-5 py-2 bg-stone2 border-t border-rule2">
+                  <span className="font-body text-muted text-label">Adoption rate = % of top-quartile plants using this practice · lift = median improvement vs cohort</span>
+                </div>
               </div>
             </Module>
 
