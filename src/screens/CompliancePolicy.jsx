@@ -182,9 +182,10 @@ const RISK_FINDINGS = [
     severity: 'critical',
     auditFinding: 'CAPA-2604-001 overdue 7 days — auditor will flag as systemic CAPA failure requiring a written response within 15 days of inspection close',
     recallRisk: 0,
-    marketAccessRisk: 15000,
+    contractRisk: 15000,
     closurePath: 'Close CAPA-2604-001 within 48h · submit evidence package to CAPA Engine',
     daysToClose: 2,
+    assignee: 'QA Director',
   },
   {
     id: 'rf-fsma',
@@ -194,9 +195,11 @@ const RISK_FINDINGS = [
     severity: 'critical',
     auditFinding: 'TS-8811 naming conflict across MES, ERP, and supplier portal breaks lot chain at 2 handoffs. Auditor will require remediation plan and may place a hold on affected production runs.',
     recallRisk: 85000,
-    marketAccessRisk: 40000,
+    recallProbability: 'high probability if traceability gap persists',
+    contractRisk: 40000,
     closurePath: 'Resolve TS-8811 conflict in Data Readiness · rebuild affected lot chain before inspection',
     daysToClose: 5,
+    assignee: 'Plant Director',
   },
   {
     id: 'rf-coa',
@@ -206,9 +209,11 @@ const RISK_FINDINGS = [
     severity: 'moderate',
     auditFinding: 'ConAgra TS-8811 COA pending with production scheduled tomorrow. If production ran without COA, auditor will classify as a corrective action item with 30-day response window.',
     recallRisk: 32000,
-    marketAccessRisk: 0,
+    recallProbability: 'moderate probability if production proceeds without COA',
+    contractRisk: 0,
     closurePath: 'Delay production until COA received · document hold decision in supplier log',
     daysToClose: 1,
+    assignee: 'Procurement Lead',
   },
   {
     id: 'rf-cert',
@@ -218,17 +223,18 @@ const RISK_FINDINGS = [
     severity: 'moderate',
     auditFinding: 'Kowalski L4 expires Jun 1 · Okonkwo L2 expires Jun 15 — both within the 18-day inspection window. Auditor will request full certification roster for all active lines.',
     recallRisk: 0,
-    marketAccessRisk: 8000,
+    contractRisk: 8000,
     closurePath: 'Schedule both renewal sessions this week · confirm enrollment before Jun 1',
     daysToClose: 7,
+    assignee: 'HR / Line Supervisor',
   },
 ]
 
 function RiskExposure() {
-  const critical    = RISK_FINDINGS.filter(f => f.severity === 'critical')
-  const moderate    = RISK_FINDINGS.filter(f => f.severity === 'moderate')
-  const totalRecall = RISK_FINDINGS.reduce((s, f) => s + f.recallRisk, 0)
-  const totalMarket = RISK_FINDINGS.reduce((s, f) => s + f.marketAccessRisk, 0)
+  const critical      = RISK_FINDINGS.filter(f => f.severity === 'critical')
+  const moderate      = RISK_FINDINGS.filter(f => f.severity === 'moderate')
+  const totalRecall   = RISK_FINDINGS.reduce((s, f) => s + f.recallRisk, 0)
+  const totalContract = RISK_FINDINGS.reduce((s, f) => s + f.contractRisk, 0)
 
   return (
     <div className="flex-1 overflow-y-auto">
@@ -236,12 +242,12 @@ function RiskExposure() {
       {/* Summary strip */}
       <div className="flex border-b border-rule2 flex-shrink-0">
         {[
-          { label: 'Critical findings',  value: String(critical.length),   tone: critical.length > 0 ? 'text-danger' : 'text-ok', sub: 'if audited today'         },
-          { label: 'Moderate findings',  value: String(moderate.length),   tone: moderate.length > 0 ? 'text-warn'   : 'text-ok', sub: 'flagged for follow-up'    },
-          { label: 'Recall exposure',    value: fmtRisk(totalRecall),      tone: totalRecall > 0   ? 'text-danger' : 'text-ok', sub: 'estimated recall cost'     },
-          { label: 'Market access risk', value: fmtRisk(totalMarket),      tone: totalMarket > 0   ? 'text-warn'   : 'text-ok', sub: 'buyer / retailer impact'   },
+          { label: 'Warning Letter Risk',      value: String(critical.length),   tone: critical.length > 0 ? 'text-danger' : 'text-ok',  bg: critical.length > 0 ? 'bg-danger/[0.04] border-r-danger/20' : '', sub: 'if audited today'         },
+          { label: 'Observation Risk',          value: String(moderate.length),   tone: moderate.length > 0 ? 'text-warn'   : 'text-ok',  bg: '', sub: 'flagged for follow-up'    },
+          { label: 'Recall exposure',           value: fmtRisk(totalRecall),      tone: totalRecall > 0   ? 'text-danger' : 'text-ok',   bg: '', sub: 'estimated recall cost'     },
+          { label: 'Customer contract risk',    value: fmtRisk(totalContract),    tone: totalContract > 0 ? 'text-warn'   : 'text-ok',   bg: '', sub: 'risk of losing contracts'  },
         ].map((cell, i) => (
-          <div key={i} className={`flex-1 px-5 py-4 border-r border-rule2 last:border-r-0 ${i === 0 && critical.length > 0 ? 'bg-danger/[0.025]' : ''}`}>
+          <div key={i} className={`flex-1 px-5 py-4 border-r border-rule2 last:border-r-0 ${cell.bg}`}>
             <div className="font-body text-muted text-label mb-1">{cell.label}</div>
             <div className={`display-num text-metric font-bold leading-none tabular-nums ${cell.tone}`}>{cell.value}</div>
             <div className="font-body text-muted text-label mt-1">{cell.sub}</div>
@@ -259,8 +265,8 @@ function RiskExposure() {
       <div className="divide-y divide-rule2">
         {RISK_FINDINGS.map(f => {
           const sev = f.severity === 'critical'
-            ? { border: 'border-l-danger', bg: 'bg-danger/[0.02]', dot: 'bg-danger', label: 'Critical finding', tone: 'text-danger' }
-            : { border: 'border-l-warn',   bg: '',                  dot: 'bg-warn',   label: 'Moderate finding', tone: 'text-warn'   }
+            ? { border: 'border-l-danger', bg: 'bg-danger/[0.02]', dot: 'bg-danger', label: 'Warning Letter Risk', tone: 'text-danger' }
+            : { border: 'border-l-warn',   bg: '',                  dot: 'bg-warn',   label: 'Observation Risk',   tone: 'text-warn'   }
           return (
             <div key={f.id} className={`border-l-[3px] ${sev.border} ${sev.bg} px-5 py-4`}>
               <div className="flex items-start gap-3">
@@ -273,22 +279,31 @@ function RiskExposure() {
                   </div>
                   <div className="font-body text-muted text-label mb-2 leading-snug">{f.requirement}</div>
                   <div className={`font-body text-label leading-snug mb-3 ${sev.tone}`}>→ {f.auditFinding}</div>
-                  <div className="flex items-center gap-6 mb-2">
+                  <div className="flex flex-wrap items-center gap-x-6 gap-y-1 mb-2">
                     {f.recallRisk > 0 && (
                       <span className="font-body text-label">
-                        <span className="text-muted">Recall: </span>
+                        <span className="text-muted">Recall risk: </span>
                         <span className="font-medium text-danger tabular-nums">{fmtRisk(f.recallRisk)}</span>
+                        {f.recallProbability && <span className="text-muted"> ({f.recallProbability})</span>}
                       </span>
                     )}
-                    {f.marketAccessRisk > 0 && (
+                    {f.contractRisk > 0 && (
                       <span className="font-body text-label">
-                        <span className="text-muted">Market access: </span>
-                        <span className="font-medium text-warn tabular-nums">{fmtRisk(f.marketAccessRisk)}</span>
+                        <span className="text-muted">Contract risk: </span>
+                        <span className="font-medium text-warn tabular-nums">{fmtRisk(f.contractRisk)}</span>
                       </span>
                     )}
                   </div>
-                  <div className="font-body text-label text-muted">
-                    Close in <span className="font-medium text-ink">{f.daysToClose}d:</span> {f.closurePath}
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="font-body text-label text-muted">
+                      <span className="text-ink font-medium">How to resolve in {f.daysToClose}d:</span> {f.closurePath}
+                    </div>
+                    {f.assignee && (
+                      <div className="flex-shrink-0 font-body text-label text-muted">
+                        <span className="text-muted">Owner: </span>
+                        <span className="font-medium text-ink">{f.assignee}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

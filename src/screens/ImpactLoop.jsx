@@ -307,19 +307,38 @@ function InterventionDetail({ entry }) {
 
 const FMT_USD = (n) => n >= 100000 ? `$${Math.round(n / 1000)}K` : `$${(n / 1000).toFixed(1)}K`
 
-function Stepper({ label, value, onChange, min, max, step, unit }) {
-  const display = unit === 'K' ? `$${value}K` : unit ? `${value}${unit}` : String(value)
+const STEPPER_RANGES = {
+  downtime:   { hint: 'typical: 8–20 events/mo' },
+  rejection:  { hint: 'typical: 1.5–5% rejection' },
+  investment: { hint: 'typical: $200K–$500K' },
+}
+
+function Stepper({ label, value, onChange, min, max, step, unit, rangeKey }) {
+  const fmt = (v) => unit === 'K' ? `$${v}K` : unit ? `${v}${unit}` : String(v)
+  const hint = STEPPER_RANGES[rangeKey]?.hint
   return (
-    <div className="flex items-center justify-between py-2.5 border-b border-rule2 last:border-0">
-      <span className="font-body text-muted text-label leading-snug flex-1 mr-3">{label}</span>
-      <div className="flex items-center gap-1.5 flex-shrink-0">
+    <div className="py-2.5 border-b border-rule2 last:border-0">
+      <div className="flex items-center justify-between mb-1">
+        <span className="font-body text-muted text-label leading-snug">{label}</span>
+        {hint && <span className="font-body text-muted text-micro opacity-60">{hint}</span>}
+      </div>
+      <div className="flex items-center gap-1.5">
         <button type="button"
           onClick={() => onChange(Math.max(min, +((value - step).toFixed(1))))}
-          className="w-5 h-5 flex items-center justify-center font-body text-base text-muted hover:text-ink bg-stone2 border border-rule2 hover:bg-stone3 transition-colors">−</button>
-        <span className="display-num text-body font-bold text-ink tabular-nums w-16 text-center">{display}</span>
+          className="w-5 h-5 flex items-center justify-center font-body text-base text-muted hover:text-ink bg-stone2 border border-rule2 hover:bg-stone3 transition-colors flex-shrink-0">−</button>
+        <input
+          type="number" min={min} max={max} step={step}
+          value={value}
+          onChange={e => {
+            const v = parseFloat(e.target.value)
+            if (!isNaN(v)) onChange(Math.min(max, Math.max(min, +v.toFixed(1))))
+          }}
+          className="flex-1 display-num text-body font-bold text-ink tabular-nums text-center bg-stone2 border border-rule2 h-5 px-1 focus:outline-none focus:border-signal [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+        />
+        <span className="font-body text-muted text-label flex-shrink-0">{unit === 'K' ? '$K' : unit}</span>
         <button type="button"
           onClick={() => onChange(Math.min(max, +((value + step).toFixed(1))))}
-          className="w-5 h-5 flex items-center justify-center font-body text-base text-muted hover:text-ink bg-stone2 border border-rule2 hover:bg-stone3 transition-colors">+</button>
+          className="w-5 h-5 flex items-center justify-center font-body text-base text-muted hover:text-ink bg-stone2 border border-rule2 hover:bg-stone3 transition-colors flex-shrink-0">+</button>
       </div>
     </div>
   )
@@ -364,12 +383,12 @@ function BusinessCase() {
       {/* Summary strip */}
       <div className="flex-shrink-0 flex items-stretch divide-x divide-rule2 border-b border-rule2">
         <div className="flex-1 px-6 py-3">
-          <div className="font-body text-muted text-label mb-1">Total projected annual impact</div>
+          <div className="font-body text-muted text-label mb-1">Estimated annual impact range</div>
           <div className="flex items-baseline gap-2">
-            <span className="display-num text-metric font-bold text-ok leading-none">{FMT_USD(totalPoint)}</span>
+            <span className="display-num text-metric font-bold text-ok leading-none">{FMT_USD(totalLow)}–{FMT_USD(totalHigh)}</span>
             <span className="font-body text-muted text-label">/ yr</span>
           </div>
-          <div className="font-body text-muted text-label mt-0.5">Range {FMT_USD(totalLow)}–{FMT_USD(totalHigh)}</div>
+          <div className="font-body text-muted text-label mt-0.5">Midpoint {FMT_USD(totalPoint)} · ±18% confidence band</div>
         </div>
         <div className="flex-1 px-6 py-3">
           <div className="font-body text-muted text-label mb-1">Unlocked by deployed agents</div>
@@ -399,9 +418,9 @@ function BusinessCase() {
             <div className="font-body text-muted text-label leading-relaxed">Derived from Salina Campus plant data. Adjust to model your facility.</div>
           </div>
           <div className="px-4 pt-2 flex-shrink-0">
-            <Stepper label="Downtime events / month" value={downtime}   onChange={setDowntime}   min={2}   max={24}  step={1}   unit=""  />
-            <Stepper label="Batch rejection rate"     value={rejection}  onChange={setRejection}  min={0.5} max={12}  step={0.1} unit="%" />
-            <Stepper label="Platform investment"      value={investment} onChange={setInvestment} min={100} max={900} step={10}  unit="K" />
+            <Stepper label="Downtime events / month" value={downtime}   onChange={setDowntime}   min={2}   max={24}  step={1}   unit=""  rangeKey="downtime"   />
+            <Stepper label="Batch rejection rate"     value={rejection}  onChange={setRejection}  min={0.5} max={12}  step={0.1} unit="%" rangeKey="rejection"  />
+            <Stepper label="Automation investment"    value={investment} onChange={setInvestment} min={100} max={900} step={10}  unit="K" rangeKey="investment" />
           </div>
           <div className="flex-1" />
           <div className="px-4 py-4 border-t border-rule2 flex-shrink-0">
@@ -418,7 +437,8 @@ function BusinessCase() {
             <span className="font-body text-muted text-label w-16 text-right flex-shrink-0">Conf.</span>
             <span className="font-body text-muted text-label w-16 text-right flex-shrink-0">Phase</span>
           </div>
-          <div className="flex-1 overflow-y-auto">
+          <div className="flex-1 overflow-y-auto flex flex-col">
+            <div className="flex-1">
             {agents.map(a => {
               const phaseCfg = BC_PHASE_CFG[a.phase]
               const low  = Math.round(a.point * 0.72)
@@ -445,7 +465,7 @@ function BusinessCase() {
             })}
             {/* Total row */}
             <div className="flex items-center gap-4 px-5 py-4 bg-stone2 border-t-2 border-rule2 sticky bottom-0">
-              <span className="font-body font-semibold text-ink text-body flex-1">Total projected value</span>
+              <span className="font-body font-semibold text-ink text-body flex-1">Total estimated value</span>
               <span className="w-44 flex-shrink-0" />
               <div className="w-36 text-right flex-shrink-0">
                 <div className="display-num text-head font-bold text-ok tabular-nums">{FMT_USD(totalPoint)}/yr</div>
@@ -455,6 +475,14 @@ function BusinessCase() {
               <div className="w-16 text-right flex-shrink-0">
                 <div className="font-body text-muted text-label">{paybackMo}mo</div>
               </div>
+            </div>
+            </div>
+            {/* Compliance exposure footnote */}
+            <div className="flex-shrink-0 flex items-center justify-between px-5 py-2.5 border-t border-rule2 bg-stone2">
+              <span className="font-body text-muted text-label">Estimates based on industry benchmarks for your plant size and AI coverage. Does not include prevented compliance exposure.</span>
+              <Link to="/compliance" className="flex items-center gap-1 font-body text-muted text-label hover:text-ink transition-colors flex-shrink-0 ml-4">
+                View risk exposure <ArrowRight size={9} />
+              </Link>
             </div>
           </div>
         </div>

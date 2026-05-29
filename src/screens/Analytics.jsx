@@ -16,10 +16,10 @@ const COHORT_OPTIONS = [
 ]
 
 const TOP_QUARTILE = [
-  { area: 'OEE',          practice: 'Pre-shift AI readiness checks on all lines',    adoption: 82, lift: '+4.2pp avg OEE vs cohort median',   route: '/shift',      module: 'ShiftIQ'       },
-  { area: 'CAPA',         practice: 'Automated evidence packaging at case open',      adoption: 74, lift: '38% faster closure vs cohort median',route: '/capa',       module: 'CAPA Engine'   },
-  { area: 'Downtime',     practice: 'Sensor-driven predictive maintenance schedule',  adoption: 68, lift: '23% fewer unplanned stops',          route: '/agents',     module: 'Agent Control' },
-  { area: 'Traceability', practice: 'Real-time lot chain reconciliation on inbound',  adoption: 61, lift: '2.1h faster recall response window', route: '/readiness',  module: 'Data Readiness'},
+  { area: 'OEE',          practice: 'Run AI checks before every shift — not just when something goes wrong',          adoption: 82, lift: '+4.2pp avg OEE vs cohort median',   route: '/shift',      module: 'ShiftIQ'       },
+  { area: 'CAPA',         practice: 'Package evidence automatically when a CAPA opens — don\'t wait until closure',   adoption: 74, lift: '38% faster closure vs cohort median',route: '/capa',       module: 'CAPA Engine'   },
+  { area: 'Downtime',     practice: 'Schedule maintenance from sensor data, not from the calendar',                   adoption: 68, lift: '23% fewer unplanned stops',          route: '/agents',     module: 'Agent Control' },
+  { area: 'Traceability', practice: 'Check lot chain completeness as ingredients arrive — catch gaps at the door',    adoption: 61, lift: '2.1h faster recall response window', route: '/readiness',  module: 'Data Readiness'},
 ]
 
 // ── Bullet chart for Q2 Goals ─────────────────────────────────────────────────
@@ -712,18 +712,23 @@ export default function Analytics() {
 
             <Module title="Industry Benchmarks" badge={`${benchmarks.length} metrics · ${COHORT_OPTIONS.find(c => c.id === cohort)?.desc ?? ''}`}>
               {/* Cohort selector */}
-              <div className="flex items-center gap-2 px-5 py-3 border-b border-rule2 bg-stone2 flex-wrap">
-                <span className="font-body text-muted text-label">Compare against</span>
-                {COHORT_OPTIONS.map(opt => (
-                  <button key={opt.id} type="button" onClick={() => setCohort(opt.id)}
-                    className={`font-body text-label px-3 py-1 border transition-colors ${
-                      cohort === opt.id
-                        ? 'border-ink/30 text-ink bg-stone3'
-                        : 'border-rule2 text-muted hover:border-ink/20 hover:text-ink'
-                    }`}>
-                    {opt.label}
-                  </button>
-                ))}
+              <div className="border-b border-rule2 bg-stone2">
+                <div className="flex items-center gap-1 px-5 pt-3 pb-2">
+                  <span className="font-body text-muted text-label mr-1">Compare against</span>
+                </div>
+                <div className="flex px-5 pb-3 gap-2 flex-wrap">
+                  {COHORT_OPTIONS.map(opt => (
+                    <button key={opt.id} type="button" onClick={() => setCohort(opt.id)}
+                      className={`font-body text-label px-3 py-1.5 border transition-colors text-left ${
+                        cohort === opt.id
+                          ? 'border-ink/30 text-ink bg-stone3'
+                          : 'border-rule2 text-muted hover:border-ink/20 hover:text-ink'
+                      }`}>
+                      <div className="font-medium">{opt.label}</div>
+                      <div className="font-body text-micro text-muted mt-0.5">{opt.desc}</div>
+                    </button>
+                  ))}
+                </div>
               </div>
               {/* Column headers */}
               <div className="grid px-5 py-2 bg-stone2 border-b border-rule2"
@@ -753,7 +758,7 @@ export default function Analytics() {
                       </div>
                     </div>
                     <div className="display-num text-base tabular-nums leading-none" style={{ color: toneColor }}>{b.score}</div>
-                    <div className="font-body text-label text-muted tabular-nums">{b.percentile}th</div>
+                    <div className="font-body text-label text-muted tabular-nums">You: {b.percentile}th pct</div>
                     <div className="font-body text-label text-muted">{b.delta}</div>
                   </div>
                 )
@@ -773,7 +778,7 @@ export default function Analytics() {
                       style={{ gridTemplateColumns: '76px 1fr 56px 1fr 120px' }}>
                       <span className="font-body text-muted text-label">{p.area}</span>
                       <span className="font-body text-label font-medium text-ink pr-4 leading-snug">{p.practice}</span>
-                      <span className="font-body text-label text-muted tabular-nums">{p.adoption}%</span>
+                      <span className="font-body text-label text-muted tabular-nums">{p.adoption}% of plants</span>
                       <span className="font-body text-ok text-label leading-snug">{p.lift}</span>
                       <div className="flex justify-end">
                         <Link to={p.route} className="flex items-center gap-1 font-body text-muted text-label hover:text-ink transition-colors">

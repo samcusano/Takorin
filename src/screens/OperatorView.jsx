@@ -705,6 +705,7 @@ const TRANSITION_DATA = {
   fatigueRisk: 'moderate', onAutomatingLine: true,
   safetyNote: 'Safety zone protocol unsigned — required before robot deployment on Line 4',
   readiness: 24, readinessLabel: 'Not ready',
+  trend: null, trendNote: 'Stalled for 2 weeks',
  },
  'P. Okonkwo': {
   hybridCertified: true, robotSafetyZone: true,
@@ -712,6 +713,7 @@ const TRANSITION_DATA = {
   fatigueRisk: 'low', onAutomatingLine: true,
   safetyNote: null,
   readiness: 78, readinessLabel: 'Ready',
+  trend: +14, trendNote: '↑ +14pp this week',
  },
  'F. Adeyemi': {
   hybridCertified: false, robotSafetyZone: false,
@@ -719,6 +721,7 @@ const TRANSITION_DATA = {
   fatigueRisk: 'low', onAutomatingLine: false,
   safetyNote: 'Not on automating line — safety zone training scheduled Jul 2026',
   readiness: 38, readinessLabel: 'In progress',
+  trend: +6, trendNote: '↑ +6pp this week',
  },
 }
 
@@ -736,13 +739,14 @@ function TransitionTab({ selected, isDirector }) {
    <div>
     <div className="flex border-b border-rule2">
      {[
-      { label: 'Hybrid-ready',       value: `${readyCount} of ${all.length}`,  tone: readyCount === all.length  ? 'text-ok' : 'text-warn' },
-      { label: 'Safety zone signed', value: `${safetyCount} of ${all.length}`, tone: safetyCount === all.length ? 'text-ok' : 'text-warn' },
-      { label: 'On automating lines', value: `${autoCount} of ${all.length}`,  tone: 'text-ink' },
+      { label: 'Robot-ready',         value: `${readyCount} of ${all.length}`,  tone: readyCount === all.length  ? 'text-ok' : 'text-warn', trend: '↑ from 0 last week' },
+      { label: 'Safety zone signed', value: `${safetyCount} of ${all.length}`, tone: safetyCount === all.length ? 'text-ok' : 'text-warn', trend: null },
+      { label: 'On automating lines', value: `${autoCount} of ${all.length}`,  tone: 'text-ink', trend: null },
      ].map((cell, i) => (
       <div key={i} className="flex-1 px-5 py-4 border-r border-rule2 last:border-r-0">
        <div className="font-body text-muted text-label mb-1">{cell.label}</div>
        <div className={`display-num text-metric font-bold leading-none ${cell.tone}`}>{cell.value}</div>
+       {cell.trend && <div className="font-body text-ok text-micro mt-0.5">{cell.trend}</div>}
       </div>
      ))}
     </div>
@@ -762,11 +766,14 @@ function TransitionTab({ selected, isDirector }) {
         <div className="text-right">
          <div className={`display-num text-head font-bold leading-none tabular-nums ${rt}`}>{ot.readiness}%</div>
          <div className={`font-body text-label mt-0.5 ${rt}`}>{ot.readinessLabel}</div>
+         {ot.trendNote && (
+          <div className={`font-body text-micro mt-0.5 ${ot.trend > 0 ? 'text-ok' : 'text-muted'}`}>{ot.trendNote}</div>
+         )}
         </div>
        </div>
        <div className="flex items-center gap-2 flex-wrap mb-2">
         {[
-         { ok: ot.hybridCertified,   label: ot.hybridCertified   ? 'Hybrid cert ✓' : 'Hybrid cert ✗'   },
+         { ok: ot.hybridCertified,   label: ot.hybridCertified   ? 'Robot cert ✓' : 'Robot cert ✗'   },
          { ok: ot.robotSafetyZone,   label: ot.robotSafetyZone   ? 'Safety zone ✓' : 'Safety zone ✗'   },
         ].map(chip => (
          <span key={chip.label} className={`font-body text-label px-2 py-0.5 leading-tight ${chip.ok ? 'bg-ok/[0.08] text-ok' : 'bg-warn/[0.06] text-warn'}`}>
@@ -779,6 +786,11 @@ function TransitionTab({ selected, isDirector }) {
        </div>
        {ot.certGap && <div className="font-body text-warn text-label">→ {ot.certGap}</div>}
        {ot.safetyNote && !ot.robotSafetyZone && <div className="font-body text-muted text-label mt-0.5">→ {ot.safetyNote}</div>}
+       {!ot.hybridCertified && (
+        <button type="button" className="mt-2 font-body text-label text-muted px-2 py-0.5 border border-rule2 hover:text-ink hover:border-ink/20 transition-colors">
+         Schedule training →
+        </button>
+       )}
       </div>
      )
     })}
@@ -796,7 +808,7 @@ function TransitionTab({ selected, isDirector }) {
    </div>
    <div className={`border-l-[3px] ${readinessBorder} pl-4 space-y-3`}>
     {[
-     { label: 'Hybrid certification', value: t.hybridCertified ? 'Complete' : 'Not yet — ' + (t.certGap || 'in progress'), ok: t.hybridCertified },
+     { label: 'Robot readiness cert', value: t.hybridCertified ? 'Complete' : 'Not yet — ' + (t.certGap || 'in progress'), ok: t.hybridCertified },
      { label: 'Safety zone protocol', value: t.robotSafetyZone ? 'Signed' : 'Not signed', ok: t.robotSafetyZone },
      { label: 'Line status', value: t.onAutomatingLine ? 'On automating line' : 'Not on automating line yet', ok: !t.onAutomatingLine },
     ].map(row => (

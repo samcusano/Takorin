@@ -5,7 +5,7 @@ import { useAppState } from '../context/AppState'
 import { riskColorClass, riskLabel, riskBgColor } from '../lib/utils'
 import {
   AlertTriangle, CheckCircle, Brain, Clock, Users, Bot, User,
-  Activity, CircleDot, ChevronDown, ChevronUp, ArrowRight, ExternalLink, X,
+  Activity, CircleDot, ChevronDown, ChevronUp, ArrowRight, ExternalLink, X, Download,
 } from 'lucide-react'
 import { interventionSummary, interventions } from '../data/interventions'
 import { FilterDropdown, SlidePanel, Btn, SegmentedControl, Checkbox, AnimatedScore, Tabs } from '../components/UI'
@@ -180,7 +180,9 @@ const MATURITY_BY_PLANT = {
       '8 AI agents running · shift predictions active · expansion gate under review',
       'FSMA 204 monitored · CAPA engine active · FDA inspection simulation enabled',
     ],
-    nextStep: { action: 'Restore Oven B SCADA sensor feed', lift: 'Unblocks Predictive Maintenance at full accuracy (+11pp model confidence)', route: '/readiness', module: 'Data Readiness' },
+    reachedAt: ['Reached Monitored · Feb 2025', 'Reached Monitored · Jan 2025', 'Reached Monitored · Mar 2025', 'Reached Monitored · Apr 2025'],
+    laggingReasons: [null, 'Workforce hybrid certification at 38% deployed — floor rollout pending', null, null],
+    nextStep: { action: 'Restore Oven B SCADA sensor feed', lift: 'Unblocks Predictive Maintenance at full accuracy (+11pp model confidence)', route: '/readiness', module: 'Data Readiness', linkLabel: 'Restore Oven B feed in Data Readiness' },
   },
   ks: {
     scores: [2, 3, 2, 2],
@@ -190,7 +192,9 @@ const MATURITY_BY_PLANT = {
       'Manual process monitoring · AI agents not yet onboarded for this plant',
       'SQF certified · FSMA compliance tracked · CAPA engine not yet integrated',
     ],
-    nextStep: { action: 'Complete ERP–MES data pipeline integration', lift: 'Enables AI agent deployment at Wichita — mirrors Salina architecture', route: '/readiness', module: 'Data Readiness' },
+    reachedAt: ['Reached Connected · Sep 2024', 'Reached Monitored · Nov 2024', 'Reached Connected · Aug 2024', 'Reached Connected · Oct 2024'],
+    laggingReasons: ['ERP–MES integration incomplete — AI data pipeline blocked', null, 'AI agents not onboarded — awaiting data pipeline', null],
+    nextStep: { action: 'Complete ERP–MES data pipeline integration', lift: 'Enables AI agent deployment at Wichita — mirrors Salina architecture', route: '/readiness', module: 'Data Readiness', linkLabel: 'Integrate ERP–MES in Data Readiness' },
   },
   co: {
     scores: [4, 4, 4, 3],
@@ -200,7 +204,9 @@ const MATURITY_BY_PLANT = {
       'Predictive Maintenance and Pre-Shift AI live · pilot week 3 · model accuracy 91%',
       'FSMA 204 monitored · compliance automation partial · CAPA evidence still manual',
     ],
-    nextStep: { action: 'Activate automated CAPA evidence packaging', lift: 'Closes last gap to Predictive stage across all 4 dimensions', route: '/compliance', module: 'Compliance' },
+    reachedAt: ['Reached Predictive · Jan 2025', 'Reached Predictive · Feb 2025', 'Reached Predictive · Mar 2025', 'Reached Monitored · Dec 2024'],
+    laggingReasons: [null, null, null, 'CAPA evidence packaging still manual — automation not yet active'],
+    nextStep: { action: 'Activate automated CAPA evidence packaging', lift: 'Closes last gap to Predictive stage across all 4 dimensions', route: '/compliance', module: 'Compliance', linkLabel: 'Set up CAPA packaging in Compliance' },
   },
 }
 
@@ -231,17 +237,27 @@ function DigitalMaturityMap({ plantId }) {
         {/* Dimension matrix */}
         <div className="space-y-px mb-8">
           {MATURITY_DIMS.map((dim, i) => {
-            const score    = data.scores[i]
-            const note     = data.notes[i]
-            const isLagging = score === minScore
+            const score       = data.scores[i]
+            const note        = data.notes[i]
+            const reachedAt   = data.reachedAt?.[i]
+            const laggingReason = data.laggingReasons?.[i]
+            const isLagging   = score === minScore
             return (
               <div key={dim} className={`border border-rule2 bg-stone px-5 py-4 ${isLagging ? 'border-l-[3px] border-l-warn' : ''}`}>
-                <div className="flex items-center justify-between mb-2.5">
+                <div className="flex items-start justify-between gap-4 mb-2.5">
                   <div>
                     <span className="font-body font-medium text-ink text-body">{dim}</span>
-                    {isLagging && <span className="font-body text-warn text-label ml-2">· lagging dimension</span>}
+                    {isLagging && laggingReason && (
+                      <div className="font-body text-warn text-label mt-0.5">Lagging — {laggingReason}</div>
+                    )}
+                    {isLagging && !laggingReason && (
+                      <span className="font-body text-warn text-label ml-2">· lagging dimension</span>
+                    )}
                   </div>
-                  <span className="font-body text-muted text-label">{MATURITY_STAGES[score - 1]} · stage {score} of 5</span>
+                  <div className="text-right flex-shrink-0">
+                    <div className="font-body text-muted text-label">{MATURITY_STAGES[score - 1]} · stage {score} of 5</div>
+                    {reachedAt && <div className="font-body text-muted text-micro mt-0.5">{reachedAt}</div>}
+                  </div>
                 </div>
                 {/* Stage track */}
                 <div className="flex gap-1 mb-2.5">
@@ -271,8 +287,17 @@ function DigitalMaturityMap({ plantId }) {
           <div className="font-body text-muted text-label mb-3 leading-snug">{data.nextStep.lift}</div>
           <Link to={data.nextStep.route}
             className="flex items-center gap-1.5 font-body text-muted text-label hover:text-ink transition-colors">
-            Open {data.nextStep.module} <ArrowRight size={9} />
+            {data.nextStep.linkLabel || `Open ${data.nextStep.module}`} <ArrowRight size={9} />
           </Link>
+        </div>
+
+        {/* Download stub */}
+        <div className="flex justify-end mb-4">
+          <button type="button"
+            className="flex items-center gap-1.5 font-body text-label text-muted hover:text-ink px-3 py-1.5 border border-rule2 hover:border-ink/20 transition-colors">
+            <Download size={10} />
+            Download maturity report
+          </button>
         </div>
 
         {/* Legend */}

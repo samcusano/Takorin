@@ -492,23 +492,38 @@ export default function BatchIntelligence() {
           </div>
 
           {/* In-flight quality intelligence */}
-          {batch.stage !== 'complete' && (() => {
+          {batch.stage !== 'complete' ? (() => {
             const warnSignals = batch.signals.filter(s => s.tone === 'warn' || s.tone === 'danger')
             const critSignals = batch.signals.filter(s => s.tone === 'danger')
             const conf = batch.confidence?.current ?? 85
-            const gradeDropPct = conf >= 90 ? 5 : conf >= 80 ? 14 : conf >= 70 ? 28 : 48
+            const gradeDropLow  = conf >= 90 ? 3  : conf >= 80 ? 10 : conf >= 70 ? 22 : 40
+            const gradeDropHigh = conf >= 90 ? 8  : conf >= 80 ? 18 : conf >= 70 ? 35 : 56
             const holdRec = critSignals.length > 0 || conf < 70
+            const affectedCases = Math.round(((gradeDropLow + gradeDropHigh) / 2 / 100) * 1200)
             return (
               <div className="border-b border-rule2">
                 <SectionHeader
-                  title="Quality signal intelligence"
+                  title="Batch quality forecast"
                   badge={
-                    <div className="flex items-center gap-3">
-                      <StatusPill tone={gradeDropPct > 25 ? 'warn' : 'ok'}>{gradeDropPct}% grade-drop probability</StatusPill>
-                      {holdRec && <StatusPill tone="danger">Hold recommended</StatusPill>}
-                    </div>
+                    <StatusPill tone={gradeDropHigh > 25 ? 'warn' : 'ok'}>
+                      {gradeDropLow}–{gradeDropHigh}% grade-drop probability
+                    </StatusPill>
                   }
                 />
+                {/* Hold banner — architectural-weight intervention, not a pill */}
+                {holdRec && (
+                  <div className="mx-5 mb-4 flex items-center justify-between gap-4 px-4 py-3 bg-danger/[0.06] border border-danger/25">
+                    <div>
+                      <div className="font-body font-semibold text-danger text-body">Agent recommends hold — review before advancing</div>
+                      <div className="font-body text-muted text-label mt-0.5">
+                        {gradeDropLow}–{gradeDropHigh}% chance this batch grades below spec — affecting ~{affectedCases} cases at risk
+                      </div>
+                    </div>
+                    <button type="button" className="flex-shrink-0 font-body text-label px-3 py-1.5 border border-danger/40 text-danger hover:bg-danger/10 transition-colors">
+                      Review &amp; decide
+                    </button>
+                  </div>
+                )}
                 <div className="px-5 py-4">
                   {warnSignals.length === 0 ? (
                     <div className="flex items-center gap-2">
@@ -538,20 +553,21 @@ export default function BatchIntelligence() {
                           )
                         })}
                       </div>
-                      {holdRec && (
-                        <div className="px-4 py-3 border-l-2 border-l-danger bg-danger/[0.03]">
-                          <div className="font-body font-medium text-danger text-body mb-0.5">Agent recommendation — hold batch for inspection</div>
-                          <div className="font-body text-muted text-label leading-snug">
-                            {critSignals.length} critical signal{critSignals.length > 1 ? 's' : ''} detected. Confirm with process lead before advancing to next stage.
-                          </div>
-                        </div>
-                      )}
                     </div>
                   )}
                 </div>
               </div>
             )
-          })()}
+          })() : (
+            /* Post-batch quality summary */
+            <div className="border-b border-rule2">
+              <SectionHeader title="Batch quality forecast" />
+              <div className="px-5 py-4 flex items-center gap-2">
+                <CheckCircle size={12} className="text-ok flex-shrink-0" strokeWidth={2} />
+                <span className="font-body text-muted text-body">No quality interventions — batch released clean</span>
+              </div>
+            </div>
+          )}
 
           {/* Environmental influence chain */}
           {batch.influenceChain.length > 0 && (

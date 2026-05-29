@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom'
 import { readinessData } from '../data'
 import { useAppState } from '../context/AppState'
 import { HoldButton, Btn, SectionHeader, StatusPill, AnimatedScore, Tabs } from '../components/UI'
-import { Check, AlertTriangle, ChevronDown, ChevronUp, Zap, Clock, Link2, Layers } from 'lucide-react'
+import { Check, AlertTriangle, ChevronDown, ChevronUp, Zap, Clock, Link2, Layers, Mail } from 'lucide-react'
 
 // ── Resolution queue data ─────────────────────────────────────────────────────
 
@@ -740,42 +740,42 @@ const ADVISORY_ITEMS = [
 // ── AI Readiness tab ──────────────────────────────────────────────────────────
 
 const AI_DIMENSIONS = [
-  { key: 'completeness', label: 'Data completeness', score: 68, note: '12% of expected signals not arriving — SCADA gap + checklist sync lag' },
-  { key: 'freshness',    label: 'Data freshness',    score: 71, note: '3 sources updating >10 min behind expected interval' },
-  { key: 'consistency',  label: 'Schema consistency', score: 54, note: 'ERP field format mismatch affects 14 ingredient records' },
-  { key: 'coverage',     label: 'Integration coverage', score: 62, note: 'MES, ERP, SCADA connected — warehouse + quality lab not yet integrated' },
+  { key: 'completeness', label: 'Are all my signals arriving?',               score: 68, trend: +4, note: '12% of expected signals not arriving — SCADA gap + checklist sync lag' },
+  { key: 'freshness',    label: 'Is my data current?',                        score: 71, trend: +2, note: '3 sources updating >10 min behind expected interval' },
+  { key: 'consistency',  label: 'Is data structured the same across shifts?', score: 54, trend: -3, note: 'ERP field format mismatch affects 14 ingredient records' },
+  { key: 'coverage',     label: 'How many systems are connected?',             score: 62, trend:  0, note: 'MES, ERP, SCADA connected — warehouse + quality lab not yet integrated' },
 ]
 const AI_WEIGHTS = [0.30, 0.25, 0.25, 0.20]
 const AI_SCORE = Math.round(AI_DIMENSIONS.reduce((s, d, i) => s + d.score * AI_WEIGHTS[i], 0))
 
 const AI_GAPS = [
   {
-    id: 'scada-ai', label: 'SCADA feed degraded — Oven B', dimension: 'Data completeness', severity: 'high',
+    id: 'scada-ai', label: 'SCADA feed degraded — Oven B', dimension: 'Are all my signals arriving?', severity: 'high',
     agents: ['Predictive Maintenance'],
     impact: 'Predictive Maintenance running at 71% confidence — full accuracy requires a stable Oven B signal.',
     fix: 'Resolve maintenance ticket MT-2604-019 to restore feed stability.',
     blockedBy: 'MT-2604-019',
   },
   {
-    id: 'erp-schema', label: 'ERP schema inconsistency', dimension: 'Schema consistency', severity: 'high',
+    id: 'erp-schema', label: 'ERP schema inconsistency', dimension: 'Is data structured the same across shifts?', severity: 'high',
     agents: ['Supplier Intelligence', 'Risk Escalation'],
     impact: 'Ingredient-to-supplier linkage broken for 14 records — chain-of-custody gap reduces accuracy in 2 agents.',
     fix: 'Resolve ERP ingredient map in Compliance Readiness queue (~30 min).',
   },
   {
-    id: 'lot-meta', label: 'Supplier lot metadata incomplete', dimension: 'Data completeness', severity: 'moderate',
+    id: 'lot-meta', label: 'Supplier lot metadata incomplete', dimension: 'Are all my signals arriving?', severity: 'moderate',
     agents: ['Supplier Intelligence'],
     impact: '3 active lots missing COA metadata — reduces recommendation quality and FSMA traceability confidence.',
     fix: 'Contact ConAgra and ADM for missing harvest date + handler certification fields.',
   },
   {
-    id: 'warehouse', label: 'Warehouse management not integrated', dimension: 'Integration coverage', severity: 'moderate',
+    id: 'warehouse', label: 'Warehouse management not integrated', dimension: 'How many systems are connected?', severity: 'moderate',
     agents: ['Resource Allocation', 'Handoff Synthesis'],
     impact: 'Finished goods movement and inventory signals missing — handoff completeness is reduced.',
     fix: 'Connect WMS API to integration layer — requires IT ticket.',
   },
   {
-    id: 'lims', label: 'Quality lab LIMS not connected', dimension: 'Integration coverage', severity: 'moderate',
+    id: 'lims', label: 'Quality lab LIMS not connected', dimension: 'How many systems are connected?', severity: 'moderate',
     agents: ['Compliance Monitor', 'CAPA Closure'],
     impact: 'Lab test results entered manually — 4–8h lag between test result and agent awareness.',
     fix: 'LIMS integration in Q3 roadmap — manual entry workaround active in the interim.',
@@ -794,8 +794,9 @@ const AI_AGENTS = [
 ]
 
 function AIReadinessInstrument() {
-  const zone = AI_SCORE >= 75 ? 'Ready' : AI_SCORE >= 55 ? 'Partially ready' : 'Not ready'
-  const zoneTone = AI_SCORE >= 75 ? 'text-ok' : AI_SCORE >= 55 ? 'text-warn' : 'text-danger'
+  const zone     = AI_SCORE >= 75 ? 'AI-Ready' : AI_SCORE >= 55 ? 'Approaching Ready' : 'Not Ready'
+  const zoneTone = AI_SCORE >= 75 ? 'text-ok'  : AI_SCORE >= 55 ? 'text-warn'         : 'text-danger'
+  const zoneBg   = AI_SCORE >= 75 ? 'bg-ok/10 text-ok' : AI_SCORE >= 55 ? 'bg-warn/10 text-warn' : 'bg-danger/10 text-danger'
   const fullCount    = AI_AGENTS.filter(a => a.status === 'full').length
   const partialCount = AI_AGENTS.filter(a => a.status === 'partial').length
 
@@ -804,23 +805,28 @@ function AIReadinessInstrument() {
       {/* Score */}
       <div className="px-5 pt-5 pb-4 border-b border-rule2 flex-shrink-0">
         <div className="font-body text-muted text-label mb-3">AI Readiness</div>
-        <div className="flex items-baseline gap-3 mb-1">
+        {/* Zone interpretation primary, score secondary */}
+        <div className={`inline-flex items-center px-2 py-0.5 font-body font-semibold text-label mb-2 ${zoneBg}`}>{zone}</div>
+        <div className="flex items-baseline gap-2 mb-4">
           <span className={`display-num text-score leading-none ${zoneTone}`}>
             <AnimatedScore value={AI_SCORE} effect="blur" />
           </span>
-          <div className="pb-1">
-            <div className={`font-body font-semibold text-body ${zoneTone}`}>{zone}</div>
-          </div>
+          <span className="font-body text-muted text-label">/ 100</span>
         </div>
-        <div className="space-y-3 mt-4">
-          {AI_DIMENSIONS.map((d, i) => {
+        <div className="space-y-3">
+          {AI_DIMENSIONS.map((d) => {
             const tone     = d.score >= 75 ? 'bg-ok' : d.score >= 55 ? 'bg-warn' : 'bg-danger'
             const textTone = d.score >= 75 ? 'text-ok' : d.score >= 55 ? 'text-warn' : 'text-danger'
+            const trendStr = d.trend > 0 ? `↑ +${d.trend}` : d.trend < 0 ? `↓ ${d.trend}` : null
+            const trendColor = d.trend > 0 ? 'text-ok' : d.trend < 0 ? 'text-danger' : 'text-muted'
             return (
               <div key={d.key}>
-                <div className="flex items-center justify-between mb-1">
-                  <span className="font-body text-muted text-label">{d.label}</span>
-                  <span className={`display-num text-label font-bold tabular-nums ${textTone}`}>{d.score}</span>
+                <div className="flex items-center justify-between mb-1 gap-2">
+                  <span className="font-body text-muted text-label leading-snug flex-1">{d.label}</span>
+                  <div className="flex items-baseline gap-1.5 flex-shrink-0">
+                    {trendStr && <span className={`font-body text-micro tabular-nums ${trendColor}`}>{trendStr}</span>}
+                    <span className={`display-num text-label font-bold tabular-nums ${textTone}`}>{d.score}</span>
+                  </div>
                 </div>
                 <div className="h-[2px] bg-rule2">
                   <div className={`h-full ${tone} transition-[width]`} style={{ width: `${d.score}%` }} />
@@ -878,6 +884,23 @@ function AIReadinessPanel() {
       <div className="flex-1 overflow-y-auto">
         {rightTab === 'gaps' && (
           <div className="max-w-[720px] px-8 py-6 space-y-4">
+            {/* Send to IT action */}
+            <div className="flex items-center justify-between px-4 py-3 border border-rule2 bg-stone2">
+              <div>
+                <div className="font-body font-medium text-ink text-body">Infrastructure gaps — needs IT</div>
+                <div className="font-body text-muted text-label mt-0.5">2 of these gaps require IT tickets, not ops decisions.</div>
+              </div>
+              <button type="button"
+                onClick={() => {
+                  const itGaps = AI_GAPS.filter(g => g.id === 'warehouse' || g.id === 'lims')
+                  const summary = itGaps.map(g => `• ${g.label}: ${g.fix}`).join('\n')
+                  navigator.clipboard?.writeText(`AI Readiness gaps requiring IT:\n\n${summary}`)
+                }}
+                className="flex items-center gap-1.5 font-body text-label px-3 py-1.5 border border-rule2 text-muted hover:text-ink hover:border-ink/30 transition-colors flex-shrink-0 ml-4">
+                <Mail size={10} />
+                Copy for IT
+              </button>
+            </div>
             {AI_GAPS.map(gap => (
               <div key={gap.id} className={`border overflow-hidden ${gap.severity === 'high' ? 'border-danger/30' : 'border-rule2'}`}>
                 <div className={`flex items-start justify-between gap-4 px-4 py-3 border-b border-rule2 ${gap.severity === 'high' ? 'bg-danger/[0.02]' : 'bg-stone2'}`}>
