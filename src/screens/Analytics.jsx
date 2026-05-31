@@ -2,9 +2,9 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAppState } from '../context/AppState'
 import { openCases, benchmarks } from '../data/capa.js'
-import { goalsData, facility } from '../data'
+import { goalsData, facility, networkData } from '../data'
 import { interventionSummary, interventions } from '../data/interventions'
-import { ChevronDown, ChevronUp, Download, Lock, ArrowRight, Check } from 'lucide-react'
+import { ChevronDown, ChevronUp, Download, Lock, ArrowRight, Check, AlertTriangle } from 'lucide-react'
 import { FilterDropdown, MultiFilterDropdown, StatusPill, AnimatedScore, StatGrid } from '../components/UI'
 
 // ── Peer cohort options + top quartile practices ─────────────────────────────
@@ -20,6 +20,61 @@ const TOP_QUARTILE = [
   { area: 'CAPA',         practice: 'Package evidence automatically when a CAPA opens — don\'t wait until closure',   adoption: 74, lift: '38% faster closure vs cohort median',route: '/capa',       module: 'CAPA Engine'   },
   { area: 'Downtime',     practice: 'Schedule maintenance from sensor data, not from the calendar',                   adoption: 68, lift: '23% fewer unplanned stops',          route: '/agents',     module: 'Agent Control' },
   { area: 'Traceability', practice: 'Check lot chain completeness as ingredients arrive — catch gaps at the door',    adoption: 61, lift: '2.1h faster recall response window', route: '/readiness',  module: 'Data Readiness'},
+]
+
+// ── Workflow adoption ─────────────────────────────────────────────────────────
+// Surfaces the rejection scenario: are supervisors and operators actually using
+// the platform, and if not, who specifically and what is the consequence?
+
+const ADOPTION_WORKFLOWS = [
+  {
+    id: 'handoff',
+    label: 'Shift handoff',
+    role: 'Supervisors',
+    target: 90,
+    rate: 67,
+    trend: -3,
+    warning: 'D. Kowalski · J. Torres — 0 of last 3 shifts completed. Incoming supervisors reconstructing context manually.',
+    action: 'Review completion in ShiftIQ · brief conversation with both supervisors before next shift',
+    route: '/shift',
+    module: 'ShiftIQ',
+  },
+  {
+    id: 'checklist',
+    label: 'Operator checklists',
+    role: 'Operators',
+    target: 95,
+    rate: 81,
+    trend: +5,
+    warning: null,
+    action: null,
+    route: '/operator',
+    module: 'Operator View',
+  },
+  {
+    id: 'decisions',
+    label: 'Agent decision review',
+    role: 'Director',
+    target: 80,
+    rate: 92,
+    trend: +2,
+    warning: null,
+    action: null,
+    route: '/agents',
+    module: 'Agent Control',
+  },
+  {
+    id: 'evidence',
+    label: 'CAPA evidence submission',
+    role: 'Supervisors',
+    target: 85,
+    rate: 58,
+    trend: -6,
+    warning: 'CAPA-2604-006 · CAPA-2604-011 blocked — evidence not filed. Closure and FSMA traceability record at risk.',
+    action: 'Follow up with supervisor today — both CAPAs cannot close without filed evidence',
+    route: '/capa',
+    module: 'CAPA Engine',
+  },
 ]
 
 // ── Bullet chart for Q2 Goals ─────────────────────────────────────────────────
@@ -341,6 +396,8 @@ export default function Analytics() {
     g.direction === 'increase' ? g.current >= g.target * 0.85 : g.current <= g.target * 1.15
   ).length
 
+  const adoptionAtRisk = ADOPTION_WORKFLOWS.filter(w => w.rate < w.target).length
+
   const toggleCompare = (id) =>
     setCompare(p => p.includes(id) ? p.filter(x => x !== id) : [...p, id])
 
@@ -644,6 +701,120 @@ export default function Analytics() {
                     </div>
                   )
                 })}
+              </div>
+            </Module>
+
+            <Module
+              title="Workflow adoption"
+              badge={adoptionAtRisk > 0
+                ? `${adoptionAtRisk} of ${ADOPTION_WORKFLOWS.length} workflows below threshold`
+                : `All ${ADOPTION_WORKFLOWS.length} workflows at or above threshold`}
+              defaultOpen={adoptionAtRisk > 0}
+            >
+              <div className="grid px-5 py-2 bg-stone2 border-b border-rule2"
+                style={{ gridTemplateColumns: '1fr 1fr 60px 36px 140px' }}>
+                {['Workflow', 'Adoption vs target', 'Rate', '', 'Module'].map(h => (
+                  <span key={h} className="font-body text-muted text-label">{h}</span>
+                ))}
+              </div>
+              <div className="divide-y divide-rule2">
+                {ADOPTION_WORKFLOWS.map(w => {
+                  const atRisk = w.rate < w.target
+                  const severe = w.rate < w.target * 0.8
+                  const toneColor = atRisk ? (severe ? 'var(--color-danger)' : 'var(--color-warn)') : 'var(--color-ok)'
+                  const borderL  = atRisk ? (severe ? 'border-l-danger/50' : 'border-l-warn/50') : 'border-l-ok/30'
+                  return (
+                    <div key={w.id} className={`border-l-2 ${borderL} ${atRisk ? 'bg-warn/[0.012]' : ''}`}>
+                      <div className="grid items-center px-5 py-3"
+                        style={{ gridTemplateColumns: '1fr 1fr 60px 36px 140px' }}>
+                        <div>
+                          <div className="font-body text-ink text-label font-medium">{w.label}</div>
+                          <div className="font-body text-muted text-label">{w.role}</div>
+                        </div>
+                        <div className="pr-6">
+                          <div className="relative h-[4px] bg-rule2 mb-1">
+                            <div className="absolute top-1/2 -translate-y-1/2 w-px h-[8px] bg-ink/20"
+                              style={{ left: `${w.target}%` }} />
+                            <div className="absolute inset-y-0 left-0"
+                              style={{ width: `${w.rate}%`, background: toneColor, opacity: 0.75 }} />
+                          </div>
+                          <div className="font-body text-label text-muted">Target {w.target}%</div>
+                        </div>
+                        <div className="display-num text-head leading-none tabular-nums"
+                          style={{ color: toneColor }}>{w.rate}%</div>
+                        <div className={`font-body text-label font-medium ${w.trend > 0 ? 'text-ok' : w.trend < 0 ? 'text-danger' : 'text-muted'}`}>
+                          {w.trend > 0 ? '↑' : w.trend < 0 ? '↓' : '—'}{w.trend !== 0 ? Math.abs(w.trend) : ''}
+                        </div>
+                        <div className="flex justify-end">
+                          <Link to={w.route}
+                            className="flex items-center gap-1 font-body text-muted text-label hover:text-ink transition-colors">
+                            {w.module} <ArrowRight size={9} />
+                          </Link>
+                        </div>
+                      </div>
+                      {w.warning && (
+                        <div className="mx-5 mb-3 space-y-1.5">
+                          <div className="flex items-start gap-1.5 px-3 py-2 bg-warn/[0.04] border-l-2 border-l-warn/30">
+                            <AlertTriangle size={9} className="text-warn flex-shrink-0 mt-0.5" strokeWidth={2} />
+                            <span className="font-body text-warn text-label leading-snug">{w.warning}</span>
+                          </div>
+                          <div className="font-body text-muted text-label px-3 leading-snug">{w.action}</div>
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+              <div className="px-5 py-2 bg-stone2 border-t border-rule2">
+                <span className="font-body text-muted text-label">Adoption rate = workflows completed as intended · trend = change vs prior 7 days</span>
+              </div>
+            </Module>
+
+            <Module
+              title="Network rollup"
+              badge={`${networkData?.plants?.length ?? 0} plants · readiness + adoption`}
+            >
+              {/* Per-plant bars */}
+              <div className="grid px-5 py-2 bg-stone2 border-b border-rule2"
+                style={{ gridTemplateColumns: '160px 1fr 60px 80px' }}>
+                {['Plant', 'Readiness', 'Score', 'Status'].map(h => (
+                  <span key={h} className="font-body text-muted text-label">{h}</span>
+                ))}
+              </div>
+              <div className="divide-y divide-rule2">
+                {[
+                  { id: 'sl', name: 'Salina Campus',  code: 'SL-04', readiness: 64,  adoption: 67, status: 'at-risk', active: true  },
+                  { id: 'tx', name: 'Plant TX-11',     code: 'TX-11', readiness: 89,  adoption: 91, status: 'clear',   active: false },
+                  { id: 'ks', name: 'Plant KS-02',     code: 'KS-02', readiness: 94,  adoption: 95, status: 'clear',   active: false },
+                ].map(plant => {
+                  const color = plant.readiness >= 85 ? 'var(--color-ok)' : plant.readiness >= 70 ? 'var(--color-warn)' : 'var(--color-danger)'
+                  const borderL = plant.status === 'at-risk' ? 'border-l-danger/40' : 'border-l-ok/20'
+                  return (
+                    <div key={plant.id} className={`grid items-center px-5 py-3.5 border-l-2 ${borderL} ${plant.active ? 'bg-signal/[0.02]' : ''}`}
+                      style={{ gridTemplateColumns: '160px 1fr 60px 80px' }}>
+                      <div>
+                        <div className={`font-body font-medium text-label ${plant.active ? 'text-ink' : 'text-muted'}`}>{plant.name}</div>
+                        <div className="font-body text-muted/60 text-micro">{plant.code}{plant.active ? ' · this plant' : ''}</div>
+                      </div>
+                      <div className="pr-8">
+                        <div className="relative h-[4px] bg-rule2">
+                          <div className="absolute inset-y-0 left-0" style={{ width: `${plant.readiness}%`, background: color, opacity: 0.7 }} />
+                        </div>
+                        <div className="font-body text-muted text-micro mt-1">Adoption: {plant.adoption}%</div>
+                      </div>
+                      <div className="display-num text-head leading-none tabular-nums" style={{ color }}>{plant.readiness}</div>
+                      <div>
+                        {plant.status === 'at-risk'
+                          ? <span className="font-body text-danger text-label">At risk</span>
+                          : <span className="font-body text-ok text-label">Clear</span>
+                        }
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+              <div className="px-5 py-2 bg-stone2 border-t border-rule2">
+                <span className="font-body text-muted text-label">3-plant network · readiness = AI data quality · adoption = workflow completion rate</span>
               </div>
             </Module>
 

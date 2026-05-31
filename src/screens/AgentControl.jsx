@@ -5,7 +5,7 @@ import {
   Timer, CheckCircle, XCircle, Check, Flag, InspectionPanel, TrendingUp,
 } from 'lucide-react'
 import { Btn, SlidePanel, Tabs, StatusPill, Checkbox, AnimatedScore, EmptyState, SectionLabel } from '../components/UI'
-import { agentConfigData, dataSourceHealth } from '../data'
+import { agentConfigData, dataSourceHealth, networkData } from '../data'
 import { agentPrompts } from '../data/prompts'
 import { useAppState } from '../context/AppState'
 import { useNavigate } from 'react-router-dom'
@@ -161,6 +161,92 @@ function DisableModal({ agent, onConfirm, onCancel }) {
         <div className="flex gap-2 px-5 py-3 border-t border-rule2 bg-stone2">
           <Btn variant="primary" onClick={onConfirm}>Disable agent</Btn>
           <Btn variant="secondary" onClick={onCancel}>Keep enabled</Btn>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ─── Per-plant trust scores — computed from local decision history per (agentId, plantId) ──
+// Global trustScore on agent is the network average; per-plant scores reflect local data quality
+// and flagged decision history. Displayed in the detail panel so the director sees their
+// plant's actual track record, not a number calibrated against another facility.
+const PLANT_TRUST_SCORES = {
+  'supplier':    { sl: 82, ks: 91, co: 88, se: 94, de: 97 },
+  'compliance':  { sl: 78, ks: 85, co: 89, se: 96, de: 99 },
+  'maintenance': { sl: 71, ks: 88, co: 84, se: 91, de: 95 },
+  'pre-shift':   { sl: 87, ks: 92, co: 90, se: 97, de: 99 },
+  'handoff':     { sl: 74, ks: 83, co: 88, se: 93, de: 96 },
+  'training':    { sl: 69, ks: 80, co: 85, se: 90, de: 94 },
+  'capa':        { sl: 76, ks: 86, co: 87, se: 95, de: 98 },
+  'sensor':      { sl: 63, ks: 88, co: 85, se: 93, de: 99 },
+}
+
+// ─── Flag outcome modal ───────────────────────────────────────────────────────
+
+const FLAG_CATEGORIES = [
+  { value: 'wrong-rec',      label: 'Wrong recommendation', desc: 'The action itself was incorrect' },
+  { value: 'wrong-rationale', label: 'Wrong rationale',     desc: 'Reasoning was flawed; action may have been right' },
+  { value: 'wrong-scope',    label: 'Wrong scope',          desc: 'Right direction, wrong target or lot' },
+  { value: 'good-bad',       label: 'Good decision, bad outcome', desc: 'Agent was correct given data; reality diverged' },
+]
+
+function FlagOutcomeModal({ agentName, actionLabel, plantContext, onConfirm, onCancel }) {
+  const [category, setCategory] = useState('')
+  const [note, setNote] = useState('')
+  const canSubmit = category !== ''
+  return (
+    <div className="fixed inset-0 bg-ink/40 z-50 flex items-center justify-center p-6">
+      <div className="bg-stone w-full max-w-md shadow-raise slide-in">
+        <div className="px-5 py-4 border-b border-rule2 bg-stone2">
+          <div className="font-body text-muted text-label mb-1">Flag decision for model review</div>
+          <div className="font-display font-bold text-ink text-base">{agentName}</div>
+          <div className="font-body text-muted text-label mt-0.5">{actionLabel}</div>
+        </div>
+        <div className="px-5 py-4 space-y-4">
+          <p className="font-body text-muted text-body leading-relaxed">
+            Your flag goes to the model team. It does not change the decision record — it calibrates future recommendations.
+          </p>
+          {plantContext && (
+            <div className="flex items-center gap-2 px-3 py-2 bg-stone3 border border-rule2">
+              <div className="h-1 w-1 rounded-full bg-signal flex-shrink-0" />
+              <span className="font-body text-muted text-label">
+                Attached context · {plantContext.name} · {plantContext.confidenceModel} model
+              </span>
+            </div>
+          )}
+          <div>
+            <label className="font-body text-muted text-label block mb-1.5">What went wrong?</label>
+            <div className="space-y-1.5">
+              {FLAG_CATEGORIES.map(fc => (
+                <label key={fc.value}
+                  className={`flex items-start gap-3 px-3 py-2.5 border cursor-pointer transition-colors ${
+                    category === fc.value ? 'border-signal bg-signal/[0.04]' : 'border-rule2 hover:bg-stone2'
+                  }`}>
+                  <input type="radio" name="flag-cat" value={fc.value} checked={category === fc.value}
+                    onChange={() => setCategory(fc.value)} className="mt-0.5 flex-shrink-0 accent-signal" />
+                  <div>
+                    <div className="font-body text-ink text-label font-medium">{fc.label}</div>
+                    <div className="font-body text-muted text-micro">{fc.desc}</div>
+                  </div>
+                </label>
+              ))}
+            </div>
+          </div>
+          <div>
+            <label className="font-body text-muted text-label block mb-1.5">
+              Notes <span className="opacity-50">(optional)</span>
+            </label>
+            <textarea value={note} onChange={e => setNote(e.target.value)}
+              rows={2} placeholder="Any additional context for the model team..."
+              className="w-full font-body text-body text-ink bg-stone2 border border-rule2 px-3 py-2 resize-none placeholder:text-muted/60 focus:border-signal focus:outline-none" />
+          </div>
+        </div>
+        <div className="flex gap-2 px-5 py-3 border-t border-rule2 bg-stone2">
+          <Btn variant="primary" disabled={!canSubmit} onClick={() => onConfirm({ category, note: note.trim() })}>
+            Flag for review
+          </Btn>
+          <Btn variant="secondary" onClick={onCancel}>Cancel</Btn>
         </div>
       </div>
     </div>
@@ -362,17 +448,22 @@ function LedgerRow({ pa, agent, onInvestigate, onApprove, onOverrideRequest, sel
 
           {/* Dwell timer + rationale acknowledgment for high-consequence decisions */}
           {requiresAck && (
-            <div className="flex items-center gap-3 pt-1 border-t border-rule2">
-              <div className="flex items-center gap-1.5">
-                <Timer size={9} strokeWidth={2} className={dwellSec < 5 ? 'text-warn' : 'text-ok'} />
-                <span className={`font-body text-label tabular-nums ${dwellSec < 5 ? 'text-warn' : 'text-ok'}`}>
-                  {dwellSec}s reviewing
-                </span>
+            <div className="pt-1 border-t border-rule2 space-y-2">
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-1.5">
+                  <Timer size={9} strokeWidth={2} className={dwellSec < 5 ? 'text-warn' : 'text-ok'} />
+                  <span className={`font-body text-label tabular-nums ${dwellSec < 5 ? 'text-warn' : 'text-ok'}`}>
+                    {dwellSec}s reviewing
+                  </span>
+                </div>
+                <label className="flex items-center gap-1.5 cursor-pointer ml-auto">
+                  <Checkbox checked={rationaleAcked} onChange={e => setRationaleAcked(e.target.checked)} size="sm" />
+                  <span className="font-body text-muted text-label">I have read the AI rationale</span>
+                </label>
               </div>
-              <label className="flex items-center gap-1.5 cursor-pointer ml-auto">
-                <Checkbox checked={rationaleAcked} onChange={e => setRationaleAcked(e.target.checked)} size="sm" />
-                <span className="font-body text-muted text-label">I have read the AI rationale</span>
-              </label>
+              <p className="font-body text-muted/50 text-label leading-snug">
+                Approving records your ratification and timestamp. Accountability for this decision remains with you as director.
+              </p>
             </div>
           )}
         </div>
@@ -911,6 +1002,14 @@ export default function AgentControl() {
   const tier1BtnRef                       = useRef(null)
   const [detailTab, setDetailTab]         = useState('why')
   const [freshnessOpen, setFreshnessOpen] = useState(false)
+  const [flaggedDecisions, setFlaggedDecisions] = useState({})
+  const [flagModal, setFlagModal]         = useState(null)
+  const [networkOpen, setNetworkOpen]     = useState(false)
+  const [shiftConfigOpen, setShiftConfigOpen] = useState(false)
+  const [shiftThresholds, setShiftThresholds] = useState({
+    green: currentPlant?.confidenceGreen ?? 70,
+    red:   currentPlant?.confidenceRed   ?? 50,
+  })
 
   useEffect(() => { setDetailTab('why') }, [splitFocused])
 
@@ -957,6 +1056,22 @@ export default function AgentControl() {
 
   const handleDeferAll = () => {
     setSelected(new Set())
+  }
+
+  const handleFlag = ({ category, note }) => {
+    const { pa } = flagModal
+    setFlaggedDecisions(prev => ({
+      ...prev,
+      [pa._key]: {
+        category,
+        note,
+        timestamp: new Date().toISOString(),
+        plantId: currentPlant?.id ?? 'sl',
+        confidenceModel: currentPlant?.confidenceModel ?? 'biological',
+        agentId: pa._agentId,
+      }
+    }))
+    setFlagModal(null)
   }
 
   const undecidedPending = pending.filter(p => !p._decided)
@@ -1126,11 +1241,13 @@ export default function AgentControl() {
             {undecidedCount > 0 && (
               <span className="font-body text-label text-warn bg-warn/[0.08] px-1.5 py-0.5">{undecidedCount} awaiting</span>
             )}
+            <Btn variant="ghost" onClick={() => setShiftConfigOpen(true)}>Shift config</Btn>
+            <Btn variant="ghost" onClick={() => setNetworkOpen(true)}>Network</Btn>
             <Btn variant="ghost" onClick={() => setActivityDrawer(true)}>Activity</Btn>
           </div>
         </div>
 
-        {/* ── T3 critical banner — shown only when undecided T3 items exist ── */}
+        {/* ── T3 critical banner ── */}
         {(() => {
           const undecidedT3 = tier3Items.filter(p => !p._decided)
           if (!undecidedT3.length) return null
@@ -1145,6 +1262,37 @@ export default function AgentControl() {
               </span>
             </div>
           )
+        })()}
+
+        {/* ── Cross-plant lot advisory (Break 1) ── */}
+        {(() => {
+          const plantId = currentPlant?.id ?? 'sl'
+          const exposures = networkData?.sharedExposure?.filter(e =>
+            e.risk === 'danger' && e.affectedPlants.length > 1
+          ) ?? []
+          if (!exposures.length) return null
+          return exposures.map(exp => {
+            const others = exp.affectedPlants
+              .filter(pid => pid !== plantId)
+              .map(pid => networkData.plants.find(p => p.id === pid))
+              .filter(Boolean)
+            if (!others.length) return null
+            return (
+              <div key={exp.lotId} className="flex-shrink-0 flex items-start gap-3 px-5 py-2.5 bg-danger/[0.04] border-b border-danger/20">
+                <div className="w-1.5 h-1.5 rounded-full bg-danger flex-shrink-0 mt-1.5" />
+                <div className="flex-1 min-w-0">
+                  <span className="font-body text-danger text-label font-medium">Lot {exp.lotId} — cross-plant hold required</span>
+                  <span className="font-body text-muted/70 text-label ml-2">{exp.ingredient} · {exp.supplier} · {exp.note}</span>
+                </div>
+                <div className="flex items-center gap-1.5 flex-shrink-0">
+                  <span className="font-body text-muted text-micro">Also at:</span>
+                  {others.map(p => (
+                    <span key={p.id} className="font-body text-danger text-label bg-danger/[0.08] px-1.5 py-0.5">{p.code}</span>
+                  ))}
+                </div>
+              </div>
+            )
+          })
         })()}
 
         {/* ── Split Decision Panel ─────────────────────────────────── */}
@@ -1190,9 +1338,17 @@ export default function AgentControl() {
                                 {pa._meta.verbFirst}
                               </div>
                               {pa._decided ? (
-                                <StatusPill tone={pa._decided === 'approved' ? 'ok' : 'muted'} className="mt-0.5">
-                                  {pa._decided === 'approved' ? 'Approved' : 'Overridden'}
-                                </StatusPill>
+                                <div className="flex items-center gap-1.5 mt-0.5">
+                                  <StatusPill tone={pa._decided === 'approved' ? 'ok' : 'muted'}>
+                                    {pa._decided === 'approved' ? 'Approved' : 'Overridden'}
+                                  </StatusPill>
+                                  {flaggedDecisions[pa._key] && (
+                                    <span className="flex items-center gap-0.5 font-body text-micro text-warn">
+                                      <Flag size={8} strokeWidth={2} />
+                                      <span>Flagged</span>
+                                    </span>
+                                  )}
+                                </div>
                               ) : pa._meta.showExpiry ? (
                                 <StatusPill tone={pa._meta.consequence === 'critical' ? 'danger' : 'warn'} className="whitespace-nowrap mt-0.5">
                                   {pa._meta.expiresLabel}
@@ -1239,11 +1395,18 @@ export default function AgentControl() {
                       <div className="flex-1 min-w-0">
                         <div className="font-body text-muted text-label mb-0.5">
                           {agent.name} · {cfg.label} consequence
-                          {agent.trustScore != null && (
-                            <span className={`ml-2 display-num text-label ${agent.trustScore >= 85 ? 'text-ok' : agent.trustScore >= 70 ? 'text-warn' : 'text-danger'}`}>
-                              {agent.trustScore} trust
-                            </span>
-                          )}
+                          {agent.trustScore != null && (() => {
+                            const plantId = currentPlant?.id ?? 'sl'
+                            const plantScore = PLANT_TRUST_SCORES[agent.id]?.[plantId]
+                            const score = plantScore ?? agent.trustScore
+                            const isLocal = plantScore != null
+                            return (
+                              <span className={`ml-2 display-num text-label ${score >= 85 ? 'text-ok' : score >= 70 ? 'text-warn' : 'text-danger'}`}
+                                title={isLocal ? `${currentPlant?.code} local trust score (network avg: ${agent.trustScore})` : 'Network average trust score'}>
+                                {score} {isLocal ? `trust · ${currentPlant?.code}` : 'trust · network avg'}
+                              </span>
+                            )
+                          })()}
                         </div>
                         <div className="font-display font-bold text-ink text-head leading-snug">{pa._meta.verbFirst}</div>
                         {pa.reasoning?.length > 0 && (
@@ -1392,15 +1555,32 @@ export default function AgentControl() {
                             </div>
                           )}
 
-                          {/* Agent track record */}
+                          {/* Agent track record — per-plant */}
                           {agent.trustScore != null && (
                             <div className="divide-y divide-rule2 border-y border-rule2">
-                              <div className="flex items-center px-4 py-2.5">
-                                <span className="font-body text-muted text-label flex-1">Agent trust score</span>
-                                <span className={`font-body text-label font-medium ${agent.trustScore >= 85 ? 'text-ok' : agent.trustScore >= 70 ? 'text-warn' : 'text-danger'}`}>
-                                  {agent.trustScore}%
-                                </span>
-                              </div>
+                              {(() => {
+                                const plantId = currentPlant?.id ?? 'sl'
+                                const plantScore = PLANT_TRUST_SCORES[agent.id]?.[plantId]
+                                const networkScore = agent.trustScore
+                                return (
+                                  <>
+                                    <div className="flex items-center px-4 py-2.5">
+                                      <span className="font-body text-muted text-label flex-1">
+                                        Trust score · {currentPlant?.code ?? 'this plant'}
+                                      </span>
+                                      <span className={`font-body text-label font-medium ${(plantScore ?? networkScore) >= 85 ? 'text-ok' : (plantScore ?? networkScore) >= 70 ? 'text-warn' : 'text-danger'}`}>
+                                        {plantScore ?? networkScore}%
+                                      </span>
+                                    </div>
+                                    {plantScore != null && plantScore !== networkScore && (
+                                      <div className="flex items-center px-4 py-2 bg-stone2">
+                                        <span className="font-body text-muted/60 text-label flex-1">Network average</span>
+                                        <span className="font-body text-muted/60 text-label">{networkScore}%</span>
+                                      </div>
+                                    )}
+                                  </>
+                                )
+                              })()}
                               {agent.confidenceMethodology && (
                                 <div className="px-4 py-2.5">
                                   <p className="font-body text-muted text-label leading-snug">{agent.confidenceMethodology}</p>
@@ -1423,9 +1603,25 @@ export default function AgentControl() {
                     {/* Sticky action bar */}
                     <div key={pa._decided} className={`flex-shrink-0 flex items-center gap-3 px-5 py-3.5 border-t border-rule2 ${pa._decided === 'approved' ? 'decision-commit bg-stone2' : pa._decided ? 'bg-stone2' : 'bg-stone'}`}>
                       {pa._decided ? (
-                        <span className={`font-body text-label ${pa._decided === 'approved' ? 'text-ok' : 'text-muted'}`}>
-                          {pa._decided === 'approved' ? '✓ Decision approved and logged' : '↩ Decision overridden'}
-                        </span>
+                        <div className="flex items-center gap-3 flex-1">
+                          <span className={`font-body text-label ${pa._decided === 'approved' ? 'text-ok' : 'text-muted'}`}>
+                            {pa._decided === 'approved' ? '✓ Decision approved and logged' : '↩ Decision overridden'}
+                          </span>
+                          {flaggedDecisions[pa._key] ? (
+                            <span className="flex items-center gap-1 font-body text-label text-warn ml-auto">
+                              <Flag size={10} strokeWidth={2} />
+                              <span>{FLAG_CATEGORIES.find(f => f.value === flaggedDecisions[pa._key].category)?.label ?? 'Flagged'}</span>
+                            </span>
+                          ) : (
+                            <button type="button"
+                              onClick={() => setFlagModal({ pa, agent })}
+                              className="flex items-center gap-1.5 font-body text-label text-muted/40 hover:text-warn transition-colors ml-auto"
+                              title="Flag this decision for model review">
+                              <Flag size={10} strokeWidth={2} />
+                              <span>Flag outcome</span>
+                            </button>
+                          )}
+                        </div>
                       ) : (
                         <>
                           <ApproveBtn isCompliance={isCompliance} disabled={false} onApprove={() => handleApprove(pa._key)} />
@@ -1617,6 +1813,15 @@ export default function AgentControl() {
           onCancel={() => setDisableModal(null)}
         />
       )}
+      {flagModal && (
+        <FlagOutcomeModal
+          agentName={flagModal.agent.name}
+          actionLabel={flagModal.pa._meta.verbFirst}
+          plantContext={currentPlant}
+          onConfirm={handleFlag}
+          onCancel={() => setFlagModal(null)}
+        />
+      )}
 
       {/* ── Investigation drawer ─────────────────────────────────────── */}
       {investigationDrawer && (
@@ -1644,6 +1849,115 @@ export default function AgentControl() {
           maxWidth="480px"
         >
           <ActivityLog agentActions={agentActions} />
+        </SlidePanel>
+      )}
+
+      {/* ── Network queue panel (Break 3) ───────────────────────────── */}
+      {networkOpen && (
+        <SlidePanel
+          title="Network queue"
+          subtitle={`${networkData?.plants?.length ?? 0} plants · cross-plant decision view`}
+          onClose={() => setNetworkOpen(false)}
+          maxWidth="440px"
+        >
+          <div className="-m-5 space-y-0">
+            {/* Cross-plant lot exposure */}
+            {networkData?.sharedExposure?.length > 0 && (
+              <>
+                <div className="px-5 py-3 border-b border-rule2 bg-stone3">
+                  <span className="font-body text-muted text-label font-medium">Shared lot exposure</span>
+                </div>
+                {networkData.sharedExposure.map(exp => (
+                  <div key={exp.lotId} className={`flex items-start gap-3 px-5 py-4 border-b border-rule2 ${exp.risk === 'danger' ? 'bg-danger/[0.03]' : 'bg-warn/[0.02]'}`}>
+                    <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 mt-1.5 ${exp.risk === 'danger' ? 'bg-danger' : 'bg-warn'}`} />
+                    <div className="flex-1 min-w-0">
+                      <div className={`font-body text-label font-medium ${exp.risk === 'danger' ? 'text-danger' : 'text-warn'}`}>
+                        Lot {exp.lotId} · {exp.ingredient}
+                      </div>
+                      <div className="font-body text-muted text-label mt-0.5">{exp.supplier} · {exp.note}</div>
+                      <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+                        {exp.affectedPlants.map(pid => {
+                          const plant = networkData.plants.find(p => p.id === pid)
+                          return (
+                            <span key={pid} className={`font-body text-label px-1.5 py-0.5 ${pid === (currentPlant?.id ?? 'sl') ? 'bg-signal/10 text-signal' : 'bg-stone3 text-muted'}`}>
+                              {plant?.code ?? pid}{pid === (currentPlant?.id ?? 'sl') ? ' · this plant' : ''}
+                            </span>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </>
+            )}
+            {/* Per-plant queue summary */}
+            <div className="px-5 py-3 border-b border-rule2 bg-stone3">
+              <span className="font-body text-muted text-label font-medium">Plant queue summary</span>
+            </div>
+            {networkData?.plants?.map(plant => (
+              <div key={plant.id} className={`flex items-center gap-4 px-5 py-4 border-b border-rule2 last:border-0 ${plant.active ? 'bg-signal/[0.02]' : ''}`}>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <div className={`font-body font-medium text-body ${plant.status === 'at-risk' ? 'text-danger' : 'text-ink'}`}>{plant.name}</div>
+                    {plant.active && <span className="font-body text-signal text-micro bg-signal/10 px-1.5 py-0.5">this plant</span>}
+                  </div>
+                  <div className="font-body text-muted text-label mt-0.5">{plant.code} · {plant.lots.length} active lot{plant.lots.length !== 1 ? 's' : ''}</div>
+                </div>
+                <div className="text-right flex-shrink-0">
+                  <div className={`display-num text-head leading-none ${plant.score >= 85 ? 'text-ok' : plant.score >= 70 ? 'text-warn' : 'text-danger'}`}>
+                    {plant.score}
+                  </div>
+                  <div className="font-body text-muted text-micro">readiness</div>
+                </div>
+                <div className={`w-2 h-2 rounded-full flex-shrink-0 ${plant.status === 'at-risk' ? 'bg-danger' : 'bg-ok'}`} />
+              </div>
+            ))}
+          </div>
+        </SlidePanel>
+      )}
+
+      {/* ── Shift config panel (Break 4) ─────────────────────────────── */}
+      {shiftConfigOpen && (
+        <SlidePanel
+          title="Shift autonomy config"
+          subtitle={`${currentPlant?.name ?? 'This plant'} · current shift`}
+          onClose={() => setShiftConfigOpen(false)}
+          maxWidth="380px"
+        >
+          <div className="-m-5 space-y-0">
+            <div className="px-5 py-3 bg-stone2 border-b border-rule2">
+              <p className="font-body text-muted text-body leading-relaxed">
+                Confidence thresholds control when agents require director review vs. acting autonomously. Adjustments apply to this shift only — bounds are set by the director.
+              </p>
+            </div>
+            <div className="divide-y divide-rule2">
+              {[
+                { key: 'green', label: 'Autonomous action threshold', desc: 'Above this — agents act without review', color: 'text-ok' },
+                { key: 'red',   label: 'Hold for director review',    desc: 'Below this — all actions escalate',    color: 'text-danger' },
+              ].map(({ key, label, desc, color }) => (
+                <div key={key} className="px-5 py-4">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="font-body text-ink text-label font-medium">{label}</span>
+                    <span className={`display-num text-head leading-none ${color}`}>{shiftThresholds[key]}%</span>
+                  </div>
+                  <div className="font-body text-muted text-label mb-3">{desc}</div>
+                  <input type="range" min={key === 'red' ? 30 : 50} max={key === 'red' ? 75 : 99}
+                    value={shiftThresholds[key]}
+                    onChange={e => setShiftThresholds(prev => ({ ...prev, [key]: Number(e.target.value) }))}
+                    className="w-full accent-signal"
+                  />
+                </div>
+              ))}
+              <div className="px-5 py-4 bg-stone3">
+                <div className="font-body text-muted text-label mb-1">Director-set bounds</div>
+                <div className="flex items-center gap-4">
+                  <span className="font-body text-muted text-label">Green floor: {currentPlant?.confidenceGreen ?? 70}%</span>
+                  <span className="font-body text-muted text-label">Red ceiling: {currentPlant?.confidenceRed ?? 50}%</span>
+                </div>
+                <div className="font-body text-muted/60 text-micro mt-1">Shift config cannot exceed these bounds</div>
+              </div>
+            </div>
+          </div>
         </SlidePanel>
       )}
     </div>

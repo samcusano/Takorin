@@ -423,6 +423,16 @@ export default function IntegrationHub() {
           </div>
           <div className="font-body text-muted/50 text-label">Network-wide · not filtered</div>
         </div>
+        {/* Data usage — explicit framing for design partner context */}
+        <div className="flex-shrink-0 px-4 py-3 border-t border-rule2 bg-stone">
+          <div className="font-body text-muted/50 text-micro uppercase tracking-wide mb-2">Data usage</div>
+          <p className="font-body text-muted text-label leading-relaxed mb-1.5">
+            Your facility's data stays in your instance. It is not shared with other customers or used to train models.
+          </p>
+          <p className="font-body text-muted/60 text-label leading-relaxed">
+            Anonymized signal quality metrics — never raw operational data — are used to improve AI readiness diagnostics.
+          </p>
+        </div>
       </div>
 
       {/* ── Center: tabs + connector grid or conflicts ───── */}

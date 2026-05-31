@@ -7,7 +7,7 @@ import { useState } from 'react'
 import { knowledgeEntries, processMemory } from '../data/knowledge'
 import {
   Database,
-  Truck, ClipboardCheck, RotateCcw, TrendingDown, Shield, Zap, Waves,
+  Truck, ClipboardCheck, RotateCcw, TrendingDown, Shield, Zap, Waves, Share2, Check,
 } from 'lucide-react'
 import { StatusPill, SlidePanel, StatGrid, EmptyState } from '../components/UI'
 
@@ -112,7 +112,7 @@ const TYPE_LABELS = {
 
 // ── Entry detail (shared across variants) ────────────────────────────────────
 
-function EntryDetail({ entry }) {
+function EntryDetail({ entry, isPromoted, onPromote }) {
   if (!entry) return <EmptyState message="Select an entry" />
   const riskKey = entry.institutionalRisk?.split(' ')[0]
   const risk = RISK_CFG[riskKey]
@@ -190,6 +190,33 @@ function EntryDetail({ entry }) {
             ))}
           </div>
         )}
+
+        {/* Cross-plant propagation */}
+        <div className={`border border-rule2 px-4 py-4 ${isPromoted ? 'bg-ok/[0.04] border-ok/20' : 'bg-stone2'}`}>
+          {isPromoted ? (
+            <div className="flex items-center gap-2">
+              <Check size={12} strokeWidth={2} className="text-ok flex-shrink-0" />
+              <div>
+                <div className="font-body text-ok text-label font-medium">Promoted to network knowledge base</div>
+                <div className="font-body text-muted text-label mt-0.5">
+                  Pending review by network ops lead before distribution to KS-02 and TX-11
+                </div>
+              </div>
+            </div>
+          ) : (
+            <>
+              <div className="font-body text-ink text-label font-medium mb-1">Promote to network</div>
+              <p className="font-body text-muted text-label leading-relaxed mb-3">
+                Share this resolution with KS-02 and TX-11. A network ops lead reviews before distribution — your operational context travels with the entry.
+              </p>
+              <button type="button" onClick={onPromote}
+                className="flex items-center gap-2 font-body text-label text-muted hover:text-ink transition-colors px-3 py-1.5 border border-rule2 hover:border-ink/20 bg-stone">
+                <Share2 size={11} strokeWidth={2} />
+                Promote to other plants
+              </button>
+            </>
+          )}
+        </div>
       </div>
     </div>
   )
@@ -201,6 +228,7 @@ function OperationalMemoryVault() {
   const [activeDomain, setActiveDomain] = useState('active-deviations')
   const [showMemory, setShowMemory]     = useState(false)
   const [slideEntry, setSlideEntry]     = useState(null)
+  const [promotedEntries, setPromotedEntries] = useState(new Set())
 
   const domain = DOMAINS.find(d => d.id === activeDomain)
 
@@ -360,6 +388,11 @@ function OperationalMemoryVault() {
                                       <span className="live-dot w-1.5 h-1.5 rounded-full bg-danger flex-shrink-0" />active
                                     </span>
                                   )}
+                                  {promotedEntries.has(e.id) && (
+                                    <span className="inline-flex items-center gap-1 font-body text-ok text-label">
+                                      <Share2 size={8} strokeWidth={2} />network
+                                    </span>
+                                  )}
                                 </div>
                                 <div className={`display-num text-page leading-none flex-shrink-0 ${confColor}`}>{e.confidence}%</div>
                               </div>
@@ -390,7 +423,11 @@ function OperationalMemoryVault() {
       {slideEntry && !slideEntry._pm && (
         <SlidePanel title={slideEntry.title} subtitle={TYPE_LABELS[slideEntry.type] ?? slideEntry.type}
           onClose={() => setSlideEntry(null)} maxWidth="520px">
-          <EntryDetail entry={slideEntry} />
+          <EntryDetail
+            entry={slideEntry}
+            isPromoted={promotedEntries.has(slideEntry.id)}
+            onPromote={() => setPromotedEntries(prev => new Set([...prev, slideEntry.id]))}
+          />
         </SlidePanel>
       )}
       {slideEntry?._pm && (
