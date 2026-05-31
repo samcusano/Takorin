@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { connectors, integrationSummary, semanticConflicts, integrationCategories } from '../data/integrations'
-import { AlertTriangle, CheckCircle, Zap, Radio, Search, X } from 'lucide-react'
+import { AlertTriangle, CheckCircle, Zap, Radio, Search, X, Lock } from 'lucide-react'
 import { SlidePanel, Tabs, StatusPill, Btn, AnimatedScore, StatGrid, SectionLabel, EmptyState } from '../components/UI'
 
 const STATUS_CFG = {
@@ -51,7 +51,9 @@ function ConnectorCard({ c, selected, onClick }) {
         </div>
       )}
       {(c.status === 'available' || c.status === 'soon') && (
-        <StatusPill tone={c.status === 'available' ? 'muted' : 'signal'}>{cfg.label}</StatusPill>
+        <StatusPill tone={c.status === 'available' ? 'muted' : 'signal'}>
+          {c.status === 'soon' ? 'Q3 2026' : cfg.label}
+        </StatusPill>
       )}
     </button>
   )
@@ -142,7 +144,7 @@ function ConflictsPanel({ resolved, onResolve }) {
             <div className="space-y-1">
               {sc.values.map(v => (
                 <div key={v.source} className="flex items-baseline gap-2">
-                  <span className="font-body text-muted text-label w-32 flex-shrink-0 truncate">{v.source}</span>
+                  <span className="font-body text-muted text-label max-w-[8rem] flex-shrink-0 truncate" title={v.source}>{v.source}</span>
                   <span className="font-body text-warn text-label">{v.value}</span>
                 </div>
               ))}
@@ -161,7 +163,10 @@ function ConflictsPanel({ resolved, onResolve }) {
             </div>
 
             {!sc.autoEligible && (
-              <div className="font-body text-muted/60 text-label">Manual resolution required — ERP admin access needed</div>
+              <div className="flex items-center gap-1.5 font-body text-muted text-label">
+                <Lock size={9} strokeWidth={2} className="flex-shrink-0" />
+                <span>Manual resolution required — ERP admin access needed</span>
+              </div>
             )}
           </div>
         </div>
@@ -232,8 +237,8 @@ function AIReadinessTab() {
   return (
     <div className="flex-1 overflow-y-auto page-rise">
 
-      {/* Score + dimensions */}
-      <div className="px-4 py-4 border-b border-rule2 bg-stone2">
+      {/* Score + dimensions — sticky so score stays in view while scrolling gaps */}
+      <div className="sticky top-0 z-10 px-4 py-4 border-b border-rule2 bg-stone2">
         <div className="flex items-baseline gap-2 mb-4">
           <span className={`display-num text-metric ${AI_SCORE >= 80 ? 'text-ok' : AI_SCORE >= 65 ? 'text-warn' : 'text-danger'}`}>
             <AnimatedScore value={AI_SCORE} effect="glow" />
@@ -247,7 +252,7 @@ function AIReadinessTab() {
                 <span className="font-body text-ink text-label">{d.label}</span>
                 <div className="flex items-center gap-2">
                   {d.trend !== 0 && (
-                    <span className={`font-body text-label ${d.trend > 0 ? 'text-ok' : 'text-warn'}`}>{d.trend > 0 ? '+' : ''}{d.trend}</span>
+                    <span className={`font-body text-label ${d.trend > 0 ? 'text-ok' : 'text-warn'}`}>{d.trend > 0 ? '↑' : '↓'}{Math.abs(d.trend)}</span>
                   )}
                   <span className={`font-body text-label tabular-nums font-medium ${d.score >= 80 ? 'text-ok' : d.score >= 65 ? 'text-warn' : 'text-danger'}`}>{d.score}%</span>
                 </div>
@@ -262,8 +267,8 @@ function AIReadinessTab() {
       </div>
 
       {/* Gaps */}
-      <div className="px-4 py-2 border-b border-rule2 bg-stone2">
-        <span className="font-body text-muted text-label">Gaps to resolve · {AI_GAPS.length}</span>
+      <div className="px-4 py-2.5 border-y border-rule2 bg-stone3">
+        <span className="font-body text-ink text-label font-medium">Gaps to resolve · {AI_GAPS.length}</span>
       </div>
       {AI_GAPS.map(gap => (
         <div key={gap.id} className={`border-b border-rule2 border-l-2 ${gap.severity === 'high' ? 'border-l-danger' : 'border-l-warn'}`}>
@@ -280,7 +285,7 @@ function AIReadinessTab() {
                 <span key={a} className="font-body text-label px-1.5 py-0.5 bg-stone3 text-muted">{a}</span>
               ))}
             </div>
-            <div className="px-3 py-2 bg-warn/[0.04] border-l-2 border-l-warn/30">
+            <div className={`px-3 py-2 border-l-2 ${gap.severity === 'high' ? 'bg-danger/[0.04] border-l-danger/30' : 'bg-warn/[0.04] border-l-warn/30'}`}>
               <div className="font-body text-muted text-label mb-0.5">Impact</div>
               <div className="font-body text-ink text-label leading-snug">{gap.impact}</div>
             </div>
@@ -293,8 +298,8 @@ function AIReadinessTab() {
       ))}
 
       {/* Agent coverage */}
-      <div className="px-4 py-2 border-b border-rule2 bg-stone2">
-        <span className="font-body text-muted text-label">Agent coverage</span>
+      <div className="px-4 py-2.5 border-y border-rule2 bg-stone3">
+        <span className="font-body text-ink text-label font-medium">Agent coverage</span>
       </div>
       {AI_AGENTS.map(agent => (
         <div key={agent.name} className="border-b border-rule2 px-4 py-2.5 flex items-start gap-3">
@@ -371,8 +376,8 @@ export default function IntegrationHub() {
           </button>
         )}
 
-        {/* Category list */}
-        <div className="flex-1 overflow-y-auto">
+        {/* Category list — dimmed when not on Sources */}
+        <div className={`flex-1 overflow-y-auto transition-opacity duration-200 ${activeTab !== 'sources' ? 'opacity-30 pointer-events-none' : ''}`}>
           <button type="button"
             onClick={() => { setSelectedCategory(null); setSelectedConnectorId(null); setActiveTab('sources') }}
             className={`w-full text-left px-4 py-2.5 border-b border-rule2 flex items-center justify-between transition-colors ${
@@ -405,7 +410,7 @@ export default function IntegrationHub() {
 
         {/* Footer stats */}
         <div className="flex-shrink-0 px-5 py-3 border-t border-rule2 bg-stone2">
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-2 gap-2 mb-1.5">
             {[
               { label: 'Total signals', val: integrationSummary.totalSignals.toLocaleString() },
               { label: 'Streaming',     val: String(integrationSummary.streamingSources) },
@@ -416,6 +421,7 @@ export default function IntegrationHub() {
               </div>
             ))}
           </div>
+          <div className="font-body text-muted/50 text-label">Network-wide · not filtered</div>
         </div>
       </div>
 
@@ -492,7 +498,7 @@ export default function IntegrationHub() {
           title={selectedConnector.name}
           subtitle={`${STATUS_CFG[selectedConnector.status]?.label ?? 'Unknown'} · ${selectedConnector.vendor}`}
           onClose={() => setSelectedConnectorId(null)}
-          maxWidth="480px"
+          maxWidth="360px"
         >
           <ConnectorDetail c={selectedConnector} />
         </SlidePanel>
