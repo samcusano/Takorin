@@ -1,12 +1,9 @@
 import { useState } from 'react'
-import { Check, X, AlertTriangle, Clock, ArrowRight, History, AlertCircle, Eye, Wheat, Soup, Milk, Beef, Droplets, Truck, ShieldCheck, ClipboardCheck } from 'lucide-react'
-import NetworkView from './NetworkView'
-
-
+import { Check, AlertTriangle, ArrowRight, History, AlertCircle, Eye } from 'lucide-react'
 import { useNavigate, Link } from 'react-router-dom'
 import { supplierData, supplierAudits, empResultsHistory } from '../data'
 import { useAppState } from '../context/AppState'
-import { StatusPill, SectionHeader, Btn, ActionBanner, Spinner, AnimatedCheck, MetadataRow, ExpandableMetadata, SlidePanel, Tabs, StatGrid, SectionLabel } from '../components/UI'
+import { StatusPill, SectionHeader, Btn, ActionBanner, Spinner, AnimatedCheck, MetadataRow, ExpandableMetadata, SlidePanel, StatGrid, SectionLabel } from '../components/UI'
 import StatBar from '../components/StatBar.jsx'
 
 // ── LotTicketPanel ────────────────────────────────────────────────────────────
@@ -107,24 +104,6 @@ function LotTicketPanel({ lot, onClose, coaRequested, setCoaRequested }) {
   )
 }
 
-// ── NetworkBadge ──────────────────────────────────────────────────────────────
-
-const networkIntel = {
-  'ConAgra Foods': { percentile: 22, plants: 14, note: '3 non-conformances in last 30d', tone: 'danger' },
-  'Sysco':         { percentile: 67, plants: 14, note: null, tone: 'ok' },
-  'ADM Foods':     { percentile: 74, plants: 9,  note: null, tone: 'ok' },
-  'Cargill':       { percentile: 81, plants: 11, note: null, tone: 'ok' },
-  'Prairie Farms': { percentile: 55, plants: 6,  note: null, tone: 'warn' },
-}
-
-function NetworkBadge({ intel }) {
-  const c = intel.tone === 'danger' ? 'text-danger' : intel.tone === 'warn' ? 'text-warn' : 'text-muted'
-  return (
-    <div className={`font-body text-label mt-0.5 ${c}`}>
-      {intel.percentile}th pct. across {intel.plants} plants{intel.note ? ` · ${intel.note}` : ''}
-    </div>
-  )
-}
 
 // ── Shared palette — matches ShiftIQV2 FindingCard / OperatorRow ─────────────
 const SC = {
@@ -190,38 +169,12 @@ function SupplierRow({ s, audit, isDanger, certGap, index, total }) {
   )
 }
 
-// ── Ingredient icons — lucide.dev ─────────────────────────────────────────────
-
-const FOOD_ICONS = {
-  'Wheat flour':  Wheat,
-  'Tomato sauce': Soup,
-  'Mozzarella':   Milk,
-  'Pepperoni':    Beef,
-  'Canola oil':   Droplets,
-}
-
-// ── AlertChip (strip at top of content) ──────────────────────────────────────
-
-function AlertChip({ count, tone, label }) {
-  const cls = {
-    danger: 'border-danger/30 text-danger bg-danger/5',
-    warn:   'text-warn bg-warn/5',
-    muted:  'border-rule2 text-muted bg-stone2',
-  }[tone]
-  return (
-    <div className={`flex items-center gap-1.5 px-2.5 py-1 border font-body text-label flex-shrink-0 ${cls}`}>
-      <span className="font-medium">{count}</span>
-      <span className="opacity-70">{label}</span>
-    </div>
-  )
-}
 
 // ── Main screen ───────────────────────────────────────────────────────────────
 
 export default function SupplierIQ() {
   const d = supplierData
   const { coaRequested, setCoaRequested, rfqSent, setRfqSent, readinessResolved, resolvedConflicts, closedCases } = useAppState()
-  const [activeTab, setActiveTab] = useState('suppliers')
   const [exportState, setExportState] = useState('idle')
   const [coaViewLot, setCoaViewLot] = useState(null)
   const navigate = useNavigate()
@@ -251,16 +204,6 @@ export default function SupplierIQ() {
     <>
     <LotTicketPanel lot={coaViewLot} onClose={() => setCoaViewLot(null)} coaRequested={coaRequested} setCoaRequested={setCoaRequested} />
     <div className="flex flex-col h-full overflow-hidden content-reveal">
-
-      <Tabs
-        tabs={[{ id: 'suppliers', label: 'Suppliers' }, { id: 'network', label: 'Network' }]}
-        active={activeTab}
-        onChange={setActiveTab}
-        className="flex-shrink-0 bg-stone2"
-      />
-
-      {activeTab === 'network' && <NetworkView />}
-      {activeTab === 'suppliers' && <>
 
       <div className="flex flex-1 min-h-0 overflow-hidden">
       <div className="flex-1 overflow-y-auto">
@@ -324,12 +267,12 @@ export default function SupplierIQ() {
 
         {resolveCount > 0 && <div style={{ height: 1, background: SC.border }} />}
 
-        {/* ── Monitoring ── */}
+        {/* ── Lots at risk ── */}
         {monitoringLots.length > 0 && (
           <>
             <div style={{ padding: '20px 24px 16px' }}>
               <div className="font-body text-micro text-muted mb-3">
-                Monitoring · {monitoringLots.length} at risk
+                Lots at risk · {monitoringLots.length}
               </div>
 
               {monitoringLots.map((lot, i) => (
@@ -356,32 +299,40 @@ export default function SupplierIQ() {
                   )}
                 </SupplierCard>
               ))}
-
-              <SupplierCard
-                tone="warn"
-                title="ConAgra reliability — 22nd percentile"
-                desc="Network signal · 3 non-conformances in last 30 days across 14 plants"
-                evidence="High confidence · Network intelligence · 14 plants · Pattern: delivery delays → scrap spikes"
-                actions={
-                  <Link to="/network" className="font-body text-signal text-label flex items-center gap-1 hover:text-ink transition-colors">
-                    <ArrowRight size={9} />View in Network
-                  </Link>
-                }
-              />
-
-              <SupplierCard
-                tone="warn"
-                title="Price Alerts"
-                desc="2 active supplier contracts need renegotiation"
-                evidence="Tomato sauce +14% · ConAgra renewal May 12 · Canola oil +8%"
-                actions={rfqSent
-                  ? <span className="font-body text-ok text-label flex items-center gap-1"><Check size={10} strokeWidth={2} /> RFQ sent</span>
-                  : <Btn variant="secondary" onClick={() => setRfqSent(true)}>Request alternatives</Btn>
-                }
-              />
             </div>
+            <div style={{ height: 1, background: SC.border }} />
           </>
         )}
+
+        {/* ── Supplier intelligence ── */}
+        <div style={{ padding: '20px 24px 16px' }}>
+          <div className="font-body text-micro text-muted mb-3">
+            Supplier intelligence
+          </div>
+
+          <SupplierCard
+            tone="warn"
+            title="ConAgra reliability — 22nd percentile"
+            desc="Network signal · 3 non-conformances in last 30 days across 14 plants"
+            evidence="High confidence · Network intelligence · 14 plants · Pattern: delivery delays → scrap spikes"
+            actions={
+              <Link to="/overview" className="font-body text-signal text-label flex items-center gap-1 hover:text-ink transition-colors">
+                <ArrowRight size={9} />View in Network
+              </Link>
+            }
+          />
+
+          <SupplierCard
+            tone="warn"
+            title="Price Alerts"
+            desc="2 active supplier contracts need renegotiation"
+            evidence="Tomato sauce +14% · ConAgra renewal May 12 · Canola oil +8%"
+            actions={rfqSent
+              ? <span className="font-body text-ok text-label flex items-center gap-1"><Check size={10} strokeWidth={2} /> RFQ sent</span>
+              : <Btn variant="secondary" onClick={() => setRfqSent(true)}>Request alternatives</Btn>
+            }
+          />
+        </div>
 
         <div style={{ height: 1, background: SC.border }} />
 
@@ -408,7 +359,6 @@ export default function SupplierIQ() {
       </div>
 
       </div>
-      </>}
     </div>
     </>
   )

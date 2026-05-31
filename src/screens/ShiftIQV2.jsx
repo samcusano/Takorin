@@ -597,7 +597,7 @@ export default function ShiftIQV2({ score = 78, lineLabel = 'Line 4 · AM Shift'
           ) : (
           <>
 
-          {/* LEFT: Intelligence + Crew + Checklists */}
+          {/* LEFT: Intelligence */}
           <div className="flex-1 overflow-y-auto" style={{ borderRight: `1px solid ${P.border}` }}>
 
             {/* Shift-start narrative — what changed since shift open */}
@@ -632,11 +632,13 @@ export default function ShiftIQV2({ score = 78, lineLabel = 'Line 4 · AM Shift'
                 />
               ))}
             </div>
+          </div>
 
-            <Divider />
+          {/* RIGHT: Crew + Checklists */}
+          <div style={{ width: 304, flexShrink: 0, overflowY: 'auto', background: P.bg, display: 'flex', flexDirection: 'column' }}>
 
             {/* Crew */}
-            <div style={{ padding: '18px 24px 16px' }}>
+            <div style={{ padding: '20px 20px 16px' }}>
               <div className="font-body text-micro text-muted mb-3">
                 Crew · {crew.length} operators
               </div>
@@ -650,27 +652,27 @@ export default function ShiftIQV2({ score = 78, lineLabel = 'Line 4 · AM Shift'
             <Divider />
 
             {/* Startup checklists */}
-            <div style={{ padding: '18px 24px 24px' }}>
+            <div style={{ padding: '18px 20px 24px' }}>
               <div className="font-body text-micro text-muted mb-3">Startup checklists</div>
-              <div className="flex items-center gap-5" style={{ padding: '14px 16px', background: P.surface, border: `1px solid ${P.border}` }}>
+              <div className="flex items-center gap-4" style={{ padding: '12px 14px', background: P.surface, border: `1px solid ${P.border}` }}>
                 <div style={{ flexShrink: 0 }}>
                   <span className="display-num text-display" style={{ color: signedCount < 11 ? P.amber : P.sage }}>{signedCount}</span>
-                  <span className="font-body text-body text-muted" style={{ marginLeft: 6 }}>/ 13</span>
+                  <span className="font-body text-body text-muted" style={{ marginLeft: 5 }}>/ 13</span>
                 </div>
                 <div style={{ flex: 1 }}>
                   <div style={{ height: 3, background: P.border, marginBottom: 6 }}>
                     <div style={{ height: '100%', width: `${checklistPct}%`, background: signedCount < 11 ? P.amber : P.sage, transition: 'width 700ms cubic-bezier(0.16,1,0.3,1)' }} />
                   </div>
-                  <span className="font-body text-label text-muted">{checklistPct}% complete · 4 overdue at T+42 min</span>
+                  <span className="font-body text-label text-muted">{checklistPct}% complete · 4 overdue</span>
                 </div>
-                {!allergenSigned && (
-                  <span className="font-body text-micro flex-shrink-0 px-2.5 py-1" style={{ color: P.rust, background: `${P.rust}14`, border: `1px solid ${P.rust}35` }}>
-                    ALLERGEN UNSIGNED
-                  </span>
-                )}
               </div>
+              {!allergenSigned && (
+                <div className="mt-2 px-2.5 py-1.5" style={{ color: P.rust, background: `${P.rust}14`, border: `1px solid ${P.rust}35` }}>
+                  <span className="font-body text-micro">ALLERGEN LOG UNSIGNED</span>
+                </div>
+              )}
               <p className="font-display text-label leading-relaxed" style={{ marginTop: 10, paddingLeft: 2, color: P.clay }}>
-                4 overdue items at T+42 correlates with 18% elevated scrap rate on comparable Line 4 Pepperoni runs.
+                4 overdue items at T+42 correlates with 18% elevated scrap rate on comparable runs.
               </p>
             </div>
           </div>

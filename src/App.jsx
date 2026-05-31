@@ -67,7 +67,7 @@ export default function App() {
  <Route path="/supplier" element={<Guard k="supplier"><ErrorBoundary><SupplierIQ /></ErrorBoundary></Guard>} />
  <Route path="/capa" element={<Guard k="capa"><ErrorBoundary><CAPAEngine /></ErrorBoundary></Guard>} />
  <Route path="/readiness" element={<Guard k="readiness"><ErrorBoundary><DataReadiness /></ErrorBoundary></Guard>} />
- <Route path="/network" element={<Navigate to="/supplier" replace />} />
+ <Route path="/network" element={<Navigate to="/overview" replace />} />
  <Route path="/operator" element={<Guard k="operator"><ErrorBoundary><OperatorView role={viewingRole} /></ErrorBoundary></Guard>} />
  <Route path="/analytics" element={<Guard k="analytics"><ErrorBoundary><Analytics /></ErrorBoundary></Guard>} />
  <Route path="/digest" element={<Navigate to="/analytics" replace />} />

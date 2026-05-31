@@ -4,7 +4,7 @@
 import { useState } from 'react'
 import { batches, batchSummary } from '../data/batches'
 import { CheckCircle, AlertTriangle, TrendingUp, TrendingDown, Minus, Calendar, CalendarClock, Weight } from 'lucide-react'
-import { sensoryReadings, expertAnnotations, craftPriors, seasonalBaselines } from '../data/quality'
+import { sensoryReadings, expertAnnotations } from '../data/quality'
 import { compliancePolicies } from '../data/compliance'
 import { Tabs, SectionHeader, StatusPill, SceneHeader, toneColor, AnimatedScore } from '../components/UI'
 
@@ -155,8 +155,6 @@ function QualityTab() {
   const QTABS = [
     { id: 'sensory', label: 'Sensory' },
     { id: 'annotations', label: 'Annotations' },
-    { id: 'priors', label: 'Craft Priors' },
-    { id: 'baselines', label: 'Seasonal Baselines' },
   ]
   return (
     <div className="flex flex-col flex-1 overflow-hidden">
@@ -236,60 +234,6 @@ function QualityTab() {
                 </div>
               )
             })}
-          </div>
-        )}
-        {qTab === 'priors' && (
-          <div className="divide-y divide-rule2">
-            {craftPriors.map(p => (
-              <div key={p.id} className={`px-6 py-4 border-l-4 ${p.tone === 'warn' ? 'border-l-warn' : 'border-l-ok'}`}>
-                <div className="flex items-start justify-between gap-4 mb-2">
-                  <div className="flex-1">
-                    <div className="font-body text-muted text-micro mb-1">{p.domain}</div>
-                    <div className="font-body font-medium text-ink text-body leading-snug">{p.rule}</div>
-                  </div>
-                  <div className="text-right flex-shrink-0">
-                    <div className={`display-num text-title leading-none ${p.confidence >= 90 ? 'text-ok' : p.confidence >= 80 ? 'text-signal' : 'text-warn'}`}>{p.confidence}%</div>
-                    <div className="font-body text-muted text-micro mt-0.5">{p.evidenceBatches} batches</div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2.5 mt-2">
-                  <span className="font-body text-muted text-label">{p.author}</span>
-                  <span className="text-muted">·</span>
-                  <span className="font-body text-muted text-label">{p.evidenceYears}</span>
-                  <StatusPill tone={p.tone === 'warn' ? 'warn' : 'ok'} className="ml-1">{p.modelStatus.split('—')[0].trim()}</StatusPill>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-        {qTab === 'baselines' && (
-          <div className="p-4 grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))' }}>
-            {seasonalBaselines.map((s, i) => (
-              <div key={i} className={`border border-rule2 border-l-4 ${s.tone === 'warn' ? 'border-l-warn' : 'border-l-ok'} p-4`}>
-                <div className="flex items-start justify-between gap-2 mb-3">
-                  <div className="font-body font-bold text-ink text-base">{s.season}</div>
-                  <StatusPill tone={s.tone === 'warn' ? 'warn' : 'ok'}>
-                    {s.tone === 'warn' ? 'Watch' : 'Nominal'}
-                  </StatusPill>
-                </div>
-                <div className="space-y-2.5 mb-3">
-                  {[
-                    { label: 'Ambient',             val: s.ambientTempRange },
-                    { label: 'Fermentation target', val: s.fermentationTempTarget },
-                    { label: 'Expected amino N',    val: s.expectedAmino },
-                    { label: 'Expected aroma',      val: s.expectedAroma },
-                  ].map(({ label, val }) => (
-                    <div key={label}>
-                      <div className="font-body text-muted text-micro">{label}</div>
-                      <div className="font-body font-medium text-ink text-body mt-0.5">{val}</div>
-                    </div>
-                  ))}
-                </div>
-                <div className="border-t border-rule2 pt-2.5">
-                  <p className="font-body text-muted text-label leading-relaxed">{s.notes}</p>
-                </div>
-              </div>
-            ))}
           </div>
         )}
       </div>

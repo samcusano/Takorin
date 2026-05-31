@@ -1,43 +1,22 @@
 {
   "scope": "page",
   "isRedesign": true,
-  "targetPath": "src/screens/SupplierIQ.jsx",
-  "targetName": "SupplierIQ",
-  "jtbd": "Unblock production — arrive, instantly see what's holding up the line, act on it",
+  "targetPath": "src/screens/PlantOverview.jsx",
+  "targetName": "PlantOverview",
   "painPoints": [
-    "Too much in one scroll",
-    "Right sidebar feels disconnected",
-    "Data density vs scannability",
-    "Unclear primary action"
+    "Action queue too dominant — crowds the floor surface",
+    "Line list feels secondary — buried below queue items",
+    "No sense of plant-wide pulse — hard to assess overall health at a glance"
   ],
-  "redesignScope": ["Main content area", "Urgency/action hierarchy"],
-  "outOfScope": ["ActionBanner", "Stats bar", "Right sidebar (FDA audit, open gaps, EMP)"],
-  "brand": {
-    "adjectives": ["utilitarian", "minimal", "trustworthy"],
-    "density": "compact",
-    "darkMode": false
-  },
-  "persona": {
-    "primary": "Plant director / QA supervisor",
-    "context": "desktop-first",
-    "keyTasks": [
-      "Identify what is blocking production",
-      "Request missing COA or documentation",
-      "Confirm FDA readiness before inspection"
-    ]
-  },
-  "constraints": {
-    "mustKeep": ["Existing data structures from ../data", "Right sidebar unchanged"],
-    "technical": ["Use existing UI components from ../components/UI", "No new dependencies"]
-  },
-  "variants": {
-    "A": "Urgency-First Stream — no tabs, single list grouped by resolve/monitor/reference",
-    "B": "Score-Led Tabs — supplier scorecard with bar visualization, lots with status-first columns, FSMA as third tab",
-    "C": "Priority Action Cards — blocking hero card up top, expiring lots as 2-col cards, supplier standings compact",
-    "D": "Expandable Master List — combined supplier+lot list, expand ConAgra to see lots and audit inline",
-    "E": "Timeline Feed — alert strip up top, chronological Now/Today/This week/Before FDA sections"
-  },
-  "framework": "vite",
+  "primaryJTBD": "Orient then act — read the plant state before deciding where attention goes",
+  "variantAxes": [
+    "A: Floor-first — line grid dominates, queue is a compact alert strip",
+    "B: Narrative-first — SceneHeader expands, interpretation leads, queue inline below",
+    "C: Split-pane — queue fixed right rail, floor scrollable left",
+    "D: Pulse dashboard — plant health metrics anchor the top, denser layout",
+    "E: Dense/Tactical — everything visible without scrolling, compact table"
+  ],
+  "framework": "vite-react-router",
   "packageManager": "npm",
   "stylingSystem": "tailwind"
 }

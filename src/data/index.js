@@ -1058,6 +1058,8 @@ export const agentConfigData = {
           action:'Open CAPA for R-03 vibration anomaly',
           target:'Sensor A-7 equivalent — R-03 bearing',
           rationale:'Vibration trending 3.4 (threshold 4.0) — pattern match to prior bearing failure',
+          reasoning:['R-03 vibration 3.4mm/s sustained 38 min', 'Matches R-08 pre-failure signature — 72h before that fault', 'Line 4 sealing offline if bearing fails within 14h'],
+          cohort:'71% of plants in your cohort open a CAPA at this threshold · plants that wait average +32h to failure',
           confidence:71,
           cotSteps:[
             { step:1, label:'Quiet period check', result:'pass', detail:'No quiet period active for Line 4' },
@@ -1119,6 +1121,8 @@ export const agentConfigData = {
           action:'Recommend hold on Lot L-0891',
           target:'ConAgra · Pepperoni · Lot L-0891',
           rationale:'COA not received — 4h before scheduled production use',
+          reasoning:['ConAgra COA absent — 4h to production start', 'Allergen CCP-1 cannot clear without a verified COA', 'FSMA 204 violation if Line 4 starts without it'],
+          cohort:'88% of plants in your cohort hold when COA is absent at T-4h · 3 that didn\'t received FDA observations',
           confidence:95,
           triggerData:{
             lotId: 'L-0891',
@@ -1169,6 +1173,8 @@ export const agentConfigData = {
           action:'Emergency auto-assign: R-09 covers Oven Station B — Lindqvist absent, T-28 min',
           target:'Line 4 AM · Oven Station B · Today',
           rationale:'Lindqvist (L3 Oven) called out at 05:22 with no backup. R-09 (Allergen Bot) is certified for oven-adjacent operations. Critical safety coverage gap. Shift starts in 28 min.',
+          reasoning:['Lindqvist absent — zero qualified operators at Oven Station B', 'Shift starts in 28 min, no time for manual reallocation', 'R-09 zone-certified and immediately available'],
+          cohort:'94% of plants in your cohort allow emergency robot coverage in this scenario',
           confidence:91,
           isEmergencyAutoAct: true,
           overrideWindowMin: 15,
@@ -1205,6 +1211,8 @@ export const agentConfigData = {
           action:'Pre-allocate R-06 (Dosing Unit A) as Sauce Dosing fallback for tomorrow AM',
           target:'Line 4 AM — 2026-05-16',
           rationale:'Martinez flagged for overtime risk — pre-allocating robot fallback if absent',
+          reasoning:['Martinez at overtime threshold — absence risk for tomorrow AM', 'Line 4 Sauce Dosing would have zero qualified coverage if absent', 'Pre-allocation costs nothing today, closes a contingent gap'],
+          cohort:'62% of plants in your cohort pre-allocate robot fallbacks for overtime-risk operators',
           confidence:68,
           impactPreview:[
             'R-06 remains on Line 3 tonight — only takes effect if Martinez absent tomorrow',
@@ -1242,6 +1250,8 @@ export const agentConfigData = {
           action:'Schedule bearing inspection for R-03 before next shift',
           target:'R-03 Seal Press A — next maintenance window: tonight 22:00-23:30',
           rationale:'Vibration at 3.4 — pattern matches R-08 failure sequence 72h before fault',
+          reasoning:['R-03 vibration rose 62% this shift — 2.1 to 3.4 mm/s', 'R-08 showed same signature 72h before full bearing failure', 'Planned 90-min window tonight vs. unplanned Line 4 downtime tomorrow AM'],
+          cohort:'79% of plants in your cohort schedule inspection when MTBF forecast drops under 24h',
           confidence:84,
           triggerData:{
             reading: 3.4,
@@ -1294,6 +1304,8 @@ export const agentConfigData = {
           action:'Draft PM handoff — 4 carry-forward items synthesized',
           target:'Line 4 PM handoff · Supervisor M. Santos',
           rationale:'Synthesized open CAPA-2604-001, Sensor A-7, Lindqvist cert gap, and R-03 bearing alert from live shift data',
+          reasoning:['4 open shift items pulled from live data at T-45', 'Lindqvist cert data 4h stale — unverified in draft', 'M. Santos must review each item before signing'],
+          cohort:'96% of supervisors in your cohort use synthesized drafts · avg review time: 4 min',
           confidence:92,
           impactPreview:[
             'Document is a draft — M. Santos must review each item before signing',

@@ -198,6 +198,120 @@ function ConflictsPanel({ resolved, onResolve }) {
   )
 }
 
+// ── AI Readiness ──────────────────────────────────────────────────────────────
+
+const AI_DIMENSIONS = [
+  { key: 'completeness', label: 'Are all my signals arriving?',               score: 68, trend: +4, note: '12% of expected signals not arriving — SCADA gap + checklist sync lag' },
+  { key: 'freshness',    label: 'Is my data current?',                        score: 71, trend: +2, note: '3 sources updating >10 min behind expected interval' },
+  { key: 'consistency',  label: 'Is data structured the same across shifts?', score: 54, trend: -3, note: 'ERP field format mismatch affects 14 ingredient records' },
+  { key: 'coverage',     label: 'How many systems are connected?',             score: 62, trend:  0, note: 'MES, ERP, SCADA connected — warehouse + quality lab not yet integrated' },
+]
+const AI_WEIGHTS = [0.30, 0.25, 0.25, 0.20]
+const AI_SCORE = Math.round(AI_DIMENSIONS.reduce((s, d, i) => s + d.score * AI_WEIGHTS[i], 0))
+
+const AI_GAPS = [
+  { id: 'scada-ai',   label: 'SCADA feed degraded — Oven B',       dimension: 'Are all my signals arriving?',               severity: 'high',     agents: ['Predictive Maintenance'],                      impact: 'Predictive Maintenance running at 71% confidence — full accuracy requires a stable Oven B signal.',              fix: 'Resolve maintenance ticket MT-2604-019 to restore feed stability.' },
+  { id: 'erp-schema', label: 'ERP schema inconsistency',            dimension: 'Is data structured the same across shifts?', severity: 'high',     agents: ['Supplier Intelligence', 'Risk Escalation'],    impact: 'Ingredient-to-supplier linkage broken for 14 records — chain-of-custody gap reduces accuracy in 2 agents.',      fix: 'Resolve ERP ingredient map in Data Quality queue (~30 min).' },
+  { id: 'lot-meta',   label: 'Supplier lot metadata incomplete',    dimension: 'Are all my signals arriving?',               severity: 'moderate', agents: ['Supplier Intelligence'],                       impact: '3 active lots missing COA metadata — reduces recommendation quality and FSMA traceability confidence.',          fix: 'Contact ConAgra and ADM for missing harvest date + handler certification fields.' },
+  { id: 'warehouse',  label: 'Warehouse management not integrated', dimension: 'How many systems are connected?',            severity: 'moderate', agents: ['Resource Allocation', 'Handoff Synthesis'],    impact: 'Finished goods movement and inventory signals missing — handoff completeness is reduced.',                        fix: 'Connect WMS API to integration layer — requires IT ticket.' },
+  { id: 'lims',       label: 'Quality lab LIMS not connected',      dimension: 'How many systems are connected?',            severity: 'moderate', agents: ['Compliance Monitor', 'CAPA Closure'],          impact: 'Lab test results entered manually — 4–8h lag between test result and agent awareness.',                           fix: 'LIMS integration in Q3 roadmap — manual entry workaround active in the interim.' },
+]
+
+const AI_AGENTS = [
+  { name: 'Pre-Shift Verification', status: 'full',    note: 'All required data sources connected and fresh' },
+  { name: 'Handoff Synthesis',      status: 'full',    note: 'All required signals connected' },
+  { name: 'Risk Escalation',        status: 'partial', note: 'ERP schema gap affects some signal paths' },
+  { name: 'Compliance Monitor',     status: 'partial', note: 'LIMS lag (4–8h) reduces real-time lab coverage' },
+  { name: 'Supplier Intelligence',  status: 'partial', note: 'ERP schema mismatch + 3 lots missing COA metadata' },
+  { name: 'Resource Allocation',    status: 'partial', note: 'Warehouse management signals missing' },
+  { name: 'Predictive Maintenance', status: 'partial', note: 'SCADA feed degraded — Oven B signal unreliable' },
+  { name: 'CAPA Closure',           status: 'partial', note: 'LIMS integration pending — lab data via manual entry' },
+]
+
+function AIReadinessTab() {
+  return (
+    <div className="flex-1 overflow-y-auto page-rise">
+
+      {/* Score + dimensions */}
+      <div className="px-4 py-4 border-b border-rule2 bg-stone2">
+        <div className="flex items-baseline gap-2 mb-4">
+          <span className={`display-num text-metric ${AI_SCORE >= 80 ? 'text-ok' : AI_SCORE >= 65 ? 'text-warn' : 'text-danger'}`}>
+            <AnimatedScore value={AI_SCORE} effect="glow" />
+          </span>
+          <span className="font-body text-muted text-label">/ 100 · AI readiness</span>
+        </div>
+        <div className="space-y-3">
+          {AI_DIMENSIONS.map(d => (
+            <div key={d.key}>
+              <div className="flex items-center justify-between mb-1">
+                <span className="font-body text-ink text-label">{d.label}</span>
+                <div className="flex items-center gap-2">
+                  {d.trend !== 0 && (
+                    <span className={`font-body text-label ${d.trend > 0 ? 'text-ok' : 'text-warn'}`}>{d.trend > 0 ? '+' : ''}{d.trend}</span>
+                  )}
+                  <span className={`font-body text-label tabular-nums font-medium ${d.score >= 80 ? 'text-ok' : d.score >= 65 ? 'text-warn' : 'text-danger'}`}>{d.score}%</span>
+                </div>
+              </div>
+              <div className="h-1.5 bg-rule2">
+                <div className={`h-full ${d.score >= 80 ? 'bg-ok' : d.score >= 65 ? 'bg-warn' : 'bg-danger'}`} style={{ width: `${d.score}%` }} />
+              </div>
+              <div className="font-body text-muted text-label mt-0.5 leading-snug">{d.note}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Gaps */}
+      <div className="px-4 py-2 border-b border-rule2 bg-stone2">
+        <span className="font-body text-muted text-label">Gaps to resolve · {AI_GAPS.length}</span>
+      </div>
+      {AI_GAPS.map(gap => (
+        <div key={gap.id} className={`border-b border-rule2 border-l-2 ${gap.severity === 'high' ? 'border-l-danger' : 'border-l-warn'}`}>
+          <div className="px-4 py-3 space-y-2">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <div className="font-body font-medium text-ink text-base leading-snug mb-0.5">{gap.label}</div>
+                <div className="font-body text-muted text-label">{gap.dimension}</div>
+              </div>
+              <span className={`font-body text-label flex-shrink-0 font-medium ${gap.severity === 'high' ? 'text-danger' : 'text-warn'}`}>{gap.severity}</span>
+            </div>
+            <div className="flex flex-wrap gap-1">
+              {gap.agents.map(a => (
+                <span key={a} className="font-body text-label px-1.5 py-0.5 bg-stone3 text-muted">{a}</span>
+              ))}
+            </div>
+            <div className="px-3 py-2 bg-warn/[0.04] border-l-2 border-l-warn/30">
+              <div className="font-body text-muted text-label mb-0.5">Impact</div>
+              <div className="font-body text-ink text-label leading-snug">{gap.impact}</div>
+            </div>
+            <div className="px-3 py-2 bg-stone2">
+              <div className="font-body text-muted text-label mb-0.5">Fix</div>
+              <div className="font-body text-ink text-label leading-snug">{gap.fix}</div>
+            </div>
+          </div>
+        </div>
+      ))}
+
+      {/* Agent coverage */}
+      <div className="px-4 py-2 border-b border-rule2 bg-stone2">
+        <span className="font-body text-muted text-label">Agent coverage</span>
+      </div>
+      {AI_AGENTS.map(agent => (
+        <div key={agent.name} className="border-b border-rule2 px-4 py-2.5 flex items-start gap-3">
+          <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 mt-1.5 ${agent.status === 'full' ? 'bg-ok' : 'bg-warn'}`} />
+          <div className="flex-1 min-w-0">
+            <div className="font-body text-ink text-label font-medium">{agent.name}</div>
+            <div className="font-body text-muted text-label leading-snug">{agent.note}</div>
+          </div>
+          <span className={`font-body text-label flex-shrink-0 ${agent.status === 'full' ? 'text-ok' : 'text-warn'}`}>
+            {agent.status === 'full' ? 'Full' : 'Partial'}
+          </span>
+        </div>
+      ))}
+    </div>
+  )
+}
+
 export default function IntegrationHub() {
   const [selectedCategory, setSelectedCategory] = useState(null)
   const [selectedConnectorId, setSelectedConnectorId] = useState(null)
@@ -311,8 +425,9 @@ export default function IntegrationHub() {
         {/* Tab bar */}
         <Tabs
           tabs={[
-            { id: 'sources', label: `Sources · ${integrationSummary.total}` },
+            { id: 'sources',   label: `Sources · ${integrationSummary.total}` },
             { id: 'conflicts', label: 'Conflicts', badge: unresolvedCount > 0 ? unresolvedCount : 0, dot: unresolvedCount > 0 },
+            { id: 'ai',        label: 'AI readiness' },
           ]}
           active={activeTab}
           onChange={setActiveTab}
@@ -365,8 +480,10 @@ export default function IntegrationHub() {
               )}
             </div>
           </>
-        ) : (
+        ) : activeTab === 'conflicts' ? (
           <ConflictsPanel resolved={resolvedConflicts} onResolve={resolveConflict} />
+        ) : (
+          <AIReadinessTab />
         )}
       </div>
 

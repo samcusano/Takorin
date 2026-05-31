@@ -19,7 +19,6 @@ const modules = [
  { id:'shift',    label:'Shift',     path:'/shift',    icon:Activity,      badge:'3', badgeType:'alert' },
  { id:'supplier', label:'Suppliers', path:'/supplier', icon:Truck,         badge:'1', badgeType:'alert' },
  { id:'capa',     label:'CAPA',      path:'/capa',     icon:ClipboardCheck,badge:'2', badgeType:'alert' },
- { id:'analytics',label:'Analytics', path:'/analytics',icon:BarChart2,     badge:null },
 ]
 
 function NavBadge({ badge, badgeType }) {
@@ -503,6 +502,7 @@ export default function Sidebar() {
    {!collapsed && <div className="px-4 pt-4 pb-1 font-body text-micro text-sidebar-ghost">Operations</div>}
    {modules.map(m => <SideItem key={m.id} to={m.path} id={m.id} {...m} collapsed={collapsed} />)}
    <AgentItem count={agentPendingCount} collapsed={collapsed} />
+   <SideItem to="/analytics" id="analytics" icon={BarChart2} label="Analytics" badge={null} collapsed={collapsed} />
    <SideItem to="/outcomes" id="outcomes" icon={CircleDot} label="Outcomes" badge={null} collapsed={collapsed} />
 
    {!collapsed && (
@@ -515,21 +515,21 @@ export default function Sidebar() {
    {(collapsed || platformExpanded) && (
     <>
      <SideItem to="/batch"       id="batch"       icon={FlaskConical}    label="Batches"      badge={null} collapsed={collapsed} />
+     {currentPlant?.sector !== 'pharma' && (
+      <SideItem to="/equipment" id="equipment"  icon={ScanLine}        label="Equipment"    badge={null} collapsed={collapsed} />
+     )}
      <SideItem to="/compliance"  id="compliance"  icon={Scale}           label="Compliance"   badge={null} collapsed={collapsed} />
-     <SideItem to="/hierarchy"   id="hierarchy"   icon={LayoutDashboard} label="Site"         badge={null} collapsed={collapsed} />
      <SideItem to="/knowledge"   id="knowledge"   icon={BookOpen}        label="Knowledge"    badge={null} collapsed={collapsed} />
      <SideItem to="/execution"   id="execution"   icon={Workflow}        label="Autonomy"     badge={null} collapsed={collapsed} />
+     <SideItem to="/hierarchy"   id="hierarchy"   icon={LayoutDashboard} label="Site"         badge={null} collapsed={collapsed} />
      {currentPlant?.sector === 'pharma' && (
       <SideItem to="/records"   id="records"    icon={FileLock2}  label="Records"     badge={null} collapsed={collapsed} />
      )}
      {(currentPlant?.sector === 'electronics' || currentPlant?.sector === 'semiconductor') && (
       <SideItem to="/delivery"  id="delivery"   icon={TrendingUp} label="Value Chain" badge={null} collapsed={collapsed} />
      )}
-     {currentPlant?.sector !== 'pharma' && (
-      <SideItem to="/equipment" id="equipment"  icon={ScanLine}   label="Equipment"   badge={null} collapsed={collapsed} />
-     )}
      <SideItem to="/integration" id="integration" icon={Network} label="Integrations" badge={null} collapsed={collapsed} />
-     <SideItem to="/readiness"   id="readiness"   icon={Gauge}   label="Readiness"    badge={null} collapsed={collapsed} />
+     <SideItem to="/readiness"   id="readiness"   icon={Gauge}   label="Data Quality"  badge={null} collapsed={collapsed} />
     </>
    )}
 

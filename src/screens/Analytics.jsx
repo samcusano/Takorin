@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAppState } from '../context/AppState'
 import { openCases, benchmarks } from '../data/capa.js'
-import { goalsData, facility, agentConfigData } from '../data'
+import { goalsData, facility } from '../data'
 import { interventionSummary, interventions } from '../data/interventions'
 import { ChevronDown, ChevronUp, Download, Lock, ArrowRight, Check } from 'lucide-react'
 import { FilterDropdown, MultiFilterDropdown, StatusPill, AnimatedScore, StatGrid } from '../components/UI'
@@ -524,69 +524,6 @@ export default function Analytics() {
                   })}
                 </div>
               </div>
-            </Module>
-
-            {/* ── AI Decision Intelligence ─────────────────────────────── */}
-            <Module title="Decision quality" badge="Agent Control · this shift" defaultOpen>
-              {(() => {
-                const totalDecisions = agentConfigData.agents.reduce((n, a) => n + (a.pendingActions?.length ?? 0), 0)
-                const complianceDecisions = agentConfigData.agents.filter(a => a.isComplianceCategory).reduce((n, a) => n + (a.pendingActions?.length ?? 0), 0)
-                const avgDwellSec = Math.round(interventionSummary.avgDwellTimeMs / 1000)
-                const lowDwellCount = interventions.filter(e => e.dwellTimeMs > 0 && e.dwellTimeMs < 5000).length
-                const decisionBars = [
-                  { label: 'Critical',  approved: 1, overridden: 0, deferred: 0, color: 'var(--color-danger)' },
-                  { label: 'High',      approved: 2, overridden: 1, deferred: 0, color: 'var(--color-warn)' },
-                  { label: 'Medium',    approved: 3, overridden: 1, deferred: 1, color: 'var(--color-ghost)' },
-                ]
-                return (
-                  <div>
-                    {/* Stat grid */}
-                    <StatGrid cols={4}>
-                      {[
-                        { label: 'Decisions this shift', val: String(totalDecisions), tone: 'text-ink' },
-                        { label: 'Compliance decisions', val: String(complianceDecisions), tone: 'text-warn' },
-                        { label: 'Review time — high', val: `${avgDwellSec}s`, tone: avgDwellSec >= 15 ? 'text-ok' : avgDwellSec >= 5 ? 'text-warn' : 'text-danger' },
-                        { label: 'Quick approvals', val: String(lowDwellCount), tone: lowDwellCount > 0 ? 'text-danger' : 'text-ok' },
-                      ].map(({ label, val, tone }) => (
-                        <StatGrid.Cell key={label} label={label} value={val} tone={tone} />
-                      ))}
-                    </StatGrid>
-                    {/* Decision distribution by consequence */}
-                    <div className="px-5 py-4 border-b border-rule2">
-                      <div className="font-body text-muted text-label mb-3">Decision distribution by consequence</div>
-                      <div className="space-y-2">
-                        {decisionBars.map(d => {
-                          const total = d.approved + d.overridden + d.deferred
-                          return (
-                            <div key={d.label} className="flex items-center gap-3">
-                              <span className="font-body text-muted text-label w-14 flex-shrink-0">{d.label}</span>
-                              <div className="flex-1 h-3 bg-rule2 flex overflow-hidden">
-                                {d.approved > 0 && <div className="h-full bg-ok/60" style={{ width: `${(d.approved/total)*100}%` }} />}
-                                {d.overridden > 0 && <div className="h-full bg-muted/40" style={{ width: `${(d.overridden/total)*100}%` }} />}
-                                {d.deferred > 0 && <div className="h-full bg-stone3" style={{ width: `${(d.deferred/total)*100}%` }} />}
-                              </div>
-                              <span className="font-body text-muted text-label w-4 text-right">{total}</span>
-                            </div>
-                          )
-                        })}
-                        <div className="flex items-center gap-4 mt-2">
-                          {[{ label: 'Approved', color: 'bg-ok/60' }, { label: 'Overridden', color: 'bg-muted/40' }, { label: 'Deferred', color: 'bg-stone3' }].map(l => (
-                            <span key={l.label} className="flex items-center gap-1.5 font-body text-muted text-label">
-                              <span className={`w-2 h-2 ${l.color} flex-shrink-0`} />{l.label}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="px-5 py-3 flex items-center justify-between">
-                      <span className="font-body text-muted text-label">Approval rate 62% · Override rate 25% · Deferred 13%</span>
-                      <Link to="/agents" className="flex items-center gap-1 font-body text-muted text-label hover:text-ink transition-colors">
-                        <ArrowRight size={10} />View Agent Control
-                      </Link>
-                    </div>
-                  </div>
-                )
-              })()}
             </Module>
 
             {/* ── Impact Attribution ───────────────────────────────────────── */}

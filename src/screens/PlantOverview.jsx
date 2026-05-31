@@ -8,7 +8,8 @@ import {
   Activity, CircleDot, ChevronDown, ChevronUp, ArrowRight, ExternalLink, X, Download,
 } from 'lucide-react'
 import { interventionSummary, interventions } from '../data/interventions'
-import { FilterDropdown, SlidePanel, Btn, SegmentedControl, Checkbox, AnimatedScore, Tabs } from '../components/UI'
+import { FilterDropdown, SlidePanel, Btn, SegmentedControl, Checkbox, AnimatedScore, Tabs, SceneHeader, StatusPill } from '../components/UI'
+import NetworkView from './NetworkView'
 
 // ─── Before-narratives — one sentence per line describing normal baseline ─────
 const LINE_BEFORE = {
@@ -30,12 +31,14 @@ const DIRECTOR_QUEUE = [
     action: 'Approve COA hold — Supplier Lot #4821-C',
     note: 'Blocks Line 4 start',
     owner: 'D. Kowalski', timeWindow: '47 min', route: '/supplier',
+    lineId: 'l4',
   },
   {
     tier: 'T3', urgency: 'danger',
     action: 'Resolve FSMA 204 traceability gap — $85K exposure',
     note: 'FDA audit risk · open since yesterday',
     owner: 'QA Lead', timeWindow: '2 h', route: '/compliance',
+    lineId: null,
   },
   {
     tier: 'T2', urgency: 'warn',
@@ -50,6 +53,16 @@ const DIRECTOR_QUEUE = [
     owner: 'D. Kowalski', timeWindow: 'Today', route: '/capa',
   },
 ]
+
+// ─── Route → label map for queue rail nav buttons ─────────────────────────────
+const ROUTE_LABELS = {
+  '/supplier':   'Supplier IQ',
+  '/compliance': 'Compliance',
+  '/capa':       'CAPA Engine',
+  '/agents':     'Agent Control',
+  '/shift':      'ShiftIQ',
+  '/readiness':  'Data Readiness',
+}
 
 // ─── Actor mode badge — shows who is executing on a line ─────────────────────
 const ACTOR_MODE = { human: 'human', robot: 'robot', hybrid: 'hybrid' }
@@ -71,21 +84,14 @@ function ActorBadge({ mode }) {
 }
 
 // ─── Domain assignments ───────────────────────────────────────────────────────
-// Maps line.id → { area, areaOrder }
-// areaOrder controls how groups sort relative to each other (lower = shown first
-// when pressure is equal; overridden by worst-line score within each group).
-
 const LINE_AREAS = {
-  // Salina
   l4: { area: 'Hall B', areaOrder: 2 },
   l6: { area: 'Hall B', areaOrder: 2 },
   l3: { area: 'Hall A', areaOrder: 1 },
   l2: { area: 'Hall A', areaOrder: 1 },
-  // Wichita
   w1: { area: 'East Wing', areaOrder: 1 },
   w2: { area: 'East Wing', areaOrder: 1 },
   w3: { area: 'West Wing', areaOrder: 2 },
-  // Denver
   d1: { area: 'Main Floor', areaOrder: 1 },
   d2: { area: 'Main Floor', areaOrder: 1 },
 }
@@ -182,7 +188,6 @@ function MiniSparkline({ data, color }) {
   )
 }
 
-// Pressure-weighted border + tint — 3 continuous levels, no arbitrary switches
 function pressureCls(score) {
   if (score >= 75) return 'border-l-[5px] border-l-danger bg-danger/[0.025]'
   if (score >= 60) return 'border-l-[3px] border-l-warn'
@@ -196,8 +201,7 @@ function pressureClass(score) {
 // ─── Digital Maturity Map ─────────────────────────────────────────────────────
 
 const MATURITY_STAGES = ['Manual', 'Connected', 'Monitored', 'Predictive', 'Autonomous']
-
-const MATURITY_DIMS = ['Data infrastructure', 'Workforce model', 'Process intelligence', 'Compliance posture']
+const MATURITY_DIMS   = ['Data infrastructure', 'Workforce model', 'Process intelligence', 'Compliance posture']
 
 const MATURITY_BY_PLANT = {
   sl: {
@@ -249,7 +253,6 @@ function DigitalMaturityMap({ plantId }) {
     <div className="flex-1 overflow-y-auto page-rise">
       <div className="max-w-[820px] mx-auto px-8 py-8">
 
-        {/* Hero interpretation */}
         <div className="mb-8">
           <div className="font-body text-muted text-label mb-3">
             Digital maturity · {MATURITY_STAGES.join(' → ')}
@@ -262,14 +265,13 @@ function DigitalMaturityMap({ plantId }) {
           </div>
         </div>
 
-        {/* Dimension matrix */}
         <div className="space-y-px mb-8">
           {MATURITY_DIMS.map((dim, i) => {
-            const score       = data.scores[i]
-            const note        = data.notes[i]
-            const reachedAt   = data.reachedAt?.[i]
+            const score         = data.scores[i]
+            const note          = data.notes[i]
+            const reachedAt     = data.reachedAt?.[i]
             const laggingReason = data.laggingReasons?.[i]
-            const isLagging   = score === minScore
+            const isLagging     = score === minScore
             return (
               <div key={dim} className={`border border-rule2 bg-stone px-5 py-4 ${isLagging ? 'border-l-[3px] border-l-warn' : ''}`}>
                 <div className="flex items-start justify-between gap-4 mb-2.5">
@@ -287,7 +289,6 @@ function DigitalMaturityMap({ plantId }) {
                     {reachedAt && <div className="font-body text-muted text-micro mt-0.5">{reachedAt}</div>}
                   </div>
                 </div>
-                {/* Stage track */}
                 <div className="flex gap-1 mb-2.5">
                   {MATURITY_STAGES.map((stage, j) => {
                     const filled = j < score
@@ -308,7 +309,6 @@ function DigitalMaturityMap({ plantId }) {
           })}
         </div>
 
-        {/* Next recommended step */}
         <div className="border border-rule2 border-l-[3px] border-l-signal bg-signal/[0.04] px-5 py-4 mb-6">
           <div className="font-body text-signal text-label font-medium mb-1">Next recommended step</div>
           <div className="font-body font-medium text-ink text-body mb-1">{data.nextStep.action}</div>
@@ -319,7 +319,6 @@ function DigitalMaturityMap({ plantId }) {
           </Link>
         </div>
 
-        {/* Download stub */}
         <div className="flex justify-end mb-4">
           <button type="button"
             className="flex items-center gap-1.5 font-body text-label text-muted hover:text-ink px-3 py-1.5 border border-rule2 hover:border-ink/20 transition-colors">
@@ -328,19 +327,17 @@ function DigitalMaturityMap({ plantId }) {
           </button>
         </div>
 
-        {/* Legend */}
         <div className="flex items-center gap-6">
           {[
-            { label: 'Completed',      color: 'bg-ok/60'  },
-            { label: 'Current stage',  color: 'bg-signal' },
-            { label: 'Not yet reached', color: 'bg-rule2' },
+            { label: 'Completed',       color: 'bg-ok/60'  },
+            { label: 'Current stage',   color: 'bg-signal' },
+            { label: 'Not yet reached', color: 'bg-rule2'  },
           ].map(l => (
             <span key={l.label} className="flex items-center gap-1.5 font-body text-muted text-label">
               <span className={`w-6 h-[4px] flex-shrink-0 ${l.color}`} />{l.label}
             </span>
           ))}
         </div>
-
       </div>
     </div>
   )
@@ -352,15 +349,15 @@ export default function PlantOverview() {
   const navigate = useNavigate()
   const { shiftActed, setShiftActed, currentPlant, agentActions } = useAppState()
   const workerMode = currentPlant?.workerMode ?? 'human'
-  const [selectedFinding, setSelectedFinding]   = useState(null)
-  const [impactExpanded, setImpactExpanded]     = useState(false)
-  const [mode, setMode]                         = useState('normal')
-  const [whatIfScores, setWhatIfScores]         = useState({})
-  const [compareSelected, setCompareSelected]   = useState([])
-  const [zoneFilter, setZoneFilter]             = useState('all')
-  const [areaFilter, setAreaFilter]             = useState('all')
-  const [findingsFilter, setFindingsFilter]     = useState('all')
-  const [plantView, setPlantView]               = useState('lines')
+  const [selectedFinding, setSelectedFinding] = useState(null)
+  const [visitedQueue, setVisitedQueue]       = useState(new Set())
+  const [mode, setMode]                       = useState('normal')
+  const [whatIfScores, setWhatIfScores]       = useState({})
+  const [compareSelected, setCompareSelected] = useState([])
+  const [zoneFilter, setZoneFilter]           = useState('all')
+  const [areaFilter, setAreaFilter]           = useState('all')
+  const [findingsFilter, setFindingsFilter]   = useState('all')
+  const [plantView, setPlantView]             = useState('lines')
 
   const isWichita = currentPlant?.id === 'ks'
   const isDenver  = currentPlant?.id === 'co'
@@ -373,19 +370,16 @@ export default function PlantOverview() {
       ? whatIfScores[line.id]
       : line.score
 
-  // Header summary counts — unfiltered, always reflect real/projected state
-  const critCount   = rawLines.filter(l => effScore(l) >= 75).length
-  const watchCount  = rawLines.filter(l => effScore(l) >= 60 && effScore(l) < 75).length
-  const clearCount  = rawLines.filter(l => effScore(l) < 60).length
+  const critCount    = rawLines.filter(l => effScore(l) >= 75).length
+  const watchCount   = rawLines.filter(l => effScore(l) >= 60 && effScore(l) < 75).length
+  const clearCount   = rawLines.filter(l => effScore(l) < 60).length
   const totalWorkers = rawLines.reduce((s, l) => s + (lineMeta[l.id]?.workerCount ?? 0), 0)
 
-  // Available areas for filter pills
   const availableAreas = useMemo(
     () => [...new Set(rawLines.map(l => LINE_AREAS[l.id]?.area).filter(Boolean))].sort(),
     [rawLines]
   )
 
-  // Zone transitions for what-if cascade
   const zoneTransitions = rawLines.map(l => {
     const real = l.score
     const proj = effScore(l)
@@ -395,7 +389,6 @@ export default function PlantOverview() {
     return { line: l, from: zone(real), to: zone(proj), delta: proj - real }
   }).filter(Boolean)
 
-  // Grouped, filtered, sorted domain structure
   const domainGroups = useMemo(() => {
     const buckets = {}
     rawLines.forEach(line => {
@@ -408,10 +401,9 @@ export default function PlantOverview() {
       .map(([area, lines]) => {
         const filtered = lines
           .filter(line => {
-            const eff = mode === 'whatif' && whatIfScores[line.id] !== undefined
-              ? whatIfScores[line.id] : line.score
+            const eff  = mode === 'whatif' && whatIfScores[line.id] !== undefined ? whatIfScores[line.id] : line.score
             const pend = lineMeta[line.id]?.findings.filter(f => !shiftActed[f.id]).length ?? 0
-            if (zoneFilter === 'risk'  && eff < 75)               return false
+            if (zoneFilter === 'risk'  && eff < 75)                return false
             if (zoneFilter === 'watch' && (eff < 60 || eff >= 75)) return false
             if (zoneFilter === 'clear' && eff >= 60)               return false
             if (findingsFilter === 'has'  && pend === 0)           return false
@@ -419,14 +411,12 @@ export default function PlantOverview() {
             return true
           })
           .sort((a, b) => effScore(b) - effScore(a))
-
         return { area, lines: filtered }
       })
       .filter(g => {
         if (areaFilter !== 'all' && g.area !== areaFilter) return false
         return g.lines.length > 0
       })
-      // Sort groups: worst line first, tie-break by areaOrder
       .sort((a, b) => {
         const worst = lines => Math.max(...lines.map(l => effScore(l)))
         const diff  = worst(b.lines) - worst(a.lines)
@@ -437,7 +427,6 @@ export default function PlantOverview() {
       })
   }, [rawLines, lineMeta, shiftActed, zoneFilter, areaFilter, findingsFilter, mode, whatIfScores]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Cross-line findings feed
   const allFindings = rawLines.flatMap(line => {
     const meta = lineMeta[line.id]
     if (!meta) return []
@@ -453,6 +442,17 @@ export default function PlantOverview() {
   const activeFilters = [zoneFilter !== 'all', areaFilter !== 'all', findingsFilter !== 'all'].filter(Boolean).length
   const filteredCount = domainGroups.reduce((s, g) => s + g.lines.length, 0)
 
+  const t3Count      = DIRECTOR_QUEUE.filter(q => q.urgency === 'danger').length
+  const plantTone    = critCount > 0 ? 'danger' : watchCount > 0 ? 'warn' : 'ok'
+  const worstLine    = rawLines.length ? rawLines.reduce((a, b) => effScore(a) > effScore(b) ? a : b) : null
+  const worstArea    = worstLine ? (LINE_AREAS[worstLine.id]?.area ?? '') : ''
+  const worstPend    = worstLine ? (lineMeta[worstLine.id]?.findings.filter(f => !shiftActed[f.id]).length ?? 0) : 0
+  const plantStatement = critCount > 0
+    ? `${worstArea} is driving this shift — ${worstLine?.name} at ${effScore(worstLine)}${worstPend > 0 ? ` with ${worstPend} open finding${worstPend !== 1 ? 's' : ''}` : ''}.`
+    : watchCount > 0
+    ? `${worstArea} is the area to watch — ${worstLine?.name} at ${effScore(worstLine)}. No immediate escalation required.`
+    : 'All lines running clean this shift. No open findings pending.'
+
   const switchMode = (m) => {
     setMode(prev => prev === m ? 'normal' : m)
     setWhatIfScores({})
@@ -465,555 +465,574 @@ export default function PlantOverview() {
     return [...prev, id]
   })
 
-
   return (<>
     <div className="flex flex-col h-full overflow-hidden content-reveal">
 
-      {/* ── View switcher ─────────────────────────────────────────────────── */}
+      {/* ── Scene header ─────────────────────────────────────────────────── */}
+      <SceneHeader
+        module="OVERVIEW"
+        context={`${plantName} · April 16`}
+        live
+        timestamp="06:42"
+        metric={realAvg}
+        metricLabel="Plant avg risk"
+        tone={plantTone}
+        statement={plantStatement}
+        meta={[
+          ...(critCount > 0 ? [{ label: 'At risk', value: String(critCount), color: 'var(--color-danger)' }] : []),
+          ...(watchCount > 0 ? [{ label: 'Watch', value: String(watchCount), color: 'var(--color-warn)' }] : []),
+          { label: 'Workers on floor', value: String(totalWorkers) },
+          { label: 'Lines', value: String(rawLines.length) },
+        ]}
+      />
+
+      {/* ── View switcher ────────────────────────────────────────────────── */}
       <div className="flex-shrink-0 border-b border-rule2 px-5">
         <Tabs
-          tabs={[{ id: 'lines', label: 'Live view' }, { id: 'maturity', label: 'Maturity map' }]}
+          tabs={[{ id: 'lines', label: 'Live view' }, { id: 'maturity', label: 'Maturity map' }, { id: 'network', label: 'Network' }]}
           active={plantView}
           onChange={setPlantView}
         />
       </div>
 
-      {plantView === 'maturity'
+      {plantView === 'network'
+        ? <NetworkView />
+        : plantView === 'maturity'
         ? <DigitalMaturityMap plantId={currentPlant?.id || 'sl'} />
-        : (<>
+        : (
+        <div className="flex flex-1 overflow-hidden">
 
-      {/* ── Compact status bar — director scanning glance ───────────────── */}
-      <div className="flex-shrink-0 flex items-center gap-4 px-5 py-3 border-b border-rule2 bg-stone">
-        <div className="flex items-center gap-2">
-          <span className="live-dot w-1.5 h-1.5 rounded-full bg-ok flex-shrink-0" />
-          <span className="font-body text-muted text-label">April 16 · 06:42</span>
-        </div>
-        <div className="flex items-center gap-4 ml-2">
-          {critCount > 0 && (
-            <span className="font-body text-danger text-label font-medium flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-danger flex-shrink-0" />
-              {critCount} at risk
-            </span>
-          )}
-          {watchCount > 0 && (
-            <span className="font-body text-warn text-label flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-warn flex-shrink-0" />
-              {watchCount} watch
-            </span>
-          )}
-          <span className="font-body text-ok text-label flex items-center gap-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-ok flex-shrink-0" />
-            {clearCount} clear
-          </span>
-          <span className="font-body text-muted text-label">{rawLines.length} lines · {totalWorkers} workers</span>
-        </div>
-        <SegmentedControl
-          options={[{ value: 'normal', label: 'Live' }, { value: 'whatif', label: 'What if' }, { value: 'compare', label: 'Compare' }]}
-          value={mode}
-          onChange={switchMode}
-        />
-      </div>
+          {/* ── Left: floor surface ──────────────────────────────────────── */}
+          <div className="flex-1 flex flex-col overflow-hidden">
 
-      {/* ── Director action queue ───────────────────────────────────────── */}
-      <div className="flex-shrink-0 border-b border-rule2 bg-stone">
-        <div className="flex items-center gap-3 px-5 py-2 border-b border-rule2">
-          <span className="font-body text-label text-ink font-medium">Action queue</span>
-          <span className="font-body text-micro text-danger bg-danger/10 px-1.5 py-0.5 tabular-nums">
-            {DIRECTOR_QUEUE.filter(q => q.urgency === 'danger').length} critical
-          </span>
-          <span className="font-body text-micro text-warn bg-warn/10 px-1.5 py-0.5 tabular-nums">
-            {DIRECTOR_QUEUE.filter(q => q.urgency === 'warn').length} pending
-          </span>
-        </div>
-        <div className="divide-y divide-rule2">
-          {DIRECTOR_QUEUE.map((item, i) => (
-            <Link key={i} to={item.route}
-              className="flex items-center gap-4 px-5 py-2.5 hover:bg-stone2 transition-colors group"
-              style={{ borderLeft: `3px solid var(--color-${item.urgency})` }}>
-              <span className={`font-body text-micro font-medium tabular-nums flex-shrink-0 ${item.urgency === 'danger' ? 'text-danger' : 'text-warn'}`}>
-                {item.tier}
-              </span>
-              <div className="flex-1 min-w-0">
-                <div className="font-body text-label text-ink font-medium truncate">{item.action}</div>
-                <div className="font-body text-micro text-muted truncate">{item.note}</div>
-              </div>
-              <span className="font-body text-micro text-muted flex-shrink-0 hidden sm:block">{item.owner}</span>
-              <span className={`font-body text-micro tabular-nums flex-shrink-0 ${item.urgency === 'danger' ? 'text-danger' : 'text-warn'}`}>
-                {item.timeWindow}
-              </span>
-              <ArrowRight size={10} className="text-muted group-hover:text-ink flex-shrink-0 transition-colors" />
-            </Link>
-          ))}
-        </div>
-      </div>
-
-      {/* ── Impact Loop strip ───────────────────────────────────────────── */}
-      <div className="flex-shrink-0 border-b border-rule2">
-        <button type="button" onClick={() => setImpactExpanded(e => !e)}
-          className="flex items-center gap-4 px-6 py-2 bg-stone2 hover:bg-stone3 transition-colors text-left w-full">
-          <CircleDot size={10} strokeWidth={2} className="text-ok flex-shrink-0" />
-          <span className="font-body text-muted text-label">Impact · Last 30 days</span>
-          <div className="flex items-center gap-4 ml-2">
-            <span className="font-body text-ink text-label">
-              <span className="font-medium">{interventionSummary.total}</span>
-              <span className="text-muted ml-1">interventions</span>
-            </span>
-            <span className="w-px h-3 bg-rule2" />
-            <span className="font-body text-ok text-label">
-              <span className="font-medium">{interventionSummary.positive}</span>
-              <span className="text-muted ml-1">positive outcomes</span>
-            </span>
-            <span className="w-px h-3 bg-rule2" />
-            <span className="font-body text-label">
-              <span className={`font-medium ${interventionSummary.avgAttributionConfidence >= 0.7 ? 'text-ok' : 'text-warn'}`}>
-                {Math.round(interventionSummary.avgAttributionConfidence * 100)}%
-              </span>
-              <span className="text-muted ml-1">avg attribution</span>
-            </span>
-            {interventionSummary.lowDwellDecisions > 0 && (
-              <>
-                <span className="w-px h-3 bg-rule2" />
-                <span className="flex items-center gap-1 font-body text-danger text-label">
-                  <AlertTriangle size={10} strokeWidth={2} />
-                  {interventionSummary.lowDwellDecisions} low-dwell
-                </span>
-              </>
-            )}
-          </div>
-          {impactExpanded ? <ChevronUp size={10} className="text-muted ml-auto" /> : <ChevronDown size={10} className="text-muted ml-auto" />}
-        </button>
-        {impactExpanded && (
-          <div className="bg-stone px-6 py-3 border-t border-rule2">
-            <div className="space-y-0 divide-y divide-rule2 mb-3">
-              {(interventions ?? []).slice(0, 4).map(iv => {
-                const outcome = iv.consequences?.[0]
-                const pos = outcome?.observed?.delta?.startsWith('+') || outcome?.observed?.label?.toLowerCase().includes('resolved')
-                return (
-                  <div key={iv.id} className="flex items-center gap-3 px-4 py-2.5">
-                    <div className={`h-1.5 w-1.5 rounded-full flex-shrink-0 ${pos ? 'bg-ok' : 'bg-warn'}`} />
-                    <div className="flex-1 min-w-0">
-                      <div className="font-body font-medium text-ink text-label truncate">{iv.agentObservation?.label ?? iv.id}</div>
-                      <div className="font-body text-muted text-label truncate">
-                        {outcome?.metric ?? ''}{outcome?.observed?.delta ? ` · ${outcome.observed.delta}` : ''}
-                      </div>
-                    </div>
-                    <div className="font-body text-muted text-label flex-shrink-0">
-                      {iv.attributionConfidence != null ? `${Math.round(iv.attributionConfidence * 100)}% conf` : '—'}
-                    </div>
-                  </div>
-                )
-              })}
+            {/* Pulse strip — at-a-glance plant status */}
+            <div className="flex-shrink-0 flex border-b border-rule2">
+              {[
+                { label: 'At risk',  value: critCount,            tone: critCount > 0 ? 'danger' : 'ok',  sub: critCount === 1 ? 'line' : 'lines',  bg: critCount > 0 ? 'bg-danger/[0.03]' : '' },
+                { label: 'Watch',    value: watchCount,           tone: watchCount > 0 ? 'warn'   : 'ok',  sub: watchCount === 1 ? 'line' : 'lines', bg: '' },
+                { label: 'Findings', value: allFindings.length,   tone: allFindings.length > 0 ? 'warn' : 'ok', sub: 'pending', bg: '' },
+                { label: 'Queue',    value: DIRECTOR_QUEUE.length, tone: t3Count > 0 ? 'danger' : 'warn', sub: `${t3Count} critical`, bg: '' },
+              ].map((cell, i) => (
+                <div key={i} className={`flex-1 px-4 py-3 border-r border-rule2 last:border-r-0 ${cell.bg}`}>
+                  <div className="font-body text-micro text-muted mb-1">{cell.label}</div>
+                  <div className={`display-num text-head font-bold leading-none tabular-nums ${
+                    cell.tone === 'danger' ? 'text-danger' : cell.tone === 'warn' ? 'text-warn' : 'text-ok'
+                  }`}>{cell.value}</div>
+                  <div className="font-body text-muted text-label mt-0.5">{cell.sub}</div>
+                </div>
+              ))}
             </div>
-            <button type="button" onClick={() => navigate('/outcomes')}
-              className="flex items-center gap-1 font-body text-muted text-label hover:text-ink transition-colors">
-              <ExternalLink size={9} strokeWidth={2} />Full ImpactLoop view
-            </button>
-          </div>
-        )}
-      </div>
 
-      {/* ── Filter strip ─────────────────────────────────────────────────── */}
-      <div className="flex-shrink-0 flex items-center gap-2 px-5 py-2.5 border-b border-rule2 bg-stone">
-        <FilterDropdown
-          label="Zone"
-          options={[
-            { value: 'all',   label: 'All zones' },
-            { value: 'risk',  label: 'At risk'   },
-            { value: 'watch', label: 'Watch'      },
-            { value: 'clear', label: 'Clear'      },
-          ]}
-          value={zoneFilter}
-          onChange={setZoneFilter}
-        />
-        <FilterDropdown
-          label="Area"
-          options={[{ value: 'all', label: 'All areas' }, ...availableAreas.map(a => ({ value: a, label: a }))]}
-          value={areaFilter}
-          onChange={setAreaFilter}
-        />
-        <FilterDropdown
-          label="Findings"
-          options={[
-            { value: 'all',  label: 'All'          },
-            { value: 'has',  label: 'Has findings'  },
-            { value: 'none', label: 'Clear'         },
-          ]}
-          value={findingsFilter}
-          onChange={setFindingsFilter}
-        />
-        {activeFilters > 0 && (
-          <div className="flex items-center gap-3 ml-auto">
-            <span className="font-body text-muted text-label">{filteredCount} of {rawLines.length} lines</span>
-          </div>
-        )}
-      </div>
+            {/* Filter strip */}
+            <div className="flex-shrink-0 flex items-center gap-2 px-5 py-2.5 border-b border-rule2 bg-stone">
+              <FilterDropdown
+                label="Zone"
+                options={[
+                  { value: 'all',   label: 'All zones' },
+                  { value: 'risk',  label: 'At risk'   },
+                  { value: 'watch', label: 'Watch'      },
+                  { value: 'clear', label: 'Clear'      },
+                ]}
+                value={zoneFilter}
+                onChange={setZoneFilter}
+              />
+              <FilterDropdown
+                label="Area"
+                options={[{ value: 'all', label: 'All areas' }, ...availableAreas.map(a => ({ value: a, label: a }))]}
+                value={areaFilter}
+                onChange={setAreaFilter}
+              />
+              <FilterDropdown
+                label="Findings"
+                options={[
+                  { value: 'all',  label: 'All'          },
+                  { value: 'has',  label: 'Has findings'  },
+                  { value: 'none', label: 'Clear'         },
+                ]}
+                value={findingsFilter}
+                onChange={setFindingsFilter}
+              />
+              {activeFilters > 0 && (
+                <span className="font-body text-muted text-label">{filteredCount} of {rawLines.length} lines</span>
+              )}
+            </div>
 
-      {/* ── What-if cascade preview ──────────────────────────────────────── */}
-      {mode === 'whatif' && (
-        <div className="flex-shrink-0 px-5 py-3 border-b border-rule2 bg-stone2">
-          <div className="flex items-center gap-2 mb-1.5">
-            <span className="font-body text-muted text-label">Projected cascade</span>
-            {anyAdjusted && (
-              <button type="button" onClick={() => setWhatIfScores({})}
-                className="font-body text-label text-danger hover:text-ink transition-colors ml-auto">
-                Reset all
-              </button>
-            )}
-          </div>
-          {!anyAdjusted ? (
-            <span className="font-body text-muted text-label">Drag sliders on tiles to model downstream impact</span>
-          ) : zoneTransitions.length > 0 ? (
-            <div className="space-y-1.5">
-              {zoneTransitions.map((t, i) => {
-                const zc = z => z === 'at-risk' ? 'text-danger' : z === 'watch' ? 'text-warn' : 'text-ok'
-                return (
-                  <div key={i} className="flex items-center gap-2 font-body text-label">
-                    <span className={`w-1 h-1 rounded-full flex-shrink-0 ${t.delta < 0 ? 'bg-ok' : 'bg-danger'}`} />
-                    <span className="font-medium text-ink">{t.line.name}</span>
-                    <span className="text-muted">moves</span>
-                    <span className={zc(t.from)}>{t.from}</span>
-                    <span className="text-muted">→</span>
-                    <span className={zc(t.to)}>{t.to}</span>
-                    <span className={`tabular-nums ${t.delta < 0 ? 'text-ok' : 'text-danger'}`}>
-                      ({t.delta > 0 ? '+' : ''}{t.delta})
+            {/* Floor bar — mode switcher + findings count */}
+            <div className="flex-shrink-0 flex items-center gap-3 px-5 py-1.5 border-b border-rule2 bg-stone2">
+              <span className="font-body text-micro text-muted">Floor</span>
+              {allFindings.length > 0 && (
+                <span className="font-body text-micro text-warn flex items-center gap-1">
+                  <AlertTriangle size={8} strokeWidth={2} />{allFindings.length} finding{allFindings.length !== 1 ? 's' : ''} pending
+                </span>
+              )}
+              <div className="ml-auto">
+                <SegmentedControl
+                  options={[{ value: 'normal', label: 'Live' }, { value: 'whatif', label: 'What if' }, { value: 'compare', label: 'Compare' }]}
+                  value={mode}
+                  onChange={switchMode}
+                />
+              </div>
+            </div>
+
+            {/* What-if cascade preview */}
+            {mode === 'whatif' && (
+              <div className="flex-shrink-0 px-5 py-3 border-b border-rule2 bg-stone2">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <span className="font-body text-muted text-label">Projected cascade</span>
+                  {anyAdjusted && (
+                    <button type="button" onClick={() => setWhatIfScores({})}
+                      className="font-body text-label text-danger hover:text-ink transition-colors ml-auto">
+                      Reset all
+                    </button>
+                  )}
+                </div>
+                {!anyAdjusted ? (
+                  <span className="font-body text-muted text-label">Drag sliders on tiles to model downstream impact</span>
+                ) : zoneTransitions.length > 0 ? (
+                  <div className="space-y-1.5">
+                    {zoneTransitions.map((t, i) => {
+                      const zc = z => z === 'at-risk' ? 'text-danger' : z === 'watch' ? 'text-warn' : 'text-ok'
+                      return (
+                        <div key={i} className="flex items-center gap-2 font-body text-label">
+                          <span className="font-medium text-ink">{t.line.name}</span>
+                          <span className="text-muted">moves</span>
+                          <span className={zc(t.from)}>{t.from}</span>
+                          <span className="text-muted">→</span>
+                          <span className={zc(t.to)}>{t.to}</span>
+                          <span className={`tabular-nums ${t.delta < 0 ? 'text-ok' : 'text-danger'}`}>
+                            ({t.delta > 0 ? '+' : ''}{t.delta})
+                          </span>
+                        </div>
+                      )
+                    })}
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-5">
+                    <span className="font-body text-muted text-label">No zone changes — within existing classification</span>
+                    <span className="font-body text-muted text-label">
+                      Plant avg:
+                      <span className={`font-medium ml-1 ${projAvg > realAvg ? 'text-danger' : projAvg < realAvg ? 'text-ok' : 'text-ink'}`}>
+                        {projAvg}
+                      </span>
+                      <span className="ml-1">(was {realAvg})</span>
                     </span>
                   </div>
-                )
-              })}
-            </div>
-          ) : (
-            <div className="flex items-center gap-5">
-              <span className="font-body text-muted text-label">No zone changes — within existing classification</span>
-              <span className="font-body text-muted text-label">
-                Plant avg:
-                <span className={`font-medium ml-1 ${projAvg > realAvg ? 'text-danger' : projAvg < realAvg ? 'text-ok' : 'text-ink'}`}>
-                  {projAvg}
-                </span>
-                <span className="ml-1">(was {realAvg})</span>
-              </span>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* ── Compare panel ────────────────────────────────────────────────── */}
-      {mode === 'compare' && (
-        <div className="flex-shrink-0 border-b border-rule2">
-          <div className="px-5 py-1.5 bg-stone3 border-b border-rule2 flex items-center gap-2">
-            <span className="font-body text-muted text-label">
-              {compareLines.length < 2
-                ? `Select ${2 - compareLines.length} more line${2 - compareLines.length !== 1 ? 's' : ''} to compare`
-                : `${compareLines[0].name} vs ${compareLines[1].name}`}
-            </span>
-            {compareLines.length > 0 && (
-              <button type="button" onClick={() => setCompareSelected([])}
-                className="ml-auto font-body text-label text-danger hover:text-ink transition-colors">
-                Clear
-              </button>
+                )}
+              </div>
             )}
-          </div>
-          {compareLines.length === 2 && (
-            <div className="grid grid-cols-2 divide-x divide-rule2">
-              {compareLines.map((line, i) => {
-                const other     = compareLines[1 - i]
-                const meta      = lineMeta[line.id]
-                const otherMeta = lineMeta[other.id]
-                const delta     = line.score - other.score
-                const pend      = meta?.findings.filter(f => !shiftActed[f.id]).length ?? 0
-                const otherPend = otherMeta?.findings.filter(f => !shiftActed[f.id]).length ?? 0
-                const conf      = meta?.modelConfidence ?? 80
-                return (
-                  <div key={line.id} className="px-5 py-4">
-                    <div className="flex items-start justify-between mb-2">
-                      <div>
-                        <div className="font-body text-muted text-label mb-0.5">
-                          {LINE_AREAS[line.id]?.area ?? ''} · {line.name}
-                        </div>
-                        <div className="font-body text-muted text-label">{meta?.supervisor}</div>
-                      </div>
-                      <MiniSparkline data={meta?.sparkline} color={riskBgColor(line.score)} />
-                    </div>
-                    <div className={`font-display font-bold text-display leading-none tabular-nums mb-0.5 ${riskColorClass(line.score)}`}>
-                      <AnimatedScore value={line.score} effect="glow" hero />
-                    </div>
-                    <div className={`font-body font-medium text-label mb-3 ${
-                      delta > 0 ? 'text-danger' : delta < 0 ? 'text-ok' : 'text-muted'
-                    }`}>
-                      {delta === 0 ? 'Equal score' : `${delta > 0 ? '+' : ''}${delta} vs ${other.name}`}
-                    </div>
-                    <div className="grid grid-cols-3 gap-3 mb-3">
-                      <div>
-                        <div className="font-body text-muted text-label mb-0.5">Findings</div>
-                        <div className={`font-display font-bold text-subhead leading-none ${
-                          pend > otherPend ? 'text-warn' : pend < otherPend ? 'text-ok' : 'text-ink'
-                        }`}>{pend}</div>
-                      </div>
-                      <div>
-                        <div className="font-body text-muted text-label mb-0.5">Model</div>
-                        <div className={`font-display font-bold text-subhead leading-none ${
-                          conf >= 90 ? 'text-ok' : conf >= 80 ? 'text-muted' : 'text-warn'
-                        }`}>{conf}%</div>
-                      </div>
-                      <div>
-                        <div className="font-body text-muted text-label mb-0.5">Workers</div>
-                        <div className="font-display font-bold text-subhead leading-none text-ink">{meta?.workerCount ?? '—'}</div>
-                      </div>
-                    </div>
-                    <div className="h-[3px] bg-rule2 overflow-hidden">
-                      <div className="h-full transition-[width] duration-500"
-                        style={{
-                          width: `${line.score}%`,
-                          background: line.score >= 75 ? 'var(--color-danger)' : line.score >= 60 ? 'var(--color-warn)' : 'var(--color-ok)',
-                        }} />
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          )}
-        </div>
-      )}
 
-      {/* ── Scrollable grid + findings ───────────────────────────────────── */}
-      <div className="flex-1 overflow-y-auto page-rise">
-
-        {domainGroups.length === 0 ? (
-          <div className="flex items-center gap-3 px-5 py-12">
-            <span className="font-body text-muted text-body">
-              No lines match the active filters
-            </span>
-            <button type="button"
-              onClick={() => { setZoneFilter('all'); setAreaFilter('all'); setFindingsFilter('all') }}
-              className="font-body text-label text-signal hover:text-ink transition-colors">
-              Clear filters
-            </button>
-          </div>
-        ) : (
-          domainGroups.map(group => {
-            const worstScore = Math.max(...group.lines.map(l => effScore(l)))
-            const worstZone  = worstScore >= 75 ? 'risk' : worstScore >= 60 ? 'watch' : 'clear'
-            const atRiskN    = group.lines.filter(l => effScore(l) >= 75).length
-            const watchN     = group.lines.filter(l => effScore(l) >= 60 && effScore(l) < 75).length
-
-            return (
-              <section key={group.area}>
-
-                {/* Sticky domain header */}
-                <div className="sticky top-0 z-10 flex items-center gap-2.5 px-5 py-2 bg-stone border-b border-t border-rule2">
-                  <span className="font-body font-semibold text-ink text-label">{group.area}</span>
-                  <span className={`font-body text-label px-1.5 py-0.5 font-medium ${
-                    worstZone === 'risk'  ? 'bg-danger/[0.04] text-danger'
-                    : worstZone === 'watch' ? 'bg-warn/[0.08] text-warn'
-                    : 'bg-ok/[0.07] text-ok'
-                  }`}>
-                    {worstZone === 'risk' ? 'At risk' : worstZone === 'watch' ? 'Watch' : 'All clear'}
+            {/* Compare panel */}
+            {mode === 'compare' && (
+              <div className="flex-shrink-0 border-b border-rule2">
+                <div className="px-5 py-1.5 bg-stone3 border-b border-rule2 flex items-center gap-2">
+                  <span className="font-body text-muted text-label">
+                    {compareLines.length < 2
+                      ? `Select ${2 - compareLines.length} more line${2 - compareLines.length !== 1 ? 's' : ''} to compare`
+                      : `${compareLines[0].name} vs ${compareLines[1].name}`}
                   </span>
-                  {(atRiskN > 0 || watchN > 0) && (
-                    <span className="font-body text-muted text-label">
-                      {[atRiskN > 0 && `${atRiskN} at risk`, watchN > 0 && `${watchN} watch`].filter(Boolean).join(' · ')}
+                  {compareLines.length > 0 && (
+                    <button type="button" onClick={() => setCompareSelected([])}
+                      className="ml-auto font-body text-label text-danger hover:text-ink transition-colors">
+                      Clear
+                    </button>
+                  )}
+                </div>
+                {compareLines.length === 2 && (
+                  <div className="grid grid-cols-2 divide-x divide-rule2">
+                    {compareLines.map((line, i) => {
+                      const other     = compareLines[1 - i]
+                      const meta      = lineMeta[line.id]
+                      const otherMeta = lineMeta[other.id]
+                      const delta     = line.score - other.score
+                      const pend      = meta?.findings.filter(f => !shiftActed[f.id]).length ?? 0
+                      const otherPend = otherMeta?.findings.filter(f => !shiftActed[f.id]).length ?? 0
+                      const conf      = meta?.modelConfidence ?? 80
+                      return (
+                        <div key={line.id} className="px-5 py-4">
+                          <div className="flex items-start justify-between mb-2">
+                            <div>
+                              <div className="font-body text-muted text-label mb-0.5">
+                                {LINE_AREAS[line.id]?.area ?? ''} · {line.name}
+                              </div>
+                              <div className="font-body text-muted text-label">{meta?.supervisor}</div>
+                            </div>
+                            <MiniSparkline data={meta?.sparkline} color={riskBgColor(line.score)} />
+                          </div>
+                          <div className={`font-display font-bold text-display leading-none tabular-nums mb-0.5 ${riskColorClass(line.score)}`}>
+                            <AnimatedScore value={line.score} effect="glow" hero />
+                          </div>
+                          <div className={`font-body font-medium text-label mb-3 ${
+                            delta > 0 ? 'text-danger' : delta < 0 ? 'text-ok' : 'text-muted'
+                          }`}>
+                            {delta === 0 ? 'Equal score' : `${delta > 0 ? '+' : ''}${delta} vs ${other.name}`}
+                          </div>
+                          <div className="grid grid-cols-3 gap-3 mb-3">
+                            <div>
+                              <div className="font-body text-muted text-label mb-0.5">Findings</div>
+                              <div className={`font-display font-bold text-subhead leading-none ${
+                                pend > otherPend ? 'text-warn' : pend < otherPend ? 'text-ok' : 'text-ink'
+                              }`}>{pend}</div>
+                            </div>
+                            <div>
+                              <div className="font-body text-muted text-label mb-0.5">Model</div>
+                              <div className={`font-display font-bold text-subhead leading-none ${
+                                conf >= 90 ? 'text-ok' : conf >= 80 ? 'text-muted' : 'text-warn'
+                              }`}>{conf}%</div>
+                            </div>
+                            <div>
+                              <div className="font-body text-muted text-label mb-0.5">Workers</div>
+                              <div className="font-display font-bold text-subhead leading-none text-ink">{meta?.workerCount ?? '—'}</div>
+                            </div>
+                          </div>
+                          <div className="h-[3px] bg-rule2 overflow-hidden">
+                            <div className="h-full transition-[width] duration-500"
+                              style={{
+                                width: `${line.score}%`,
+                                background: line.score >= 75 ? 'var(--color-danger)' : line.score >= 60 ? 'var(--color-warn)' : 'var(--color-ok)',
+                              }} />
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Scrollable grid + cross-line findings */}
+            <div className="flex-1 overflow-y-auto page-rise">
+
+              {domainGroups.length === 0 ? (
+                <div className="flex items-center gap-3 px-5 py-12">
+                  <span className="font-body text-muted text-body">No lines match the active filters</span>
+                  <button type="button"
+                    onClick={() => { setZoneFilter('all'); setAreaFilter('all'); setFindingsFilter('all') }}
+                    className="font-body text-label text-signal hover:text-ink transition-colors">
+                    Clear filters
+                  </button>
+                </div>
+              ) : (
+                domainGroups.map(group => {
+                  const worstScore = Math.max(...group.lines.map(l => effScore(l)))
+                  const worstZone  = worstScore >= 75 ? 'risk' : worstScore >= 60 ? 'watch' : 'clear'
+                  const atRiskN    = group.lines.filter(l => effScore(l) >= 75).length
+                  const watchN     = group.lines.filter(l => effScore(l) >= 60 && effScore(l) < 75).length
+
+                  return (
+                    <section key={group.area}>
+                      <div className="sticky top-0 z-10 flex items-center gap-2.5 px-5 py-2 bg-stone border-b border-t border-rule2">
+                        <span className="font-body font-semibold text-ink text-label">{group.area}</span>
+                        <span className={`font-body text-label px-1.5 py-0.5 font-medium ${
+                          worstZone === 'risk'  ? 'bg-danger/[0.04] text-danger'
+                          : worstZone === 'watch' ? 'bg-warn/[0.08] text-warn'
+                          : 'bg-ok/[0.07] text-ok'
+                        }`}>
+                          {worstZone === 'risk' ? 'At risk' : worstZone === 'watch' ? 'Watch' : 'All clear'}
+                        </span>
+                        {(atRiskN > 0 || watchN > 0) && (
+                          <span className="font-body text-muted text-label">
+                            {[atRiskN > 0 && `${atRiskN} at risk`, watchN > 0 && `${watchN} watch`].filter(Boolean).join(' · ')}
+                          </span>
+                        )}
+                        <span className="ml-auto font-body text-muted text-label">
+                          {group.lines.length} line{group.lines.length !== 1 ? 's' : ''}
+                        </span>
+                      </div>
+
+                      <div>
+                        {group.lines.map((line, idx) => {
+                          const meta      = lineMeta[line.id]
+                          if (!meta) return null
+                          const eff       = effScore(line)
+                          const modified  = mode === 'whatif' && whatIfScores[line.id] !== undefined && whatIfScores[line.id] !== line.score
+                          const pend      = meta.findings.filter(f => !shiftActed[f.id]).length
+                          const isCompSel = compareSelected.includes(line.id)
+                          const sliderVal = whatIfScores[line.id] ?? line.score
+                          const delta     = sliderVal - line.score
+
+                          return (
+                            <div key={line.id}
+                              className={`flex flex-col border-b border-rule2 last:border-b-0 ${pressureCls(eff)} ${pressureClass(eff)}`}>
+                              <div className="flex items-center">
+                                {mode === 'compare' && (
+                                  <Checkbox
+                                    checked={isCompSel}
+                                    onChange={() => toggleCompare(line.id)}
+                                    size="lg"
+                                    className="ml-4"
+                                    aria-label={`Select ${line.name} for comparison`}
+                                  />
+                                )}
+                                <button
+                                  type="button"
+                                  className={`flex-1 flex items-center gap-3 ${mode === 'compare' ? 'pl-2 pr-4' : 'px-4'} py-2.5 text-left transition-colors ${
+                                    mode === 'compare' && isCompSel ? 'bg-signal/[0.03]' : 'hover:bg-stone2/50'
+                                  }`}
+                                  onClick={() => mode === 'compare' ? toggleCompare(line.id) : navigate(`/shift?line=${line.id}`)}
+                                  aria-label={`${line.name} — score ${eff}${mode === 'compare' ? (isCompSel ? ', selected' : ', click to select') : ', open ShiftIQ'}`}
+                                  aria-pressed={mode === 'compare' ? isCompSel : undefined}
+                                >
+                                  <span className="display-num text-label text-muted tabular-nums w-4 text-right flex-shrink-0">{idx + 1}</span>
+
+                                  <div className="w-28 flex-shrink-0">
+                                    <div className="font-display font-semibold text-ink text-body leading-none">{line.name}</div>
+                                    <div className="flex items-center gap-1.5 mt-0.5">
+                                      <span className="font-body text-muted text-label truncate">{meta.supervisor}</span>
+                                      <ActorBadge mode={workerMode} />
+                                    </div>
+                                  </div>
+
+                                  <div className="flex-1 relative h-[6px] overflow-hidden">
+                                    <div className="absolute inset-0 flex">
+                                      <div className="h-full bg-ok/[0.12]"     style={{ width: '60%' }} />
+                                      <div className="h-full bg-warn/[0.12]"   style={{ width: '15%' }} />
+                                      <div className="h-full bg-danger/[0.12]" style={{ width: '25%' }} />
+                                    </div>
+                                    <div
+                                      className={`absolute left-0 top-0 h-full transition-[width] duration-500 ease-enter ${riskBgColor(eff)}`}
+                                      style={{ width: `${eff}%` }}
+                                    />
+                                    <div
+                                      className="absolute top-0 h-full w-px bg-muted/50"
+                                      style={{ left: `${meta.modelConfidence}%` }}
+                                    />
+                                  </div>
+
+                                  <div className="w-14 flex-shrink-0 text-right">
+                                    <span
+                                      className={`display-num text-head tabular-nums ${riskColorClass(eff)}`}
+                                      style={{ transition: 'color 250ms var(--ease-standard)' }}
+                                    >{eff}</span>
+                                    {modified && (
+                                      <span className={`font-body text-label ml-1 tabular-nums ${delta > 0 ? 'text-danger' : 'text-ok'}`}>
+                                        {delta > 0 ? '+' : ''}{delta}
+                                      </span>
+                                    )}
+                                  </div>
+
+                                  <div className="w-16 flex-shrink-0 flex items-center justify-end">
+                                    {pend > 0
+                                      ? <span className="font-body text-label text-warn flex items-center gap-0.5">
+                                          <AlertTriangle size={9} strokeWidth={2} />{pend}
+                                        </span>
+                                      : <span className="font-body text-label text-ok/40 flex items-center gap-0.5">
+                                          <CheckCircle size={9} strokeWidth={2} />
+                                        </span>
+                                    }
+                                  </div>
+
+                                  <div className="flex-shrink-0">
+                                    <MiniSparkline data={meta.sparkline} color={riskBgColor(eff)} />
+                                  </div>
+                                </button>
+
+                                {mode === 'whatif' && (
+                                  <div className="flex items-center gap-3 px-4 pb-2.5 pt-1.5 border-t border-rule2/40 bg-stone2/40">
+                                    <span className="font-body text-muted text-label flex-shrink-0">Real: <span className="font-medium">{line.score}</span></span>
+                                    <input
+                                      type="range" min={0} max={100} value={sliderVal}
+                                      onChange={e => setWhatIfScores(s => ({ ...s, [line.id]: Number(e.target.value) }))}
+                                      className="flex-1 cursor-pointer accent-signal"
+                                      style={{ height: 2 }}
+                                    />
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </section>
+                  )
+                })
+              )}
+
+              {/* Cross-line findings feed */}
+              <section className="border-t-2 border-rule2 mt-0">
+                <div className="sticky top-0 z-10 flex items-center justify-between px-5 py-2 border-b border-rule2 bg-stone2">
+                  <span className="font-body font-semibold text-ink text-label">
+                    Pending across all lines
+                    {allFindings.length > 0 && (
+                      <span className="ml-2 font-body text-warn text-label font-normal">
+                        {allFindings.length} finding{allFindings.length > 1 ? 's' : ''}
+                      </span>
+                    )}
+                  </span>
+                  {allFindings.length === 0 && (
+                    <span className="font-body text-ok text-label flex items-center gap-1">
+                      <CheckCircle size={16} strokeWidth={2} />All lines clear
                     </span>
                   )}
-                  <span className="ml-auto font-body text-muted text-label">
-                    {group.lines.length} line{group.lines.length !== 1 ? 's' : ''}
-                  </span>
                 </div>
 
-                {/* Ranked list — scales to 20+ lines */}
-                <div>
-                  {group.lines.map((line, idx) => {
-                    const meta      = lineMeta[line.id]
-                    if (!meta) return null
-                    const eff       = effScore(line)
-                    const modified  = mode === 'whatif' && whatIfScores[line.id] !== undefined && whatIfScores[line.id] !== line.score
-                    const pend      = meta.findings.filter(f => !shiftActed[f.id]).length
-                    const isCompSel = compareSelected.includes(line.id)
-                    const sliderVal = whatIfScores[line.id] ?? line.score
-                    const delta     = sliderVal - line.score
+                {agentActions?.filter(a => a.status !== 'overridden' && a.status !== 'completed').map((action, i) => (
+                  <div key={action.id}
+                    className="flex items-start gap-4 px-5 py-3.5 border-b border-rule2"
+                    style={{ background: 'rgba(124,134,232,0.04)' }}>
+                    <Brain size={14} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--color-deep)' }} strokeWidth={2} aria-hidden="true" />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+                        <span className="font-body text-label font-medium" style={{ color: 'var(--color-deep)' }}>{action.agentName}</span>
+                        <span className="font-body text-micro px-1.5 py-px" style={{ color: 'var(--color-deep)', background: 'rgba(124,134,232,0.12)', border: '1px solid rgba(124,134,232,0.25)' }}>
+                          {action.status === 'pending-review' ? 'Awaiting review' : 'Active'}
+                        </span>
+                        <span className="font-body text-micro text-muted">{action.timestamp}</span>
+                      </div>
+                      <div className="font-body font-medium text-ink text-body leading-snug">{action.action}</div>
+                      <div className="font-body text-muted text-label mt-0.5">{action.target} · {action.rationale}</div>
+                    </div>
+                  </div>
+                ))}
 
-                    return (
-                      <div
-                        key={line.id}
-                        className={`flex flex-col border-b border-rule2 last:border-b-0 ${pressureCls(eff)} ${pressureClass(eff)}`}
-                      >
-                        <div className="flex items-center">
-                        {mode === 'compare' && (
-                          <Checkbox
-                            checked={isCompSel}
-                            onChange={() => toggleCompare(line.id)}
-                            size="lg"
-                            className="ml-4"
-                            aria-label={`Select ${line.name} for comparison`}
-                          />
-                        )}
-                        <button
-                          type="button"
-                          className={`flex-1 flex items-center gap-3 ${mode === 'compare' ? 'pl-2 pr-4' : 'px-4'} py-2.5 text-left transition-colors ${
-                            mode === 'compare' && isCompSel ? 'bg-signal/[0.03]' : 'hover:bg-stone2/50'
-                          }`}
-                          onClick={() => mode === 'compare' ? toggleCompare(line.id) : navigate(`/shift?line=${line.id}`)}
-                          aria-label={`${line.name} — score ${eff}${mode === 'compare' ? (isCompSel ? ', selected' : ', click to select') : ', open ShiftIQ'}`}
-                          aria-pressed={mode === 'compare' ? isCompSel : undefined}
-                        >
-
-                          {/* Rank */}
-                          <span className="display-num text-label text-muted tabular-nums w-4 text-right flex-shrink-0">{idx + 1}</span>
-
-                          {/* Name + supervisor + actor badge */}
-                          <div className="w-28 flex-shrink-0">
-                            <div className="font-display font-semibold text-ink text-body leading-none">{line.name}</div>
-                            <div className="flex items-center gap-1.5 mt-0.5">
-                              <span className="font-body text-muted text-label truncate">{meta.supervisor}</span>
-                              <ActorBadge mode={workerMode} />
-                            </div>
-                          </div>
-
-                          {/* Score bar — zone bands + score fill + confidence tick */}
-                          <div className="flex-1 relative h-[6px] overflow-hidden">
-                            <div className="absolute inset-0 flex">
-                              <div className="h-full bg-ok/[0.12]"     style={{ width: '60%' }} />
-                              <div className="h-full bg-warn/[0.12]"   style={{ width: '15%' }} />
-                              <div className="h-full bg-danger/[0.12]" style={{ width: '25%' }} />
-                            </div>
-                            <div
-                              className={`absolute left-0 top-0 h-full transition-[width] duration-500 ease-enter ${riskBgColor(eff)}`}
-                              style={{ width: `${eff}%` }}
-                            />
-                            <div
-                              className="absolute top-0 h-full w-px bg-muted/50"
-                              style={{ left: `${meta.modelConfidence}%` }}
-                            />
-                          </div>
-
-                          {/* Score + what-if delta */}
-                          <div className="w-14 flex-shrink-0 text-right">
-                            <span
-                              className={`display-num text-base tabular-nums ${riskColorClass(eff)}`}
-                              style={{ transition: 'color 250ms var(--ease-standard)' }}
-                            >{eff}</span>
-                            {modified && (
-                              <span className={`font-body text-label ml-1 tabular-nums ${delta > 0 ? 'text-danger' : 'text-ok'}`}>
-                                {delta > 0 ? '+' : ''}{delta}
+                {allFindings.length > 0
+                  ? allFindings.map((f, i) => (
+                      <button key={i} type="button"
+                        onClick={() => setSelectedFinding(f)}
+                        className={`w-full text-left flex items-start gap-4 px-5 py-3.5 border-b border-rule2 transition-colors hover:bg-stone2 ${
+                          f.urgency === 'danger' ? 'bg-danger/[0.05] hover:bg-danger/[0.1]' : 'bg-warn/[0.05] hover:bg-warn/[0.1]'
+                        }`}>
+                        <AlertTriangle size={16}
+                          className={`mt-0.5 flex-shrink-0 ${f.urgency === 'danger' ? 'text-danger' : 'text-warn'}`}
+                          strokeWidth={2} />
+                        <div className="flex-1 min-w-0">
+                          <div className="font-body font-medium text-ink text-body leading-snug">{f.title}</div>
+                          <div className="font-body text-muted text-label mt-0.5">
+                            {f.line.name} · {f.meta.supervisor}
+                            {f.meta.minutesRemaining > 0 && (
+                              <span className="ml-2 inline-flex items-center gap-1">
+                                <Clock size={9} strokeWidth={2} />{fmtMinutes(f.meta.minutesRemaining)} remaining
                               </span>
                             )}
                           </div>
+                        </div>
+                      </button>
+                    ))
+                  : (
+                      <div className="flex items-center gap-3 px-5 py-10">
+                        <CheckCircle size={16} className="text-ok flex-shrink-0" strokeWidth={2} />
+                        <span className="font-body text-muted text-body">All lines running clean — no pending findings</span>
+                      </div>
+                    )
+                }
+              </section>
 
-                          {/* Findings pip */}
-                          <div className="w-16 flex-shrink-0 flex items-center justify-end">
-                            {pend > 0
-                              ? <span className="font-body text-label text-warn flex items-center gap-0.5">
-                                  <AlertTriangle size={9} strokeWidth={2} />{pend}
-                                </span>
-                              : <span className="font-body text-label text-ok/40 flex items-center gap-0.5">
-                                  <CheckCircle size={9} strokeWidth={2} />
-                                </span>
-                            }
-                          </div>
+            </div>
+          </div>
 
-                          {/* Sparkline */}
-                          <div className="flex-shrink-0">
-                            <MiniSparkline data={meta.sparkline} color={riskBgColor(eff)} />
-                          </div>
-                        </button>
+          {/* ── Right: queue rail ────────────────────────────────────────── */}
+          <div className="w-[300px] flex-shrink-0 flex flex-col overflow-hidden border-l border-rule2 bg-stone">
 
-                        {/* What-if slider */}
-                        {mode === 'whatif' && (
-                          <div className="flex items-center gap-3 px-4 pb-2.5 pt-1.5 border-t border-rule2/40 bg-stone2/40">
-                            <span className="font-body text-muted text-label flex-shrink-0">Real: <span className="font-medium">{line.score}</span></span>
-                            <input
-                              type="range" min={0} max={100} value={sliderVal}
-                              onChange={e => setWhatIfScores(s => ({ ...s, [line.id]: Number(e.target.value) }))}
-                              className="flex-1 cursor-pointer accent-signal"
-                              style={{ height: 2 }}
-                            />
+            {/* Rail header */}
+            <div className="flex-shrink-0 px-4 py-3 border-b border-rule2 bg-stone2">
+              <div className="font-body font-medium text-ink text-body">Action queue</div>
+              <div className="font-body text-muted text-label mt-0.5">
+                {DIRECTOR_QUEUE.length} items · {t3Count} critical
+              </div>
+            </div>
+
+            {/* Scrollable queue items */}
+            <div className="flex-1 overflow-y-auto">
+
+              {/* T3 — full ShiftIQ-style cards */}
+              <div className="pt-3">
+                {DIRECTOR_QUEUE.filter(q => q.urgency === 'danger').map((item, i) => {
+                  const floorLine  = item.lineId ? rawLines.find(l => l.id === item.lineId) : null
+                  const floorMeta  = item.lineId ? lineMeta[item.lineId] : null
+                  const floorScore = floorLine ? effScore(floorLine) : null
+                  const floorPend  = floorMeta ? floorMeta.findings.filter(f => !shiftActed[f.id]).length : 0
+                  const visited    = visitedQueue.has(item.action)
+                  return (
+                    <article key={`t3-${i}`} className="mx-3 mb-3 bg-stone border border-rule overflow-hidden">
+                      <div className="h-[3px] w-full bg-danger" />
+                      <div className="flex items-center justify-between px-4 pt-3 pb-1.5">
+                        <StatusPill tone="danger">Critical</StatusPill>
+                        <span className={`font-body text-label tabular-nums font-medium ${visited ? 'text-danger/40' : 'text-danger'}`}>
+                          {item.timeWindow}
+                        </span>
+                      </div>
+                      <div className="px-4 pb-3 space-y-1.5">
+                        <p className={`font-body font-medium text-body leading-snug ${visited ? 'text-muted' : 'text-ink'}`}>{item.action}</p>
+                        <p className="font-body text-muted text-label leading-relaxed">{item.note}</p>
+                        {floorLine && (
+                          <div className="flex items-center gap-2 font-body text-label text-muted">
+                            <span>{floorLine.name}</span>
+                            <span className={`display-num text-label font-bold tabular-nums ${riskColorClass(floorScore)}`}>{floorScore}</span>
+                            {floorPend > 0 && (
+                              <span className="flex items-center gap-0.5 text-warn">
+                                <AlertTriangle size={8} strokeWidth={2} />{floorPend}
+                              </span>
+                            )}
+                            <span className="ml-auto">{floorMeta.supervisor}</span>
                           </div>
                         )}
-                        </div>{/* end inner flex row */}
-
                       </div>
+                      <div className="flex gap-2 px-4 pb-3 pt-2 border-t border-rule2/60">
+                        <Link to={item.route}
+                          onClick={() => setVisitedQueue(p => new Set([...p, item.action]))}
+                          className="inline-flex items-center gap-2 font-body font-medium text-body px-4 py-2 border border-rule bg-stone2 text-ink hover:bg-stone3 hover:border-rule2 transition-colors rounded-btn">
+                          {ROUTE_LABELS[item.route] ?? 'Open'} <ArrowRight size={12} />
+                        </Link>
+                      </div>
+                    </article>
+                  )
+                })}
+              </div>
+
+              {/* T2 — compact rows */}
+              {DIRECTOR_QUEUE.filter(q => q.urgency === 'warn').length > 0 && (
+                <div className="border-t border-rule2/50">
+                  <div className="px-4 pt-2.5 pb-1">
+                    <span className="font-body text-micro text-muted font-semibold tracking-wide">ALSO NEEDS ATTENTION</span>
+                  </div>
+                  {DIRECTOR_QUEUE.filter(q => q.urgency === 'warn').map((item, i) => {
+                    const visited = visitedQueue.has(item.action)
+                    return (
+                      <Link key={`t2-${i}`} to={item.route}
+                        onClick={() => setVisitedQueue(p => new Set([...p, item.action]))}
+                        className="flex items-center gap-3 px-4 py-2.5 border-b border-rule2/50 last:border-0 group hover:bg-stone2/50 transition-colors">
+                        <span className={`font-body text-label tabular-nums flex-shrink-0 w-16 ${visited ? 'text-warn/40' : 'text-warn'}`}>
+                          {item.timeWindow}
+                        </span>
+                        <div className="flex-1 min-w-0">
+                          <div className={`font-body text-label font-medium leading-snug ${visited ? 'text-muted' : 'text-ink'}`}>{item.action}</div>
+                          <div className="font-body text-micro text-muted">{item.note}</div>
+                        </div>
+                        {visited
+                          ? <CheckCircle size={9} className="text-muted/40 flex-shrink-0" />
+                          : <ArrowRight size={9} className="text-muted group-hover:text-ink flex-shrink-0 transition-colors" />
+                        }
+                      </Link>
                     )
                   })}
                 </div>
-              </section>
-            )
-          })
-        )}
-
-        {/* ── Cross-line findings feed ─────────────────────────────────── */}
-        <section className="border-t-2 border-rule2 mt-0">
-          <div className="sticky top-0 z-10 flex items-center justify-between px-5 py-2 border-b border-rule2 bg-stone2">
-            <span className="font-body font-semibold text-ink text-label">
-              Pending across all lines
-              {allFindings.length > 0 && (
-                <span className="ml-2 font-body text-warn text-label font-normal">
-                  {allFindings.length} finding{allFindings.length > 1 ? 's' : ''}
-                </span>
               )}
-            </span>
-            {allFindings.length === 0 && (
-              <span className="font-body text-ok text-label flex items-center gap-1">
-                <CheckCircle size={16} strokeWidth={2} />All lines clear
-              </span>
-            )}
+            </div>
+
+            {/* Impact footer */}
+            <div className="flex-shrink-0 border-t border-rule2 px-4 py-2.5 bg-stone2">
+              <div className="font-body text-label text-muted">
+                <span className="text-ok font-medium">{interventionSummary.positive}</span>
+                {' of '}{interventionSummary.total} interventions positive this month
+                {interventionSummary.lowDwellDecisions > 0 && (
+                  <span className="text-danger ml-2 inline-flex items-center gap-1">
+                    <AlertTriangle size={8} strokeWidth={2} />{interventionSummary.lowDwellDecisions} low-dwell
+                  </span>
+                )}
+              </div>
+              <button type="button" onClick={() => navigate('/outcomes')}
+                className="mt-1 font-body text-label text-signal hover:text-ink transition-colors flex items-center gap-1">
+                See Outcomes <ArrowRight size={9} />
+              </button>
+            </div>
+
           </div>
 
-          {/* Agent intervention cards — AI-attributed actions in the findings feed */}
-          {agentActions?.filter(a => a.status !== 'overridden' && a.status !== 'completed').map((action, i) => (
-            <div key={action.id}
-              className="flex items-start gap-4 px-5 py-3.5 border-b border-rule2"
-              style={{ background: 'rgba(124,134,232,0.04)' }}>
-              <Brain size={14} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--color-deep)' }} strokeWidth={2} aria-hidden="true" />
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-0.5 flex-wrap">
-                  <span className="font-body text-label font-medium" style={{ color: 'var(--color-deep)' }}>{action.agentName}</span>
-                  <span className="font-body text-micro px-1.5 py-px" style={{ color: 'var(--color-deep)', background: 'rgba(124,134,232,0.12)', border: '1px solid rgba(124,134,232,0.25)' }}>
-                    {action.status === 'pending-review' ? 'Awaiting review' : 'Active'}
-                  </span>
-                  <span className="font-body text-micro text-muted">{action.timestamp}</span>
-                </div>
-                <div className="font-body font-medium text-ink text-body leading-snug">{action.action}</div>
-                <div className="font-body text-muted text-label mt-0.5">{action.target} · {action.rationale}</div>
-              </div>
-            </div>
-          ))}
-
-          {allFindings.length > 0
-            ? allFindings.map((f, i) => (
-                <button key={i} type="button"
-                  onClick={() => setSelectedFinding(f)}
-                  className={`w-full text-left flex items-start gap-4 px-5 py-3.5 border-b border-rule2 transition-colors hover:bg-stone2 ${
-                    f.urgency === 'danger' ? 'bg-danger/[0.05] hover:bg-danger/[0.1]' : 'bg-warn/[0.05] hover:bg-warn/[0.1]'
-                  }`}>
-                  <AlertTriangle size={16}
-                    className={`mt-0.5 flex-shrink-0 ${f.urgency === 'danger' ? 'text-danger' : 'text-warn'}`}
-                    strokeWidth={2} />
-                  <div className="flex-1 min-w-0">
-                    <div className="font-body font-medium text-ink text-body leading-snug">{f.title}</div>
-                    <div className="font-body text-muted text-label mt-0.5">
-                      {f.line.name} · {f.meta.supervisor}
-                      {f.meta.minutesRemaining > 0 && (
-                        <span className="ml-2 inline-flex items-center gap-1">
-                          <Clock size={9} strokeWidth={2} />{fmtMinutes(f.meta.minutesRemaining)} remaining
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </button>
-              ))
-            : (
-                <div className="flex items-center gap-3 px-5 py-10">
-                  <CheckCircle size={16} className="text-ok flex-shrink-0" strokeWidth={2} />
-                  <span className="font-body text-muted text-body">All lines running clean — no pending findings</span>
-                </div>
-              )
-          }
-        </section>
-
-      </div>
-
-      </>)}
+        </div>
+        )
+      }
     </div>
 
-    {/* ── Finding action drawer — stays in overview context ────────────── */}
+    {/* ── Finding action drawer ────────────────────────────────────────── */}
     {selectedFinding && (
       <SlidePanel
         title={selectedFinding.title}

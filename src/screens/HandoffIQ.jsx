@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { handoffData, certExpiry, haccpData, robotFleetData } from '../data'
-import { Btn, PersonAvatar, CarryForwardItem, SlidePanel, StatusPill, Tabs, SectionLabel, EmptyState, AccentRow, StatGrid } from '../components/UI'
+import { PersonAvatar, CarryForwardItem, SlidePanel, StatusPill, SectionLabel, EmptyState, AccentRow, StatGrid } from '../components/UI'
 import { Check, AlertTriangle, Clock, Brain, Bot, CheckCircle, Cpu, Zap, Eye } from 'lucide-react'
 import { useAppState } from '../context/AppState'
 import { OBSERVATION_CATEGORIES } from '../data/observations'
@@ -214,19 +214,31 @@ function FloorObservationsSection() {
  )
 }
 
+const FRESHNESS_SOURCES = [
+ { source: 'Sensor A-7',           age: '8 min',    stale: false },
+ { source: 'CAPA-2604-001',         age: '22 min',   stale: false },
+ { source: 'Lindqvist cert status', age: '4h 12min', stale: true  },
+ { source: 'R-03 telemetry',        age: '4 min',    stale: false },
+]
+
 function LayoutGrid({ d, currentPlant, carryForwardItems, acknowledgedCount, carryForwardCount, allAcknowledged, carryForwardAcknowledged, handleAcknowledgeCarryForward }) {
- const [activeTab, setActiveTab] = useState('carry-forward')
  const [viewingItem, setViewingItem] = useState(null)
+ const [handedOff, setHandedOff] = useState(false)
+ const [coverageOpen, setCoverageOpen] = useState(false)
+ const [notesOpen, setNotesOpen] = useState(false)
 
- const certGaps = certExpiry.filter(c => c.tone !== 'ok')
+ const certGaps    = certExpiry.filter(c => c.tone !== 'ok')
  const criticalCount = carryForwardItems.filter(i => i.urgency === 'danger').length
- const pendingItems = carryForwardItems.filter(item => !carryForwardAcknowledged.has(item.id))
+ const openItems   = carryForwardItems.filter(item => !carryForwardAcknowledged.has(item.id) && !item.resolvedInShift)
+ const resolvedItems = carryForwardItems.filter(i => i.resolvedInShift)
+ const pendingCount = openItems.length
 
- const TABS = [
-  { id: 'carry-forward', label: criticalCount > 0 ? `Carry-forward · ${criticalCount} critical` : `Carry-forward · ${carryForwardCount}` },
-  { id: 'context',       label: 'Context' },
-  { id: 'coverage',      label: certGaps.length > 0 ? `Coverage · ${certGaps.length} gap${certGaps.length > 1 ? 's' : ''}` : 'Coverage' },
- ]
+ const staleCount = FRESHNESS_SOURCES.filter(s => s.stale).length
+ const freshnessCfg = staleCount === 0
+  ? { bg: 'bg-ok/[0.05] border-ok/20',        dot: 'bg-ok',    text: 'text-ok',    label: 'Data: Fresh' }
+  : staleCount < FRESHNESS_SOURCES.length
+   ? { bg: 'bg-warn/[0.06] border-warn/20',    dot: 'bg-warn',  text: 'text-warn',  label: `Data: ${staleCount} source${staleCount > 1 ? 's' : ''} stale` }
+   : { bg: 'bg-danger/[0.04] border-danger/20', dot: 'bg-danger', text: 'text-danger', label: 'Data: Stale' }
 
  return (
   <>
@@ -237,179 +249,232 @@ function LayoutGrid({ d, currentPlant, carryForwardItems, acknowledgedCount, car
     onAcknowledge={handleAcknowledgeCarryForward}
    />
 
-   {/* ── Live document strip — shift event capture ──────────────── */}
+   {/* ── Previous shift relay ────────────────────────────────────── */}
+   {(() => {
+    const resolved = SHIFT_EVENTS.filter(e => e.type === 'human' || e.type === 'agent').length
+    const total = resolved + 1
+    return (
+     <div className="flex-shrink-0 border-b border-rule2">
+      <div className="flex items-center gap-3 px-5 py-2 bg-stone2 border-b border-rule2">
+       <div className="w-1.5 h-1.5 rounded-full bg-ok flex-shrink-0" />
+       <span className="font-body text-label font-medium text-ink">Previous shift relay</span>
+       <span className="font-body text-muted text-micro">Kowalski · AM shift · handed off 14:03</span>
+      </div>
+      <div className="flex items-stretch">
+       <div className="flex items-center gap-3 px-5 py-2.5 border-r border-rule2 flex-1">
+        <Check size={10} strokeWidth={2.5} className="text-ok flex-shrink-0" />
+        <span className="font-body text-ok text-label font-medium">{resolved} of {total} items resolved this shift</span>
+       </div>
+       <div className="flex items-center gap-3 px-5 py-2.5 flex-1 bg-warn/[0.03]">
+        <div className="w-1.5 h-1.5 rounded-full bg-warn animate-pulse flex-shrink-0" />
+        <div className="flex-1 min-w-0">
+         <div className="font-body text-warn text-label font-medium">Oven B SCADA stale</div>
+         <div className="font-body text-muted text-micro">No action taken · last confirmed 11h ago</div>
+        </div>
+       </div>
+      </div>
+     </div>
+    )
+   })()}
+
+   {/* ── Live document strip ─────────────────────────────────────── */}
    <LiveDocumentStrip />
 
-   {/* ── Handoff summary stats ────────────────────────────────────── */}
-   <StatGrid cols={5}>
-    <StatGrid.Cell label="Carry-forward" value={carryForwardCount}
-     tone={criticalCount > 0 ? 'text-danger' : carryForwardCount > 0 ? 'text-warn' : 'text-ok'}
-     sub={criticalCount > 0 ? `${criticalCount} critical` : carryForwardCount > 0 ? 'watch' : 'all clear'} />
-    <StatGrid.Cell label="Acknowledged" value={`${acknowledgedCount}/${carryForwardCount}`}
-     tone={allAcknowledged ? 'text-ok' : 'text-muted'}
-     sub={allAcknowledged ? 'ready' : 'pending'} />
-    <StatGrid.Cell label="Synthesis confidence" value="91%" tone="text-ok" sub="4 of 5 sources fresh" />
-    <StatGrid.Cell label="Cert coverage" value="1 gap" tone="text-warn" sub="Sauce Dosing L2" />
-    <StatGrid.Cell label="Risk at handoff" value={78} tone="text-danger" sub="at risk" />
-   </StatGrid>
-
-   {/* ── 5-tab bar ──────────────────────────────────────────────── */}
-   <Tabs tabs={TABS} active={activeTab} onChange={setActiveTab} />
-
-   {/* ── Tab content ────────────────────────────────────────────── */}
+   {/* ── Scrollable body ─────────────────────────────────────────── */}
    <div className="flex-1 overflow-y-auto">
 
-    {activeTab === 'carry-forward' && (
-     <>
-      <div className="px-4 py-3 bg-stone2 border-b border-rule2">
-       <div className="flex items-baseline justify-between gap-3 mb-1.5">
-        <div className="font-body font-medium text-ink text-body">
-         Carry-forward · {carryForwardCount} item{carryForwardCount !== 1 ? 's' : ''}
-        </div>
-        <span className="font-body text-muted text-label flex-shrink-0">{acknowledgedCount}/{carryForwardCount} acknowledged</span>
-       </div>
-       {criticalCount > 0 && (
-        <div className="flex items-center gap-1.5 mb-1.5">
-         <div className="w-1.5 h-1.5 rounded-full bg-danger flex-shrink-0" />
-         <span className="font-body text-danger text-label">{criticalCount} critical — action required in the first 20 minutes</span>
-        </div>
-       )}
-       <div className="flex items-center gap-1.5">
-        <Brain size={9} strokeWidth={2} className="text-muted flex-shrink-0" />
-        <span className="font-body text-muted text-label">91% synthesis confidence · urgency from shift findings and cert records</span>
-       </div>
+    {/* ── Santos incoming briefing — HERO ──────────────────────── */}
+    <div className="border-b border-rule px-5 pt-4 pb-4">
+     <div className="flex items-start gap-3 mb-3">
+      <PersonAvatar name="M. Santos" size={40} />
+      <div className="flex-1 min-w-0">
+       <div className="font-body font-medium text-body text-ink leading-snug">M. Santos receives this shift</div>
+       <div className="font-body text-muted text-label mt-px">Night Supervisor · Line 4 · in at 14:00</div>
       </div>
-      {(() => {
-       const SOURCES = [
-        { source: 'Sensor A-7',            age: '8 min',    stale: false },
-        { source: 'CAPA-2604-001',          age: '22 min',   stale: false },
-        { source: 'Lindqvist cert status',  age: '4h 12min', stale: true  },
-        { source: 'R-03 telemetry',         age: '4 min',    stale: false },
-       ]
-       const staleCount = SOURCES.filter(s => s.stale).length
-       const cfg = staleCount === 0
-        ? { bg: 'bg-ok/[0.05] border-ok/20',       dot: 'bg-ok',   text: 'text-ok',   label: 'Data: Fresh' }
-        : staleCount < SOURCES.length
-         ? { bg: 'bg-warn/[0.06] border-warn/20',   dot: 'bg-warn', text: 'text-warn', label: `Data: ${staleCount} source${staleCount > 1 ? 's' : ''} stale` }
-         : { bg: 'bg-danger/[0.04] border-danger/20', dot: 'bg-danger', text: 'text-danger', label: 'Data: Stale' }
-       return (
-        <div className={`flex items-center gap-3 px-4 py-2 border-b ${cfg.bg}`}>
-         <div className="flex items-center gap-1.5 flex-shrink-0">
-          <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${cfg.dot}`} />
-          <span className={`font-body font-medium text-label ${cfg.text}`}>{cfg.label}</span>
-         </div>
-         {SOURCES.filter(s => s.stale).map(s => (
-          <div key={s.source} className="h-3 w-px bg-rule flex-shrink-0" />
-         ))}
-         {SOURCES.filter(s => s.stale).map(s => (
-          <span key={s.source} className="flex items-center gap-1.5 font-body text-label text-warn flex-shrink-0">
-           <span className="opacity-60">{s.source}</span>
-           <span className="font-medium">{s.age}</span>
-           <span className="opacity-50">· verify before signing</span>
-          </span>
-         ))}
-         <span className="ml-auto font-body text-label text-muted flex-shrink-0">
-          {SOURCES.length - staleCount} of {SOURCES.length} sources current · synthesized 14:02
-         </span>
-        </div>
-       )
-      })()}
-      {(() => {
-       const openItems     = pendingItems.filter(i => !i.resolvedInShift)
-       const resolvedItems = carryForwardItems.filter(i => i.resolvedInShift)
-       return (
-        <>
-         {openItems.length > 0 ? openItems.map(item => (
-          <CarryForwardItem
-           key={item.id} item={item} acknowledged={false}
-           onAcknowledge={handleAcknowledgeCarryForward}
-           onView={() => setViewingItem(item)}
-          />
-         )) : (
-          <EmptyState icon={Check} message="All open items acknowledged" />
-         )}
-         {resolvedItems.length > 0 && (
-          <>
-           <SectionLabel label={`Closed this shift · ${resolvedItems.length}`} />
-           {resolvedItems.map(item => (
-            <CarryForwardItem
-             key={item.id} item={item} acknowledged
-             onAcknowledge={() => {}} onView={() => setViewingItem(item)}
-            />
-           ))}
-          </>
-         )}
-        </>
-       )
-      })()}
-      <FloorObservationsSection />
-     </>
-    )}
-
-    {activeTab === 'context' && (
-     <>
-      <SectionLabel label="Shift notes" badge={`${d.shiftNotes.author} · ${d.shiftNotes.time}`} />
-      <div className="px-5 py-4 border-b border-rule2">
-       <ul className="space-y-3">
-        {d.shiftNotes.body.map((note, i) => (
-         <li key={i} className="flex items-start gap-3">
-          <div className="w-1 h-1 rounded-full bg-muted flex-shrink-0 mt-2" />
-          <span className="font-display text-ink text-body leading-relaxed">{note}</span>
-         </li>
-        ))}
-       </ul>
-      </div>
-      <SectionLabel label="Incoming briefing" />
-      <div className="flex items-center gap-4 px-4 py-3 border-b border-rule2">
-       <PersonAvatar name="M. Santos" size={40} />
-       <div className="flex-1 min-w-0">
-        <div className="font-body font-bold text-head text-ink leading-tight">M. Santos</div>
-        <div className="font-body text-micro text-muted mt-1">Incoming PM supervisor · Line 4 · 14:00–22:00</div>
-       </div>
-      </div>
-      <SectionLabel label="CCP critical points to brief" />
+     </div>
+     <ul className="space-y-1.5">
       {haccpData.ccps.map((ccp, i) => (
-       <AccentRow key={i} tone="warn" className="flex items-start gap-3 px-4 py-2.5 last:border-b-0">
-        <div className="font-body font-bold text-base text-warn flex-shrink-0 w-4 leading-tight tabular-nums mt-px">{i + 1}</div>
-        <div className="flex-1 min-w-0">
-         <div className="font-body font-semibold text-body text-ink leading-snug">
-          {ccp.station} <span className="font-normal text-muted">· {ccp.ccp}</span>
+       <li key={i} className="flex items-start gap-3 bg-stone2 border border-rule overflow-hidden">
+        <div className={`w-1 self-stretch flex-shrink-0 ${i === 0 ? 'bg-danger' : 'bg-warn'}`} />
+        <div className="flex-1 min-w-0 px-3 py-2.5">
+         <div className="flex items-baseline gap-2">
+          <span className={`font-body text-micro font-bold tabular-nums flex-shrink-0 ${i === 0 ? 'text-danger' : 'text-warn'}`}>{i + 1}</span>
+          <span className="font-body font-semibold text-body text-ink">{ccp.station}</span>
+          <span className="font-body text-muted text-label">· {ccp.ccp}</span>
          </div>
          <div className="font-body text-micro text-muted mt-0.5">{ccp.limit}</div>
         </div>
-       </AccentRow>
+       </li>
       ))}
-     </>
-    )}
+     </ul>
+    </div>
 
-    {activeTab === 'coverage' && (
-     <>
-      <SectionLabel label="Staffing" />
-      <div className="border-b border-rule2">
-       {d.forecast.map((row, i) => <ForecastRow key={i} row={row} />)}
+    {/* ── Carry-forward — "clear before handoff" ───────────────── */}
+    <div className="border-b border-rule">
+     <div className="px-4 py-3 bg-stone2 border-b border-rule2">
+      <div className="flex items-baseline justify-between gap-3 mb-1.5">
+       <div className="font-body font-medium text-ink text-body">
+        {pendingCount > 0
+         ? `Clear before handoff · ${pendingCount} remaining`
+         : 'All items acknowledged'}
+       </div>
+       <span className="font-body text-muted text-label flex-shrink-0">{acknowledgedCount}/{carryForwardCount} acknowledged</span>
       </div>
-      <SectionLabel label="Certifications"
-       badge={certGaps.length > 0 ? `${certGaps.length} gap${certGaps.length > 1 ? 's' : ''} — verify before signing off` : undefined}
-       badgeTone="warn" />
-      {certGaps.length === 0 ? (
-       <EmptyState icon={Check} message="All certs current" />
-      ) : certGaps.map((c, i) => (
-       <AccentRow key={i} tone={c.tone === 'danger' ? 'danger' : 'warn'} bg
-        className="flex items-center gap-5 px-4 py-3 last:border-b-0">
-        <div className="flex-shrink-0 w-12">
-         <div className={`display-num text-head leading-none tabular-nums ${c.tone === 'danger' ? 'text-danger' : 'text-warn'}`}>{c.expiresIn}</div>
-         <div className="font-body text-micro text-muted mt-0.5">days</div>
-        </div>
-        <div className="flex-1 min-w-0">
-         <div className={`font-body font-semibold text-body ${c.tone === 'danger' ? 'text-danger' : 'text-ink'}`}>{c.name}</div>
-         <div className="font-body text-label text-muted">{c.cert}</div>
-         {c.note && <div className={`font-body text-micro mt-0.5 ${c.tone === 'danger' ? 'text-danger/70' : 'text-muted'}`}>{c.note}</div>}
-        </div>
-       </AccentRow>
+      {criticalCount > 0 && (
+       <div className="flex items-center gap-1.5 mb-1.5">
+        <div className="w-1.5 h-1.5 rounded-full bg-danger flex-shrink-0" />
+        <span className="font-body text-danger text-label">{criticalCount} critical — action required in the first 20 minutes</span>
+       </div>
+      )}
+      <div className="flex items-center gap-1.5">
+       <Brain size={9} strokeWidth={2} className="text-muted flex-shrink-0" />
+       <span className="font-body text-muted text-label">91% synthesis confidence · urgency from shift findings and cert records</span>
+      </div>
+     </div>
+
+     {/* Data freshness strip */}
+     <div className={`flex items-center gap-3 px-4 py-2 border-b ${freshnessCfg.bg}`}>
+      <div className="flex items-center gap-1.5 flex-shrink-0">
+       <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${freshnessCfg.dot}`} />
+       <span className={`font-body font-medium text-label ${freshnessCfg.text}`}>{freshnessCfg.label}</span>
+      </div>
+      {FRESHNESS_SOURCES.filter(s => s.stale).map(s => (
+       <span key={s.source} className="flex items-center gap-1.5 font-body text-label text-warn flex-shrink-0">
+        <span className="h-3 w-px bg-rule" />
+        <span className="opacity-60">{s.source}</span>
+        <span className="font-medium">{s.age}</span>
+        <span className="opacity-50">· verify before signing</span>
+       </span>
       ))}
-     </>
+      <span className="ml-auto font-body text-label text-muted flex-shrink-0">
+       {FRESHNESS_SOURCES.length - staleCount} of {FRESHNESS_SOURCES.length} sources current · synthesized 14:02
+      </span>
+     </div>
+
+     {openItems.length > 0 ? openItems.map(item => (
+      <CarryForwardItem
+       key={item.id} item={item} acknowledged={false}
+       onAcknowledge={handleAcknowledgeCarryForward}
+       onView={() => setViewingItem(item)}
+      />
+     )) : (
+      <EmptyState icon={Check} message="All open items acknowledged" />
+     )}
+     {resolvedItems.length > 0 && (
+      <>
+       <SectionLabel label={`Closed this shift · ${resolvedItems.length}`} />
+       {resolvedItems.map(item => (
+        <CarryForwardItem
+         key={item.id} item={item} acknowledged
+         onAcknowledge={() => {}} onView={() => setViewingItem(item)}
+        />
+       ))}
+      </>
+     )}
+     <FloorObservationsSection />
+    </div>
+
+    {/* ── Coverage — collapsible ────────────────────────────────── */}
+    <div className="border-b border-rule2">
+     <button type="button" onClick={() => setCoverageOpen(o => !o)}
+      className="w-full flex items-center gap-2 px-4 py-2.5 bg-stone2 hover:bg-stone3 transition-colors text-left">
+      <span className="font-body text-micro text-muted tracking-wide flex-1">
+       COVERAGE · STAFFING &amp; CERTS{certGaps.length > 0 ? ` · ${certGaps.length} gap${certGaps.length > 1 ? 's' : ''}` : ''}
+      </span>
+      {certGaps.length > 0 && <div className="w-1.5 h-1.5 rounded-full bg-warn flex-shrink-0" />}
+      <span className="font-body text-micro text-muted">{coverageOpen ? '↑' : '↓'}</span>
+     </button>
+     {coverageOpen && (
+      <>
+       <SectionLabel label="Staffing" />
+       <div className="border-b border-rule2">
+        {d.forecast.map((row, i) => <ForecastRow key={i} row={row} />)}
+       </div>
+       <SectionLabel label="Certifications"
+        badge={certGaps.length > 0 ? `${certGaps.length} gap${certGaps.length > 1 ? 's' : ''} — verify before signing off` : undefined}
+        badgeTone="warn" />
+       {certGaps.length === 0 ? (
+        <EmptyState icon={Check} message="All certs current" />
+       ) : certGaps.map((c, i) => (
+        <AccentRow key={i} tone={c.tone === 'danger' ? 'danger' : 'warn'} bg
+         className="flex items-center gap-5 px-4 py-3 last:border-b-0">
+         <div className="flex-shrink-0 w-12">
+          <div className={`display-num text-head leading-none tabular-nums ${c.tone === 'danger' ? 'text-danger' : 'text-warn'}`}>{c.expiresIn}</div>
+          <div className="font-body text-micro text-muted mt-0.5">days</div>
+         </div>
+         <div className="flex-1 min-w-0">
+          <div className={`font-body font-semibold text-body ${c.tone === 'danger' ? 'text-danger' : 'text-ink'}`}>{c.name}</div>
+          <div className="font-body text-label text-muted">{c.cert}</div>
+          {c.note && <div className={`font-body text-micro mt-0.5 ${c.tone === 'danger' ? 'text-danger/70' : 'text-muted'}`}>{c.note}</div>}
+         </div>
+        </AccentRow>
+       ))}
+      </>
+     )}
+    </div>
+
+    {/* ── Shift notes — collapsible ────────────────────────────── */}
+    {d.shiftNotes && (
+     <div className="border-b border-rule2">
+      <button type="button" onClick={() => setNotesOpen(o => !o)}
+       className="w-full flex items-center gap-2 px-4 py-2.5 bg-stone2 hover:bg-stone3 transition-colors text-left">
+       <span className="font-body text-micro text-muted tracking-wide flex-1">
+        SHIFT NOTES · {d.shiftNotes.author}
+       </span>
+       <span className="font-body text-micro text-muted">{notesOpen ? '↑' : '↓'}</span>
+      </button>
+      {notesOpen && (
+       <div className="px-4 py-3 border-t border-rule2">
+        <div className="font-body text-micro text-muted mb-2">{d.shiftNotes.time}</div>
+        <ul className="space-y-2">
+         {d.shiftNotes.body.map((note, i) => (
+          <li key={i} className="flex items-start gap-2.5">
+           <div className="w-1 h-1 rounded-full bg-muted flex-shrink-0 mt-1.5" />
+           <span className="font-body text-label text-ink leading-relaxed">{note}</span>
+          </li>
+         ))}
+        </ul>
+       </div>
+      )}
+     </div>
     )}
 
+    {/* ── Stats — subordinate ───────────────────────────────────── */}
+    <StatGrid cols={5}>
+     <StatGrid.Cell label="Carry-forward" value={carryForwardCount}
+      tone={criticalCount > 0 ? 'text-danger' : carryForwardCount > 0 ? 'text-warn' : 'text-ok'}
+      sub={criticalCount > 0 ? `${criticalCount} critical` : carryForwardCount > 0 ? 'watch' : 'all clear'} />
+     <StatGrid.Cell label="Acknowledged" value={`${acknowledgedCount}/${carryForwardCount}`}
+      tone={allAcknowledged ? 'text-ok' : 'text-muted'}
+      sub={allAcknowledged ? 'ready' : 'pending'} />
+     <StatGrid.Cell label="Synthesis confidence" value="91%" tone="text-ok" sub="4 of 5 sources fresh" />
+     <StatGrid.Cell label="Cert coverage" value="1 gap" tone="text-warn" sub="Sauce Dosing L2" />
+     <StatGrid.Cell label="Risk at handoff" value={78} tone="text-danger" sub="at risk" />
+    </StatGrid>
+
+   </div>
+
+   {/* ── Handoff CTA — sticky bottom rail ─────────────────────────── */}
+   <div className="flex-shrink-0 border-t border-rule px-5 py-4">
+    {handedOff ? (
+     <div className="flex items-center justify-center gap-2 py-2">
+      <Check size={14} className="text-ok" strokeWidth={2.5} />
+      <span className="font-body font-medium text-body text-ok">Shift handed off to M. Santos · 14:00</span>
+     </div>
+    ) : (
+     <button type="button"
+      onClick={() => allAcknowledged && setHandedOff(true)}
+      className={`w-full py-2.5 rounded-btn font-body font-medium text-base transition-colors ${
+       allAcknowledged
+        ? 'bg-ok/10 text-ok border border-ok/30 hover:bg-ok/20 cursor-pointer'
+        : 'bg-stone2 text-ink border border-rule hover:border-rule2 cursor-default'
+      }`}
+     >
+      {allAcknowledged
+       ? 'Hand off to M. Santos · 14:00'
+       : `Hand off · ${pendingCount} item${pendingCount !== 1 ? 's' : ''} to acknowledge`}
+     </button>
+    )}
    </div>
   </>
  )
@@ -596,7 +661,8 @@ export default function HandoffIQ() {
 
  const carryForwardCount = carryForwardItems.length
  const acknowledgedCount = carryForwardItems.filter(item => carryForwardAcknowledged.has(item.id)).length
- const allAcknowledged = acknowledgedCount === carryForwardCount && carryForwardCount > 0
+ const pendingHandoffCount = carryForwardItems.filter(i => !carryForwardAcknowledged.has(i.id) && !i.resolvedInShift).length
+ const allAcknowledged = pendingHandoffCount === 0 && carryForwardCount > 0
 
  const handleAcknowledgeCarryForward = (id) => {
   setCarryForwardAcknowledged(prev => new Set([...prev, id]))

@@ -385,6 +385,28 @@
   .card-lift:hover  { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,0,0,0.32); }
   .card-lift:active { transform: translateY(0) scale(0.99); transition-duration: 80ms; }
 
+  /* ── Decision weight — motion signals that a decision has been committed ── */
+  @keyframes decision-commit {
+    0%   { background: rgba(95, 168, 119, 0.18); }
+    60%  { background: rgba(95, 168, 119, 0.08); }
+    100% { background: transparent; }
+  }
+  .decision-commit { animation: decision-commit 800ms var(--ease-exit) both; }
+
+  /* ── Floor mode — tablet breakpoint, auto-activates at ≤1024px ─────────── */
+  /* Operator-facing: 4ft from screen, gloves on. No manual toggle needed.   */
+  @media (max-width: 1024px) {
+    .text-micro  { font-size: 13px !important; line-height: 1.3 !important; }
+    .text-label  { font-size: 15px !important; line-height: 1.3 !important; }
+    .text-body   { font-size: 18px !important; line-height: 1.45 !important; }
+    .text-head   { font-size: 26px !important; }
+    .text-title  { font-size: 34px !important; }
+    .text-metric { font-size: 36px !important; }
+    .text-score  { font-size: 56px !important; }
+    button, [role="button"] { min-height: 52px !important; }
+    .display-num { letter-spacing: 0.02em; }
+  }
+
   /* ── Reduced-motion overrides ───────────────────────────────────────────── */
   @media (prefers-reduced-motion: reduce) {
     .undo-countdown         { animation: none; width: 0%; }

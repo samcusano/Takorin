@@ -1,6 +1,7 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { compliancePolicies, multiRegulatoryCoverage } from '../data/compliance'
-import { AlertTriangle, ArrowRight, ClipboardCheck, CheckCircle2, XCircle, AlertCircle, Play } from 'lucide-react'
+import { AlertTriangle, ArrowRight, ChevronRight, CheckCircle2, XCircle, AlertCircle } from 'lucide-react'
 import { SceneHeader, StatusPill, Btn, SlidePanel, AnimatedScore, Tabs } from '../components/UI'
 
 // ─── FDA Inspection Simulation data ──────────────────────────────────────────
@@ -186,6 +187,7 @@ const RISK_FINDINGS = [
     closurePath: 'Close CAPA-2604-001 within 48h · submit evidence package to CAPA Engine',
     daysToClose: 2,
     assignee: 'QA Director',
+    link: '/capa', linkLabel: 'CAPA Engine',
   },
   {
     id: 'rf-fsma',
@@ -200,6 +202,7 @@ const RISK_FINDINGS = [
     closurePath: 'Resolve TS-8811 conflict in Data Readiness · rebuild affected lot chain before inspection',
     daysToClose: 5,
     assignee: 'Plant Director',
+    link: '/readiness', linkLabel: 'Data Readiness',
   },
   {
     id: 'rf-coa',
@@ -214,6 +217,7 @@ const RISK_FINDINGS = [
     closurePath: 'Delay production until COA received · document hold decision in supplier log',
     daysToClose: 1,
     assignee: 'Procurement Lead',
+    link: '/supplier', linkLabel: 'Supplier IQ',
   },
   {
     id: 'rf-cert',
@@ -239,20 +243,28 @@ function RiskExposure() {
   return (
     <div className="flex-1 overflow-y-auto">
 
-      {/* Summary strip */}
-      <div className="flex border-b border-rule2 flex-shrink-0">
-        {[
-          { label: 'Warning Letter Risk',      value: String(critical.length),   tone: critical.length > 0 ? 'text-danger' : 'text-ok',  bg: critical.length > 0 ? 'bg-danger/[0.04] border-r-danger/20' : '', sub: 'if audited today'         },
-          { label: 'Observation Risk',          value: String(moderate.length),   tone: moderate.length > 0 ? 'text-warn'   : 'text-ok',  bg: '', sub: 'flagged for follow-up'    },
-          { label: 'Recall exposure',           value: fmtRisk(totalRecall),      tone: totalRecall > 0   ? 'text-danger' : 'text-ok',   bg: '', sub: 'estimated recall cost'     },
-          { label: 'Customer contract risk',    value: fmtRisk(totalContract),    tone: totalContract > 0 ? 'text-warn'   : 'text-ok',   bg: '', sub: 'risk of losing contracts'  },
-        ].map((cell, i) => (
-          <div key={i} className={`flex-1 px-5 py-4 border-r border-rule2 last:border-r-0 ${cell.bg}`}>
-            <div className="font-body text-muted text-label mb-1">{cell.label}</div>
-            <div className={`display-num text-metric font-bold leading-none tabular-nums ${cell.tone}`}>{cell.value}</div>
-            <div className="font-body text-muted text-label mt-1">{cell.sub}</div>
+      {/* Summary strip — dominant Warning Letter Risk, secondary row */}
+      <div className="flex-shrink-0 border-b border-rule2">
+        <div className={`flex items-center gap-6 px-5 py-4 border-b border-rule2 ${critical.length > 0 ? 'bg-danger/[0.04]' : ''}`}>
+          <div className={`display-num text-score leading-none tabular-nums ${critical.length > 0 ? 'text-danger' : 'text-ok'}`}>{critical.length}</div>
+          <div>
+            <div className="font-body font-medium text-ink text-body">Warning Letter risk{critical.length !== 1 ? 's' : ''}</div>
+            <div className="font-body text-muted text-label mt-0.5">if audited today</div>
           </div>
-        ))}
+        </div>
+        <div className="flex">
+          {[
+            { label: 'Observation risk',  value: String(moderate.length),  tone: moderate.length > 0 ? 'text-warn'   : 'text-ok', sub: 'flagged for follow-up'    },
+            { label: 'Recall exposure',   value: fmtRisk(totalRecall),     tone: totalRecall > 0   ? 'text-danger' : 'text-ok', sub: 'estimated recall cost'    },
+            { label: 'Contract risk',     value: fmtRisk(totalContract),   tone: totalContract > 0 ? 'text-warn'   : 'text-ok', sub: 'risk of losing contracts' },
+          ].map((cell, i) => (
+            <div key={i} className="flex-1 px-5 py-3 border-r border-rule2 last:border-r-0">
+              <div className="font-body text-muted text-label mb-1">{cell.label}</div>
+              <div className={`display-num text-head font-bold leading-none tabular-nums ${cell.tone}`}>{cell.value}</div>
+              <div className="font-body text-muted text-label mt-0.5">{cell.sub}</div>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Scenario framing */}
@@ -262,52 +274,51 @@ function RiskExposure() {
       </div>
 
       {/* Finding cards */}
-      <div className="divide-y divide-rule2">
+      <div className="p-5 space-y-3">
         {RISK_FINDINGS.map(f => {
           const sev = f.severity === 'critical'
-            ? { border: 'border-l-danger', bg: 'bg-danger/[0.02]', dot: 'bg-danger', label: 'Warning Letter Risk', tone: 'text-danger' }
-            : { border: 'border-l-warn',   bg: '',                  dot: 'bg-warn',   label: 'Observation Risk',   tone: 'text-warn'   }
+            ? { accentBar: 'bg-danger', label: 'Warning Letter Risk', tone: 'danger' }
+            : { accentBar: 'bg-warn',   label: 'Observation Risk',    tone: 'warn'   }
           return (
-            <div key={f.id} className={`border-l-[3px] ${sev.border} ${sev.bg} px-5 py-4`}>
-              <div className="flex items-start gap-3">
-                <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 mt-1.5 ${sev.dot}`} />
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap mb-1">
-                    <span className="font-body font-medium text-ink text-body">{f.title}</span>
-                    <span className={`font-body text-label font-medium ${sev.tone}`}>{sev.label}</span>
-                    <span className="font-body text-micro text-muted bg-stone3 px-1.5 py-0.5 leading-none">{f.rule}</span>
-                  </div>
-                  <div className="font-body text-muted text-label mb-2 leading-snug">{f.requirement}</div>
-                  <div className={`font-body text-label leading-snug mb-3 ${sev.tone}`}>→ {f.auditFinding}</div>
-                  <div className="flex flex-wrap items-center gap-x-6 gap-y-1 mb-2">
-                    {f.recallRisk > 0 && (
-                      <span className="font-body text-label">
-                        <span className="text-muted">Recall risk: </span>
-                        <span className="font-medium text-danger tabular-nums">{fmtRisk(f.recallRisk)}</span>
-                        {f.recallProbability && <span className="text-muted"> ({f.recallProbability})</span>}
-                      </span>
-                    )}
-                    {f.contractRisk > 0 && (
-                      <span className="font-body text-label">
-                        <span className="text-muted">Contract risk: </span>
-                        <span className="font-medium text-warn tabular-nums">{fmtRisk(f.contractRisk)}</span>
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="font-body text-label text-muted">
-                      <span className="text-ink font-medium">How to resolve in {f.daysToClose}d:</span> {f.closurePath}
-                    </div>
-                    {f.assignee && (
-                      <div className="flex-shrink-0 font-body text-label text-muted">
-                        <span className="text-muted">Owner: </span>
-                        <span className="font-medium text-ink">{f.assignee}</span>
-                      </div>
-                    )}
-                  </div>
+            <article key={f.id} className="bg-stone border border-rule overflow-hidden">
+              <div className={`h-[3px] w-full ${sev.accentBar}`} />
+
+              {/* Header: severity pill + financial exposure */}
+              <div className="flex items-center justify-between px-4 pt-3 pb-1.5">
+                <StatusPill tone={sev.tone}>{sev.label}</StatusPill>
+                <div className="flex items-center gap-4">
+                  {f.recallRisk > 0 && <span className="font-body text-label tabular-nums text-danger font-medium">{fmtRisk(f.recallRisk)} recall</span>}
+                  {f.contractRisk > 0 && <span className="font-body text-label tabular-nums text-warn font-medium">{fmtRisk(f.contractRisk)} contract</span>}
                 </div>
               </div>
-            </div>
+
+              {/* Body */}
+              <div className="px-4 pb-3 space-y-1.5">
+                <p className="font-body text-ink font-medium text-base leading-snug">{f.title}</p>
+                <p className="font-body text-ink text-body leading-relaxed">{f.auditFinding}</p>
+                <p className="font-body text-muted text-label flex items-start gap-1">
+                  <ChevronRight size={11} className="flex-shrink-0 mt-px" />
+                  <span><span className="text-ink font-medium">Resolve in {f.daysToClose}d: </span>{f.closurePath}</span>
+                </p>
+              </div>
+
+              {/* Footer: action + owner + rule */}
+              <div className="flex gap-2 px-4 pb-3 pt-2 border-t border-rule2/60 flex-wrap items-center">
+                {f.link && (
+                  <Link to={f.link} className="inline-flex items-center gap-2 font-body font-medium text-body px-4 py-2 border border-rule bg-stone2 text-ink hover:bg-stone3 hover:border-rule2 transition-colors rounded-btn">
+                    Go to {f.linkLabel} <ArrowRight size={12} />
+                  </Link>
+                )}
+                <div className="ml-auto flex items-center gap-3">
+                  {f.assignee && (
+                    <span className="font-body text-label text-muted">
+                      Owner: <span className="font-medium text-ink">{f.assignee}</span>
+                    </span>
+                  )}
+                  <span className="font-body text-micro text-muted bg-stone3 px-1.5 py-0.5 leading-none">{f.rule}</span>
+                </div>
+              </div>
+            </article>
           )
         })}
       </div>
@@ -319,9 +330,19 @@ function RiskExposure() {
 
 export default function CompliancePolicy() {
   const [selectedId, setSelectedId] = useState('fda-us')
-  const [auditOpen, setAuditOpen] = useState(false)
-  const [policyView, setPolicyView] = useState('detail')
+  const [auditOpen, setAuditOpen]   = useState(false)
+  const [activating, setActivating] = useState(false)
+  const [policyView, setPolicyView] = useState(
+    compliancePolicies.find(p => p.id === 'fda-us')?.nextInspection ? 'exposure' : 'detail'
+  )
   const policy = compliancePolicies.find(p => p.id === selectedId)
+
+  const selectPolicy = (id) => {
+    const p = compliancePolicies.find(cp => cp.id === id)
+    setSelectedId(id)
+    setActivating(false)
+    setPolicyView(p?.nextInspection ? 'exposure' : 'detail')
+  }
 
   // Hero metric: inspection countdown > CAPA count > framework count
   const heroMetric = policy?.nextInspection?.daysRemaining
@@ -342,11 +363,15 @@ export default function CompliancePolicy() {
 
   const activeCount = policy?.frameworks?.filter(f => f.status === 'active').length ?? 0
 
-  const statement = policy?.status === 'inactive'
+  const failCount  = AUDIT_CHECKS.filter(c => c.result === 'fail').length
+  const atRiskCount = AUDIT_CHECKS.filter(c => c.result === 'at-risk').length
+  const statement = policy?.nextInspection
+    ? `${failCount} gap${failCount !== 1 ? 's' : ''} must close before ${policy.nextInspection.authority} arrives — ${atRiskCount} more at risk`
+    : policy?.status === 'inactive'
     ? `Not enforced · ${policy.frameworks.length} frameworks awaiting activation`
     : policy?.status === 'monitoring'
-      ? `Monitoring only · ${policy.frameworks.length} frameworks tracked · not yet enforced`
-      : `${activeCount} of ${policy?.frameworks?.length} frameworks active`
+    ? `Monitoring only · ${policy.frameworks.length} frameworks tracked · not yet enforced`
+    : `${activeCount} of ${policy?.frameworks?.length} frameworks active`
 
   const metaItems = [
     policy?.nextInspection && { label: 'authority', value: policy.nextInspection.authority },
@@ -380,7 +405,7 @@ export default function CompliancePolicy() {
             const dotColor    = STATUS_DOT[p.status]    ?? 'bg-rule2'
             const statusColor = STATUS_COLOR[p.status]  ?? 'text-muted'
             return (
-              <button key={p.id} type="button" onClick={() => setSelectedId(p.id)}
+              <button key={p.id} type="button" onClick={() => selectPolicy(p.id)}
                 className={`w-full text-left px-4 py-4 border-b border-rule2 transition-colors border-l-[3px] ${
                   isSelected
                     ? `${borderColor} bg-stone2`
@@ -432,34 +457,24 @@ export default function CompliancePolicy() {
             meta={metaItems}
           />
 
-          {/* Inspection simulation trigger — only for FDA-US with an active inspection window */}
-          {policy.nextInspection && (
-            <div className="flex-shrink-0 flex items-center justify-between px-5 py-2.5 border-b border-rule2 bg-stone2">
-              <div className="flex items-center gap-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-warn flex-shrink-0" />
-                <span className="font-body text-warn text-label font-medium">
-                  {policy.nextInspection.authority} inspection in {policy.nextInspection.daysRemaining} days
-                </span>
-                <span className="font-body text-muted text-label">— 2 blocking gaps require resolution before arrival</span>
-              </div>
-              <Btn variant="secondary" onClick={() => setAuditOpen(true)}>
-              Simulate audit
-              </Btn>
-            </div>
-          )}
-
-          <EscalationStrip steps={policy.escalationLogic} />
-
-          <div className="flex-shrink-0 border-b border-rule2 px-5">
+          <div className="flex-shrink-0 border-b border-rule2 flex items-center px-5">
             <Tabs
               tabs={[{ id: 'detail', label: 'Policy detail' }, { id: 'exposure', label: 'Risk exposure' }]}
               active={policyView}
               onChange={setPolicyView}
+              className="flex-1 border-b-0"
             />
+            {policy.nextInspection && (
+              <div className="flex-shrink-0 pl-4">
+                <Btn variant="secondary" onClick={() => setAuditOpen(true)}>Simulate audit</Btn>
+              </div>
+            )}
           </div>
 
           {policyView === 'exposure' ? <RiskExposure /> : (
           <div className="flex-1 overflow-y-auto">
+
+            <EscalationStrip steps={policy.escalationLogic} />
 
             {/* Frameworks + Evidence — two columns */}
             <div className="flex border-b border-rule2">
@@ -497,7 +512,20 @@ export default function CompliancePolicy() {
                 <div className="font-body text-muted text-label leading-relaxed mb-3">
                   All {policy.frameworks.length} frameworks will be added to your compliance dashboard. Evidence requirements and escalation rules will be enforced immediately.
                 </div>
-                <Btn variant="primary">Activate policy</Btn>
+                {activating ? (
+                  <div className="border border-rule2 bg-stone px-4 py-3 mb-1">
+                    <div className="font-body font-medium text-ink text-body mb-1">Confirm activation</div>
+                    <div className="font-body text-muted text-label leading-relaxed mb-3">
+                      This will immediately enforce {policy.frameworks.length} frameworks and {policy.escalationLogic?.length ?? 0} escalation rules. Evidence requirements will be tracked from today. This cannot be undone without contacting your compliance admin.
+                    </div>
+                    <div className="flex gap-2">
+                      <Btn variant="primary">Confirm — activate now</Btn>
+                      <Btn variant="secondary" onClick={() => setActivating(false)}>Cancel</Btn>
+                    </div>
+                  </div>
+                ) : (
+                  <Btn variant="primary" onClick={() => setActivating(true)}>Activate policy</Btn>
+                )}
               </div>
             )}
 

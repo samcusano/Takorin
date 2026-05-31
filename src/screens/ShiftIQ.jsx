@@ -708,138 +708,195 @@ const DEMAND_SIGNAL = {
  source: 'Distribution forecast · 3-day rolling avg · updated 05:30',
 }
 
-function PrepareView({ forecast = [] }) {
- const [confirmed, setConfirmed] = useState({})
+function TriageCard({ urgency, resolved, resolvedLabel, header, children, footer }) {
+ if (resolved) {
+  return (
+   <div className="flex items-center gap-3 px-5 py-3 border-b border-rule2/60 opacity-50">
+    <div className="w-4 h-4 rounded-full bg-ok flex items-center justify-center flex-shrink-0">
+     <Check size={9} strokeWidth={2.5} className="text-stone" />
+    </div>
+    <span className="font-body text-muted text-label line-through flex-1">{header}</span>
+    {resolvedLabel && <span className="font-body text-ok text-label">{resolvedLabel}</span>}
+   </div>
+  )
+ }
+ const accentBar = urgency === 'critical' ? 'bg-danger' : 'bg-warn'
+ const urgencyTone = urgency === 'critical' ? 'danger' : 'warn'
+ const urgencyLabel = urgency === 'critical' ? 'Critical' : 'Warning'
+ return (
+  <div className="px-5 py-3 border-b border-rule2">
+   <article className="bg-stone border border-rule overflow-hidden">
+    <div className={`h-[3px] w-full ${accentBar}`} />
+    <div className="flex items-center px-4 pt-3 pb-1.5">
+     <StatusPill tone={urgencyTone}>{urgencyLabel}</StatusPill>
+    </div>
+    <div className="px-4 pb-3 space-y-1.5">
+     <p className="font-body text-ink font-medium text-base leading-snug">{header}</p>
+     {children}
+    </div>
+    {footer && (
+     <div className="flex gap-2 px-4 pb-3 pt-2 border-t border-rule2/60">
+      {footer}
+     </div>
+    )}
+   </article>
+  </div>
+ )
+}
+
+function PrepareView({ forecast = [], onStartShift }) {
+ const { logActivity } = useAppState()
  const [demandAck, setDemandAck] = useState(null)
+ const [certAck, setCertAck] = useState(false)
+ const [sensorAck, setSensorAck] = useState(false)
+ const [checklistAck, setChecklistAck] = useState(false)
+ const [confirmed, setConfirmed] = useState({})
+
  const actionRows = forecast.filter(r => r.action)
+ const actionsAllDone = actionRows.length === 0 || actionRows.every((_, i) => confirmed[i])
+ const resolved = [!!demandAck, certAck, sensorAck, checklistAck, actionsAllDone].filter(Boolean).length
+ const total = 4 + (actionRows.length > 0 ? 1 : 0)
+ const allDone = resolved === total
+
+ const handleAccept = () => {
+  setDemandAck('accept')
+  logActivity({ actor: 'D. Kowalski', action: 'Demand adjustment accepted — Line 4 reduced to 85%', item: 'Line 4', type: 'intervention' })
+ }
+ const handleOverride = () => {
+  setDemandAck('override')
+  logActivity({ actor: 'D. Kowalski', action: 'Demand adjustment overridden — schedule held at 100%', item: 'Line 4', type: 'override' })
+ }
+
  return (
   <div className="flex flex-col flex-1 overflow-hidden content-reveal">
 
-   {/* Pre-shift verification */}
-   <div className="flex-shrink-0 border-b border-rule2">
-    <div className="px-5 py-2 bg-stone2 border-b border-rule2 flex items-center justify-between">
-     <span className="font-body text-muted text-label font-medium">Pre-shift verification</span>
-     <span className="font-body text-muted text-label">T−30 min · auto-checked 05:45</span>
+   {/* Header */}
+   <div className="flex-shrink-0 flex items-center gap-4 px-5 py-3 bg-stone2 border-b border-rule2">
+    <div>
+     <div className="font-body text-micro text-muted">T−30 · Line 4 · AM Shift · checked 05:45</div>
+     <div className="font-display font-bold text-ink text-base leading-tight">
+      {allDone ? 'Shift ready to start' : `${total - resolved} decision${total - resolved !== 1 ? 's' : ''} before shift start`}
+     </div>
     </div>
-    <div className="flex">
-     {[
-      {
-       label: 'Cert readiness',
-       value: `${PRE_SHIFT_VERIFICATION.certReadiness.ready} of ${PRE_SHIFT_VERIFICATION.certReadiness.total}`,
-       sub: 'operators robot-ready',
-       note: PRE_SHIFT_VERIFICATION.certReadiness.note,
-       tone: 'text-warn',
-      },
-      {
-       label: 'Sensor health',
-       value: `${PRE_SHIFT_VERIFICATION.sensorHealth.nominal} of ${PRE_SHIFT_VERIFICATION.sensorHealth.total}`,
-       sub: `signals nominal · ${PRE_SHIFT_VERIFICATION.sensorHealth.staleLabel} stale`,
-       note: PRE_SHIFT_VERIFICATION.sensorHealth.note,
-       tone: 'text-warn',
-      },
-      {
-       label: 'Checklist status',
-       value: `${PRE_SHIFT_VERIFICATION.checklist.complete} of ${PRE_SHIFT_VERIFICATION.checklist.total}`,
-       sub: 'items complete',
-       note: PRE_SHIFT_VERIFICATION.checklist.note,
-       tone: 'text-warn',
-      },
-     ].map((cell, i) => (
-      <div key={i} className="flex-1 px-4 py-3 border-r border-rule2 last:border-r-0">
-       <div className="font-body text-muted text-label mb-0.5">{cell.label}</div>
-       <div className={`display-num text-head font-bold leading-none tabular-nums ${cell.tone}`}>{cell.value}</div>
-       <div className="font-body text-muted text-label mt-0.5">{cell.sub}</div>
-       <div className="font-body text-micro text-muted mt-1 leading-snug">{cell.note}</div>
-      </div>
-     ))}
+    <div className="ml-auto">
+     <StatusPill tone={allDone ? 'ok' : 'warn'}>
+      {resolved} of {total} cleared
+     </StatusPill>
     </div>
    </div>
 
-   {/* Demand alignment */}
-   <div className="flex-shrink-0 border-b border-rule2">
-    <div className="px-5 py-2 bg-stone2 border-b border-rule2 flex items-center justify-between">
-     <span className="font-body text-muted text-label font-medium">Demand alignment</span>
-     <span className="font-body text-muted text-label">{DEMAND_SIGNAL.source}</span>
-    </div>
-    <div className="flex border-b border-rule2">
-     {[
-      { label: 'Scheduled output', value: `${(DEMAND_SIGNAL.scheduledCases / 1000).toFixed(1)}K`, sub: DEMAND_SIGNAL.unit, tone: 'text-ink' },
-      { label: 'Forecasted demand', value: `${(DEMAND_SIGNAL.forecastCases / 1000).toFixed(1)}K`, sub: DEMAND_SIGNAL.unit, tone: 'text-ink' },
-      { label: 'Variance',         value: `+${DEMAND_SIGNAL.variancePct}%`,                       sub: `${DEMAND_SIGNAL.variance} cases over schedule — reduce`, tone: 'text-warn' },
-      { label: 'Signal confidence', value: `${DEMAND_SIGNAL.confidence}%`,                        sub: 'based on 3-day data · 2.1h lag', tone: 'text-muted' },
-     ].map((cell, i) => (
-      <div key={i} className="flex-1 px-4 py-3 border-r border-rule2 last:border-r-0">
-       <div className="font-body text-muted text-label mb-0.5">{cell.label}</div>
-       <div className={`display-num text-head font-bold leading-none tabular-nums ${cell.tone}`}>{cell.value}</div>
-       <div className="font-body text-muted text-label mt-0.5">{cell.sub}</div>
-      </div>
-     ))}
-    </div>
-    {/* Recommendation card */}
-    {demandAck ? (
-      <div className="px-5 py-3 flex items-center gap-2">
-       <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${demandAck === 'accept' ? 'bg-ok' : 'bg-muted'}`} />
-       <span className={`font-body text-label ${demandAck === 'accept' ? 'text-ok' : 'text-muted'}`}>
-        {demandAck === 'accept' ? 'Adjustment accepted — update Line 4 schedule' : 'Schedule held — override logged'}
-       </span>
-      </div>
-     ) : (
-      <div className="mx-5 my-3 border-l-[3px] border-l-warn bg-warn/[0.025] px-4 py-3">
-       <div className="font-body font-medium text-ink text-body mb-0.5">
-        Reduce Line 4 to 85% — {DEMAND_SIGNAL.variancePct}% demand shortfall vs. today's schedule
-       </div>
-       <div className="font-body text-muted text-label leading-snug mb-3">
-        Or reallocate 1 operator to Line 3 packaging backlog. {DEMAND_SIGNAL.source}.
-       </div>
-       <div className="flex gap-2">
-        <button type="button" onClick={() => setDemandAck('accept')}
-         className="font-body text-label px-3 py-1.5 bg-ok/10 border border-ok/30 text-ok hover:bg-ok/20 transition-colors">
-         Accept adjustment
-        </button>
-        <button type="button" onClick={() => setDemandAck('override')}
-         className="font-body text-label px-3 py-1.5 border border-rule2 text-muted hover:text-ink hover:border-ink/20 transition-colors">
-         Override — hold schedule
-        </button>
-       </div>
-      </div>
-     )}
-   </div>
-
-   {/* Gantt — upcoming shift forecast */}
-   <div className="flex-shrink-0 px-5 py-4 border-b border-rule2">
-    <div className="font-body text-micro text-muted mb-3">Upcoming shift forecast</div>
-    <GanttChart forecast={forecast} />
-   </div>
-   {/* Action items — supervisory prep tasks */}
+   {/* Triage deck */}
    <div className="flex-1 overflow-y-auto">
-    <SectionHeader label="Pre-shift actions" sub={`${actionRows.filter(r => !confirmed[r.name]).length} items outstanding · confirm each before shift start`} />
-    {actionRows.map((row, i) => {
-     const done = !!confirmed[row.name + i]
-     return (
-      <div key={i} className={`flex items-start gap-3 px-5 py-4 border-b border-rule2 transition-opacity ${done ? 'opacity-50' : ''} ${row.critical ? 'bg-danger/[0.02]' : ''}`}>
-       <button type="button"
-        disabled={done}
-        onClick={() => setConfirmed(p => ({...p, [row.name + i]: true}))}
-        className={`w-5 h-5 rounded-full flex-shrink-0 flex items-center justify-center mt-0.5 transition-colors ${
-         done ? 'bg-ok' : row.critical ? 'border-2 border-danger hover:border-ok hover:bg-ok/10 cursor-pointer' : 'border-2 border-rule2 hover:border-signal cursor-pointer'
-        }`}>
-        {done && <Check size={11} strokeWidth={2.5} className="text-stone" />}
-       </button>
-       <div className="flex-1">
-        <div className={`font-body font-medium text-body leading-snug ${done ? 'line-through text-muted' : row.critical ? 'text-danger' : 'text-ink'}`}>
-         {row.action}
-        </div>
-        <div className="font-body text-muted text-label mt-0.5">{row.name} · {row.time.replace('\n', ' ')}</div>
-       </div>
-       {row.critical && !done && (
-        <span className="font-body text-label text-danger bg-danger/[0.08] px-1.5 py-px flex-shrink-0">Critical</span>
-       )}
+
+    {/* Card 1 — Capacity decision (always first — most consequential) */}
+    <TriageCard urgency="critical" resolved={!!demandAck}
+     header={`Demand shortfall — schedule ${DEMAND_SIGNAL.variancePct}% over forecast`}
+     resolvedLabel={demandAck === 'accept' ? 'Reduced to 85%' : 'Schedule held'}
+     footer={<><Btn variant="primary" onClick={handleAccept}>Accept — reduce to 85%</Btn><Btn variant="secondary" onClick={handleOverride}>Override — hold schedule</Btn></>}>
+     <div className="flex items-baseline gap-3">
+      <span className="display-num text-score font-bold text-warn tabular-nums leading-none">+{DEMAND_SIGNAL.variancePct}%</span>
+      <span className="font-body font-medium text-ink text-body">demand shortfall vs. today's schedule</span>
+     </div>
+     <p className="font-body text-ink text-body leading-relaxed">{DEMAND_SIGNAL.recommendation}.</p>
+     <p className="font-body text-muted text-label flex items-start gap-1">
+      <ChevronRight size={11} className="flex-shrink-0 mt-px" />Signal confidence {DEMAND_SIGNAL.confidence}% · {DEMAND_SIGNAL.source}
+     </p>
+    </TriageCard>
+
+    {/* Card 2 — Cert gap */}
+    <TriageCard urgency="critical" resolved={certAck}
+     header="Cert mismatch — Reyes (L1) assigned L2 station"
+     resolvedLabel="Reassigned"
+     footer={<Btn variant="secondary" onClick={() => { setCertAck(true); logActivity({ actor: 'D. Kowalski', action: 'Reyes reassigned to L1 station — cert gap resolved', item: 'Reyes', type: 'intervention' }) }}>Reassign Reyes to L1 station</Btn>}>
+     <p className="font-body text-ink text-body leading-relaxed">{PRE_SHIFT_VERIFICATION.certReadiness.note}</p>
+     <p className="font-body text-muted text-label flex items-start gap-1">
+      <ChevronRight size={11} className="flex-shrink-0 mt-px" />L2 station requires allergen certification — brief Reyes or reassign before start
+     </p>
+    </TriageCard>
+
+    {/* Card 3 — Sensor stale */}
+    <TriageCard urgency="warn" resolved={sensorAck}
+     header={`${PRE_SHIFT_VERIFICATION.sensorHealth.staleLabel} sensor stale — last reading 2h 14m ago`}
+     resolvedLabel="Acknowledged"
+     footer={<Btn variant="secondary" onClick={() => { setSensorAck(true); logActivity({ actor: 'D. Kowalski', action: `${PRE_SHIFT_VERIFICATION.sensorHealth.staleLabel} stale sensor acknowledged — proceeding with reduced accuracy`, item: PRE_SHIFT_VERIFICATION.sensorHealth.staleLabel, type: 'intervention' }) }}>Acknowledge — proceed with reduced accuracy</Btn>}>
+     <p className="font-body text-ink text-body leading-relaxed">{PRE_SHIFT_VERIFICATION.sensorHealth.note}</p>
+     <p className="font-body text-muted text-label flex items-start gap-1">
+      <ChevronRight size={11} className="flex-shrink-0 mt-px" />{PRE_SHIFT_VERIFICATION.sensorHealth.nominal} of {PRE_SHIFT_VERIFICATION.sensorHealth.total} signals nominal · {PRE_SHIFT_VERIFICATION.sensorHealth.staleLabel} last confirmed {PRE_SHIFT_VERIFICATION.sensorHealth.staleAge ?? '2h 14m'} ago
+     </p>
+    </TriageCard>
+
+    {/* Card 4 — Checklist */}
+    <TriageCard urgency="warn" resolved={checklistAck}
+     header={`${PRE_SHIFT_VERIFICATION.checklist.complete} of ${PRE_SHIFT_VERIFICATION.checklist.total} safety checklist items complete`}
+     resolvedLabel="Checklist signed"
+     footer={<Btn variant="secondary" onClick={() => { setChecklistAck(true); logActivity({ actor: 'D. Kowalski', action: 'Pre-shift checklist signed — 4 outstanding items acknowledged', item: 'Checklist', type: 'intervention' }) }}>Sign off checklist</Btn>}>
+     <p className="font-body text-ink text-body leading-relaxed">{PRE_SHIFT_VERIFICATION.checklist.note}</p>
+     <p className="font-body text-muted text-label flex items-start gap-1">
+      <ChevronRight size={11} className="flex-shrink-0 mt-px" />{PRE_SHIFT_VERIFICATION.checklist.outstanding} items outstanding before shift start
+     </p>
+    </TriageCard>
+
+    {/* Card 5 — Forecast action items (dynamic, if any) */}
+    {actionRows.length > 0 && (
+     <TriageCard urgency="warn" resolved={actionsAllDone}
+      header={`${actionRows.filter((_, i) => !confirmed[i]).length} pre-shift action${actionRows.filter((_, i) => !confirmed[i]).length !== 1 ? 's' : ''} outstanding`}
+      resolvedLabel="All cleared">
+      <div className="-mx-4 -mb-3 mt-1">
+       {actionRows.map((row, i) => {
+        const done = !!confirmed[i]
+        return (
+         <div key={i} className={`border-l-2 ${row.urgent ? 'border-l-danger' : 'border-l-rule2'} border-t border-rule2/50 px-4 py-3 flex items-center gap-3 ${done ? 'opacity-50' : ''}`}>
+          <div className="flex-1 min-w-0">
+           <div className={`font-body font-medium text-body leading-snug ${done ? 'line-through text-muted' : row.urgent ? 'text-danger' : 'text-ink'}`}>
+            {row.action}
+           </div>
+           <p className="font-body text-muted text-label leading-snug mt-0.5 line-clamp-1">
+            {row.name} · {row.time.replace('\n', ' ')}
+           </p>
+          </div>
+          {row.urgent && !done && (
+           <span className="font-body text-label text-danger bg-danger/[0.08] px-1.5 py-px rounded-btn flex-shrink-0">Critical</span>
+          )}
+          <div className="flex-shrink-0" onClick={e => e.stopPropagation()}>
+           {done ? (
+            <div className="w-7 h-7 rounded-full border border-ok/20 bg-ok/5 flex items-center justify-center" aria-label="Confirmed">
+             <Check size={13} strokeWidth={2.5} className="text-ok" />
+            </div>
+           ) : (
+            <button type="button"
+             onClick={() => { setConfirmed(p => ({ ...p, [i]: true })); logActivity({ actor: 'D. Kowalski', action: `Confirmed: ${row.action}`, item: row.name, type: 'intervention' }) }}
+             className="w-7 h-7 rounded-full border-2 border-rule2 bg-stone3 hover:border-ok hover:bg-ok/10 transition-colors flex items-center justify-center cursor-pointer"
+             aria-label={`Confirm: ${row.action}`}>
+             <Check size={13} strokeWidth={2} className="text-muted" />
+            </button>
+           )}
+          </div>
+         </div>
+        )
+       })}
       </div>
-     )
-    })}
-    {actionRows.length === 0 && (
-     <div className="px-5 py-10 text-center font-body text-muted text-body">No pre-shift actions — staffing looks clean.</div>
+     </TriageCard>
     )}
+
+    {/* Completion state */}
+    {allDone && (
+     <div className="px-5 py-10 text-center">
+      <div className="w-10 h-10 rounded-full bg-ok mx-auto mb-3 flex items-center justify-center">
+       <Check size={20} strokeWidth={2} className="text-stone" />
+      </div>
+      <div className="font-body text-ok font-medium text-body">Shift ready to start</div>
+      <div className="font-body text-muted text-label mt-1">
+       Sign-off complete · {new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+      </div>
+      {onStartShift && (
+       <button type="button" onClick={onStartShift}
+        className="mt-4 px-5 py-2.5 rounded-btn font-body font-medium text-base bg-ok/10 text-ok border border-ok/30 hover:bg-ok/20 cursor-pointer transition-colors">
+        Start shift →
+       </button>
+      )}
+     </div>
+    )}
+
    </div>
   </div>
  )
@@ -949,33 +1006,83 @@ export default function ShiftIQ() {
  return (
  <div className="flex flex-col h-full overflow-hidden">
 
- {/* Tab bar — Shift | Handoff | Fleet (robot/hybrid) | Allocation (hybrid) */}
- <div className="flex-shrink-0 flex items-center border-b border-rule2 bg-stone2">
-  <Tabs
-   tabs={[
-    { id: 'shift',      label: 'Shift' },
-    { id: 'prepare',    label: 'Prepare',     dot: shiftData.forecast?.some(r => r.critical) },
-    { id: 'handoff',    label: 'Handoff' },
-    ...(workerMode === 'robot' || workerMode === 'hybrid' || currentPlant?.id === 'ks' ? [{ id: 'fleet', label: 'Robot Fleet' }] : []),
-    ...(workerMode === 'hybrid' ? [{ id: 'allocation', label: 'Allocation' }] : []),
-   ]}
-   active={activeTab}
-   onChange={setActiveTab}
-   className="flex-1 !border-b-0 -mb-px px-1"
-  />
-  {/* Sleep mode trigger */}
-  {activeTab === 'shift' && (
-   <Btn variant="ghost" onClick={() => setQuietForm(p => ({...p, open: true}))}
-    className="mr-2 !px-2 !min-h-0 !py-2" aria-label="Set quiet period" title="Set quiet period">
-    <Moon size={13} strokeWidth={2} />
-   </Btn>
-  )}
+ {/* ── Shift Arc — time-first navigation ─────────────────────────────── */}
+ <div className="flex-shrink-0 border-b border-rule2 bg-stone2">
+  {(() => {
+   const ARC_SEGMENTS = [
+    {
+     id: 'prepare', label: 'Prep', time: 'T−30',
+     status: `${shiftData.forecast?.filter(r => r.action).length ?? 0} actions · ${PRE_SHIFT_VERIFICATION.certReadiness.ready}/${PRE_SHIFT_VERIFICATION.certReadiness.total} certs pass`,
+    },
+    {
+     id: 'shift', label: 'Running', time: 'Now',
+     status: `Line ${activeLine?.toUpperCase() ?? 'L4'} · Risk ${lineScore} · ${Math.max(0, pendingTaskCount)} active`,
+     isNow: true,
+    },
+    {
+     id: 'handoff', label: 'Handoff', time: 'T−45',
+     status: '4 carry-forward items · draft in progress',
+    },
+   ]
+   const hasSecondary = workerMode === 'robot' || workerMode === 'hybrid' || currentPlant?.id === 'ks'
+   return (
+    <div className="flex items-stretch">
+     {/* Arc segments */}
+     <div className="flex flex-1 relative">
+      {ARC_SEGMENTS.map((seg, i) => {
+       const isActive = activeTab === seg.id
+       return (
+        <button key={seg.id} type="button"
+         onClick={() => setActiveTab(seg.id)}
+         className={`flex-1 flex flex-col items-center gap-1 px-3 py-2.5 relative transition-colors text-center hover:bg-stone3 ${isActive ? 'bg-stone3' : ''}`}>
+         {/* node */}
+         <div className={`w-3 h-3 rounded-full border-2 flex-shrink-0 transition-colors z-10 relative ${
+          seg.isNow
+           ? 'bg-ok border-ok shadow-[0_0_6px_var(--color-ok)]'
+           : isActive
+           ? 'bg-signal border-signal'
+           : 'bg-stone3 border-rule'
+         }`} />
+         <div className={`font-body font-medium text-label leading-none ${isActive ? 'text-ink' : seg.isNow ? 'text-ok' : 'text-muted'}`}>
+          {seg.label}
+         </div>
+         <div className="font-body text-micro text-muted/70 leading-none">{seg.time}</div>
+         <div className={`font-body text-micro leading-snug text-center mt-0.5 ${isActive ? 'text-muted' : 'text-muted/50'}`}>
+          {seg.status}
+         </div>
+         {isActive && <div className="absolute bottom-0 left-0 right-0 h-px bg-signal" />}
+        </button>
+       )
+      })}
+     </div>
+     {/* Secondary buttons */}
+     <div className="flex-shrink-0 flex items-center gap-1 px-2 border-l border-rule2">
+      {hasSecondary && (
+       <button type="button" onClick={() => setActiveTab('fleet')}
+        className={`font-body text-micro px-2 py-1.5 transition-colors ${activeTab === 'fleet' ? 'text-ink bg-stone3' : 'text-muted hover:text-ink'}`}>
+        Fleet
+       </button>
+      )}
+      {workerMode === 'hybrid' && (
+       <button type="button" onClick={() => setActiveTab('allocation')}
+        className={`font-body text-micro px-2 py-1.5 transition-colors ${activeTab === 'allocation' ? 'text-ink bg-stone3' : 'text-muted hover:text-ink'}`}>
+        Alloc
+       </button>
+      )}
+      <button type="button" onClick={() => setQuietForm(p => ({...p, open: true}))}
+       className="text-muted hover:text-ink p-1.5 transition-colors" aria-label="Set quiet period" title="Set quiet period">
+       <Moon size={11} strokeWidth={2} />
+      </button>
+     </div>
+    </div>
+   )
+  })()}
  </div>
 
  {activeTab === 'handoff'    ? <HandoffIQ />
   : activeTab === 'fleet'      ? <RobotFleet />
   : activeTab === 'allocation' ? <ResourceAllocation />
-  : activeTab === 'prepare'    ? <PrepareView forecast={shiftData.forecast} />
+  : activeTab === 'prepare'    ? <PrepareView forecast={shiftData.forecast} onStartShift={() => setActiveTab('shift')} />
   : <>
  {/* Quiet period banner — triggered by Moon icon in tab bar */}
  {currentQuiet ? (
