@@ -83,7 +83,7 @@ const STATUS_BORDER = { active: 'border-l-ok', inactive: 'border-l-rule2', monit
 
 // ─── Section header ───────────────────────────────────────────────────────────
 
-function SectionHeader({ label, count }) {
+function PolicySectionHeader({ label, count }) {
   return (
     <div className="flex items-center gap-3 px-5 py-2.5 border-b border-rule2">
       <span className="font-body text-label font-semibold text-muted">{label}</span>
@@ -187,7 +187,7 @@ const RISK_FINDINGS = [
     closurePath: 'Close CAPA-2604-001 within 48h · submit evidence package to CAPA Engine',
     daysToClose: 2,
     assignee: 'QA Director',
-    link: '/capa', linkLabel: 'CAPA Engine',
+    link: '/capa', linkLabel: 'CAPA',
   },
   {
     id: 'rf-fsma',
@@ -202,7 +202,7 @@ const RISK_FINDINGS = [
     closurePath: 'Resolve TS-8811 conflict in Data Readiness · rebuild affected lot chain before inspection',
     daysToClose: 5,
     assignee: 'Plant Director',
-    link: '/readiness', linkLabel: 'Data Readiness',
+    link: '/readiness', linkLabel: 'Data Quality',
   },
   {
     id: 'rf-coa',
@@ -479,18 +479,18 @@ export default function CompliancePolicy() {
             {/* Frameworks + Evidence — two columns */}
             <div className="flex border-b border-rule2">
               <div className="flex-1 border-r border-rule2">
-                <SectionHeader label="Frameworks" count={`${policy.frameworks.length} configured`} />
+                <PolicySectionHeader label="Frameworks" count={`${policy.frameworks.length} configured`} />
                 {policy.frameworks.map((f, i) => <FrameworkRow key={f.id} f={f} index={i} />)}
               </div>
               <div className="flex-1">
-                <SectionHeader label="Evidence" count={`${policy.evidenceRequirements.length} requirements`} />
+                <PolicySectionHeader label="Evidence" count={`${policy.evidenceRequirements.length} requirements`} />
                 {policy.evidenceRequirements.map((e, i) => <EvidenceRow key={i} e={e} index={i} />)}
               </div>
             </div>
 
             {/* Reporting templates */}
             <div>
-              <SectionHeader label="Reporting" count={`${policy.reportingTemplates.length} templates`} />
+              <PolicySectionHeader label="Reporting" count={`${policy.reportingTemplates.length} templates`} />
               {policy.reportingTemplates.map(t => (
                 <div key={t.id} className="flex items-center gap-3 px-5 py-3 border-b border-rule2 last:border-0 hover:bg-stone2 transition-colors">
                   <div className="flex-1 min-w-0">

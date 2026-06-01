@@ -720,7 +720,7 @@ function LayoutQueue({ visibleCases, blockingEvidenceUploaded, setBlockingEviden
  {sortedQueue.length === 0 && (
  <div className="flex-1 flex items-center justify-center px-4 py-12 text-center">
  <div>
- <div className="font-display font-bold text-ok text-page mb-1">All clear</div>
+ <div className="font-display font-bold text-ok text-metric mb-1">All clear</div>
  <div className="font-body text-muted text-label">No open cases.</div>
  </div>
  </div>
@@ -751,7 +751,7 @@ function LayoutQueue({ visibleCases, blockingEvidenceUploaded, setBlockingEviden
  ) : (
  <div className="flex-1 flex items-center justify-center text-center px-8">
  <div>
- <div className="font-display font-bold text-ok text-page mb-2">All clear</div>
+ <div className="font-display font-bold text-ok text-metric mb-2">All clear</div>
  <div className="font-body text-muted text-body">No open cases require attention.</div>
  </div>
  </div>

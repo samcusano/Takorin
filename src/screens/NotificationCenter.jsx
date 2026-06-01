@@ -6,8 +6,8 @@ import { VaulDrawer, StatusPill, Tabs } from '../components/UI'
 
 const INTELLIGENCE_SIGNALS = [
   { confidence: 87, label: 'Line 4 intervention window closing', detail: 'Staffing mismatch + allergen log unresolved · 27 min remaining in window', route: '/shift', routeLabel: 'ShiftIQ', tone: 'danger' },
-  { confidence: 82, label: 'ConAgra Lot TS-8811 — cross-plant exposure', detail: '2 plants affected · 5,840 units at risk · COA not received', route: '/network', routeLabel: 'Network', tone: 'danger' },
-  { confidence: 74, label: 'FDA inspection in 18 days — 3 evidence gaps remain', detail: 'CAPA-2604-001 and -006 blocking audit export · FSMA 204 traceability incomplete', route: '/capa', routeLabel: 'CAPA Engine', tone: 'warn' },
+  { confidence: 82, label: 'ConAgra Lot TS-8811 — cross-plant exposure', detail: '2 plants affected · 5,840 units at risk · COA not received', route: '/supplier', routeLabel: 'Suppliers', tone: 'danger' },
+  { confidence: 74, label: 'FDA inspection in 18 days — 3 evidence gaps remain', detail: 'CAPA-2604-001 and -006 blocking audit export · FSMA 204 traceability incomplete', route: '/capa', routeLabel: 'CAPA', tone: 'warn' },
 ]
 
 // Type → visual style mapping
@@ -43,7 +43,7 @@ const sampleActivity = [
     title: 'Agent decision — Tier 3 ratification required · Lot TS-8811',
     body: 'Supplier Intelligence Agent recommends holding Lot TS-8811. COA not received 4h before production start. Director sign-off required before 08:00.',
     link: '/agents',
-    linkLabel: 'Open AgentControl',
+    linkLabel: 'Open Agents',
   },
   {
     id: 'notif-network',
@@ -52,7 +52,7 @@ const sampleActivity = [
     title: 'Network advisory — TX-11 also holding Lot TS-8811',
     body: 'Cross-plant exposure: SL-04 and TX-11 both hold TS-8811. Holds not yet coordinated. Uncoordinated release creates partial recall exposure.',
     link: '/agents',
-    linkLabel: 'Open AgentControl',
+    linkLabel: 'Open Agents',
   },
   {
     id: 'notif-coa-request',
@@ -61,7 +61,7 @@ const sampleActivity = [
     title: 'COA request sent to ConAgra — Lot TS-8811',
     body: 'Automated COA request dispatched. Production scheduled for 08:00 today. Hold remains active until COA is received and verified.',
     link: '/supplier',
-    linkLabel: 'Open SupplierIQ',
+    linkLabel: 'Open Suppliers',
   },
   {
     id: 'notif-l0891-delay',
@@ -70,7 +70,7 @@ const sampleActivity = [
     title: 'Delivery delay — Lot L-0891 · Pepperoni · +6h',
     body: 'Expected arrival delayed 6 hours. COA not yet received. Pre-production hold active per FSMA 204. Supplier Intelligence Agent has escalated.',
     link: '/supplier',
-    linkLabel: 'Open SupplierIQ',
+    linkLabel: 'Open Suppliers',
   },
   {
     id: 'notif-fsma-posture',

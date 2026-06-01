@@ -391,7 +391,7 @@ function EquipmentDetail({ eq }) {
             </div>
           )}
         </div>
-        <div className="font-display font-bold text-ink text-subhead leading-none mb-0.5">{eq.name}</div>
+        <div className="font-display font-bold text-ink text-head leading-none mb-0.5">{eq.name}</div>
         <div className="font-body text-muted text-body">{eq.type} · {eq.zone}</div>
       </div>
 

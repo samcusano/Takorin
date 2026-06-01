@@ -22,9 +22,9 @@ const CLUSTER_A = {
   ],
   totalPoints: 14,
   detectedAgo: '14h ago',
-  systemsImpacted: ['ERP', 'SupplierIQ', 'FSMA 204 export'],
+  systemsImpacted: ['ERP', 'Suppliers', 'FSMA 204 export'],
   confidenceDrop: 18,
-  unlocks: ['FSMA export certification', 'SupplierIQ high-confidence mode'],
+  unlocks: ['FSMA export certification', 'Suppliers high-confidence mode'],
   blockedBy: null,
   aiAssessment: {
     text: 'Root cause originates from ConAgra lot formatting variance introduced after the last ERP sync update. Both naming conflicts trace to the same upstream schema change — resolving one without the other will regenerate the error on the next sync cycle.',
@@ -40,7 +40,7 @@ const CLUSTER_A = {
   baseline: 'ERP field matching operating at 98% · Supplier lot name formats aligned across all 14 active records since the May 9 validated sync · FSMA traceability chain intact',
   riskForecast: [
     { hours: 12, consequence: 'FSMA export failure likely — traceability chain incomplete' },
-    { hours: 24, consequence: 'SupplierIQ confidence may fall below operational threshold' },
+    { hours: 24, consequence: 'Suppliers confidence may fall below operational threshold' },
     { hours: 48, consequence: 'Cross-plant lot tracing unavailable during FDA audit window' },
   ],
 }
@@ -155,7 +155,7 @@ const ISSUE_TRACE = {
   points: 8,
   gainLabel: '+8 readiness · restores FSMA lot chain',
   detectedAgo: '6 days ago',
-  systemsImpacted: ['Supplier lot intake', 'FSMA 204 traceability module', 'SupplierIQ'],
+  systemsImpacted: ['Supplier lot intake', 'FSMA 204 traceability module', 'Suppliers'],
   confidenceDrop: 8,
   unlocks: ['Complete lot chain-of-custody', 'FSMA 204 export readiness'],
   blockedBy: null,
@@ -241,7 +241,7 @@ function ReadinessInstrument({ score, resolved }) {
 
   const moduleRows = [
     { label: 'ShiftIQ confidence',    value: `${shiftIQConf}%`,    ok: shiftIQConf >= 75 },
-    { label: 'SupplierIQ confidence', value: `${supplierIQConf}%`, ok: supplierIQConf >= 75 },
+    { label: 'Suppliers confidence', value: `${supplierIQConf}%`, ok: supplierIQConf >= 75 },
     { label: 'FSMA traceability',     value: fsmaBlocked ? 'At risk' : 'Clear', ok: !fsmaBlocked, danger: fsmaBlocked },
   ]
 
@@ -426,7 +426,7 @@ function ResolutionFeedback({ feedback, onDismiss }) {
         {[
           { label: 'Readiness', from: feedback.prevScore, to: feedback.newScore, unit: '', gain: true },
           { label: 'ShiftIQ confidence', from: `${feedback.prevShiftIQ}%`, to: `${feedback.newShiftIQ}%`, gain: feedback.newShiftIQ > feedback.prevShiftIQ },
-          { label: 'SupplierIQ confidence', from: `${feedback.prevSupplierIQ}%`, to: `${feedback.newSupplierIQ}%`, gain: feedback.newSupplierIQ > feedback.prevSupplierIQ },
+          { label: 'Suppliers confidence', from: `${feedback.prevSupplierIQ}%`, to: `${feedback.newSupplierIQ}%`, gain: feedback.newSupplierIQ > feedback.prevSupplierIQ },
         ].map(r => (
           <div key={r.label}>
             <div className="font-body text-muted text-label mb-1">{r.label}</div>
@@ -499,7 +499,7 @@ function WorkspacePanel({ item, isCluster, resolved, onResolve, onResolveCluster
 
         {/* 2. Hero: title left, accuracy impact right */}
         <div className="flex items-start justify-between gap-6 mb-4">
-          <h2 className="font-display font-bold text-ink text-page leading-tight flex-1">{item.label}</h2>
+          <h2 className="font-display font-bold text-ink text-metric leading-tight flex-1">{item.label}</h2>
           {item.confidenceDrop > 0 && (
             <div className="flex-shrink-0 text-right">
               <div className="font-body text-muted text-label mb-1">Accuracy impact</div>

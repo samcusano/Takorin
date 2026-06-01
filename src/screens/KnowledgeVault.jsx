@@ -132,7 +132,7 @@ function EntryDetail({ entry, isPromoted, onPromote }) {
             <div className="font-display font-bold text-ink text-head leading-snug">{entry.title}</div>
           </div>
           <div className="text-right flex-shrink-0">
-            <div className={`display-num text-page leading-none ${confColor}`}>{entry.confidence}%</div>
+            <div className={`display-num text-metric leading-none ${confColor}`}>{entry.confidence}%</div>
             <div className="font-body text-muted text-label">confidence</div>
           </div>
         </div>
@@ -333,7 +333,7 @@ function OperationalMemoryVault() {
                 <div className="flex items-start gap-3">
                   {domain && <domain.icon size={18} className={`${domain.color} flex-shrink-0 mt-0.5`} strokeWidth={1.5} />}
                   <div>
-                    <div className="font-display font-bold text-ink text-subhead leading-none mb-1">{domain?.label}</div>
+                    <div className="font-display font-bold text-ink text-head leading-none mb-1">{domain?.label}</div>
                     <div className="font-body text-muted text-body leading-relaxed">
                       {activeDomain === 'active-deviations'   ? 'Currently active process anomalies with open causal threads' :
                        activeDomain === 'sensory-drift'        ? 'Expert sensory observations, aroma and flavor deviation patterns' :
@@ -394,7 +394,7 @@ function OperationalMemoryVault() {
                                     </span>
                                   )}
                                 </div>
-                                <div className={`display-num text-page leading-none flex-shrink-0 ${confColor}`}>{e.confidence}%</div>
+                                <div className={`display-num text-metric leading-none flex-shrink-0 ${confColor}`}>{e.confidence}%</div>
                               </div>
                               {/* Body: title + preview */}
                               <div className="font-body font-medium text-ink text-body leading-snug mb-1.5">{e.title}</div>

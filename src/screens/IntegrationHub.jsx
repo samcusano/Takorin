@@ -72,7 +72,7 @@ function ConnectorDetail({ c }) {
           <StatusPill tone={c.status === 'active' ? 'ok' : c.status === 'available' ? 'muted' : 'signal'}>{cfg.label}</StatusPill>
           {c.streaming && <span className="font-body text-ok text-label flex items-center gap-1"><Radio size={9} strokeWidth={2} />Streaming</span>}
         </div>
-        <div className="font-display font-bold text-ink text-subhead leading-none mb-1">{c.name}</div>
+        <div className="font-display font-bold text-ink text-head leading-none mb-1">{c.name}</div>
         <div className="font-body text-muted text-body">{c.vendor}</div>
       </div>
 

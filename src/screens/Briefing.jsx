@@ -16,7 +16,7 @@ const PRIORITY = [
     time: '06:22',
     lot: 'TS-8811',
     route: '/agents',
-    routeLabel: 'AgentControl',
+    routeLabel: 'Agents',
   },
   {
     id: 'p2',
@@ -27,7 +27,7 @@ const PRIORITY = [
     time: '05:47',
     lot: 'TS-8811',
     route: '/supplier',
-    routeLabel: 'SupplierIQ',
+    routeLabel: 'Suppliers',
   },
   {
     id: 'p3',
@@ -38,7 +38,7 @@ const PRIORITY = [
     time: '05:33',
     lot: 'L-0891',
     route: '/supplier',
-    routeLabel: 'SupplierIQ',
+    routeLabel: 'Suppliers',
   },
   {
     id: 'p4',
@@ -49,7 +49,7 @@ const PRIORITY = [
     time: '06:02',
     lot: 'TS-8811',
     route: '/agents',
-    routeLabel: 'AgentControl',
+    routeLabel: 'Agents',
   },
   {
     id: 'p5',
@@ -59,7 +59,7 @@ const PRIORITY = [
     detail: 'Supplier standing: 71. Contract review criteria met. Pattern-based escalation logged by Supplier Intelligence Agent.',
     time: '06:00',
     route: '/supplier',
-    routeLabel: 'SupplierIQ',
+    routeLabel: 'Suppliers',
   },
   {
     id: 'p6',
@@ -308,7 +308,7 @@ export default function Briefing() {
           ))}
           <button type="button" onClick={() => navigate('/supplier')}
             className="w-full flex items-center justify-between px-4 py-3 border-b border-rule2 hover:bg-stone2 transition-colors group">
-            <span className="font-body text-muted text-label">View SupplierIQ</span>
+            <span className="font-body text-muted text-label">View Suppliers</span>
             <ArrowRight size={10} strokeWidth={2} className="text-muted group-hover:text-signal transition-colors" />
           </button>
         </div>

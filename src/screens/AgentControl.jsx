@@ -622,7 +622,7 @@ function DecisionReplay({ pa, agent }) {
       {/* Live confidence readout */}
       <div className="px-4 py-3 bg-stone2">
         <div className="flex items-end gap-2 mb-2">
-          <span className={`font-display font-bold text-display leading-none tabular-nums ${confColor}`}
+          <span className={`font-display font-bold text-score leading-none tabular-nums ${confColor}`}
             style={{ transition: 'color 250ms var(--ease-standard)' }}>
             {displayConf}
           </span>

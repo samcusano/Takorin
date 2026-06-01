@@ -328,7 +328,7 @@ export function PageHead({ over, title, accent = 'var(--color-signal)', meta = [
  return (
  <div className="px-6 py-5 border-b border-rule2 bg-stone2 relative overflow-hidden" style={{ borderLeft: `3px solid ${accent}` }}>
  {over && <div className="font-body text-micro text-muted mb-2">{over}</div>}
- <div className="font-display font-bold text-page text-ink leading-tight">
+ <div className="font-display font-bold text-metric text-ink leading-tight">
  {title}
  {children && <span className="font-display font-normal" style={{ color: accent }}> {children}</span>}
  </div>

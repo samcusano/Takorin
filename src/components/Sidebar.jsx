@@ -460,7 +460,7 @@ export default function Sidebar() {
  {viewingRole === 'supervisor' && (
   <>
    {!collapsed && <div className="px-4 pt-4 pb-1 font-body text-micro text-sidebar-ghost">Operational</div>}
-   <SideItem to="/shift"  id="shift"  icon={Activity} label="ShiftIQ"      badge="3" badgeType="alert" collapsed={collapsed} />
+   <SideItem to="/shift"  id="shift"  icon={Activity} label="Shift"        badge="3" badgeType="alert" collapsed={collapsed} />
    <AgentItem count={agentPendingCount} collapsed={collapsed} />
    {!collapsed && <div className="px-4 pt-4 pb-1 font-body text-micro text-sidebar-ghost">Causality</div>}
    <SideItem to="/outcomes" id="outcomes" icon={CircleDot} label="Outcomes" badge={null} collapsed={collapsed} />

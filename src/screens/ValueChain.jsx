@@ -109,7 +109,7 @@ function OrderDetail({ order }) {
             </span>
           )}
         </div>
-        <div className="font-display font-bold text-ink text-subhead leading-none mb-1">{order.id}</div>
+        <div className="font-display font-bold text-ink text-head leading-none mb-1">{order.id}</div>
         <div className="font-body text-muted text-body">{order.customer}</div>
       </div>
 
@@ -191,7 +191,7 @@ export default function ValueChain() {
                 <Icon size={9} strokeWidth={2} className={tone} />
                 <span className="font-body text-muted text-label">{label}</span>
               </div>
-              <div className={`display-num text-subhead ${tone}`}>{val}</div>
+              <div className={`display-num text-head ${tone}`}>{val}</div>
               <div className="font-body text-muted text-label">{sub}</div>
             </div>
           ))}

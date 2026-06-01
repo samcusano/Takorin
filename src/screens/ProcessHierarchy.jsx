@@ -646,7 +646,7 @@ function StateFieldView({ site, variant, onVariantChange }) {
                       )}
                       <div className="font-body text-muted text-label mb-1">{z.name}</div>
                       <div className="font-body font-medium text-ink text-body leading-snug mb-2">{z.label}</div>
-                      <div className={`display-num text-subhead leading-none ${sc} mb-1`}>{z.score}</div>
+                      <div className={`display-num text-head leading-none ${sc} mb-1`}>{z.score}</div>
                       <div className="flex items-center justify-between">
                         <span className={`font-body text-label font-medium ${sc}`}>{statusLabel}</span>
                         <span className="font-body text-muted text-label">{z.vessels}v</span>

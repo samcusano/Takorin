@@ -38,11 +38,8 @@ export default {
         base:    ['15px', { lineHeight: '1.4' }],   // comfortable reading / subheadings
         // ── Numeric / display — 6 steps ───────────────────────────────────
         head:    ['18px', { lineHeight: '1.3' }],   // section titles, kpi labels
-        subhead: ['18px', { lineHeight: '1.3' }],   // alias → head (collapsed)
         title:   ['22px', { lineHeight: '1.2' }],   // stat values, callout numbers
         metric:  ['28px', { lineHeight: '1' }],     // kpi grid cells
-        page:    ['28px', { lineHeight: '1' }],     // alias → metric (collapsed)
-        display: ['48px', { lineHeight: '1' }],     // alias → score (collapsed)
         score:   ['48px', { lineHeight: '1' }],     // hero risk / shift scores
         hero:    ['64px', { lineHeight: '1' }],     // primary screen numerals
         jumbo:   ['80px', { lineHeight: '1' }],     // jumbo OEE / plant-level

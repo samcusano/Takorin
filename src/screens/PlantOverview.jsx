@@ -34,7 +34,7 @@ const SHIFT_QUEUE = [
     timeWindow: '1h 46m',
     lot: 'TS-8811',
     route: '/agents',
-    routeLabel: 'AgentControl',
+    routeLabel: 'Agents',
     lineId: 'l4',
   },
   {
@@ -45,7 +45,7 @@ const SHIFT_QUEUE = [
     timeWindow: '05:47',
     lot: 'TS-8811',
     route: '/supplier',
-    routeLabel: 'SupplierIQ',
+    routeLabel: 'Suppliers',
     lineId: 'l4',
   },
   {
@@ -56,7 +56,7 @@ const SHIFT_QUEUE = [
     timeWindow: 'Today',
     lot: 'L-0891',
     route: '/supplier',
-    routeLabel: 'SupplierIQ',
+    routeLabel: 'Suppliers',
   },
   {
     urgency: 'warn',
@@ -66,7 +66,7 @@ const SHIFT_QUEUE = [
     timeWindow: 'Today',
     lot: 'TS-8811',
     route: '/agents',
-    routeLabel: 'AgentControl',
+    routeLabel: 'Agents',
   },
   {
     urgency: 'ok',
@@ -75,7 +75,7 @@ const SHIFT_QUEUE = [
     note: 'Supplier standing: 71. Contract review criteria met. Pattern-based escalation logged by Supplier Intelligence Agent.',
     timeWindow: '06:00',
     route: '/supplier',
-    routeLabel: 'SupplierIQ',
+    routeLabel: 'Suppliers',
   },
   {
     urgency: 'ok',
@@ -248,7 +248,7 @@ const MATURITY_BY_PLANT = {
     ],
     reachedAt: ['Reached Monitored · Feb 2025', 'Reached Monitored · Jan 2025', 'Reached Monitored · Mar 2025', 'Reached Monitored · Apr 2025'],
     laggingReasons: [null, 'Workforce hybrid certification at 38% deployed — floor rollout pending', null, null],
-    nextStep: { action: 'Restore Oven B SCADA sensor feed', lift: 'Unblocks Predictive Maintenance at full accuracy (+11pp model confidence)', route: '/readiness', module: 'Data Readiness', linkLabel: 'Restore Oven B feed in Data Readiness' },
+    nextStep: { action: 'Restore Oven B SCADA sensor feed', lift: 'Unblocks Predictive Maintenance at full accuracy (+11pp model confidence)', route: '/readiness', module: 'Data Quality', linkLabel: 'Restore Oven B feed in Data Quality' },
   },
   ks: {
     scores: [2, 3, 2, 2],
@@ -260,7 +260,7 @@ const MATURITY_BY_PLANT = {
     ],
     reachedAt: ['Reached Connected · Sep 2024', 'Reached Monitored · Nov 2024', 'Reached Connected · Aug 2024', 'Reached Connected · Oct 2024'],
     laggingReasons: ['ERP–MES integration incomplete — AI data pipeline blocked', null, 'AI agents not onboarded — awaiting data pipeline', null],
-    nextStep: { action: 'Complete ERP–MES data pipeline integration', lift: 'Enables AI agent deployment at Wichita — mirrors Salina architecture', route: '/readiness', module: 'Data Readiness', linkLabel: 'Integrate ERP–MES in Data Readiness' },
+    nextStep: { action: 'Complete ERP–MES data pipeline integration', lift: 'Enables AI agent deployment at Wichita — mirrors Salina architecture', route: '/readiness', module: 'Data Quality', linkLabel: 'Integrate ERP–MES in Data Quality' },
   },
   co: {
     scores: [4, 4, 4, 3],
@@ -694,7 +694,7 @@ export default function PlantOverview() {
                             </div>
                             <MiniSparkline data={meta?.sparkline} color={riskBgColor(line.score)} />
                           </div>
-                          <div className={`font-display font-bold text-display leading-none tabular-nums mb-0.5 ${riskColorClass(line.score)}`}>
+                          <div className={`font-display font-bold text-score leading-none tabular-nums mb-0.5 ${riskColorClass(line.score)}`}>
                             <AnimatedScore value={line.score} effect="glow" hero />
                           </div>
                           <div className={`font-body font-medium text-label mb-3 ${
@@ -705,19 +705,19 @@ export default function PlantOverview() {
                           <div className="grid grid-cols-3 gap-3 mb-3">
                             <div>
                               <div className="font-body text-muted text-label mb-0.5">Findings</div>
-                              <div className={`font-display font-bold text-subhead leading-none ${
+                              <div className={`font-display font-bold text-head leading-none ${
                                 pend > otherPend ? 'text-warn' : pend < otherPend ? 'text-ok' : 'text-ink'
                               }`}>{pend}</div>
                             </div>
                             <div>
                               <div className="font-body text-muted text-label mb-0.5">Model</div>
-                              <div className={`font-display font-bold text-subhead leading-none ${
+                              <div className={`font-display font-bold text-head leading-none ${
                                 conf >= 90 ? 'text-ok' : conf >= 80 ? 'text-muted' : 'text-warn'
                               }`}>{conf}%</div>
                             </div>
                             <div>
                               <div className="font-body text-muted text-label mb-0.5">Workers</div>
-                              <div className="font-display font-bold text-subhead leading-none text-ink">{meta?.workerCount ?? '—'}</div>
+                              <div className="font-display font-bold text-head leading-none text-ink">{meta?.workerCount ?? '—'}</div>
                             </div>
                           </div>
                           <div className="h-[3px] bg-rule2 overflow-hidden">

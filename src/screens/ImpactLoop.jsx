@@ -96,7 +96,7 @@ function InterventionDetail({ entry }) {
         </div>
 
         {/* Title */}
-        <h2 className="font-display font-bold text-ink text-page leading-tight mb-2">{entry.action}</h2>
+        <h2 className="font-display font-bold text-ink text-metric leading-tight mb-2">{entry.action}</h2>
         <div className="font-body text-muted text-label mb-1">{entry.recommendedLabel}</div>
         {oc.desc && (
           <div className="font-body text-muted text-label mb-5 pl-3 border-l-2 border-signal/40 leading-snug">{oc.desc}</div>

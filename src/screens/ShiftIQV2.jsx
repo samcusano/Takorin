@@ -566,7 +566,7 @@ export default function ShiftIQV2({ score = 78, lineLabel = 'Line 4 · AM Shift'
                 <div className="font-body text-micro text-muted mb-3">Startup checklists</div>
                 <div className="flex items-center gap-4 px-3.5 py-3 bg-stone2 border border-rule">
                   <div className="flex-shrink-0">
-                    <span className="display-num text-display" style={{ color: signedCount < 11 ? 'var(--color-warn)' : 'var(--color-ok)' }}>{signedCount}</span>
+                    <span className="display-num text-score" style={{ color: signedCount < 11 ? 'var(--color-warn)' : 'var(--color-ok)' }}>{signedCount}</span>
                     <span className="font-body text-body text-muted ml-1.5">/ 13</span>
                   </div>
                   <div className="flex-1">
