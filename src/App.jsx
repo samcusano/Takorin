@@ -60,6 +60,7 @@ export default function App() {
  <Suspense fallback={<ScreenLoader />}>
  <Routes>
  <Route path="/" element={<Navigate to="/overview" replace />} />
+ <Route path="/briefing" element={<Navigate to="/overview" replace />} />
  <Route path="/overview" element={<Guard k="overview"><ErrorBoundary><PlantOverview /></ErrorBoundary></Guard>} />
  <Route path="/plant" element={<Navigate to="/overview" replace />} />
  <Route path="/shift" element={<Guard k="shift"><ErrorBoundary><ShiftIQ /></ErrorBoundary></Guard>} />

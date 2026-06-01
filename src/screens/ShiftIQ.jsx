@@ -12,7 +12,7 @@ import {
  PersonAvatar, Modal, WaveformSparkline, AnimatedCheck, Spinner,
  VaulDrawer, HoldButton, EmptyState
 } from '../components/UI'
-import { Flag, ChevronRight, ChevronDown, AlertTriangle, Check, X, TrendingDown, RotateCcw, Wrench, Package, HelpCircle, ListChecks, Brain, Shield, RefreshCw, ChevronUp, BarChart2, ArrowRight, Moon, Activity } from 'lucide-react'
+import { Flag, ChevronRight, ChevronDown, AlertTriangle, Check, X, TrendingDown, RotateCcw, Wrench, Package, HelpCircle, ListChecks, Brain, Shield, RefreshCw, ChevronUp, BarChart2, ArrowRight, Moon, Activity, CheckCircle2, AlertCircle } from 'lucide-react'
 import { useAppState } from '../context/AppState'
 import { GanttChart, CalendarHeatmap, RadarChart } from '../components/Charts'
 
@@ -301,7 +301,7 @@ function OperatorPanel({ name, onClose, onSelectOperator }) {
  <SectionHeader label="Certification progress" />
  <div className="px-4 py-3">
  <div className="font-body text-muted text-label mb-2">{meta.certLabel}</div>
- <div style={{ height:5, background:'#CAC2B6', marginBottom:8 }}>
+ <div style={{ height:5, background:'var(--color-rule)', marginBottom:8 }}>
  <div style={{ height:'100%', width:`${meta.certPct}%`, background:certC, transition:'width 500ms cubic-bezier(0.19,0.91,0.38,1)' }} />
  </div>
  <span className="display-num text-title" style={{ color: certC }}>{meta.certPct}%</span>
@@ -902,6 +902,75 @@ function PrepareView({ forecast = [], onStartShift }) {
  )
 }
 
+// ── Director directives strip — ratified decisions requiring floor execution ──
+
+const DIRECTOR_HOLD = {
+ lot: 'TS-8811',
+ action: 'Hold Lot TS-8811 — quarantine in Cold Storage B, do not release to Line 4',
+ director: 'J. Crocker',
+ ratifiedAt: '06:22',
+ agent: 'Supplier Intelligence Agent · Tier 3',
+ rationale: 'COA not received 4h before scheduled production start. FSMA 204 compliance hold.',
+}
+const BRIEF_CREW = ['C. Reyes', 'P. Okonkwo', 'F. Adeyemi']
+
+function DirectorDirectivesStrip({ executed, onExecute, briefed, onBrief }) {
+ const allBriefed = briefed.size >= BRIEF_CREW.length
+ if (executed && allBriefed) return null
+ return (
+  <div className="flex-shrink-0 border-b border-rule2">
+   <div className="px-4 py-2 bg-stone2 border-b border-rule2 flex items-center gap-2">
+    <AlertCircle size={10} strokeWidth={2} className={executed ? 'text-warn' : 'text-danger'} />
+    <span className={`font-body text-label font-medium ${executed ? 'text-warn' : 'text-danger'}`}>
+     From director — {executed ? 'brief your crew' : '1 execution required'}
+    </span>
+   </div>
+   <div className="px-4 py-3 border-l-2 border-l-danger">
+    <div className="flex items-start justify-between gap-3">
+     <div className="flex-1 min-w-0">
+      <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+       <span className="font-body text-muted text-label">{DIRECTOR_HOLD.director} · Plant Director · {DIRECTOR_HOLD.ratifiedAt}</span>
+       <span className="font-body text-muted text-label opacity-50">·</span>
+       <span className="font-body text-muted text-label">{DIRECTOR_HOLD.agent}</span>
+      </div>
+      <div className="font-body font-medium text-ink text-label">{DIRECTOR_HOLD.action}</div>
+      <div className="font-body text-muted text-label mt-0.5">{DIRECTOR_HOLD.rationale}</div>
+     </div>
+     {!executed ? (
+      <button type="button" onClick={onExecute}
+       className="flex items-center gap-1.5 font-body text-label text-muted hover:text-ink transition-colors flex-shrink-0 px-2.5 py-1.5 border border-rule2 hover:border-muted">
+       <Check size={10} strokeWidth={2.5} />
+       <span>Confirm execution</span>
+      </button>
+     ) : (
+      <span className="flex items-center gap-1 font-body text-ok text-label flex-shrink-0">
+       <CheckCircle2 size={10} strokeWidth={2} />Executed
+      </span>
+     )}
+    </div>
+   </div>
+   {executed && !allBriefed && (
+    <div className="px-4 py-2.5 border-t border-rule2 bg-stone2/50">
+     <div className="font-body text-muted text-label mb-2">Mark crew as briefed on the hold</div>
+     <div className="flex gap-2 flex-wrap">
+      {BRIEF_CREW.map(name => (
+       <button key={name} type="button" onClick={() => onBrief(name)} disabled={briefed.has(name)}
+        className={`flex items-center gap-1.5 font-body text-label px-2.5 py-1.5 border transition-colors ${
+         briefed.has(name)
+          ? 'border-ok bg-ok/10 text-ok cursor-default'
+          : 'border-rule2 text-muted hover:border-signal hover:text-ink'
+        }`}>
+        {briefed.has(name) && <Check size={9} strokeWidth={2.5} />}
+        {name.split(' ')[1]}
+       </button>
+      ))}
+     </div>
+    </div>
+   )}
+  </div>
+ )
+}
+
 export default function ShiftIQ() {
  const [searchParams] = useSearchParams()
  const initialLine = searchParams.get('line') || 'l4'
@@ -925,6 +994,8 @@ export default function ShiftIQ() {
  addQuietPeriod, clearQuietPeriod, activeQuietPeriod,
  } = useAppState()
  const [quietForm, setQuietForm] = useState({ open: false, reason: '', endTime: '' })
+ const [directorExecuted, setDirectorExecuted] = useState(false)
+ const [briefedCrew, setBriefedCrew] = useState(new Set())
  const handleSetQuietPeriod = () => {
   addQuietPeriod({
    line: 'Line 4',
@@ -1115,6 +1186,12 @@ export default function ShiftIQ() {
    <Btn variant="ghost" onClick={() => setQuietForm({ open:false, reason:'', endTime:'' })}>Cancel</Btn>
   </div>
  ) : null}
+ <DirectorDirectivesStrip
+  executed={directorExecuted}
+  onExecute={() => setDirectorExecuted(true)}
+  briefed={briefedCrew}
+  onBrief={name => setBriefedCrew(p => new Set([...p, name]))}
+ />
  <ShiftIQV2 score={lineScore} lineLabel={`${activeLined?.name ?? 'Line 4'} · AM Shift`} supervisor={lineSupervisor} plant={currentPlant?.name ?? 'Salina KS'} isSupervisorView={viewingRole === 'supervisor'} />
  </>}
  </div>

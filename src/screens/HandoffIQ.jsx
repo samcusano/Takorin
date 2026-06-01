@@ -60,7 +60,7 @@ function LiveDocOverlay({ triggerRef, onClose }) {
             <div key={i} className="flex items-start gap-3 px-5 py-2.5 border-b border-rule2 last:border-b-0">
               <span className="font-body text-muted text-micro tabular-nums w-9 flex-shrink-0 mt-px">{ev.time}</span>
               {ev.type === 'agent'
-                ? <Zap size={9} strokeWidth={2} className="flex-shrink-0 mt-1" style={{ color: 'var(--color-deep)' }} />
+                ? <Zap size={9} strokeWidth={2} className="flex-shrink-0 mt-1 text-deep" />
                 : ev.type === 'human'
                   ? <div className="w-1.5 h-1.5 rounded-full bg-ok flex-shrink-0 mt-1.5" />
                   : <div className="w-1.5 h-1.5 rounded-full bg-muted flex-shrink-0 mt-1.5" />

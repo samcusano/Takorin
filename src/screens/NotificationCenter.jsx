@@ -37,29 +37,83 @@ const EXCLUDE_TYPES = new Set(['intervention', 'system'])
 
 const sampleActivity = [
   {
-    id: 'sample-supplier',
-    type: 'override',
-    time: '10:05',
-    title: 'Supplier COA request sent — Lot TS-8811',
-    body: 'COA request dispatched to ConAgra. Hold remains until validation completes.',
+    id: 'notif-agent-hold',
+    type: 'escalation',
+    time: '06:22',
+    title: 'Agent decision — Tier 3 ratification required · Lot TS-8811',
+    body: 'Supplier Intelligence Agent recommends holding Lot TS-8811. COA not received 4h before production start. Director sign-off required before 08:00.',
+    link: '/agents',
+    linkLabel: 'Open AgentControl',
+  },
+  {
+    id: 'notif-network',
+    type: 'compliance',
+    time: '06:02',
+    title: 'Network advisory — TX-11 also holding Lot TS-8811',
+    body: 'Cross-plant exposure: SL-04 and TX-11 both hold TS-8811. Holds not yet coordinated. Uncoordinated release creates partial recall exposure.',
+    link: '/agents',
+    linkLabel: 'Open AgentControl',
+  },
+  {
+    id: 'notif-coa-request',
+    type: 'intervention',
+    time: '05:47',
+    title: 'COA request sent to ConAgra — Lot TS-8811',
+    body: 'Automated COA request dispatched. Production scheduled for 08:00 today. Hold remains active until COA is received and verified.',
     link: '/supplier',
     linkLabel: 'Open SupplierIQ',
   },
   {
+    id: 'notif-l0891-delay',
+    type: 'escalation',
+    time: '05:33',
+    title: 'Delivery delay — Lot L-0891 · Pepperoni · +6h',
+    body: 'Expected arrival delayed 6 hours. COA not yet received. Pre-production hold active per FSMA 204. Supplier Intelligence Agent has escalated.',
+    link: '/supplier',
+    linkLabel: 'Open SupplierIQ',
+  },
+  {
+    id: 'notif-fsma-posture',
+    type: 'compliance',
+    time: '06:45',
+    title: 'FSMA 204 posture assessed — 62% · 2 lots not submittable',
+    body: 'Daily traceability assessment complete. TS-8811 and L-0891 are not submittable. CO-5502 and WF-2203 are FDA-submittable.',
+    link: '/records',
+    linkLabel: 'Open Record Vault',
+  },
+  {
+    id: 'notif-wf-transform',
+    type: 'evidence',
+    time: '04:15',
+    title: 'Transformation CTE complete — Lot WF-2203 · Wheat Flour',
+    body: 'Output lots PROD-L4-2604-009 and PROD-L3-2604-003 created. 1,400 kg remaining in inventory. FSMA 204 chain intact.',
+    link: '/records',
+    linkLabel: 'Open Record Vault',
+  },
+  {
+    id: 'notif-handoff',
+    type: 'handoff',
+    time: '03:52',
+    title: 'Shift handoff complete — D. Kowalski to AM crew',
+    body: 'Handoff report signed. Open items: TS-8811 hold, Sensor A-7 variance pattern, staffing gap on Line 4 AM. All items documented.',
+    link: '/shift',
+    linkLabel: 'Open ShiftIQ',
+  },
+  {
     id: 'sample-ack',
     type: 'acknowledged',
-    time: '09:42',
+    time: '06:10',
     title: 'C. Reyes acknowledged safety briefing',
     body: 'Operator confirmed Sauce Dosing allergen and CCP requirements before shift start.',
-    link: '/handoff',
-    linkLabel: 'Open HandoffIQ',
+    link: '/shift',
+    linkLabel: 'Open ShiftIQ',
   },
   {
     id: 'sample-near-miss',
     type: 'near_miss',
-    time: '08:17',
+    time: '05:51',
     title: 'Near-miss reported at Pack Line',
-    body: 'Floor spill near condiment station identified and secured by crew.',
+    body: 'Floor spill near condiment station identified and secured by crew. Corrective action logged.',
     link: '/shift',
     linkLabel: 'Review ShiftIQ',
   },
@@ -187,8 +241,8 @@ export default function NotificationCenter({ onClose }) {
   <div className="flex flex-col h-full overflow-hidden">
    {/* Header */}
    <div className="px-4 py-3 bg-stone flex-shrink-0">
-    <div className="font-display font-bold text-white text-base leading-tight">Notifications</div>
-    <div className="font-body text-white/70 text-label mt-0.5">
+    <div className="font-display font-bold text-ink text-head leading-tight">Notifications</div>
+    <div className="font-body text-muted text-label mt-0.5">
      {totalUnread > 0 ? `${totalUnread} unread · ` : 'All read · '}J. Crocker · April 16, 2026
     </div>
    </div>

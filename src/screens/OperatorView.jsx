@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Flag, ShieldCheck, Check, Lock, AlertTriangle, Activity, CheckCircle2, WifiOff, Brain, BookOpen, ChevronDown, ChevronUp, Send, MessageSquare, X, Eye } from 'lucide-react'
+import { Flag, ShieldCheck, Check, Lock, AlertTriangle, Activity, CheckCircle2, WifiOff, Brain, BookOpen, ChevronDown, ChevronUp, Send, MessageSquare, X, Eye, ListChecks } from 'lucide-react'
 import { operatorContextData, fatigueData } from '../data'
 import { integrationSummary, connectors } from '../data/integrations'
 import { useAppState } from '../context/AppState'
@@ -835,9 +835,98 @@ function TransitionTab({ selected, isDirector }) {
  )
 }
 
-// Training pathway and Roster Overview have been removed from the operational view.
-// Training belongs in a between-shift development surface.
-// Roster/absence/fatigue belongs in ShiftIQ supervisor context.
+// ── Compliance hold directive — injected for operators on affected lines ───────
+
+const HOLD_DIRECTIVE = {
+ id: 'hold-ts-8811',
+ urgency: 'danger',
+ from: 'J. Crocker',
+ role: 'Plant Director → D. Kowalski',
+ sentAt: '06:22',
+ message: 'Do not use Tomato Sauce Lot TS-8811 — FSMA 204 compliance hold. Lot quarantined in Cold Storage B. COA not received from ConAgra. Line 4 production start blocked.',
+ deadline: '08:00 · Hold remains until COA received',
+}
+
+// ── Startup checklist — station-specific, interactive ─────────────────────────
+
+const STARTUP_CHECKLIST = {
+ 'C. Reyes': [
+  { id: 'cl-cr-1', label: 'Allergen changeover log signed',                   preset: true,  note: 'Signed · 05:45' },
+  { id: 'cl-cr-2', label: 'CCP-1 Hold Point temperature verified',             preset: true,  note: 'Verified · 06:18 · 188°F · Kowalski' },
+  { id: 'cl-cr-3', label: 'Confirm Lot TS-8811 not present at Sauce Dosing',  urgent: true,  note: 'Compliance hold — do not use' },
+  { id: 'cl-cr-4', label: 'Sauce Dosing valve positions checked' },
+  { id: 'cl-cr-5', label: 'PPE inspection — gloves, hairnet, apron' },
+  { id: 'cl-cr-6', label: 'Log CCP-1 reading before 07:30',                   urgent: true },
+ ],
+ 'P. Okonkwo': [
+  { id: 'cl-po-1', label: 'Oven B manual monitoring protocol acknowledged',     preset: true, note: 'Acknowledged · 06:05' },
+  { id: 'cl-po-2', label: 'Sensor A-7 variance count noted (4 of 5)',           preset: true, note: 'Noted · 06:10' },
+  { id: 'cl-po-3', label: 'Log first oven temperature reading manually',         urgent: true },
+  { id: 'cl-po-4', label: 'PPE inspection — gloves, hairnet, apron' },
+  { id: 'cl-po-5', label: 'Line 4 topping distribution check' },
+ ],
+ 'F. Adeyemi': [
+  { id: 'cl-fa-1', label: 'QA pre-shift checks signed by supervisor', preset: true, note: 'Kowalski · 05:55' },
+  { id: 'cl-fa-2', label: 'QA station calibration check' },
+  { id: 'cl-fa-3', label: 'PPE inspection complete' },
+ ],
+}
+
+function StartupChecklist({ selected, completions, onComplete }) {
+ const items = STARTUP_CHECKLIST[selected] || []
+ const doneCount = items.filter(i => i.preset || completions.includes(i.id)).length
+ const allDone = doneCount === items.length
+
+ return (
+  <div className="border-b border-rule2">
+   <div className="px-5 py-2 bg-stone2 border-b border-rule2 flex items-center justify-between">
+    <div className="flex items-center gap-1.5">
+     <ListChecks size={11} strokeWidth={2} className="text-muted" />
+     <span className="font-body text-muted text-label">Startup checklist</span>
+    </div>
+    <div className="flex items-center gap-1.5">
+     <span className={`font-body text-label tabular-nums ${allDone ? 'text-ok' : 'text-warn'}`}>
+      {doneCount}/{items.length}
+     </span>
+     {allDone && <CheckCircle2 size={10} strokeWidth={2} className="text-ok" />}
+    </div>
+   </div>
+   {items.map(item => {
+    const isDone = item.preset || completions.includes(item.id)
+    return (
+     <div key={item.id}
+      className={`flex items-start gap-3 px-5 py-2.5 border-b border-rule2 last:border-b-0 ${
+       isDone ? 'opacity-60' : item.urgent ? 'bg-danger/[0.02]' : ''
+      }`}>
+      <button type="button"
+       disabled={isDone}
+       onClick={() => !isDone && onComplete(item.id)}
+       className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 mt-0.5 transition-colors ${
+        isDone
+         ? 'bg-ok border-ok cursor-default'
+         : item.urgent
+         ? 'border-danger hover:bg-danger/10 cursor-pointer'
+         : 'border-rule2 hover:border-signal cursor-pointer'
+       }`}>
+       {isDone && <Check size={11} strokeWidth={2.5} className="text-stone" />}
+      </button>
+      <div className="flex-1 min-w-0">
+       <div className={`font-body text-body leading-snug ${isDone ? 'line-through text-muted' : item.urgent ? 'text-ink font-medium' : 'text-ink'}`}>
+        {item.label}
+       </div>
+       {isDone && item.note && (
+        <div className="font-body text-muted text-label mt-0.5">{item.note}</div>
+       )}
+       {!isDone && item.urgent && (
+        <div className="font-body text-danger text-label mt-0.5">Required before production start</div>
+       )}
+      </div>
+     </div>
+    )
+   })}
+  </div>
+ )
+}
 
 // ── Main ──────────────────────────────────────────────────────────────────────
 
@@ -859,6 +948,10 @@ export default function OperatorView({ role }) {
  const [opTab, setOpTab] = useState('today')
  const [showCapture, setShowCapture] = useState(false)
  const [captureSource, setCaptureSource] = useState('')
+ const [checklistCompletions, setChecklistCompletions] = useState({})
+ const handleChecklistComplete = (id) => {
+  setChecklistCompletions(prev => ({ ...prev, [selected]: [...(prev[selected] || []), id] }))
+ }
 
  const triggerCapture = (source) => {
   if (showCapture) return  // guard: don't stack prompts
@@ -977,6 +1070,15 @@ export default function OperatorView({ role }) {
    )}
 
    {/* ── Supervisor directives — highest priority push surface ── */}
+   {selected === 'C. Reyes' && !acknowledgedDirectives.has(HOLD_DIRECTIVE.id) && (
+    <DirectiveCard
+     directive={HOLD_DIRECTIVE}
+     onAcknowledge={(id) => {
+      setAcknowledgedDirectives(prev => new Set([...prev, id]))
+      logActivity({ actor: selected, action: 'Compliance hold acknowledged: Lot TS-8811', item: 'Hold', type: 'compliance' })
+     }}
+    />
+   )}
    {(ctx?.directives ?? [])
     .filter(d => !acknowledgedDirectives.has(d.id))
     .map(d => (
@@ -1031,6 +1133,11 @@ export default function OperatorView({ role }) {
     {/* Today — tasks + troubleshooting */}
     {opTab === 'today' && (
      <>
+      <StartupChecklist
+       selected={selected}
+       completions={checklistCompletions[selected] || []}
+       onComplete={handleChecklistComplete}
+      />
       <TroubleshootingHint operator={selected} />
       <TaskSection
        selected={selected}

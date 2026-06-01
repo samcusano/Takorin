@@ -67,7 +67,7 @@ function ConfidenceChart({ trajectory, forecast }) {
       <circle cx={cx} cy={cy} r={7} fill="var(--color-ok)" opacity={0.2} />
       {[60, 80, 100].map(v => (
         <text key={v} x={4} y={toY(v) + 3} fontSize={8}
-          fill="var(--color-dim, #4A5D74)" fontFamily="'IBM Plex Sans'">{v}%</text>
+          fill="var(--color-muted)" fontFamily="'IBM Plex Sans'">{v}%</text>
       ))}
     </svg>
   )
@@ -359,7 +359,7 @@ export default function BatchIntelligence() {
                   <span className="flex items-center gap-1.5 font-body text-muted text-label">
                     <span className="inline-block w-5 h-0.5 bg-signal opacity-60" style={{ backgroundImage: 'repeating-linear-gradient(90deg,var(--color-signal) 0,var(--color-signal) 4px,transparent 4px,transparent 7px)' }} />forecast
                   </span>
-                  <span className="flex items-center gap-1 font-body text-label" style={{ color: 'var(--color-ok)' }}>
+                  <span className="flex items-center gap-1 font-body text-label text-ok">
                     <TrendingUp size={10} strokeWidth={2} />{trendLabel}
                   </span>
                 </div>

@@ -106,16 +106,10 @@ function SideItem({ to, icon: Icon, label, badge, badgeType, disabled, id, onDis
 }
 
 function PlantItem({ collapsed }) {
- const { commandAcknowledged } = useAppState() || {}
- const acknowledged = commandAcknowledged || new Set()
- const activeCount = commandData.items.filter(
-  i => !acknowledged.has(i.id) && i.urgency !== 'watch'
- ).length
- const criticalCount = commandData.items.filter(
-  i => !acknowledged.has(i.id) && i.urgency === 'danger'
- ).length
+ // Decision badge: 2 critical (T3 agent ratification + COA hold)
+ const criticalCount = 2
  if (collapsed) return (
-  <NavTooltip label={`Overview${activeCount > 0 ? ` (${activeCount})` : ''}`}>
+  <NavTooltip label={`Overview · ${criticalCount} critical`}>
    <NavLink to="/overview"
     className={({ isActive }) =>
      `flex items-center justify-center h-10 w-full border-l-2 transition-colors duration-100 ` +
@@ -138,13 +132,9 @@ function PlantItem({ collapsed }) {
    {() => (<>
     <LayoutGrid size={15} strokeWidth={2} className="flex-shrink-0" />
     <span className="font-body text-base">Overview</span>
-    {activeCount > 0 && (
-     <span className={`ml-auto text-label font-semibold px-1.5 py-0.5 ${
-      criticalCount > 0 ? 'bg-danger text-white' : 'bg-warn/20 text-warn'
-     }`}>
-      {activeCount}
-     </span>
-    )}
+    <span className="ml-auto text-label font-semibold px-1.5 py-0.5 bg-danger text-white">
+     {criticalCount}
+    </span>
    </>)}
   </NavLink>
  )

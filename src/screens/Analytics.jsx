@@ -254,8 +254,8 @@ function WaterfallChart({ attr }) {
       role="img" aria-label={`OEE attribution waterfall — ${attr.plant} ${attr.line}, ${attr.baseline}% baseline to ${attr.actual}% actual`}>
       {gridVals.map(v => (
         <g key={v}>
-          <line x1={padL} x2={svgW - padR} y1={yOf(v)} y2={yOf(v)} stroke="#CAC2B6" strokeWidth="0.5" />
-          <text x={padL - 4} y={yOf(v) + 3} fontSize="8" fill="#A8A098" textAnchor="end">{v}</text>
+          <line x1={padL} x2={svgW - padR} y1={yOf(v)} y2={yOf(v)} stroke="var(--color-rule)" strokeWidth="0.5" />
+          <text x={padL - 4} y={yOf(v) + 3} fontSize="8" fill="var(--color-muted)" textAnchor="end">{v}</text>
         </g>
       ))}
       <line x1={padL} x2={svgW - padR + 6} y1={yOf(attr.target)} y2={yOf(attr.target)} stroke="var(--color-warn)" strokeWidth="0.75" strokeDasharray="4,3" opacity="0.72" />
@@ -263,7 +263,7 @@ function WaterfallChart({ attr }) {
       {steps.map((step, i) => {
         if (i === 0) return null
         const prev = steps[i - 1]
-        return <line key={`c${i}`} x1={xOf(i - 1) + barW} x2={xOf(i)} y1={yOf(prev.value)} y2={yOf(prev.value)} stroke="var(--color-dim)" strokeWidth="0.75" strokeDasharray="2,2" />
+        return <line key={`c${i}`} x1={xOf(i - 1) + barW} x2={xOf(i)} y1={yOf(prev.value)} y2={yOf(prev.value)} stroke="var(--color-muted)" strokeWidth="0.75" strokeDasharray="2,2" />
       })}
       {steps.map((step, i) => {
         const x    = xOf(i)
@@ -918,7 +918,7 @@ export default function Analytics() {
                 { label: 'Network OEE benchmarks (live)', note: 'Real-time percentile vs. plant network', plants: '3 needed', conf: 0, status: 'Locked', tone: 'muted', locked: true },
                 { label: 'Predictive delivery risk alerts', note: '"ConAgra delays at KS-02 → Line 4 scrap spikes within 48h"', plants: '3 needed', conf: 0, status: 'Locked', tone: 'muted', locked: true },
               ].map((s, i) => {
-                const toneColor = s.tone === 'ok' ? 'var(--color-ok)' : s.tone === 'warn' ? 'var(--color-warn)' : 'var(--color-ghost)'
+                const toneColor = s.tone === 'ok' ? 'var(--color-ok)' : s.tone === 'warn' ? 'var(--color-warn)' : 'var(--color-muted)'
                 return (
                   <div key={i}
                     className={`grid items-center px-5 py-3 border-b border-rule2/50 border-l-2 ${s.locked ? 'opacity-40 border-l-transparent' : s.tone === 'warn' ? 'border-l-warn/40' : 'border-l-ok/30'}`}

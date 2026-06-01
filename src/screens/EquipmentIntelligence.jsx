@@ -446,8 +446,8 @@ function EquipmentDetail({ eq }) {
               }} />
             )}
             {eq.before && (
-              <div className="flex items-start gap-2 px-4 py-3 border border-rule2" style={{ background: 'rgba(196,132,78,0.04)' }}>
-                <span className="font-body text-label font-medium flex-shrink-0" style={{ color: 'var(--color-context)' }}>Before ·</span>
+              <div className="flex items-start gap-2 px-4 py-3 border border-rule2 bg-context/[0.04]">
+                <span className="font-body text-label font-medium flex-shrink-0 text-context">Before ·</span>
                 <p className="font-body text-label text-muted leading-relaxed m-0">{eq.before}</p>
               </div>
             )}

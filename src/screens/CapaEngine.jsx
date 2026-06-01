@@ -59,8 +59,8 @@ function CaseDetailPanel({ caseData, onClose }) {
  <div className="font-body text-label text-muted mb-1">{m.l}</div>
  {m.agent ? (
   <div className="flex items-center gap-1.5">
-   <Cpu size={10} strokeWidth={2} style={{ color: 'var(--color-deep)', flexShrink: 0 }} aria-hidden="true" />
-   <span className="font-body text-label font-medium" style={{ color: 'var(--color-deep)' }}>{m.v}</span>
+   <Cpu size={10} strokeWidth={2} className="text-deep flex-shrink-0" aria-hidden="true" />
+   <span className="font-body text-label font-medium text-deep">{m.v}</span>
   </div>
  ) : (
   <div className={`font-body text-label font-medium ${m.vc||'text-ink'}`}>{m.v}</div>
@@ -69,8 +69,8 @@ function CaseDetailPanel({ caseData, onClose }) {
  ))}
  </div>
  {caseData.before && (
- <div className="px-4 py-3 border-b border-rule2 flex items-start gap-2" style={{ background: 'rgba(196,132,78,0.04)' }}>
-  <span className="font-body text-label font-medium flex-shrink-0 mt-px" style={{ color: 'var(--color-context)' }}>Before ·</span>
+ <div className="px-4 py-3 border-b border-rule2 flex items-start gap-2 bg-context/[0.04]">
+  <span className="font-body text-label font-medium flex-shrink-0 mt-px text-context">Before ·</span>
   <p className="font-body text-label leading-relaxed text-muted m-0">{caseData.before}</p>
  </div>
  )}
@@ -192,7 +192,7 @@ function PriorityQueueRow({ c, isSelected, onSelect, isEscalated, isResolved, in
    {isEscalated ? 'Delegated' : isResolved ? 'Resolved' : c.badge}
   </StatusPill>
   {c.source?.startsWith('Auto-created') && !isResolved && !isEscalated && (
-   <span className="flex items-center gap-1 font-body text-label px-1.5 py-0.5 flex-shrink-0" style={{ color: 'var(--color-deep)', background: 'rgba(124,134,232,0.10)', border: '1px solid rgba(124,134,232,0.22)' }}>
+   <span className="flex items-center gap-1 font-body text-label px-1.5 py-0.5 flex-shrink-0 text-deep bg-deep/10 border border-deep/[0.22]">
     <Cpu size={8} strokeWidth={2} aria-hidden="true" />Agent-opened
    </span>
   )}

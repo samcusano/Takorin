@@ -29,12 +29,12 @@ function MiniDemandChart() {
   return (
     <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none">
       {/* Forecast line (dashed) */}
-      <path d={forecastPath} fill="none" stroke="#7B6E64" strokeWidth="1" strokeDasharray="3,2" />
+      <path d={forecastPath} fill="none" stroke="var(--color-muted)" strokeWidth="1" strokeDasharray="3,2" />
       {/* Actual line */}
-      <path d={actualPath} fill="none" stroke="#C17D2A" strokeWidth="1.5" strokeLinecap="round" />
+      <path d={actualPath} fill="none" stroke="var(--color-warn)" strokeWidth="1.5" strokeLinecap="round" />
       {/* Actual dots */}
       {hist.map((d, i) => (
-        <circle key={i} cx={x(i)} cy={y(d.actual)} r="2" fill="#C17D2A" />
+        <circle key={i} cx={x(i)} cy={y(d.actual)} r="2" fill="var(--color-warn)" />
       ))}
     </svg>
   )

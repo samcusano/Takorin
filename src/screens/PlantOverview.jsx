@@ -24,45 +24,79 @@ const LINE_BEFORE = {
   d2: 'Best-performing line across all three plants · T. Reeves crew at 94% certified for 6 weeks',
 }
 
-// ─── Director action queue — ranked items requiring director decision now ─────
-const DIRECTOR_QUEUE = [
+// ─── Shift briefing queue — ranked items from this shift's priority feed ──────
+const SHIFT_QUEUE = [
   {
-    tier: 'T3', urgency: 'danger',
-    action: 'Approve COA hold — Supplier Lot #4821-C',
-    note: 'Blocks Line 4 start',
-    owner: 'D. Kowalski', timeWindow: '47 min', route: '/supplier',
+    urgency: 'danger',
+    category: 'Agent decision',
+    action: 'Tier 3 decision awaiting ratification — Line 4 lot hold',
+    note: 'Supplier Intelligence Agent recommends holding Lot TS-8811. Production starts in 1h 46m. Director sign-off required.',
+    timeWindow: '1h 46m',
+    lot: 'TS-8811',
+    route: '/agents',
+    routeLabel: 'AgentControl',
     lineId: 'l4',
   },
   {
-    tier: 'T3', urgency: 'danger',
-    action: 'Resolve FSMA 204 traceability gap — $85K exposure',
-    note: 'FDA audit risk · open since yesterday',
-    owner: 'QA Lead', timeWindow: '2 h', route: '/compliance',
-    lineId: null,
+    urgency: 'danger',
+    category: 'FSMA 204',
+    action: 'COA not received — ConAgra Lot TS-8811',
+    note: 'Certificate of Analysis required before Line 4 production can start. COA request sent 05:47 — no response from ConAgra.',
+    timeWindow: '05:47',
+    lot: 'TS-8811',
+    route: '/supplier',
+    routeLabel: 'SupplierIQ',
+    lineId: 'l4',
   },
   {
-    tier: 'T2', urgency: 'warn',
-    action: 'Approve Predictive Maintenance expansion to Line 6',
-    note: 'Agent queued 3 days — window closes end of shift',
-    owner: 'Maintenance', timeWindow: 'This shift', route: '/agents',
+    urgency: 'warn',
+    category: 'Delivery',
+    action: 'Lot L-0891 delivery delayed 6h — Pepperoni',
+    note: 'Expected Apr 18 · Delayed 6h. COA requested and pending. Pre-production compliance hold active.',
+    timeWindow: 'Today',
+    lot: 'L-0891',
+    route: '/supplier',
+    routeLabel: 'SupplierIQ',
   },
   {
-    tier: 'T2', urgency: 'warn',
-    action: 'CAPA-2604-001 response overdue — allergen deviation',
-    note: '5-day SLA breach · escalation pending',
-    owner: 'D. Kowalski', timeWindow: 'Today', route: '/capa',
+    urgency: 'warn',
+    category: 'Network',
+    action: 'TX-11 holding same lot — holds not coordinated',
+    note: 'TX-11 also holds Lot TS-8811. Uncoordinated holds create partial recall exposure if one plant releases without the other.',
+    timeWindow: 'Today',
+    lot: 'TS-8811',
+    route: '/agents',
+    routeLabel: 'AgentControl',
+  },
+  {
+    urgency: 'ok',
+    category: 'Supplier reliability',
+    action: 'ConAgra: 3rd COA delay — review threshold reached',
+    note: 'Supplier standing: 71. Contract review criteria met. Pattern-based escalation logged by Supplier Intelligence Agent.',
+    timeWindow: '06:00',
+    route: '/supplier',
+    routeLabel: 'SupplierIQ',
+  },
+  {
+    urgency: 'ok',
+    category: 'Traceability',
+    action: 'CO-5502 shelf life — 18 days remaining',
+    note: 'Canola Oil approaching rotation threshold. ADM price +8% — possible sourcing pressure. Submittable to FDA.',
+    timeWindow: '06:45',
+    lot: 'CO-5502',
+    route: '/records',
+    routeLabel: 'Record Vault',
+  },
+  {
+    urgency: 'ok',
+    category: 'FDA prep',
+    action: 'FSMA 204 posture at 62% — 2 lots not submittable',
+    note: '2 high-risk lots. 2 of 6 submittable. FDA inspection window: 18 days.',
+    timeWindow: '06:45',
+    route: '/records',
+    routeLabel: 'Record Vault',
   },
 ]
-
-// ─── Route → label map for queue rail nav buttons ─────────────────────────────
-const ROUTE_LABELS = {
-  '/supplier':   'Supplier IQ',
-  '/compliance': 'Compliance',
-  '/capa':       'CAPA Engine',
-  '/agents':     'Agent Control',
-  '/shift':      'ShiftIQ',
-  '/readiness':  'Data Readiness',
-}
 
 // ─── Actor mode badge — shows who is executing on a line ─────────────────────
 const ACTOR_MODE = { human: 'human', robot: 'robot', hybrid: 'hybrid' }
@@ -442,7 +476,9 @@ export default function PlantOverview() {
   const activeFilters = [zoneFilter !== 'all', areaFilter !== 'all', findingsFilter !== 'all'].filter(Boolean).length
   const filteredCount = domainGroups.reduce((s, g) => s + g.lines.length, 0)
 
-  const t3Count      = DIRECTOR_QUEUE.filter(q => q.urgency === 'danger').length
+  const critShiftCount  = SHIFT_QUEUE.filter(q => q.urgency === 'danger').length
+  const allCritVisited  = critShiftCount > 0 && SHIFT_QUEUE.filter(q => q.urgency === 'danger').every(q => visitedQueue.has(q.action))
+  const pendingShiftCount = SHIFT_QUEUE.filter(q => !visitedQueue.has(q.action)).length
   const plantTone    = critCount > 0 ? 'danger' : watchCount > 0 ? 'warn' : 'ok'
   const worstLine    = rawLines.length ? rawLines.reduce((a, b) => effScore(a) > effScore(b) ? a : b) : null
   const worstArea    = worstLine ? (LINE_AREAS[worstLine.id]?.area ?? '') : ''
@@ -511,7 +547,7 @@ export default function PlantOverview() {
                 { label: 'At risk',  value: critCount,            tone: critCount > 0 ? 'danger' : 'ok',  sub: critCount === 1 ? 'line' : 'lines',  bg: critCount > 0 ? 'bg-danger/[0.03]' : '' },
                 { label: 'Watch',    value: watchCount,           tone: watchCount > 0 ? 'warn'   : 'ok',  sub: watchCount === 1 ? 'line' : 'lines', bg: '' },
                 { label: 'Findings', value: allFindings.length,   tone: allFindings.length > 0 ? 'warn' : 'ok', sub: 'pending', bg: '' },
-                { label: 'Queue',    value: DIRECTOR_QUEUE.length, tone: t3Count > 0 ? 'danger' : 'warn', sub: `${t3Count} critical`, bg: '' },
+                { label: 'Briefing', value: pendingShiftCount, tone: critShiftCount > 0 && !allCritVisited ? 'danger' : 'warn', sub: `${critShiftCount} critical`, bg: '' },
               ].map((cell, i) => (
                 <div key={i} className={`flex-1 px-4 py-3 border-r border-rule2 last:border-r-0 ${cell.bg}`}>
                   <div className="font-body text-micro text-muted mb-1">{cell.label}</div>
@@ -867,13 +903,12 @@ export default function PlantOverview() {
 
                 {agentActions?.filter(a => a.status !== 'overridden' && a.status !== 'completed').map((action, i) => (
                   <div key={action.id}
-                    className="flex items-start gap-4 px-5 py-3.5 border-b border-rule2"
-                    style={{ background: 'rgba(124,134,232,0.04)' }}>
-                    <Brain size={14} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--color-deep)' }} strokeWidth={2} aria-hidden="true" />
+                    className="flex items-start gap-4 px-5 py-3.5 border-b border-rule2 bg-deep/[0.04]">
+                    <Brain size={14} className="flex-shrink-0 mt-0.5 text-deep" strokeWidth={2} aria-hidden="true" />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-0.5 flex-wrap">
-                        <span className="font-body text-label font-medium" style={{ color: 'var(--color-deep)' }}>{action.agentName}</span>
-                        <span className="font-body text-micro px-1.5 py-px" style={{ color: 'var(--color-deep)', background: 'rgba(124,134,232,0.12)', border: '1px solid rgba(124,134,232,0.25)' }}>
+                        <span className="font-body text-label font-medium text-deep">{action.agentName}</span>
+                        <span className="font-body text-micro px-1.5 py-px text-deep bg-deep/[0.12] border border-deep/25">
                           {action.status === 'pending-review' ? 'Awaiting review' : 'Active'}
                         </span>
                         <span className="font-body text-micro text-muted">{action.timestamp}</span>
@@ -919,42 +954,54 @@ export default function PlantOverview() {
             </div>
           </div>
 
-          {/* ── Right: queue rail ────────────────────────────────────────── */}
+          {/* ── Right: shift briefing ────────────────────────────────────── */}
           <div className="w-[300px] flex-shrink-0 flex flex-col overflow-hidden border-l border-rule2 bg-stone">
 
             {/* Rail header */}
             <div className="flex-shrink-0 px-4 py-3 border-b border-rule2 bg-stone2">
-              <div className="font-body font-medium text-ink text-body">Action queue</div>
+              <div className="flex items-center justify-between">
+                <div className="font-body font-medium text-ink text-body">Shift briefing</div>
+                {allCritVisited
+                  ? <span className="font-body text-ok text-label flex items-center gap-1"><CheckCircle size={10} strokeWidth={2} />Critical cleared</span>
+                  : <span className="font-body text-danger text-label font-medium tabular-nums">{critShiftCount} critical</span>
+                }
+              </div>
               <div className="font-body text-muted text-label mt-0.5">
-                {DIRECTOR_QUEUE.length} items · {t3Count} critical
+                {pendingShiftCount} pending · Apr 16 · AM shift
               </div>
             </div>
 
             {/* Scrollable queue items */}
             <div className="flex-1 overflow-y-auto">
 
-              {/* T3 — full ShiftIQ-style cards */}
-              <div className="pt-3">
-                {DIRECTOR_QUEUE.filter(q => q.urgency === 'danger').map((item, i) => {
+              {/* Critical — full cards */}
+              <div className="pt-3 px-3 space-y-3">
+                {SHIFT_QUEUE.filter(q => q.urgency === 'danger').map((item, i) => {
                   const floorLine  = item.lineId ? rawLines.find(l => l.id === item.lineId) : null
                   const floorMeta  = item.lineId ? lineMeta[item.lineId] : null
                   const floorScore = floorLine ? effScore(floorLine) : null
                   const floorPend  = floorMeta ? floorMeta.findings.filter(f => !shiftActed[f.id]).length : 0
                   const visited    = visitedQueue.has(item.action)
                   return (
-                    <article key={`t3-${i}`} className="mx-3 mb-3 bg-stone border border-rule overflow-hidden">
+                    <article key={`crit-${i}`} className="bg-stone border border-rule overflow-hidden">
                       <div className="h-[3px] w-full bg-danger" />
                       <div className="flex items-center justify-between px-4 pt-3 pb-1.5">
-                        <StatusPill tone="danger">Critical</StatusPill>
+                        <div className="flex items-center gap-1.5">
+                          <StatusPill tone="danger">Critical</StatusPill>
+                          {item.lot && (
+                            <span className="font-body text-micro px-1.5 bg-stone3 text-muted">{item.lot}</span>
+                          )}
+                        </div>
                         <span className={`font-body text-label tabular-nums font-medium ${visited ? 'text-danger/40' : 'text-danger'}`}>
                           {item.timeWindow}
                         </span>
                       </div>
-                      <div className="px-4 pb-3 space-y-1.5">
-                        <p className={`font-body font-medium text-body leading-snug ${visited ? 'text-muted' : 'text-ink'}`}>{item.action}</p>
+                      <div className="px-4 pb-3 space-y-1">
+                        <div className="font-body text-micro text-muted uppercase tracking-wider">{item.category}</div>
+                        <p className={`font-body font-medium text-label leading-snug ${visited ? 'text-muted' : 'text-ink'}`}>{item.action}</p>
                         <p className="font-body text-muted text-label leading-relaxed">{item.note}</p>
                         {floorLine && (
-                          <div className="flex items-center gap-2 font-body text-label text-muted">
+                          <div className="flex items-center gap-2 font-body text-label text-muted pt-0.5">
                             <span>{floorLine.name}</span>
                             <span className={`display-num text-label font-bold tabular-nums ${riskColorClass(floorScore)}`}>{floorScore}</span>
                             {floorPend > 0 && (
@@ -962,15 +1009,14 @@ export default function PlantOverview() {
                                 <AlertTriangle size={8} strokeWidth={2} />{floorPend}
                               </span>
                             )}
-                            <span className="ml-auto">{floorMeta.supervisor}</span>
                           </div>
                         )}
                       </div>
-                      <div className="flex gap-2 px-4 pb-3 pt-2 border-t border-rule2/60">
+                      <div className="px-4 pb-3 pt-2 border-t border-rule2/60">
                         <Link to={item.route}
                           onClick={() => setVisitedQueue(p => new Set([...p, item.action]))}
-                          className="inline-flex items-center gap-2 font-body font-medium text-body px-4 py-2 border border-rule bg-stone2 text-ink hover:bg-stone3 hover:border-rule2 transition-colors rounded-btn">
-                          {ROUTE_LABELS[item.route] ?? 'Open'} <ArrowRight size={12} />
+                          className="inline-flex items-center gap-2 font-body font-medium text-label px-3 py-1.5 border border-rule bg-stone2 text-ink hover:bg-stone3 hover:border-rule2 transition-colors rounded-btn">
+                          Open {item.routeLabel} <ArrowRight size={10} />
                         </Link>
                       </div>
                     </article>
@@ -978,34 +1024,65 @@ export default function PlantOverview() {
                 })}
               </div>
 
-              {/* T2 — compact rows */}
-              {DIRECTOR_QUEUE.filter(q => q.urgency === 'warn').length > 0 && (
-                <div className="border-t border-rule2/50">
+              {/* High — medium rows */}
+              {SHIFT_QUEUE.filter(q => q.urgency === 'warn').length > 0 && (
+                <div className="mt-3 border-t border-rule2/50">
                   <div className="px-4 pt-2.5 pb-1">
-                    <span className="font-body text-micro text-muted font-semibold tracking-wide">ALSO NEEDS ATTENTION</span>
+                    <span className="font-body text-micro text-muted font-semibold tracking-wide">HIGH PRIORITY</span>
                   </div>
-                  {DIRECTOR_QUEUE.filter(q => q.urgency === 'warn').map((item, i) => {
+                  {SHIFT_QUEUE.filter(q => q.urgency === 'warn').map((item, i) => {
                     const visited = visitedQueue.has(item.action)
                     return (
-                      <Link key={`t2-${i}`} to={item.route}
+                      <Link key={`high-${i}`} to={item.route}
                         onClick={() => setVisitedQueue(p => new Set([...p, item.action]))}
-                        className="flex items-center gap-3 px-4 py-2.5 border-b border-rule2/50 last:border-0 group hover:bg-stone2/50 transition-colors">
-                        <span className={`font-body text-label tabular-nums flex-shrink-0 w-16 ${visited ? 'text-warn/40' : 'text-warn'}`}>
-                          {item.timeWindow}
-                        </span>
+                        className="flex items-start gap-3 px-4 py-2.5 border-b border-rule2/50 last:border-0 group hover:bg-stone2/50 transition-colors">
                         <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-1.5 mb-0.5 flex-wrap">
+                            {item.lot && (
+                              <span className="font-body text-micro px-1 bg-stone3 text-muted flex-shrink-0">{item.lot}</span>
+                            )}
+                            <span className="font-body text-micro text-warn uppercase tracking-wider">{item.category}</span>
+                          </div>
                           <div className={`font-body text-label font-medium leading-snug ${visited ? 'text-muted' : 'text-ink'}`}>{item.action}</div>
-                          <div className="font-body text-micro text-muted">{item.note}</div>
+                          <div className="font-body text-micro text-muted leading-snug mt-0.5">{item.note}</div>
                         </div>
                         {visited
-                          ? <CheckCircle size={9} className="text-muted/40 flex-shrink-0" />
-                          : <ArrowRight size={9} className="text-muted group-hover:text-ink flex-shrink-0 transition-colors" />
+                          ? <CheckCircle size={9} className="text-muted/40 flex-shrink-0 mt-0.5" />
+                          : <ArrowRight size={9} className="text-muted group-hover:text-ink flex-shrink-0 transition-colors mt-0.5" />
                         }
                       </Link>
                     )
                   })}
                 </div>
               )}
+
+              {/* Watch — compact rows */}
+              {SHIFT_QUEUE.filter(q => q.urgency === 'ok').length > 0 && (
+                <div className="border-t border-rule2/50">
+                  <div className="px-4 pt-2.5 pb-1">
+                    <span className="font-body text-micro text-muted font-semibold tracking-wide">WATCH</span>
+                  </div>
+                  {SHIFT_QUEUE.filter(q => q.urgency === 'ok').map((item, i) => {
+                    const visited = visitedQueue.has(item.action)
+                    return (
+                      <Link key={`watch-${i}`} to={item.route}
+                        onClick={() => setVisitedQueue(p => new Set([...p, item.action]))}
+                        className="flex items-center gap-3 px-4 py-2 border-b border-rule2/40 last:border-0 group hover:bg-stone2/50 transition-colors">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-1.5">
+                            {item.lot && (
+                              <span className="font-body text-micro px-1 bg-stone3 text-muted flex-shrink-0">{item.lot}</span>
+                            )}
+                            <div className={`font-body text-label leading-snug truncate ${visited ? 'text-muted' : 'text-ink'}`}>{item.action}</div>
+                          </div>
+                        </div>
+                        <ArrowRight size={9} className="text-muted/40 group-hover:text-muted flex-shrink-0 transition-colors" />
+                      </Link>
+                    )
+                  })}
+                </div>
+              )}
+
             </div>
 
             {/* Impact footer */}
