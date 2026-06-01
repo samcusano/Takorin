@@ -522,9 +522,7 @@ export default function Sidebar() {
      <SideItem to="/knowledge"   id="knowledge"   icon={BookOpen}        label="Knowledge"    badge={null} collapsed={collapsed} />
      <SideItem to="/execution"   id="execution"   icon={Workflow}        label="Autonomy"     badge={null} collapsed={collapsed} />
      <SideItem to="/hierarchy"   id="hierarchy"   icon={LayoutDashboard} label="Site"         badge={null} collapsed={collapsed} />
-     {currentPlant?.sector === 'pharma' && (
-      <SideItem to="/records"   id="records"    icon={FileLock2}  label="Records"     badge={null} collapsed={collapsed} />
-     )}
+     <SideItem to="/records"   id="records"    icon={FileLock2}  label="Records"     badge={null} collapsed={collapsed} />
      {(currentPlant?.sector === 'electronics' || currentPlant?.sector === 'semiconductor') && (
       <SideItem to="/delivery"  id="delivery"   icon={TrendingUp} label="Value Chain" badge={null} collapsed={collapsed} />
      )}
