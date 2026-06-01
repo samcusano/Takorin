@@ -512,7 +512,7 @@ function EquipmentDetail({ eq }) {
                 <BatchTempChart eqId={eq.id} />
               </div>
             ) : eq.status === 'active' && spcData[eq.id] ? (
-              <div className="h-[220px] flex-shrink-0">
+              <div className="h-[220px] flex-shrink-0 overflow-hidden border-b border-rule2">
                 <SPCChart eqId={eq.id} />
               </div>
             ) : (
