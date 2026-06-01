@@ -1055,7 +1055,7 @@ export function SectionLabel({ label, badge, badgeTone = 'muted' }) {
  }[badgeTone] || 'text-muted'
  return (
   <div className="px-4 py-2 bg-stone2 border-b border-rule2 flex items-center gap-2">
-   <span className="font-body text-micro text-muted tracking-wide uppercase flex-1">{label}</span>
+   <span className="font-body text-micro text-muted tracking-wide flex-1">{label}</span>
    {badge && <span className={`font-body text-micro font-medium ${badgeCls}`}>{badge}</span>}
   </div>
  )

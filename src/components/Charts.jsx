@@ -116,7 +116,7 @@ export function AlluvialDiagram({ interventions }) {
       role="img" aria-label="Alluvial diagram: agent classification → decision → outcome">
 
       {/* Column headers */}
-      {[['AGENT', XA, 'start'], ['DECISION', XD, 'start'], ['OUTCOME', XO + ALLUVIAL_W, 'end']].map(([label, x, anchor]) => (
+      {[['Agent', XA, 'start'], ['Decision', XD, 'start'], ['Outcome', XO + ALLUVIAL_W, 'end']].map(([label, x, anchor]) => (
         <text key={label} x={x} y="10" fontSize="7" fill={C.dim} textAnchor={anchor}
           fontFamily={FONT}>{label}</text>
       ))}

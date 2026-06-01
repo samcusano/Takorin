@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Brain, Check, Users, TrendingUp, TrendingDown, Eye, RefreshCw } from 'lucide-react'
+import { useState, useRef, useEffect } from 'react'
+import { Brain, Check, CheckCircle2, Users, TrendingUp, TrendingDown, Eye, RefreshCw } from 'lucide-react'
 import { Btn, AnimatedScore, SlidePanel, StatusPill } from '../components/UI'
 import { Link } from 'react-router-dom'
 import { useAppState } from '../context/AppState'
@@ -40,20 +40,136 @@ function Divider() {
   return <div className="h-px bg-rule" />
 }
 
+// ── Action overlay — floating picker anchored to a trigger element ─────────────
+function ActionOverlay({ triggerRef, onClose, title, width = 'w-52', children }) {
+  const dropRef = useRef(null)
+  const [pos, setPos] = useState({ top: 0, left: 0 })
+
+  useEffect(() => {
+    if (triggerRef.current) {
+      const r = triggerRef.current.getBoundingClientRect()
+      const left = Math.min(r.left, window.innerWidth - 220)
+      setPos({ top: r.bottom + 4, left: Math.max(8, left) })
+    }
+  }, [triggerRef])
+
+  useEffect(() => {
+    function handleClick(e) {
+      if (dropRef.current && !dropRef.current.contains(e.target) &&
+        triggerRef.current && !triggerRef.current.contains(e.target)) onClose()
+    }
+    function handleKey(e) { if (e.key === 'Escape') onClose() }
+    document.addEventListener('mousedown', handleClick)
+    document.addEventListener('keydown', handleKey)
+    return () => {
+      document.removeEventListener('mousedown', handleClick)
+      document.removeEventListener('keydown', handleKey)
+    }
+  }, [onClose, triggerRef])
+
+  return (
+    <div ref={dropRef} className={`fixed z-50 plant-drop-in ${width}`}
+      style={{ top: pos.top, left: pos.left }}>
+      <div className="bg-stone border border-rule shadow-raise overflow-hidden">
+        <div className="plant-drop-in-content">
+          {title && (
+            <div className="px-4 pt-3 pb-2 border-b border-rule2">
+              <span className="font-body text-micro text-muted">{title}</span>
+            </div>
+          )}
+          {children}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ── Director directive data ───────────────────────────────────────────────────
+const DIRECTOR_HOLD = {
+  action:    'Hold Lot TS-8811 — quarantine in Cold Storage B, do not release to Line 4',
+  director:  'J. Crocker',
+  ratifiedAt: '06:22',
+  agent:     'Supplier Intelligence Agent · Tier 3',
+  rationale: 'COA not received 4h before scheduled production start. FSMA 204 compliance hold.',
+}
+const BRIEF_CREW = ['C. Reyes', 'P. Okonkwo', 'F. Adeyemi']
+
+// ── Directive card — ratified agent decision requiring floor execution ─────────
+function DirectiveCard({ executed, onExecute }) {
+  const confirmBtnRef = useRef(null)
+  const [confirmOpen, setConfirmOpen] = useState(false)
+  const [selected, setSelected] = useState(new Set(BRIEF_CREW))
+
+  const toggle = (name) => setSelected(p => { const n = new Set(p); n.has(name) ? n.delete(name) : n.add(name); return n })
+
+  const handleConfirm = () => {
+    onExecute(selected)
+    setConfirmOpen(false)
+  }
+
+  return (
+    <div className={`v2-row-in bg-stone2 border border-rule border-l-[3px] mb-2.5 transition-opacity ${executed ? 'border-l-ok opacity-50' : 'border-l-danger'}`}>
+      <div className="px-4 pt-3.5 pb-2.5">
+        <div className="flex items-center gap-1.5 mb-1.5 flex-wrap">
+          <span className="font-body text-muted text-label">{DIRECTOR_HOLD.director} · Plant Director · {DIRECTOR_HOLD.ratifiedAt}</span>
+          <span className="font-body text-muted text-label opacity-40">·</span>
+          <span className="font-body text-muted text-label">{DIRECTOR_HOLD.agent}</span>
+        </div>
+        <div className="font-display font-semibold text-base text-ink leading-snug">{DIRECTOR_HOLD.action}</div>
+      </div>
+      <div className="px-4 py-2 border-y border-rule2">
+        <span className="font-body text-label text-muted">{DIRECTOR_HOLD.rationale}</span>
+      </div>
+      {executed ? (
+        <div className="px-4 py-2.5 flex items-center gap-2">
+          <CheckCircle2 size={11} className="text-ok" />
+          <span className="font-body text-label text-ok">Executed · crew notified</span>
+        </div>
+      ) : (
+        <div className="px-4 py-3 flex items-center gap-2">
+          <span ref={confirmBtnRef} className="inline-flex">
+            <Btn variant="primary" onClick={() => setConfirmOpen(p => !p)}>Confirm execution</Btn>
+          </span>
+          {confirmOpen && (
+            <ActionOverlay triggerRef={confirmBtnRef} onClose={() => setConfirmOpen(false)} title="Hold TS-8811" width="w-56">
+              <div className="px-4 pt-2 pb-3">
+                <div className="font-body text-micro text-muted mb-1.5">Notify crew</div>
+                {BRIEF_CREW.map(name => (
+                  <button key={name} type="button" onClick={() => toggle(name)}
+                    className="flex items-center gap-2.5 w-full py-2 transition-colors hover:opacity-70">
+                    <div className={`w-3.5 h-3.5 border flex-shrink-0 flex items-center justify-center ${selected.has(name) ? 'bg-signal border-signal' : 'border-rule2'}`}>
+                      {selected.has(name) && <Check size={8} strokeWidth={3} className="text-white" />}
+                    </div>
+                    <span className={`font-body text-label ${selected.has(name) ? 'text-ink' : 'text-muted'}`}>{name}</span>
+                  </button>
+                ))}
+                <div className="mt-2.5 pt-2.5 border-t border-rule2">
+                  <Btn variant="primary" onClick={handleConfirm} className="w-full">Confirm execution</Btn>
+                </div>
+              </div>
+            </ActionOverlay>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ── Finding card ──────────────────────────────────────────────────────────────
 function FindingCard({ f, index, onAct, onDelegate }) {
   const [dismissed, setDismissed] = useState(false)
   const [acted, setActed] = useState(false)
-  const [delegating, setDelegating] = useState(false)
   const [delegatedTo, setDelegatedTo] = useState(null)
+  const [assignOpen, setAssignOpen] = useState(false)
+  const assignBtnRef = useRef(null)
 
   const leftCls = f.urgency === 'danger' ? 'border-l-danger' : 'border-l-warn'
 
   if (dismissed) return null
 
   const handleDelegate = (op) => {
-    setDelegating(false)
     setDelegatedTo(op)
+    setAssignOpen(false)
     onDelegate?.(op, f.title)
   }
 
@@ -83,14 +199,6 @@ function FindingCard({ f, index, onAct, onDelegate }) {
           <Check size={11} className="text-ok" />
           <span className="font-body text-label text-ok">{f.consequence}</span>
         </div>
-      ) : delegating ? (
-        <div className="px-4 py-3 flex gap-2 flex-wrap items-center">
-          <span className="font-body text-micro text-muted">Assign to:</span>
-          {(f.delegateTo || []).map(op => (
-            <Btn key={op} variant="secondary" onClick={() => handleDelegate(op)} className="!py-1 !px-2.5 !min-h-0">{op}</Btn>
-          ))}
-          <Btn variant="ghost" onClick={() => setDelegating(false)} className="!py-1 !min-h-0">Cancel</Btn>
-        </div>
       ) : delegatedTo ? (
         <div className="px-4 py-3 flex items-center gap-2">
           <Check size={11} className="text-ok" />
@@ -101,9 +209,23 @@ function FindingCard({ f, index, onAct, onDelegate }) {
           <Btn variant="primary" onClick={() => { setActed(true); onAct?.(f.id) }}>{f.actions?.[0]}</Btn>
           {f.actions?.[1] && <Btn variant="secondary" onClick={() => setDismissed(true)}>{f.actions[1]}</Btn>}
           {(f.delegateTo?.length > 0) && (
-            <Btn variant="ghost" onClick={() => setDelegating(true)} className="ml-auto !px-2 !min-h-0 flex items-center gap-1 whitespace-nowrap">
-              <Users size={10} strokeWidth={2} />Assign
-            </Btn>
+            <span ref={assignBtnRef} className="ml-auto inline-flex">
+              <Btn variant="ghost" icon={Users} onClick={() => setAssignOpen(p => !p)} className="!px-2 !min-h-0 whitespace-nowrap">
+                Assign
+              </Btn>
+            </span>
+          )}
+          {assignOpen && (
+            <ActionOverlay triggerRef={assignBtnRef} onClose={() => setAssignOpen(false)} title="Assign to">
+              <div className="px-4 py-2">
+                {(f.delegateTo || []).map(op => (
+                  <button key={op} type="button" onClick={() => handleDelegate(op)}
+                    className="flex items-center w-full py-2 font-body text-label text-ink hover:text-muted transition-colors">
+                    {op}
+                  </button>
+                ))}
+              </div>
+            </ActionOverlay>
           )}
         </div>
       )}
@@ -365,42 +487,16 @@ function SupervisorTeam({ taskAssignments, escalatedToDirector, setEscalatedToDi
   )
 }
 
-// ── Before strip ──────────────────────────────────────────────────────────────
-const BEFORE_CONTEXT = {
-  l4:      { oee: '82%', shifts: 28, accuracy: 82, baseScore: 54, normal: 'Allergen log unsigned but changeover not yet started · Sensor A-7 variance count was 1 at shift start' },
-  l6:      { oee: '88%', shifts: 22, accuracy: 91, baseScore: 42, normal: 'All checklists cleared at T+30 · Staffing 89% certified — no gaps at shift start' },
-  default: { oee: '84%', shifts: 20, accuracy: 85, baseScore: 55, normal: 'Conditions within normal range at shift start' },
-}
-
-function BeforeStrip({ lineLabel }) {
-  const lineId = lineLabel?.toLowerCase().includes('line 4') ? 'l4'
-    : lineLabel?.toLowerCase().includes('line 6') ? 'l6'
-    : null
-  const ctx = BEFORE_CONTEXT[lineId] ?? BEFORE_CONTEXT.default
-  return (
-    <div className="flex items-start gap-3 px-6 py-2 border-t border-rule2 bg-context/[0.03]">
-      <span className="font-body text-micro text-context flex-shrink-0 mt-px">Before ·</span>
-      <p className="font-body text-micro text-muted leading-relaxed flex-1 m-0">
-        Score was {ctx.baseScore} at shift start — within normal range · {ctx.normal}
-      </p>
-      <span className="font-body text-micro text-muted flex-shrink-0 tabular-nums">
-        Avg OEE {ctx.oee} · {ctx.shifts} shifts · {ctx.accuracy}% model accuracy
-      </span>
-    </div>
-  )
-}
-
 // ── Main ──────────────────────────────────────────────────────────────────────
 export default function ShiftIQV2({ score = 78, lineLabel = 'Line 4 · AM Shift', supervisor = 'D. Kowalski', plant = 'Salina KS', isSupervisorView = false }) {
-  const { checklistSigned, allergenOverride, taskAssignments, setTaskAssignments, logActivity,
+  const { checklistSigned, taskAssignments, setTaskAssignments, logActivity,
     signOffRequests, setSignOffRequests, escalatedToDirector, setEscalatedToDirector } = useAppState()
   const [scoreOverlayOpen, setScoreOverlayOpen] = useState(false)
   const [timelineOpen, setTimelineOpen] = useState(false)
+  const [directiveExecuted, setDirectiveExecuted] = useState(false)
 
   const signedCount  = 7 + Object.keys(checklistSigned).length
-  const allergenSigned = !!checklistSigned['allergen'] || !!allergenOverride
   const riskC        = sColor(score)
-  const checklistPct = Math.round((signedCount / 13) * 100)
   const richFindings = shiftData.findings
 
   const statement = score >= 75
@@ -493,7 +589,7 @@ export default function ShiftIQV2({ score = 78, lineLabel = 'Line 4 · AM Shift'
                 <polyline points="0,30 15,25 30,21 45,18 60,14 75,10 90,7" fill="none" stroke={riskC} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                 <circle cx="90" cy="7" r="3" fill={riskC} />
               </svg>
-              <span className="font-body text-micro text-muted block text-center mt-1">06:12 → now</span>
+              <span className="font-body text-micro text-muted block text-center mt-1">54 → {score} · 30 min · 3 signals</span>
             </div>
           </div>
 
@@ -502,7 +598,7 @@ export default function ShiftIQV2({ score = 78, lineLabel = 'Line 4 · AM Shift'
               { label: 'SCADA · Oven B', healthy: false },
               { label: 'MES · Schedule', healthy: true },
               { label: 'HR · Roster',    healthy: true },
-              { label: 'Checklists',     healthy: true },
+              { label: `Checklists · ${signedCount}/13`, healthy: signedCount >= 11 },
             ].map((sig, i) => (
               <div key={i} className="flex items-center gap-1.5">
                 <div className={`w-[5px] h-[5px] rounded-full flex-shrink-0 ${sig.healthy ? 'bg-ok' : 'bg-warn'}`} />
@@ -511,7 +607,6 @@ export default function ShiftIQV2({ score = 78, lineLabel = 'Line 4 · AM Shift'
             ))}
           </div>
 
-          <BeforeStrip lineLabel={lineLabel} />
         </header>
 
         <div className="flex flex-1 min-h-0 overflow-hidden">
@@ -523,18 +618,6 @@ export default function ShiftIQV2({ score = 78, lineLabel = 'Line 4 · AM Shift'
           ) : (
             <>
             <div className="flex-1 overflow-y-auto border-r border-rule">
-              <div className="px-6 pt-4 border-b border-rule2">
-                <div className="flex items-start gap-2.5 pb-4">
-                  <div className="w-[5px] h-[5px] rounded-full bg-context flex-shrink-0 mt-[5px]" />
-                  <p className="font-body text-label text-muted leading-relaxed m-0">
-                    Shift opened at 06:12 with score 54 — within normal range.
-                    Risk built 54 → 78 over 30 minutes as three signals compounded:
-                    checklist lag, a cert mismatch at Sauce Dosing, and Sensor A-7 variance.
-                    All three are within supervisor authority to resolve before handoff.
-                  </p>
-                </div>
-              </div>
-
               <div className="px-6 pt-5 pb-4">
                 <div className="flex items-center justify-between mb-3">
                   <div className="font-body text-micro text-muted">Intelligence · {richFindings.length} findings</div>
@@ -543,6 +626,13 @@ export default function ShiftIQV2({ score = 78, lineLabel = 'Line 4 · AM Shift'
                     Agent timeline
                   </button>
                 </div>
+                <DirectiveCard
+                  executed={directiveExecuted}
+                  onExecute={(selected) => {
+                    setDirectiveExecuted(true)
+                    logActivity({ actor: supervisor, action: 'Confirmed execution — Lot TS-8811 quarantined in Cold Storage B', item: 'TS-8811', type: 'intervention' })
+                  }}
+                />
                 {richFindings.map((f, i) => (
                   <FindingCard key={f.id} f={f} index={i}
                     onAct={(id) => logActivity({ actor: supervisor, action: `Acted on finding: ${f.title}`, item: id, type: 'intervention' })}
@@ -560,31 +650,6 @@ export default function ShiftIQV2({ score = 78, lineLabel = 'Line 4 · AM Shift'
                 </div>
               </div>
 
-              <Divider />
-
-              <div className="px-5 pt-[18px] pb-6">
-                <div className="font-body text-micro text-muted mb-3">Startup checklists</div>
-                <div className="flex items-center gap-4 px-3.5 py-3 bg-stone2 border border-rule">
-                  <div className="flex-shrink-0">
-                    <span className="display-num text-score" style={{ color: signedCount < 11 ? 'var(--color-warn)' : 'var(--color-ok)' }}>{signedCount}</span>
-                    <span className="font-body text-body text-muted ml-1.5">/ 13</span>
-                  </div>
-                  <div className="flex-1">
-                    <div className="h-[3px] bg-rule mb-1.5">
-                      <div style={{ height: '100%', width: `${checklistPct}%`, background: signedCount < 11 ? 'var(--color-warn)' : 'var(--color-ok)', transition: 'width 700ms cubic-bezier(0.16,1,0.3,1)' }} />
-                    </div>
-                    <span className="font-body text-label text-muted">{checklistPct}% complete · 4 overdue</span>
-                  </div>
-                </div>
-                {!allergenSigned && (
-                  <div className="mt-2 px-2.5 py-1.5 text-danger bg-danger/[0.078] border border-danger/20">
-                    <span className="font-body text-micro">ALLERGEN LOG UNSIGNED</span>
-                  </div>
-                )}
-                <p className="font-body text-label text-context leading-relaxed mt-2.5 pl-0.5 m-0">
-                  4 overdue items at T+42 correlates with 18% elevated scrap rate on comparable runs.
-                </p>
-              </div>
             </div>
 
             {timelineOpen && (

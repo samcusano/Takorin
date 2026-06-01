@@ -506,7 +506,7 @@ export default function PlantOverview() {
 
       {/* ── Scene header ─────────────────────────────────────────────────── */}
       <SceneHeader
-        module="OVERVIEW"
+        module="Overview"
         context={`${plantName} · April 16`}
         live
         timestamp="06:42"
@@ -1130,9 +1130,7 @@ export default function PlantOverview() {
                 <CheckCircle size={11} strokeWidth={2} />Acknowledged
               </span>
             )}
-            <Btn variant="secondary" onClick={() => { navigate(`/shift?line=${selectedFinding.line.id}`); setSelectedFinding(null) }}>
-              <ArrowRight size={11} strokeWidth={2} />
-            </Btn>
+            <Btn variant="secondary" icon={ArrowRight} onClick={() => { navigate(`/shift?line=${selectedFinding.line.id}`); setSelectedFinding(null) }} />
           </div>
         }
       >

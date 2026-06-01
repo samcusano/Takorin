@@ -142,13 +142,9 @@ function PlantItem({ collapsed }) {
 
 
 const AVAILABLE_PLANTS = [PLANTS.sl, PLANTS.ks, PLANTS.co]
-const DEMO_PLANTS = [PLANTS.se, PLANTS.de]
 const DISABLED_PLANTS = [
  { name: 'Topeka Plant', code: 'KS-02' },
 ]
-
-const SECTOR_LABELS = { food: 'Food', pharma: 'Pharma', electronics: 'Electronics', semiconductor: 'Semiconductor' }
-const SECTOR_COLORS = { food: 'text-ok', pharma: 'text-signal', electronics: 'text-warn', semiconductor: 'text-muted' }
 
 function PlantDropdown({ triggerRef, onClose, complianceState, currentPlant, setCurrentPlant }) {
  const dropRef = useRef(null)
@@ -232,32 +228,6 @@ function PlantDropdown({ triggerRef, onClose, complianceState, currentPlant, set
       ))}
      </div>
 
-     {/* Demo sector plants */}
-     <div className="mx-5 h-px bg-sidebar-border" />
-     <div className="px-5 pt-3 pb-4">
-      <p className="font-body text-white/50 text-label mb-2">Sector demos</p>
-      {DEMO_PLANTS.map(p => {
-       const isActive = currentPlant.id === p.id
-       const sectorColor = SECTOR_COLORS[p.sector] ?? 'text-muted'
-       const sectorLabel = SECTOR_LABELS[p.sector] ?? p.sector
-       return (
-        <button key={p.id} type="button"
-         onClick={() => { if (!isActive) { setCurrentPlant(p); onClose() } }}
-         className={`flex items-center justify-between w-full py-1.5 ${isActive ? 'cursor-default' : 'hover:opacity-80 transition-opacity'}`}>
-         <div className="flex items-center gap-2">
-          <div className="w-5 h-5 rounded bg-sidebar-3 flex items-center justify-center flex-shrink-0">
-           <Building2 size={10} strokeWidth={2} className={isActive ? 'text-signal' : 'text-white/50'} />
-          </div>
-          <div className="text-left">
-           <span className={`font-body text-label block leading-tight ${isActive ? 'text-white font-medium' : 'text-white/50'}`}>{p.name}</span>
-           <span className={`font-body text-label ${sectorColor}`}>{sectorLabel}</span>
-          </div>
-         </div>
-        </button>
-       )
-      })}
-     </div>
-
     </div>
    </div>
   </div>
@@ -335,9 +305,6 @@ function UserDropdown({ triggerRef, onClose, viewingRole, setViewingRole }) {
   </div>
  )
 }
-
-const WORKER_MODE_LABELS = { human: 'Human workforce', robot: 'Robotic workforce', hybrid: 'Human · Robot hybrid' }
-const WORKER_MODE_COLORS = { human: 'text-ok', robot: 'text-signal', hybrid: 'text-warn' }
 
 const STATIC_AGENT_TOTAL = agentConfigData.agents.reduce((n, a) => n + (a.pendingActions?.length ?? 0), 0)
 
@@ -505,17 +472,12 @@ export default function Sidebar() {
    {(collapsed || platformExpanded) && (
     <>
      <SideItem to="/batch"       id="batch"       icon={FlaskConical}    label="Batches"      badge={null} collapsed={collapsed} />
-     {currentPlant?.sector !== 'pharma' && (
-      <SideItem to="/equipment" id="equipment"  icon={ScanLine}        label="Equipment"    badge={null} collapsed={collapsed} />
-     )}
+     <SideItem to="/equipment" id="equipment"  icon={ScanLine}        label="Equipment"    badge={null} collapsed={collapsed} />
      <SideItem to="/compliance"  id="compliance"  icon={Scale}           label="Compliance"   badge={null} collapsed={collapsed} />
      <SideItem to="/knowledge"   id="knowledge"   icon={BookOpen}        label="Knowledge"    badge={null} collapsed={collapsed} />
      <SideItem to="/execution"   id="execution"   icon={Workflow}        label="Autonomy"     badge={null} collapsed={collapsed} />
      <SideItem to="/hierarchy"   id="hierarchy"   icon={LayoutDashboard} label="Site"         badge={null} collapsed={collapsed} />
      <SideItem to="/records"   id="records"    icon={FileLock2}  label="Records"     badge={null} collapsed={collapsed} />
-     {(currentPlant?.sector === 'electronics' || currentPlant?.sector === 'semiconductor') && (
-      <SideItem to="/delivery"  id="delivery"   icon={TrendingUp} label="Value Chain" badge={null} collapsed={collapsed} />
-     )}
      <SideItem to="/integration" id="integration" icon={Network} label="Integrations" badge={null} collapsed={collapsed} />
      <SideItem to="/readiness"   id="readiness"   icon={Gauge}   label="Data Quality"  badge={null} collapsed={collapsed} />
     </>
@@ -543,14 +505,8 @@ export default function Sidebar() {
 
  </nav>
 
- {/* Worker mode + Compliance — hidden when collapsed */}
+ {/* Compliance + Platform — hidden when collapsed */}
  {!collapsed && <div className="px-4 py-2.5 border-t border-sidebar-border">
- <div className="flex items-center justify-between mb-1.5">
-  <span className="font-body text-white/50 text-label">Workforce</span>
-  <span className={`font-body font-medium text-label ${WORKER_MODE_COLORS[workerMode || 'human']}`}>
-   {workerMode === 'robot' ? 'Robotic' : workerMode === 'hybrid' ? 'Hybrid' : 'Human'}
-  </span>
- </div>
  <div className="flex items-center justify-between">
  <span className="font-body text-white/50 text-label">Compliance</span>
  <span className={`font-body font-medium text-label px-2 py-0.5 ${complianceColor}`}>

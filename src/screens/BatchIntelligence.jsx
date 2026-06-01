@@ -310,7 +310,7 @@ export default function BatchIntelligence() {
 
         {/* Header — SceneHeader with tone-based atmospheric glow */}
         <SceneHeader
-          module="BATCH"
+          module="Batch"
           context={`${batch.vessel} · ${batch.zone}`}
           metric={confidence}
           metricLabel={`${batch.grade} grade projected`}

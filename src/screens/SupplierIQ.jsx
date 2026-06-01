@@ -53,9 +53,7 @@ function ContactSupplierPanel({ open, onClose }) {
           </div>
         ) : (
           <div className="flex items-center gap-2">
-            <Btn variant="primary" onClick={handleSend}>
-              <Send size={11} strokeWidth={2} />Send message
-            </Btn>
+            <Btn variant="primary" icon={Send} onClick={handleSend}>Send message</Btn>
             <Btn variant="secondary" onClick={handleClose}>Cancel</Btn>
           </div>
         )

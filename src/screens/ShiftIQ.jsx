@@ -12,7 +12,7 @@ import {
  PersonAvatar, Modal, WaveformSparkline, AnimatedCheck, Spinner,
  VaulDrawer, HoldButton, EmptyState
 } from '../components/UI'
-import { Flag, ChevronRight, ChevronDown, AlertTriangle, Check, X, TrendingDown, RotateCcw, Wrench, Package, HelpCircle, ListChecks, Brain, Shield, RefreshCw, ChevronUp, BarChart2, ArrowRight, Moon, Activity, CheckCircle2, AlertCircle } from 'lucide-react'
+import { Flag, ChevronRight, ChevronDown, AlertTriangle, Check, X, TrendingDown, RotateCcw, Wrench, Package, HelpCircle, ListChecks, Brain, Shield, RefreshCw, ChevronUp, BarChart2, ArrowRight, Moon, Activity, CheckCircle2 } from 'lucide-react'
 import { useAppState } from '../context/AppState'
 import { GanttChart, CalendarHeatmap, RadarChart } from '../components/Charts'
 
@@ -902,71 +902,59 @@ function PrepareView({ forecast = [], onStartShift }) {
  )
 }
 
-// ── Director directives strip — ratified decisions requiring floor execution ──
+function SleepPickerDropdown({ triggerRef, onClose, onSelect }) {
+ const dropRef = useRef(null)
+ const [pos, setPos] = useState({ top: 0, right: 0 })
+ useFocusTrap(dropRef)
 
-const DIRECTOR_HOLD = {
- lot: 'TS-8811',
- action: 'Hold Lot TS-8811 — quarantine in Cold Storage B, do not release to Line 4',
- director: 'J. Crocker',
- ratifiedAt: '06:22',
- agent: 'Supplier Intelligence Agent · Tier 3',
- rationale: 'COA not received 4h before scheduled production start. FSMA 204 compliance hold.',
-}
-const BRIEF_CREW = ['C. Reyes', 'P. Okonkwo', 'F. Adeyemi']
+ useEffect(() => {
+  if (triggerRef.current) {
+   const r = triggerRef.current.getBoundingClientRect()
+   setPos({ top: r.bottom + 4, right: window.innerWidth - r.right })
+  }
+ }, [triggerRef])
 
-function DirectorDirectivesStrip({ executed, onExecute, briefed, onBrief }) {
- const allBriefed = briefed.size >= BRIEF_CREW.length
- if (executed && allBriefed) return null
+ useEffect(() => {
+  function handleClick(e) {
+   if (
+    dropRef.current && !dropRef.current.contains(e.target) &&
+    triggerRef.current && !triggerRef.current.contains(e.target)
+   ) onClose()
+  }
+  function handleKey(e) { if (e.key === 'Escape') onClose() }
+  document.addEventListener('mousedown', handleClick)
+  document.addEventListener('keydown', handleKey)
+  return () => {
+   document.removeEventListener('mousedown', handleClick)
+   document.removeEventListener('keydown', handleKey)
+  }
+ }, [onClose, triggerRef])
+
  return (
-  <div className="flex-shrink-0 border-b border-rule2">
-   <div className="px-4 py-2 bg-stone2 border-b border-rule2 flex items-center gap-2">
-    <AlertCircle size={10} strokeWidth={2} className={executed ? 'text-warn' : 'text-danger'} />
-    <span className={`font-body text-label font-medium ${executed ? 'text-warn' : 'text-danger'}`}>
-     From director — {executed ? 'brief your crew' : '1 execution required'}
-    </span>
-   </div>
-   <div className="px-4 py-3 border-l-2 border-l-danger">
-    <div className="flex items-start justify-between gap-3">
-     <div className="flex-1 min-w-0">
-      <div className="flex items-center gap-2 mb-0.5 flex-wrap">
-       <span className="font-body text-muted text-label">{DIRECTOR_HOLD.director} · Plant Director · {DIRECTOR_HOLD.ratifiedAt}</span>
-       <span className="font-body text-muted text-label opacity-50">·</span>
-       <span className="font-body text-muted text-label">{DIRECTOR_HOLD.agent}</span>
+  <div ref={dropRef} className="fixed z-50 plant-drop-in"
+   style={{ top: pos.top, right: pos.right }}>
+   <div className="w-44 bg-stone border border-rule shadow-raise overflow-hidden">
+    <div className="plant-drop-in-content">
+     <div className="px-4 pt-3 pb-2">
+      <div className="flex items-center gap-1.5 pb-2 mb-1 border-b border-rule2">
+       <Moon size={10} strokeWidth={2} className="text-muted" />
+       <span className="font-body text-micro text-muted">Sleep mode</span>
       </div>
-      <div className="font-body font-medium text-ink text-label">{DIRECTOR_HOLD.action}</div>
-      <div className="font-body text-muted text-label mt-0.5">{DIRECTOR_HOLD.rationale}</div>
-     </div>
-     {!executed ? (
-      <button type="button" onClick={onExecute}
-       className="flex items-center gap-1.5 font-body text-label text-muted hover:text-ink transition-colors flex-shrink-0 px-2.5 py-1.5 border border-rule2 hover:border-muted">
-       <Check size={10} strokeWidth={2.5} />
-       <span>Confirm execution</span>
-      </button>
-     ) : (
-      <span className="flex items-center gap-1 font-body text-ok text-label flex-shrink-0">
-       <CheckCircle2 size={10} strokeWidth={2} />Executed
-      </span>
-     )}
-    </div>
-   </div>
-   {executed && !allBriefed && (
-    <div className="px-4 py-2.5 border-t border-rule2 bg-stone2/50">
-     <div className="font-body text-muted text-label mb-2">Mark crew as briefed on the hold</div>
-     <div className="flex gap-2 flex-wrap">
-      {BRIEF_CREW.map(name => (
-       <button key={name} type="button" onClick={() => onBrief(name)} disabled={briefed.has(name)}
-        className={`flex items-center gap-1.5 font-body text-label px-2.5 py-1.5 border transition-colors ${
-         briefed.has(name)
-          ? 'border-ok bg-ok/10 text-ok cursor-default'
-          : 'border-rule2 text-muted hover:border-signal hover:text-ink'
-        }`}>
-        {briefed.has(name) && <Check size={9} strokeWidth={2.5} />}
-        {name.split(' ')[1]}
+      {[
+       { label: '15 minutes', value: 15 },
+       { label: '30 minutes', value: 30 },
+       { label: '1 hour',     value: 60 },
+       { label: 'End of shift', value: 'eos' },
+      ].map(opt => (
+       <button key={opt.value} type="button"
+        onClick={() => { onSelect(opt.value); onClose() }}
+        className="flex items-center w-full py-2 font-body text-label text-ink hover:text-muted transition-colors">
+        {opt.label}
        </button>
       ))}
      </div>
     </div>
-   )}
+   </div>
   </div>
  )
 }
@@ -993,19 +981,23 @@ export default function ShiftIQ() {
  viewingRole,
  addQuietPeriod, clearQuietPeriod, activeQuietPeriod,
  } = useAppState()
- const [quietForm, setQuietForm] = useState({ open: false, reason: '', endTime: '' })
- const [directorExecuted, setDirectorExecuted] = useState(false)
- const [briefedCrew, setBriefedCrew] = useState(new Set())
- const handleSetQuietPeriod = () => {
+ const [quietForm, setQuietForm] = useState({ open: false })
+ const handleSetSleepMode = (preset) => {
+  const base = new Date()
+  let endTime
+  if (preset === 15) { const t = new Date(base); t.setMinutes(t.getMinutes() + 15); endTime = t.toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' }) }
+  else if (preset === 30) { const t = new Date(base); t.setMinutes(t.getMinutes() + 30); endTime = t.toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' }) }
+  else if (preset === 60) { const t = new Date(base); t.setMinutes(t.getMinutes() + 60); endTime = t.toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' }) }
+  else { endTime = 'end of shift' }
   addQuietPeriod({
    line: 'Line 4',
-   startTime: new Date().toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' }),
-   endTime: quietForm.endTime || '+60 min',
-   reason: quietForm.reason || 'Planned operational event',
+   startTime: base.toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' }),
+   endTime,
+   reason: 'Sleep mode',
    setBy: 'D. Kowalski',
   })
-  setQuietForm({ open: false, reason: '', endTime: '' })
-  logActivity({ actor: 'D. Kowalski', action: 'Quiet period set — Compliance Monitor in log-only mode', item: 'Line 4', type: 'compliance' })
+  setQuietForm({ open: false })
+  logActivity({ actor: 'D. Kowalski', action: 'Sleep mode active — Compliance Monitor in log-only mode', item: 'Line 4', type: 'compliance' })
  }
  const currentQuiet = activeQuietPeriod?.('Line 4')
  const d = currentPlant?.id === 'ks' ? wichitaData : currentPlant?.id === 'co' ? denverData : shiftData
@@ -1048,6 +1040,7 @@ export default function ShiftIQ() {
  const [dataOwner, setDataOwner] = useState('')
  const [directorAck, setDirectorAck] = useState(false)
  const lineTriggerRef = useRef(null)
+ const moonTriggerRef = useRef(null)
  const [col1Tab, setCol1Tab] = useState('orders')
 
  const skuContextReady = readinessResolved?.['ctx-0'] && (readinessScore ?? 64) >= 75
@@ -1140,9 +1133,10 @@ export default function ShiftIQ() {
         Alloc
        </button>
       )}
-      <button type="button" onClick={() => setQuietForm(p => ({...p, open: true}))}
-       className="text-muted hover:text-ink p-1.5 transition-colors" aria-label="Set quiet period" title="Set quiet period">
+      <button ref={moonTriggerRef} type="button" onClick={() => !currentQuiet && setQuietForm(p => ({ open: !p.open }))}
+       className={`relative p-1.5 transition-colors ${currentQuiet ? 'text-signal cursor-default' : 'text-muted hover:text-ink'}`} aria-label="Sleep mode" title="Sleep mode">
        <Moon size={11} strokeWidth={2} />
+       {currentQuiet && <span className="absolute top-0.5 right-0.5 w-1 h-1 rounded-full bg-signal" />}
       </button>
      </div>
     </div>
@@ -1156,42 +1150,23 @@ export default function ShiftIQ() {
   : activeTab === 'prepare'    ? <PrepareView forecast={shiftData.forecast} onStartShift={() => setActiveTab('shift')} />
   : <>
  {/* Quiet period banner — triggered by Moon icon in tab bar */}
- {currentQuiet ? (
-  <div className="flex items-center gap-3 px-5 py-2.5 bg-ok/[0.06] border-b-2 border-b-ok/30 flex-shrink-0">
-   <div className="w-1.5 h-1.5 rounded-full bg-ok flex-shrink-0" />
+ {currentQuiet && (
+  <div className="flex items-center gap-3 px-5 py-2.5 bg-stone2 border-b border-rule2 flex-shrink-0">
+   <Moon size={11} strokeWidth={2} className="text-signal flex-shrink-0" />
    <div className="flex-1 font-body text-label">
-    <span className="font-medium text-ok">Quiet period active — </span>
-    <span className="text-muted">{currentQuiet.reason} · Compliance Monitor in log-only mode · Until {currentQuiet.endTime}</span>
+    <span className="font-medium text-ink">Sleep mode — </span>
+    <span className="text-muted">Compliance Monitor in log-only mode · Until {currentQuiet.endTime}</span>
    </div>
-   <Btn variant="ghost" onClick={() => clearQuietPeriod(currentQuiet.id)} className="flex-shrink-0">End quiet period</Btn>
+   <Btn variant="ghost" onClick={() => clearQuietPeriod(currentQuiet.id)} className="flex-shrink-0">End sleep mode</Btn>
   </div>
- ) : quietForm.open ? (
-  <div className="flex items-center gap-2 px-5 py-2 bg-stone2 border-b border-rule2 flex-shrink-0">
-   <span className="font-body text-muted text-label flex-shrink-0">Quiet period:</span>
-   <input
-    type="text"
-    value={quietForm.reason}
-    onChange={e => setQuietForm(p => ({...p, reason: e.target.value}))}
-    placeholder="Reason (e.g. Allergen changeover)"
-    className="font-body text-ink text-label bg-stone border border-rule2 px-2 py-1 flex-1 placeholder:text-muted/60 focus:border-signal focus:outline-none"
-   />
-   <input
-    type="text"
-    value={quietForm.endTime}
-    onChange={e => setQuietForm(p => ({...p, endTime: e.target.value}))}
-    placeholder="Until (e.g. 10:30)"
-    className="font-body text-ink text-label bg-stone border border-rule2 px-2 py-1 w-24 placeholder:text-muted/60 focus:border-signal focus:outline-none"
-   />
-   <Btn variant="secondary" onClick={handleSetQuietPeriod} className="!bg-ink !text-stone hover:!bg-ink/90 !border-ink !px-3 !min-h-0 !py-1">Set</Btn>
-   <Btn variant="ghost" onClick={() => setQuietForm({ open:false, reason:'', endTime:'' })}>Cancel</Btn>
-  </div>
- ) : null}
- <DirectorDirectivesStrip
-  executed={directorExecuted}
-  onExecute={() => setDirectorExecuted(true)}
-  briefed={briefedCrew}
-  onBrief={name => setBriefedCrew(p => new Set([...p, name]))}
- />
+ )}
+ {quietForm.open && (
+  <SleepPickerDropdown
+   triggerRef={moonTriggerRef}
+   onClose={() => setQuietForm({ open: false })}
+   onSelect={handleSetSleepMode}
+  />
+ )}
  <ShiftIQV2 score={lineScore} lineLabel={`${activeLined?.name ?? 'Line 4'} · AM Shift`} supervisor={lineSupervisor} plant={currentPlant?.name ?? 'Salina KS'} isSupervisorView={viewingRole === 'supervisor'} />
  </>}
  </div>

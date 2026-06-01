@@ -267,9 +267,7 @@ function KnowledgeCapturePrompt({ source, operator, onDismiss, onSubmit }) {
     />
     <div className="flex items-center justify-between mt-2">
      <span className="font-body text-muted text-label">Submitted by {operator} · pending supervisor review</span>
-     <Btn variant="primary" onClick={() => { if (body.trim()) { onSubmit(body); setSubmitted(true) } }}>
-      <Send size={10} strokeWidth={2} className="mr-1" />Submit
-     </Btn>
+     <Btn variant="primary" icon={Send} onClick={() => { if (body.trim()) { onSubmit(body); setSubmitted(true) } }}>Submit</Btn>
     </div>
    </div>
   </div>
