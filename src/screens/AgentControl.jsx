@@ -4,7 +4,7 @@ import {
   ClipboardCheck, Shield, Database, ChevronDown, ChevronRight,
   Timer, CheckCircle, XCircle, Check, Flag, InspectionPanel, TrendingUp,
 } from 'lucide-react'
-import { Btn, SlidePanel, Tabs, StatusPill, Checkbox, AnimatedScore, EmptyState, SectionLabel } from '../components/UI'
+import { Btn, SlidePanel, Tabs, StatusPill, Checkbox, AnimatedScore, EmptyState, SectionLabel, FilterDropdown, MultiFilterDropdown } from '../components/UI'
 import { agentConfigData, dataSourceHealth, networkData } from '../data'
 import { agentPrompts } from '../data/prompts'
 import { useAppState } from '../context/AppState'
@@ -997,6 +997,9 @@ export default function AgentControl() {
   const [overrideModal, setOverrideModal] = useState(null)
   const [disableModal, setDisableModal]   = useState(null)
   const [splitFocused, setSplitFocused]   = useState(null)
+  const [agentFilter, setAgentFilter]     = useState('all')
+  const [tierFilter, setTierFilter]       = useState('all')
+  const [consequenceFilter, setConsequenceFilter] = useState([])
   const [splitChecked, setSplitChecked]   = useState(new Set())
   const [tier1Open, setTier1Open]         = useState(false)
   const tier1BtnRef                       = useRef(null)
@@ -1092,7 +1095,14 @@ export default function AgentControl() {
   })
 
   // Include decided items inline too (faded)
-  const allItems = [...undecidedPending, ...pending.filter(p => p._decided)]
+  const allItems = [...undecidedPending, ...pending.filter(p => p._decided)].filter(p => {
+    if (!p._decided) {
+      if (agentFilter !== 'all' && p._agentId !== agentFilter) return false
+      if (tierFilter !== 'all' && String(p._meta.tier) !== tierFilter) return false
+      if (consequenceFilter.length > 0 && !consequenceFilter.includes(p._meta.consequence)) return false
+    }
+    return true
+  })
 
   allItems.forEach(pa => {
     const agent = agents.find(a => a.id === pa._agentId)
@@ -1230,6 +1240,44 @@ export default function AgentControl() {
           onClose={() => setTier1Open(false)}
         />
       )}
+
+      {/* ── Scope bar ─────────────────────────────────────────────────── */}
+      <div className="flex items-center gap-2 px-5 py-2.5 border-b border-rule2 bg-stone flex-shrink-0">
+        <FilterDropdown
+          label="Agent"
+          options={[{ value: 'all', label: 'All agents' }, ...agents.map(a => ({ value: a.id, label: a.name }))]}
+          value={agentFilter}
+          onChange={setAgentFilter}
+        />
+        <FilterDropdown
+          label="Tier"
+          options={[
+            { value: 'all', label: 'All tiers' },
+            { value: '2',   label: 'Tier 2 — approval' },
+            { value: '3',   label: 'Tier 3 — compliance' },
+          ]}
+          value={tierFilter}
+          onChange={setTierFilter}
+        />
+        <MultiFilterDropdown
+          label="Priority"
+          options={[
+            { value: 'critical', label: 'Critical' },
+            { value: 'high',     label: 'High' },
+            { value: 'medium',   label: 'Medium' },
+          ]}
+          values={consequenceFilter}
+          onChange={setConsequenceFilter}
+        />
+        <div className="ml-auto font-body text-muted text-label">
+          {undecidedPending.filter(p => {
+            if (agentFilter !== 'all' && p._agentId !== agentFilter) return false
+            if (tierFilter !== 'all' && String(p._meta.tier) !== tierFilter) return false
+            if (consequenceFilter.length > 0 && !consequenceFilter.includes(p._meta.consequence)) return false
+            return true
+          }).length} decisions
+        </div>
+      </div>
 
       {/* ── Priority-weighted ledger ──────────────────────────────────── */}
       <div className="flex-1 min-h-0 flex flex-col overflow-hidden">

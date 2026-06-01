@@ -149,6 +149,36 @@ export const recipes = {
   },
 }
 
+// In-batch daily temperature trace for fermentation vessels.
+// Each point is one day; day 0 = today (batch day 141 for F-047, 222 for F-038).
+// Operators care about what's happening inside the current batch, not cross-batch SPC.
+export const batchTrace = {
+  'EQ-F047': {
+    param: 'Temperature', unit: '°C',
+    target: 28.0, ucl: 30.0, lcl: 26.0,
+    batchDay: 141,
+    // 30 daily readings — day 112 → day 141 (today)
+    points: [
+      27.9, 28.1, 27.8, 28.0, 28.2, 27.9, 28.1, 28.3, 28.0, 27.8,
+      28.1, 28.4, 28.2, 28.0, 28.3, 28.5, 28.6, 28.9, 29.1, 29.4,
+      29.6, 29.7, 29.5, 29.2, 28.9, 28.6, 28.4, 28.3, 28.2, 28.1,
+    ],
+    note: 'Temp spike days 130–136 · cooling intervened · now recovering to target',
+  },
+  'EQ-F038': {
+    param: 'Temperature', unit: '°C',
+    target: 26.0, ucl: 28.0, lcl: 24.0,
+    batchDay: 222,
+    // 30 daily readings — day 193 → day 222 (today)
+    points: [
+      25.9, 26.1, 26.0, 25.8, 26.0, 26.2, 25.9, 26.1, 26.3, 26.0,
+      25.8, 26.0, 26.2, 26.4, 26.3, 26.1, 25.9, 26.0, 26.2, 26.5,
+      26.6, 26.7, 26.8, 26.9, 27.0, 26.9, 26.8, 26.8, 26.9, 26.9,
+    ],
+    note: 'Slow upward drift over last 14 days · pending QP review',
+  },
+}
+
 export const spcData = {
   'EQ-F047': {
     param: 'Temperature',

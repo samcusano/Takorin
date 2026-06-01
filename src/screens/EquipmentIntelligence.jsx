@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { equipment, recipes, spcData, runHistory } from '../data/equipment'
+import { equipment, recipes, spcData, batchTrace, runHistory } from '../data/equipment'
 import { AlertTriangle, CheckCircle2, Wrench, Activity, Clock, TrendingDown, CalendarClock, Zap } from 'lucide-react'
 import { SceneHeader, SectionHeader, StatusPill, Btn, SlidePanel, AnimatedScore, Tabs, EmptyState, StatGrid, MasterDetail } from '../components/UI'
 import { useAppState } from '../context/AppState'
@@ -195,6 +195,92 @@ function EquipmentCard({ eq, selected, onClick }) {
         )}
       </div>
     </button>
+  )
+}
+
+function BatchTempChart({ eqId }) {
+  const d = batchTrace[eqId]
+  if (!d) return null
+
+  const W = 100, H = 100
+  const pad = { top: 10, right: 8, bottom: 18, left: 8 }
+  const cW = W - pad.left - pad.right
+  const cH = H - pad.top - pad.bottom
+
+  const range = d.ucl - d.lcl
+  const yPad = range * 0.15
+  const minY = d.lcl - yPad
+  const maxY = d.ucl + yPad
+  const yRange = maxY - minY
+
+  const toX = (i) => pad.left + (i / (d.points.length - 1)) * cW
+  const toY = (v) => pad.top + (1 - (v - minY) / yRange) * cH
+
+  const linePath = d.points.map((v, i) => `${i === 0 ? 'M' : 'L'} ${toX(i).toFixed(1)} ${toY(v).toFixed(1)}`).join(' ')
+  const areaPath = `${linePath} L ${toX(d.points.length - 1).toFixed(1)} ${pad.top + cH} L ${pad.left} ${pad.top + cH} Z`
+
+  const uclY  = toY(d.ucl).toFixed(1)
+  const lclY  = toY(d.lcl).toFixed(1)
+  const tgtY  = toY(d.target).toFixed(1)
+
+  const current = d.points[d.points.length - 1]
+  const prev    = d.points[d.points.length - 2]
+  const trend   = current - prev
+  const currentColor = current > d.ucl || current < d.lcl ? '#E55' : current > d.ucl - range * 0.12 || current < d.lcl + range * 0.12 ? '#D4913A' : '#3A9E6F'
+
+  const startDay = d.batchDay - d.points.length + 1
+
+  return (
+    <div className="flex flex-col h-full">
+      <div className="flex-shrink-0 px-5 py-2.5 border-b border-rule2 bg-stone2 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <span className="font-body text-muted text-label">Batch temperature · last 30 days</span>
+          <span className="font-body text-muted text-label">Day {startDay}–{d.batchDay}</span>
+        </div>
+        <div className="flex items-center gap-4 text-label font-body">
+          <span className="flex items-center gap-1 text-danger"><span className="w-3 border-t border-dashed border-danger" />UCL {d.ucl}{d.unit}</span>
+          <span className="flex items-center gap-1 text-ok"><span className="w-3 border-t border-dotted border-ok" />Target {d.target}{d.unit}</span>
+          <span className="flex items-center gap-1 text-danger"><span className="w-3 border-t border-dashed border-danger" />LCL {d.lcl}{d.unit}</span>
+        </div>
+      </div>
+
+      <div className="flex-1 px-5 py-3 min-h-0">
+        <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-full" preserveAspectRatio="none">
+          {/* Control band fill */}
+          <rect x={pad.left} y={uclY} width={cW} height={parseFloat(lclY) - parseFloat(uclY)} fill="rgba(58,158,111,0.04)" />
+          {/* UCL */}
+          <line x1={pad.left} y1={uclY} x2={W - pad.right} y2={uclY} stroke="#E55" strokeWidth="0.5" strokeDasharray="2,1.5" />
+          {/* LCL */}
+          <line x1={pad.left} y1={lclY} x2={W - pad.right} y2={lclY} stroke="#E55" strokeWidth="0.5" strokeDasharray="2,1.5" />
+          {/* Target */}
+          <line x1={pad.left} y1={tgtY} x2={W - pad.right} y2={tgtY} stroke="#3A9E6F" strokeWidth="0.5" strokeDasharray="1,2" opacity="0.6" />
+          {/* Area fill */}
+          <path d={areaPath} fill="rgba(123,110,100,0.06)" />
+          {/* Line */}
+          <path d={linePath} fill="none" stroke="#7B6E64" strokeWidth="0.9" strokeLinejoin="round" />
+          {/* Current point */}
+          <circle cx={toX(d.points.length - 1)} cy={toY(current)} r="1.5" fill={currentColor} />
+        </svg>
+      </div>
+
+      <div className="flex-shrink-0 px-5 pb-2.5 flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <div>
+            <span className="font-body text-muted text-label">Now  </span>
+            <span className="display-num text-label font-bold" style={{ color: currentColor }}>{current.toFixed(1)}{d.unit}</span>
+            <span className="font-body text-muted text-label ml-1">{trend >= 0 ? '↑' : '↓'} {Math.abs(trend).toFixed(1)} vs yesterday</span>
+          </div>
+          <div className="font-body text-muted text-micro">Day {startDay}</div>
+        </div>
+        <div className="font-body text-muted text-micro">Day {d.batchDay} · today</div>
+      </div>
+
+      {d.note && (
+        <div className="flex-shrink-0 px-5 py-2 border-t border-rule2 bg-stone2">
+          <span className="font-body text-muted text-label">{d.note}</span>
+        </div>
+      )}
+    </div>
   )
 }
 
@@ -421,7 +507,11 @@ function EquipmentDetail({ eq }) {
       <div className="flex-1 flex flex-col overflow-y-auto min-h-0">
         {(!hasImpact || detailTab === 'overview') && (
           <>
-            {eq.status === 'active' && spcData[eq.id] ? (
+            {eq.status === 'active' && batchTrace[eq.id] ? (
+              <div className="h-[260px] flex-shrink-0 border-b border-rule2">
+                <BatchTempChart eqId={eq.id} />
+              </div>
+            ) : eq.status === 'active' && spcData[eq.id] ? (
               <div className="h-[220px] flex-shrink-0">
                 <SPCChart eqId={eq.id} />
               </div>

@@ -1,0 +1,1399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Motion Lab · Takorin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600&family=Plus+Jakarta+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/motion@latest/dist/motion.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --stone:   #0B0F18;
+  --stone2:  #131A26;
+  --stone3:  #1B2538;
+  --stone4:  #263042;
+  --ink:     #EDE4CB;
+  --ink2:    #9B9070;
+  --muted:   #7A8EA8;
+  --rule:    #263042;
+  --rule2:   #1A2335;
+  --ok:      #5FA877;
+  --warn:    #C98E2A;
+  --danger:  #DE6C4E;
+  --signal:  #4B9CE4;
+  --context: #C4844E;
+  --deep:    #7C86E8;
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  background: var(--stone);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  line-height: 1.45;
+  min-height: 100vh;
+  padding-bottom: 100px;
+}
+
+/* ── Typography helpers ───────────────────────────────────────────────────── */
+.display  { font-family: 'Bricolage Grotesque', system-ui, sans-serif; }
+.mono     { font-family: 'JetBrains Mono', monospace; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
+
+/* ── Layout ───────────────────────────────────────────────────────────────── */
+.page-wrap { max-width: 1220px; margin: 0 auto; padding: 0 36px 40px; }
+
+.page-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 40px 0 28px;
+  border-bottom: 1px solid var(--rule);
+  margin-bottom: 0;
+}
+
+.section-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 28px 0 14px;
+}
+.section-dot { width: 4px; height: 4px; border-radius: 50%; }
+
+.panel-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px;
+  margin-bottom: 2px;
+}
+.panel-row.single { grid-template-columns: 1fr 1fr; }
+
+/* ── Panel ────────────────────────────────────────────────────────────────── */
+.panel {
+  background: var(--stone2);
+  border: 1px solid var(--rule);
+  display: flex;
+  flex-direction: column;
+  transition: opacity 0.4s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+  position: relative;
+  min-height: 520px;
+}
+.panel.dimmed  { opacity: 0.28; pointer-events: none; }
+.panel.selected { border-color: var(--signal); box-shadow: 0 0 0 1px var(--signal), 0 0 24px rgba(75,156,228,0.12); }
+
+.panel-head {
+  padding: 18px 20px 16px;
+  border-bottom: 1px solid var(--rule);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  flex-shrink: 0;
+}
+.panel-title { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 3px; }
+.panel-signal { font-size: 11px; color: var(--muted); line-height: 1.4; max-width: 300px; }
+.panel-badge {
+  font-size: 9px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase;
+  padding: 3px 8px; border: 1px solid; flex-shrink: 0; margin-top: 2px;
+}
+.badge-bold     { color: var(--signal); border-color: rgba(75,156,228,0.35); background: rgba(75,156,228,0.07); }
+.badge-verybold { color: var(--context); border-color: rgba(196,132,78,0.35); background: rgba(196,132,78,0.07); }
+
+.demo-area {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  height: 390px;
+}
+
+.panel-foot {
+  padding: 12px 20px;
+  border-top: 1px solid var(--rule);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+/* ── Shared button primitives ─────────────────────────────────────────────── */
+.btn {
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  font-size: 11px; font-weight: 500;
+  cursor: pointer; border: 1px solid; padding: 7px 16px;
+  transition: opacity 0.15s, background 0.15s, color 0.15s, border-color 0.15s;
+  letter-spacing: 0.01em;
+  background: transparent;
+}
+.btn:hover:not(:disabled) { opacity: 0.8; }
+.btn:disabled { opacity: 0.28; cursor: not-allowed; }
+.btn-primary  { background: var(--signal); color: var(--stone); border-color: var(--signal); }
+.btn-primary:hover:not(:disabled) { opacity: 0.88; }
+.btn-secondary { color: var(--muted); border-color: var(--rule); }
+.btn-secondary:hover:not(:disabled) { color: var(--ink); border-color: var(--rule2); background: var(--stone3); opacity: 1; }
+.btn-danger   { color: var(--danger); border-color: rgba(222,108,78,0.35); }
+.btn-danger:hover:not(:disabled) { background: rgba(222,108,78,0.08); opacity: 1; }
+.btn-ghost    { color: var(--muted); border-color: transparent; font-size: 10px; padding: 5px 8px; }
+.btn-ghost:hover { color: var(--ink); opacity: 1; }
+
+.btn-select {
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  font-size: 11px; font-weight: 500; letter-spacing: 0.02em;
+  color: var(--muted); background: transparent;
+  border: 1px solid var(--rule); cursor: pointer; padding: 7px 18px;
+  transition: all 0.18s;
+}
+.btn-select:hover { color: var(--ink); border-color: var(--ink2); background: var(--stone3); }
+.panel.selected .btn-select { color: var(--signal); border-color: var(--signal); background: rgba(75,156,228,0.08); }
+
+.btn-reset {
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  font-size: 10px; color: var(--muted); letter-spacing: 0.04em;
+  background: transparent; border: none; cursor: pointer; padding: 2px 0;
+  transition: color 0.15s;
+}
+.btn-reset:hover { color: var(--ink2); }
+
+
+/* ─────────────────────────────────────────────────────────────────────────── */
+/* PANEL 1 · Supplier Card Expansion                                           */
+/* ─────────────────────────────────────────────────────────────────────────── */
+#p1-list { padding: 14px; display: flex; flex-direction: column; gap: 6px; }
+.sc {
+  display: flex; align-items: center; gap: 12px;
+  padding: 11px 14px;
+  background: var(--stone3); border: 1px solid var(--rule); border-left: 3px solid;
+  cursor: pointer; transition: background 0.1s;
+  position: relative; overflow: hidden;
+}
+.sc:hover { background: var(--stone4); }
+.sc:hover .sc-hint { opacity: 1; }
+.sc.s-danger { border-left-color: var(--danger); }
+.sc.s-warn   { border-left-color: var(--warn); }
+.sc.s-ok     { border-left-color: var(--ok); }
+.sc-name  { font-size: 13px; font-weight: 500; color: var(--ink); }
+.sc-sub   { font-size: 10px; color: var(--muted); margin-top: 2px; }
+.sc-score {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 22px; font-weight: 500; line-height: 1;
+  margin-left: auto; flex-shrink: 0;
+}
+.sc-hint  { font-size: 9px; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; opacity: 0; transition: opacity 0.15s; margin-left: 8px; }
+.sc-flag  { font-size: 9px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; padding: 2px 7px; border: 1px solid; flex-shrink: 0; }
+.flag-danger { color: var(--danger); border-color: rgba(222,108,78,0.35); }
+.flag-warn   { color: var(--warn); border-color: rgba(201,142,42,0.35); }
+.flag-ok     { color: var(--ok); border-color: rgba(95,168,119,0.35); }
+
+#p1-overlay {
+  position: absolute; inset: 0; z-index: 20;
+  background: var(--stone3);
+  will-change: transform; display: none;
+  border: 1px solid var(--rule2);
+}
+.exp-inner { opacity: 0; height: 100%; overflow-y: auto; }
+.exp-top {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 16px; border-bottom: 1px solid var(--rule); flex-shrink: 0;
+}
+.exp-ring {
+  width: 52px; height: 52px; border-radius: 50%; border: 2px solid;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.exp-stat-row { display: flex; border-bottom: 1px solid var(--rule2); }
+.exp-stat { flex: 1; padding: 10px 14px; border-right: 1px solid var(--rule2); }
+.exp-stat:last-child { border-right: none; }
+.exp-lot {
+  display: flex; align-items: center; gap: 10px; padding: 9px 16px;
+  border-bottom: 1px solid var(--rule2); font-size: 11px;
+}
+.lot-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+.exp-actions { padding: 12px 16px; display: flex; gap: 8px; }
+
+
+/* ─────────────────────────────────────────────────────────────────────────── */
+/* PANEL 2 · Ambient Data Breathing                                            */
+/* ─────────────────────────────────────────────────────────────────────────── */
+.kpi-grid { display: grid; grid-template-columns: 1fr 1fr; height: 100%; gap: 1px; background: var(--rule2); }
+.kpi-cell {
+  background: var(--stone2);
+  display: flex; flex-direction: column; justify-content: center;
+  padding: 28px 30px; position: relative; overflow: hidden;
+}
+.kpi-cell::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.018) 0%, transparent 50%);
+  pointer-events: none;
+}
+.kpi-tag  { font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+.kpi-val  {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 46px; font-weight: 500; line-height: 1;
+  letter-spacing: -0.02em; display: inline-block;
+  will-change: transform;
+}
+.kpi-unit { font-size: 18px; color: var(--ink2); display: inline; }
+.kpi-trend { font-size: 11px; margin-top: 10px; }
+.kpi-trend.up   { color: var(--ok); }
+.kpi-trend.warn { color: var(--warn); }
+.kpi-trend.flat { color: var(--muted); }
+
+
+/* ─────────────────────────────────────────────────────────────────────────── */
+/* PANEL 3 · Threshold Crossing                                                */
+/* ─────────────────────────────────────────────────────────────────────────── */
+.p3-inner { padding: 24px; display: flex; flex-direction: column; height: 100%; }
+.metric-card {
+  position: relative; overflow: hidden;
+  background: var(--stone3); border: 1px solid var(--rule); border-left: 3px solid var(--muted);
+  padding: 20px; margin-bottom: 18px;
+  transition: border-left-color 1.2s cubic-bezier(0.4,0,0.6,1);
+}
+.metric-card.crossing { border-left-color: var(--danger); }
+.m-overlay { position: absolute; inset: 0; background: var(--danger); opacity: 0; pointer-events: none; will-change: opacity; }
+.m-val-wrap { display: flex; align-items: baseline; gap: 6px; position: relative; }
+.m-val {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 52px; font-weight: 500; line-height: 1;
+  will-change: transform; display: inline-block; position: relative;
+}
+.m-val-neutral { position: absolute; inset: 0; }
+.m-val-danger  { position: absolute; inset: 0; opacity: 0; color: var(--danger); will-change: opacity; }
+.m-val-unit { font-size: 18px; color: var(--ink2); }
+.m-threshold-tag { font-size: 10px; color: var(--muted); margin-top: 8px; }
+.m-threshold-tag.crossed { color: var(--danger); }
+
+.threshold-track { height: 3px; background: var(--rule); position: relative; margin: 6px 0 4px; border-radius: 0; }
+.threshold-fill { height: 100%; transform: scaleX(0); transform-origin: left; will-change: transform; }
+.threshold-line { position: absolute; left: 60%; top: -6px; bottom: -6px; width: 1px; background: var(--warn); opacity: 0.7; }
+.threshold-line::after {
+  content: '5.0%';
+  position: absolute; top: -18px; left: -4px; transform: translateX(-50%);
+  font-size: 9px; color: var(--warn); white-space: nowrap;
+  font-family: 'JetBrains Mono', monospace;
+}
+.p3-context { font-size: 10px; color: var(--muted); letter-spacing: 0.04em; margin-top: 2px; }
+
+
+/* ─────────────────────────────────────────────────────────────────────────── */
+/* PANEL 4 · The Living Table                                                  */
+/* ─────────────────────────────────────────────────────────────────────────── */
+.p4-wrap { display: flex; flex-direction: column; height: 100%; }
+.p4-thead {
+  display: grid; grid-template-columns: 68px 1fr 88px 76px 76px;
+  padding: 8px 16px; border-bottom: 1px solid var(--rule);
+  flex-shrink: 0;
+}
+.th { font-size: 9px; letter-spacing: 0.09em; text-transform: uppercase; color: var(--muted); }
+.p4-body-wrap { flex: 1; position: relative; overflow: hidden; }
+#p4-rows { position: relative; height: 100%; }
+
+.p4-row {
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 46px;
+  display: grid; grid-template-columns: 68px 1fr 88px 76px 76px;
+  padding: 0 16px; border-bottom: 1px solid var(--rule2);
+  align-items: center; will-change: transform; background: var(--stone2);
+}
+.p4-row.fresh { background: var(--stone3); }
+.td { font-size: 11px; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.td.s-muted  { color: var(--muted); }
+.td.s-ok     { color: var(--ok); }
+.td.s-warn   { color: var(--warn); }
+.td.s-danger { color: var(--danger); }
+
+.p4-footer {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 16px; border-top: 1px solid var(--rule2); flex-shrink: 0;
+}
+.live-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--ok); animation: ldPulse 2.4s ease-in-out infinite; }
+@keyframes ldPulse { 0%,100% { opacity:1; transform:scale(1); } 50% { opacity:0.35; transform:scale(0.65); } }
+
+
+/* ─────────────────────────────────────────────────────────────────────────── */
+/* PANEL 5 · Approval Chain Liquid Fill                                        */
+/* ─────────────────────────────────────────────────────────────────────────── */
+.p5-wrap { display: flex; flex-direction: column; align-items: center; height: 100%; padding: 24px 16px 20px; }
+.p5-context { text-align: center; margin-bottom: 28px; }
+.chain-row { display: flex; align-items: flex-start; gap: 0; width: 100%; max-width: 440px; justify-content: center; }
+.chain-node { display: flex; flex-direction: column; align-items: center; gap: 10px; flex: 1; }
+.chain-bridge { display: flex; align-items: center; padding-top: 40px; flex-shrink: 0; width: 48px; }
+.bridge-track { height: 1px; width: 100%; background: var(--rule); position: relative; }
+.bridge-fill  { position: absolute; inset: 0; background: var(--ok); transform: scaleX(0); transform-origin: left; will-change: transform; }
+
+.gauge-outer { width: 44px; height: 88px; border: 1px solid var(--rule); background: var(--stone3); position: relative; overflow: hidden; }
+.gauge-liquid {
+  position: absolute; bottom: 0; left: 0; right: 0; height: 100%;
+  background: var(--ok);
+  transform: scaleY(0); transform-origin: bottom;
+  will-change: transform;
+}
+.gauge-liquid::after {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 4px;
+  background: rgba(255,255,255,0.18);
+}
+.node-name { font-size: 11px; font-weight: 500; color: var(--ink); text-align: center; }
+.node-sub  { font-size: 10px; color: var(--muted); text-align: center; margin-top: 1px; }
+.node-btn  {
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  font-size: 10px; font-weight: 500; letter-spacing: 0.03em;
+  background: transparent; border: 1px solid var(--rule);
+  color: var(--muted); cursor: pointer; padding: 5px 12px;
+  transition: all 0.15s; white-space: nowrap;
+}
+.node-btn:hover:not(:disabled) { border-color: var(--ok); color: var(--ok); background: rgba(95,168,119,0.07); }
+.node-btn:disabled { opacity: 0.22; cursor: not-allowed; }
+.node-btn.done { color: var(--ok); border-color: rgba(95,168,119,0.3); background: rgba(95,168,119,0.07); cursor: default; }
+
+#p5-complete {
+  opacity: 0; text-align: center; padding: 14px 20px;
+  background: rgba(95,168,119,0.07); border: 1px solid rgba(95,168,119,0.3);
+  margin-top: 22px; width: 100%; max-width: 440px; will-change: opacity, transform;
+}
+
+
+/* ─────────────────────────────────────────────────────────────────────────── */
+/* PANEL 6 · Consequence Preview Shadow                                        */
+/* ─────────────────────────────────────────────────────────────────────────── */
+.p6-table-head {
+  display: grid; grid-template-columns: 110px 1fr 96px 70px 72px;
+  padding: 8px 16px; border-bottom: 1px solid var(--rule);
+}
+.p6-row {
+  display: grid; grid-template-columns: 110px 1fr 96px 70px 72px;
+  padding: 0 16px; height: 46px; border-bottom: 1px solid var(--rule2);
+  align-items: center; position: relative; will-change: transform;
+}
+.p6-highlight {
+  position: absolute; inset: 0; background: var(--danger);
+  opacity: 0; pointer-events: none; will-change: opacity;
+}
+.p6-cell { font-size: 11px; color: var(--ink); }
+.p6-cell.s-muted { color: var(--muted); }
+.p6-cell.s-danger { color: var(--danger); }
+.p6-action-bar {
+  padding: 14px 16px; border-top: 1px solid var(--rule);
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+}
+.p6-hint { font-size: 10px; color: var(--muted); line-height: 1.4; }
+
+
+/* ─────────────────────────────────────────────────────────────────────────── */
+/* Selection summary strip                                                     */
+/* ─────────────────────────────────────────────────────────────────────────── */
+#sel-summary {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: #060A12;
+  border-top: 1px solid var(--signal);
+  padding: 16px 40px;
+  display: flex; align-items: center; justify-content: space-between; gap: 24px;
+  z-index: 200;
+  transform: translateY(100%);
+  will-change: transform;
+  box-shadow: 0 -12px 48px rgba(0,0,0,0.6), 0 -1px 0 rgba(75,156,228,0.4);
+}
+#sel-summary.visible { transform: translateY(0); }
+.sel-name { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-size: 15px; font-weight: 600; color: var(--signal); }
+.sel-desc { font-size: 11px; color: var(--muted); margin-top: 4px; max-width: 600px; line-height: 1.5; }
+.sel-tag  { font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 5px; }
+.btn-start-over {
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  font-size: 11px; color: var(--muted); background: transparent;
+  border: 1px solid var(--rule); cursor: pointer; padding: 8px 20px;
+  transition: all 0.15s; flex-shrink: 0; letter-spacing: 0.02em;
+}
+.btn-start-over:hover { color: var(--ink); border-color: var(--ink2); }
+
+/* Phantom panel (fills gap in single-panel row) */
+.phantom { background: transparent; border: none; }
+
+/* Reduced motion fallback */
+@media (prefers-reduced-motion: reduce) {
+  .live-dot { animation: none; opacity: 0.6; }
+}
+</style>
+</head>
+<body>
+
+<div class="page-wrap">
+
+  <!-- ── Page header ─────────────────────────────────────────────────────── -->
+  <header class="page-header">
+    <div>
+      <div class="display" style="font-size:22px; font-weight:600; color:var(--ink); margin-bottom:6px;">Motion Design Lab</div>
+      <div style="font-size:12px; color:var(--muted);">6 micro-interaction patterns · Takorin B2B Food Platform · Select a direction to develop</div>
+    </div>
+    <div style="text-align:right;">
+      <div style="font-size:9px; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted);">Takorin · Motion v1</div>
+      <div style="font-size:9px; color:var(--muted); opacity:0.5; margin-top:4px;">Motion.js · Spring physics · Hardware-accelerated</div>
+    </div>
+  </header>
+
+  <!-- ── BOLD row ────────────────────────────────────────────────────────── -->
+  <div class="section-label" style="color:var(--signal);">
+    <div class="section-dot" style="background:var(--signal);"></div>
+    Bold
+  </div>
+
+  <div class="panel-row">
+
+    <!-- ──────────────────────────────────────────────────────────────────── -->
+    <!-- P1: Supplier Card Expansion                                          -->
+    <!-- ──────────────────────────────────────────────────────────────────── -->
+    <div class="panel" id="panel-1">
+      <div class="panel-head">
+        <div>
+          <div class="panel-title">Supplier Card Expansion</div>
+          <div class="panel-signal">Weight through space — details expand to fill the moment, not a sidebar</div>
+        </div>
+        <div class="panel-badge badge-bold">Bold</div>
+      </div>
+      <div class="demo-area" id="p1-demo">
+        <div id="p1-list">
+          <div class="sc s-danger" onclick="p1Expand(this,'conagra')">
+            <div style="flex:1">
+              <div class="sc-name">ConAgra Foods</div>
+              <div class="sc-sub">Tier 1 · Grains &amp; Fats</div>
+            </div>
+            <div class="sc-flag flag-danger">3 incidents</div>
+            <div class="sc-score" style="color:var(--danger);">62</div>
+            <div class="sc-hint">Expand →</div>
+          </div>
+          <div class="sc s-ok" onclick="p1Expand(this,'cargill')">
+            <div style="flex:1">
+              <div class="sc-name">Cargill Protein</div>
+              <div class="sc-sub">Tier 1 · Protein</div>
+            </div>
+            <div class="sc-flag flag-ok">Approved</div>
+            <div class="sc-score" style="color:var(--ok);">88</div>
+            <div class="sc-hint">Expand →</div>
+          </div>
+          <div class="sc s-warn" onclick="p1Expand(this,'ingredion')">
+            <div style="flex:1">
+              <div class="sc-name">Ingredion Inc.</div>
+              <div class="sc-sub">Tier 2 · Starches</div>
+            </div>
+            <div class="sc-flag flag-warn">1 incident</div>
+            <div class="sc-score" style="color:var(--warn);">74</div>
+            <div class="sc-hint">Expand →</div>
+          </div>
+          <div class="sc s-ok" onclick="p1Expand(this,'kerry')">
+            <div style="flex:1">
+              <div class="sc-name">Kerry Group</div>
+              <div class="sc-sub">Tier 2 · Flavors &amp; Extracts</div>
+            </div>
+            <div class="sc-flag flag-ok">Preferred</div>
+            <div class="sc-score" style="color:var(--ok);">91</div>
+            <div class="sc-hint">Expand →</div>
+          </div>
+        </div>
+        <!-- Expanded overlay -->
+        <div id="p1-overlay">
+          <div class="exp-inner" id="p1-inner"></div>
+        </div>
+      </div>
+      <div class="panel-foot">
+        <button class="btn-reset" onclick="p1Reset()">↺ Reset</button>
+        <button class="btn-select" onclick="selectPanel('panel-1','Supplier Card Expansion','Deliberate pace at high-stakes moments — the brand never rushes decisions that carry compliance weight.')">Select this direction</button>
+      </div>
+    </div>
+
+    <!-- ──────────────────────────────────────────────────────────────────── -->
+    <!-- P2: Ambient Data Breathing                                           -->
+    <!-- ──────────────────────────────────────────────────────────────────── -->
+    <div class="panel" id="panel-2">
+      <div class="panel-head">
+        <div>
+          <div class="panel-title">Ambient Data Breathing</div>
+          <div class="panel-signal">Numbers drift ±2px on a 4s sinusoidal loop — the dashboard is alive, not a screenshot</div>
+        </div>
+        <div class="panel-badge badge-bold">Bold</div>
+      </div>
+      <div class="demo-area">
+        <div class="kpi-grid">
+          <div class="kpi-cell">
+            <div class="kpi-tag">OEE · Line 4</div>
+            <div>
+              <span class="kpi-val" id="p2-oee">87.3</span><span class="kpi-unit">%</span>
+            </div>
+            <div class="kpi-trend up">↑ +0.4pp vs yesterday</div>
+          </div>
+          <div class="kpi-cell" style="border-left:1px solid var(--rule2);">
+            <div class="kpi-tag">Yield Rate</div>
+            <div>
+              <span class="kpi-val" id="p2-yield">94.2</span><span class="kpi-unit">%</span>
+            </div>
+            <div class="kpi-trend up">↑ +0.8pp vs last shift</div>
+          </div>
+          <div class="kpi-cell" style="border-top:1px solid var(--rule2);">
+            <div class="kpi-tag">Scrap Rate</div>
+            <div>
+              <span class="kpi-val" id="p2-scrap" style="color:var(--warn)">4.8</span><span class="kpi-unit" style="color:var(--ink2)">%</span>
+            </div>
+            <div class="kpi-trend warn">↑ +0.2pp — watch</div>
+          </div>
+          <div class="kpi-cell" style="border-top:1px solid var(--rule2); border-left:1px solid var(--rule2);">
+            <div class="kpi-tag">Throughput</div>
+            <div>
+              <span class="kpi-val" id="p2-thru">2,847</span><span class="kpi-unit"> kg/h</span>
+            </div>
+            <div class="kpi-trend flat">→ On target</div>
+          </div>
+        </div>
+      </div>
+      <div class="panel-foot">
+        <button class="btn-reset" onclick="p2Reset()">↺ Reset</button>
+        <button class="btn-select" onclick="selectPanel('panel-2','Ambient Data Breathing','The platform communicates continuity — data flows in real time, not on manual refresh.')">Select this direction</button>
+      </div>
+    </div>
+
+  </div><!-- end bold row -->
+
+  <!-- ── Second row: P3 bold + P4 very bold ─────────────────────────────── -->
+  <div class="section-label" style="color:var(--signal); margin-top:0;">
+    <div class="section-dot" style="background:var(--signal);"></div>
+    Bold (cont.)
+    <span style="margin-left:16px; color:var(--context);">·</span>
+    <span class="section-label" style="margin-left:8px; padding:0; color:var(--context);">
+      <div class="section-dot" style="background:var(--context);"></div>
+      Very bold
+    </span>
+  </div>
+
+  <div class="panel-row">
+
+    <!-- ──────────────────────────────────────────────────────────────────── -->
+    <!-- P3: Threshold Crossing                                               -->
+    <!-- ──────────────────────────────────────────────────────────────────── -->
+    <div class="panel" id="panel-3">
+      <div class="panel-head">
+        <div>
+          <div class="panel-title">Threshold Crossing Moment</div>
+          <div class="panel-signal">Color bleeds from neutral to alert over 1.2s — no flash, no modal, weight through pace</div>
+        </div>
+        <div class="panel-badge badge-bold">Bold</div>
+      </div>
+      <div class="demo-area">
+        <div class="p3-inner">
+
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:18px;">
+            <div>
+              <div style="font-size:9px; letter-spacing:0.09em; text-transform:uppercase; color:var(--muted); margin-bottom:4px;">Scrap Rate · Line 4 AM</div>
+              <div style="font-size:10px; color:var(--muted);">Threshold: 5.0% — HACCP process limit</div>
+            </div>
+            <div style="font-size:9px; letter-spacing:0.06em; text-transform:uppercase; color:var(--muted); opacity:0.6;">Live</div>
+          </div>
+
+          <div class="metric-card" id="p3-card">
+            <div class="m-overlay" id="p3-overlay"></div>
+            <div class="m-val-wrap">
+              <div style="position:relative; display:inline-block;">
+                <div class="m-val" id="p3-val-a" style="color:var(--ink);">4.2</div>
+                <div class="m-val" id="p3-val-b" style="position:absolute; top:0; left:0; opacity:0; color:var(--danger);">5.3</div>
+              </div>
+              <div class="m-val-unit">%</div>
+            </div>
+            <div class="threshold-track" style="margin-top:16px;">
+              <div class="threshold-fill" id="p3-fill" style="background:var(--ok); width:100%; transform-origin:left;"></div>
+              <div class="threshold-line"></div>
+            </div>
+            <div id="p3-threshold-tag" class="m-threshold-tag">84% to threshold</div>
+          </div>
+
+          <div style="display:flex; align-items:center; gap:10px; margin-bottom:16px;">
+            <button class="btn btn-secondary" id="p3-btn" onclick="p3Trigger()">Simulate fault event (+1.1%)</button>
+          </div>
+
+          <div id="p3-detail" style="opacity:0; font-size:11px; color:var(--danger); padding:10px 14px; border:1px solid rgba(222,108,78,0.3); background:rgba(222,108,78,0.06);">
+            Threshold crossed — Scrap Rate 5.3% exceeds 5.0% HACCP limit. Supervisor notified. Alert logged at 06:44.
+          </div>
+
+        </div>
+      </div>
+      <div class="panel-foot">
+        <button class="btn-reset" onclick="p3Reset()">↺ Reset</button>
+        <button class="btn-select" onclick="selectPanel('panel-3','Threshold Crossing Moment','Urgency is communicated through pace — the platform never shouts, it accumulates weight.')">Select this direction</button>
+      </div>
+    </div>
+
+    <!-- ──────────────────────────────────────────────────────────────────── -->
+    <!-- P4: The Living Table                                                 -->
+    <!-- ──────────────────────────────────────────────────────────────────── -->
+    <div class="panel" id="panel-4">
+      <div class="panel-head">
+        <div>
+          <div class="panel-title">The Living Table</div>
+          <div class="panel-signal">New rows push in from top on arrival — the table reflects real supply chain rhythm</div>
+        </div>
+        <div class="panel-badge badge-verybold">Very Bold</div>
+      </div>
+      <div class="demo-area">
+        <div class="p4-wrap">
+          <div class="p4-thead">
+            <div class="th">Lot</div>
+            <div class="th">Ingredient</div>
+            <div class="th">Supplier</div>
+            <div class="th">Qty</div>
+            <div class="th">Status</div>
+          </div>
+          <div class="p4-body-wrap">
+            <div id="p4-rows"></div>
+          </div>
+          <div class="p4-footer">
+            <div class="live-dot" id="p4-dot"></div>
+            <div style="font-size:10px; color:var(--muted);">Live · updating every 3s</div>
+          </div>
+        </div>
+      </div>
+      <div class="panel-foot">
+        <button class="btn-reset" onclick="p4Reset()">↺ Reset</button>
+        <button class="btn-select" onclick="selectPanel('panel-4','The Living Table','The supply chain is not a report — it breathes, and the UI makes that physically visible.')">Select this direction</button>
+      </div>
+    </div>
+
+  </div><!-- end mixed row -->
+
+  <!-- ── Very bold row ──────────────────────────────────────────────────── -->
+  <div class="panel-row">
+
+    <!-- ──────────────────────────────────────────────────────────────────── -->
+    <!-- P5: Approval Chain Liquid Fill                                       -->
+    <!-- ──────────────────────────────────────────────────────────────────── -->
+    <div class="panel" id="panel-5">
+      <div class="panel-head">
+        <div>
+          <div class="panel-title">Approval Chain Liquid Fill</div>
+          <div class="panel-signal">Each sign-off fills a gauge upward — the chain visibly charges toward release</div>
+        </div>
+        <div class="panel-badge badge-verybold">Very Bold</div>
+      </div>
+      <div class="demo-area">
+        <div class="p5-wrap">
+          <div class="p5-context">
+            <div style="font-size:9px; letter-spacing:0.09em; text-transform:uppercase; color:var(--muted); margin-bottom:6px;">Lot release approval</div>
+            <div class="display" style="font-size:15px; font-weight:600; color:var(--ink);">WH-0612 · Wheat Flour</div>
+            <div style="font-size:11px; color:var(--muted); margin-top:3px;">ADM Milling · 1,800 kg · Received 06:44 · Pending release to Line 4</div>
+          </div>
+
+          <div class="chain-row">
+            <div class="chain-node">
+              <div class="gauge-outer"><div class="gauge-liquid" id="p5-liq-0"></div></div>
+              <div class="node-name">QC Lab</div>
+              <div class="node-sub" id="p5-sub-0">D. Park · Pending</div>
+              <button class="node-btn" id="p5-btn-0" onclick="p5Approve(0)">Sign off</button>
+            </div>
+
+            <div class="chain-bridge">
+              <div class="bridge-track"><div class="bridge-fill" id="p5-bridge-0"></div></div>
+            </div>
+
+            <div class="chain-node">
+              <div class="gauge-outer"><div class="gauge-liquid" id="p5-liq-1"></div></div>
+              <div class="node-name">Line Supervisor</div>
+              <div class="node-sub" id="p5-sub-1">D. Kowalski · Waiting</div>
+              <button class="node-btn" id="p5-btn-1" disabled onclick="p5Approve(1)">Sign off</button>
+            </div>
+
+            <div class="chain-bridge">
+              <div class="bridge-track"><div class="bridge-fill" id="p5-bridge-1"></div></div>
+            </div>
+
+            <div class="chain-node">
+              <div class="gauge-outer"><div class="gauge-liquid" id="p5-liq-2"></div></div>
+              <div class="node-name">Plant Director</div>
+              <div class="node-sub" id="p5-sub-2">J. Crocker · Waiting</div>
+              <button class="node-btn" id="p5-btn-2" disabled onclick="p5Approve(2)">Sign off</button>
+            </div>
+          </div>
+
+          <div id="p5-complete">
+            <div class="display" style="font-size:13px; font-weight:600; color:var(--ok); margin-bottom:4px;">Lot released to Line 4</div>
+            <div style="font-size:10px; color:var(--muted);">WH-0612 · All approvals received · 06:52 · Logged to audit trail</div>
+          </div>
+        </div>
+      </div>
+      <div class="panel-foot">
+        <button class="btn-reset" onclick="p5Reset()">↺ Reset</button>
+        <button class="btn-select" onclick="selectPanel('panel-5','Approval Chain Liquid Fill','Compliance as momentum — sign-offs feel like progress toward a shared goal, not bureaucratic gates.')">Select this direction</button>
+      </div>
+    </div>
+
+    <!-- ──────────────────────────────────────────────────────────────────── -->
+    <!-- P6: Consequence Preview Shadow                                       -->
+    <!-- ──────────────────────────────────────────────────────────────────── -->
+    <div class="panel" id="panel-6">
+      <div class="panel-head">
+        <div>
+          <div class="panel-title">Consequence Preview Shadow</div>
+          <div class="panel-signal">Hover a destructive action — affected rows highlight before click, not after</div>
+        </div>
+        <div class="panel-badge badge-verybold">Very Bold</div>
+      </div>
+      <div class="demo-area" style="display:flex; flex-direction:column;">
+        <div class="p6-table-head">
+          <div class="th">Supplier</div>
+          <div class="th">Ingredient</div>
+          <div class="th">PO #</div>
+          <div class="th">Value</div>
+          <div class="th">Status</div>
+        </div>
+        <div id="p6-table" style="flex:1; overflow:hidden;">
+          <div class="p6-row" data-supplier="conagra">
+            <div class="p6-highlight"></div>
+            <div class="p6-cell s-danger">ConAgra</div>
+            <div class="p6-cell">Tomato Sauce</div>
+            <div class="p6-cell s-muted">PO-2604-0088</div>
+            <div class="p6-cell s-muted">$18,400</div>
+            <div class="p6-cell s-ok">Active</div>
+          </div>
+          <div class="p6-row" data-supplier="ingredion">
+            <div class="p6-highlight"></div>
+            <div class="p6-cell">Ingredion</div>
+            <div class="p6-cell">Tapioca Gum</div>
+            <div class="p6-cell s-muted">PO-2604-0090</div>
+            <div class="p6-cell s-muted">$4,800</div>
+            <div class="p6-cell s-ok">Active</div>
+          </div>
+          <div class="p6-row" data-supplier="conagra">
+            <div class="p6-highlight"></div>
+            <div class="p6-cell s-danger">ConAgra</div>
+            <div class="p6-cell">Canola Oil</div>
+            <div class="p6-cell s-muted">PO-2604-0089</div>
+            <div class="p6-cell s-muted">$9,200</div>
+            <div class="p6-cell s-ok">Active</div>
+          </div>
+          <div class="p6-row" data-supplier="cargill">
+            <div class="p6-highlight"></div>
+            <div class="p6-cell">Cargill</div>
+            <div class="p6-cell">Wheat Protein</div>
+            <div class="p6-cell s-muted">PO-2604-0091</div>
+            <div class="p6-cell s-muted">$12,600</div>
+            <div class="p6-cell s-ok">Active</div>
+          </div>
+          <div class="p6-row" data-supplier="conagra">
+            <div class="p6-highlight"></div>
+            <div class="p6-cell s-danger">ConAgra</div>
+            <div class="p6-cell">Soy Protein</div>
+            <div class="p6-cell s-muted">PO-2604-0092</div>
+            <div class="p6-cell s-muted">$6,500</div>
+            <div class="p6-cell s-ok">Active</div>
+          </div>
+          <div class="p6-row" data-supplier="kerry">
+            <div class="p6-highlight"></div>
+            <div class="p6-cell">Kerry Group</div>
+            <div class="p6-cell">Flavoring</div>
+            <div class="p6-cell s-muted">PO-2604-0093</div>
+            <div class="p6-cell s-muted">$3,200</div>
+            <div class="p6-cell s-ok">Active</div>
+          </div>
+        </div>
+        <div class="p6-action-bar">
+          <div class="p6-hint">Hover to preview affected rows before committing.</div>
+          <button id="p6-btn" class="btn btn-danger"
+            onmouseenter="p6Preview()" onmouseleave="p6Unpreview()"
+            onclick="p6Execute()">
+            Halt all ConAgra orders (3)
+          </button>
+        </div>
+      </div>
+      <div class="panel-foot">
+        <button class="btn-reset" onclick="p6Reset()">↺ Reset</button>
+        <button class="btn-select" onclick="selectPanel('panel-6','Consequence Preview Shadow','The platform shows you the shape of a decision before you commit — trust through transparency.')">Select this direction</button>
+      </div>
+    </div>
+
+  </div><!-- end very bold row -->
+</div><!-- end page-wrap -->
+
+<!-- ── Selection summary ──────────────────────────────────────────────────── -->
+<div id="sel-summary">
+  <div>
+    <div class="sel-tag">Selected direction</div>
+    <div class="sel-name" id="sel-name">—</div>
+    <div class="sel-desc" id="sel-desc">—</div>
+  </div>
+  <button class="btn-start-over" onclick="resetSelection()">Start over</button>
+</div>
+
+
+<script>
+// ── Motion setup ──────────────────────────────────────────────────────────────
+const { animate, spring, stagger } = Motion
+const rm = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+const SPRING_STD  = { stiffness: 300, damping: 28 }
+const SPRING_SOFT = { stiffness: 180, damping: 22 }
+const SPRING_SNAP = { stiffness: 350, damping: 30 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PANEL 1 — Supplier Card Expansion (FLIP shared-element)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const P1_DATA = {
+  conagra: {
+    name: 'ConAgra Foods', score: 62, tone: 'danger', scoreColor: 'var(--danger)',
+    tier: 'Tier 1 · Grains & Fats', lastAudit: 'Apr 2026 · Conditional',
+    reliability: '78%', incidents: 3,
+    lots: [
+      { id: 'TS-8811', name: 'Tomato Sauce', status: 'On Hold', tone: 'danger' },
+      { id: 'TG-2204', name: 'Tapioca Gum', status: 'In Transit', tone: 'warn' },
+    ],
+    note: 'COA delays recurring. 3rd non-conformance in 18 months. Escalated to procurement.'
+  },
+  cargill: {
+    name: 'Cargill Protein', score: 88, tone: 'ok', scoreColor: 'var(--ok)',
+    tier: 'Tier 1 · Protein', lastAudit: 'Mar 2026 · Approved',
+    reliability: '94%', incidents: 0,
+    lots: [
+      { id: 'CP-1102', name: 'Wheat Protein', status: 'Received', tone: 'ok' },
+    ],
+    note: 'Preferred supplier. On-time delivery 94% over 12 months.'
+  },
+  ingredion: {
+    name: 'Ingredion Inc.', score: 74, tone: 'warn', scoreColor: 'var(--warn)',
+    tier: 'Tier 2 · Starches', lastAudit: 'Feb 2026 · Approved',
+    reliability: '86%', incidents: 1,
+    lots: [
+      { id: 'IN-3301', name: 'Tapioca Starch', status: 'QC Testing', tone: 'warn' },
+    ],
+    note: '1 minor non-conformance resolved. Re-audit scheduled May 2026.'
+  },
+  kerry: {
+    name: 'Kerry Group', score: 91, tone: 'ok', scoreColor: 'var(--ok)',
+    tier: 'Tier 2 · Flavors & Extracts', lastAudit: 'Apr 2026 · Approved',
+    reliability: '97%', incidents: 0,
+    lots: [
+      { id: 'KG-0904', name: 'Natural Flavoring', status: 'Received', tone: 'ok' },
+    ],
+    note: 'Highest reliability in Tier 2. Preferred status maintained.'
+  }
+}
+
+function p1BuildExpanded(id) {
+  const d = P1_DATA[id]
+  const lotDotColor = t => t === 'ok' ? 'var(--ok)' : t === 'warn' ? 'var(--warn)' : 'var(--danger)'
+  const lots = d.lots.map(l => `
+    <div class="exp-lot">
+      <div class="lot-dot" style="background:${lotDotColor(l.tone)};"></div>
+      <div style="font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--ink2); width:58px; flex-shrink:0;">${l.id}</div>
+      <div style="font-size:11px; color:var(--ink); flex:1;">${l.name}</div>
+      <div style="font-size:10px; color:${lotDotColor(l.tone)};">${l.status}</div>
+    </div>`).join('')
+
+  return `
+    <div class="exp-top">
+      <div>
+        <div style="font-size:9px; letter-spacing:0.09em; text-transform:uppercase; color:var(--muted); margin-bottom:5px;">Supplier profile</div>
+        <div class="display" style="font-size:16px; font-weight:600; color:var(--ink);">${d.name}</div>
+        <div style="font-size:10px; color:var(--muted); margin-top:2px;">${d.tier}</div>
+      </div>
+      <div style="display:flex; align-items:center; gap:10px;">
+        <div class="exp-ring" style="border-color:${d.scoreColor}; width:48px; height:48px;">
+          <div class="mono" style="font-size:18px; font-weight:500; color:${d.scoreColor};">${d.score}</div>
+        </div>
+        <button onclick="p1Collapse()" class="btn btn-ghost" style="font-size:11px; padding:6px 12px; border-color:var(--rule);">← Back</button>
+      </div>
+    </div>
+    <div class="exp-stat-row">
+      <div class="exp-stat">
+        <div style="font-size:9px; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); margin-bottom:4px;">Reliability</div>
+        <div class="mono" style="font-size:18px; font-weight:500; color:var(--ink);">${d.reliability}</div>
+        <div style="font-size:10px; color:var(--muted);">12-month avg</div>
+      </div>
+      <div class="exp-stat">
+        <div style="font-size:9px; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); margin-bottom:4px;">Non-conformances</div>
+        <div class="mono" style="font-size:18px; font-weight:500; color:${d.incidents > 0 ? 'var(--warn)' : 'var(--ok)'};">${d.incidents}</div>
+        <div style="font-size:10px; color:var(--muted);">Last 30 days</div>
+      </div>
+      <div class="exp-stat">
+        <div style="font-size:9px; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); margin-bottom:4px;">Last audit</div>
+        <div style="font-size:11px; font-weight:500; color:var(--ink); margin-top:4px;">${d.lastAudit}</div>
+      </div>
+    </div>
+    <div style="padding:10px 16px 6px; border-bottom:1px solid var(--rule2);">
+      <div style="font-size:9px; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); margin-bottom:4px;">Active lots</div>
+    </div>
+    ${lots}
+    <div style="padding:10px 16px; border-top:1px solid var(--rule2); margin-top:auto;">
+      <div style="font-size:10px; color:var(--muted); line-height:1.5;">${d.note}</div>
+    </div>
+    <div class="exp-actions">
+      <button class="btn btn-secondary">Contact supplier</button>
+      <button class="btn btn-secondary">View all lots</button>
+      <button class="btn btn-secondary" style="margin-left:auto;">Schedule audit</button>
+    </div>`
+}
+
+function p1Expand(card, supplierId) {
+  const demo = document.getElementById('p1-demo')
+  const demoRect = demo.getBoundingClientRect()
+  const cardRect = card.getBoundingClientRect()
+
+  const overlay = document.getElementById('p1-overlay')
+  const inner   = document.getElementById('p1-inner')
+
+  inner.innerHTML = p1BuildExpanded(supplierId)
+  overlay.style.display = 'block'
+  inner.style.opacity = '0'
+
+  // FLIP: start at card center, scale from card size
+  const sx = cardRect.width  / demoRect.width
+  const sy = cardRect.height / demoRect.height
+  const tx = (cardRect.left + cardRect.width / 2) - (demoRect.left + demoRect.width / 2)
+  const ty = (cardRect.top  + cardRect.height / 2) - (demoRect.top  + demoRect.height / 2)
+
+  if (rm) { inner.style.opacity = '1'; return }
+
+  animate(overlay,
+    { x: [tx, 0], y: [ty, 0], scaleX: [sx, 1], scaleY: [sy, 1] },
+    { easing: spring(SPRING_STD), duration: 0.55 }
+  )
+  animate(inner, { opacity: [0, 1] }, { delay: 0.22, duration: 0.18 })
+}
+
+function p1Collapse() {
+  const overlay = document.getElementById('p1-overlay')
+  if (rm) { overlay.style.display = 'none'; return }
+  animate(overlay,
+    { opacity: [1, 0], scaleX: [1, 0.97], scaleY: [1, 0.97], y: [0, 6] },
+    { duration: 0.2, easing: [0.4, 0, 1, 1] }
+  ).then(() => {
+    overlay.style.display = 'none'
+    overlay.style.transform = ''
+  })
+}
+
+function p1Reset() {
+  const overlay = document.getElementById('p1-overlay')
+  overlay.style.display = 'none'
+  overlay.style.transform = ''
+}
+
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PANEL 2 — Ambient Data Breathing
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const P2_KPIS = [
+  { id: 'p2-oee',  drift: -1.8, delay: 0,   period: 4.1 },  // trending up → drifts up
+  { id: 'p2-yield',drift: -2.0, delay: 1.3,  period: 3.8 },  // trending up → drifts up
+  { id: 'p2-scrap',drift:  2.0, delay: 0.6,  period: 4.4 },  // trending up (bad) → drifts down
+  { id: 'p2-thru', drift: -0.8, delay: 2.1,  period: 5.2 },  // near-flat → minimal drift
+]
+
+let p2Controls = []
+
+function p2Start() {
+  if (rm) return
+  p2Controls = P2_KPIS.map(({ id, drift, delay, period }) => {
+    const el = document.getElementById(id)
+    if (!el) return null
+    return animate(el,
+      { y: [0, drift, 0] },
+      { delay, duration: period, easing: [0.45, 0, 0.55, 1], repeat: Infinity }
+    )
+  })
+}
+
+function p2Reset() {
+  p2Controls.forEach(c => c && c.cancel())
+  P2_KPIS.forEach(({ id }) => {
+    const el = document.getElementById(id)
+    if (el) animate(el, { y: 0 }, { duration: 0.3 })
+  })
+  setTimeout(p2Start, 350)
+}
+
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PANEL 3 — Threshold Crossing Moment
+// ═══════════════════════════════════════════════════════════════════════════════
+
+let p3Done = false
+
+function p3Trigger() {
+  if (p3Done) return
+  p3Done = true
+  document.getElementById('p3-btn').disabled = true
+
+  const card    = document.getElementById('p3-card')
+  const overlay = document.getElementById('p3-overlay')
+  const valA    = document.getElementById('p3-val-a')
+  const valB    = document.getElementById('p3-val-b')
+  const fill    = document.getElementById('p3-fill')
+  const tag     = document.getElementById('p3-threshold-tag')
+  const detail  = document.getElementById('p3-detail')
+
+  card.classList.add('crossing')
+
+  const dur = rm ? 0 : 1.2
+  const ease = [0.4, 0, 0.6, 1]
+
+  // Background bleed (hardware accelerated opacity on overlay)
+  animate(overlay, { opacity: [0, 0.13] }, { duration: dur, easing: ease })
+
+  // Cross-fade text values
+  animate(valA, { opacity: [1, 0] }, { duration: dur * 0.7, easing: ease })
+  animate(valB, { opacity: [0, 1] }, { duration: dur * 0.7, easing: ease })
+
+  // Bar crosses past threshold line (4.2→5.3 on a 0–7% scale: 0.60→0.76)
+  animate(fill, { scaleX: [0.60, 0.76] }, { duration: dur, easing: ease })
+
+  // Threshold label
+  setTimeout(() => {
+    tag.textContent = 'Threshold crossed — 5.3% / 5.0%'
+    tag.classList.add('crossed')
+  }, dur * 600)
+
+  // Alert panel
+  setTimeout(() => {
+    animate(detail, { opacity: [0, 1], y: [6, 0] }, { easing: spring(SPRING_STD) })
+  }, dur * 900)
+}
+
+function p3Reset() {
+  p3Done = false
+  const card    = document.getElementById('p3-card')
+  const overlay = document.getElementById('p3-overlay')
+  const valA    = document.getElementById('p3-val-a')
+  const valB    = document.getElementById('p3-val-b')
+  const fill    = document.getElementById('p3-fill')
+  const tag     = document.getElementById('p3-threshold-tag')
+  const detail  = document.getElementById('p3-detail')
+  const btn     = document.getElementById('p3-btn')
+
+  card.classList.remove('crossing')
+  animate(overlay, { opacity: 0 }, { duration: 0.3 })
+  animate(valA,   { opacity: 1 }, { duration: 0.3 })
+  animate(valB,   { opacity: 0 }, { duration: 0.3 })
+  animate(fill,   { scaleX: 0.60 }, { duration: 0.4, easing: spring(SPRING_SOFT) })
+  animate(detail, { opacity: 0 }, { duration: 0.2 })
+  tag.textContent = '84% to threshold'
+  tag.classList.remove('crossed')
+  btn.disabled = false
+}
+
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PANEL 4 — The Living Table
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const P4_ROW_H = 46
+const P4_MAX   = 7
+
+const P4_INIT = [
+  { lot:'TS-8811', ing:'Tomato Sauce',   sup:'ConAgra',  qty:'2,400 kg', status:'On Hold',    sc:'s-danger' },
+  { lot:'TG-2204', ing:'Tapioca Gum',    sup:'Ingredion', qty:'180 kg',  status:'In Transit', sc:'s-warn'   },
+  { lot:'WH-0612', ing:'Wheat Flour',    sup:'ADM',       qty:'1,800 kg',status:'Received',   sc:'s-ok'     },
+  { lot:'CS-9910', ing:'Canola Oil',     sup:'Cargill',   qty:'920 kg',  status:'QC Testing', sc:'s-muted'  },
+  { lot:'SL-1104', ing:'Sea Salt',       sup:'Morton',    qty:'240 kg',  status:'Received',   sc:'s-ok'     },
+]
+
+const P4_INCOMING = [
+  { lot:'PP-3301', ing:'Potato Protein', sup:'Cargill',   qty:'580 kg',  status:'In Transit', sc:'s-muted'  },
+  { lot:'CN-7710', ing:'Canola Oil',     sup:'ADM',       qty:'1,200 kg',status:'Scheduled',  sc:'s-muted'  },
+  { lot:'MZ-0088', ing:'Maize Starch',   sup:'Ingredion', qty:'450 kg',  status:'In Transit', sc:'s-muted'  },
+  { lot:'RF-5502', ing:'Rice Flour',     sup:'ADM',       qty:'600 kg',  status:'Scheduled',  sc:'s-muted'  },
+  { lot:'SE-2210', ing:'Seasoning Mix',  sup:'Kerry',     qty:'90 kg',   status:'In Transit', sc:'s-muted'  },
+]
+
+let p4Interval = null
+let p4IncomingIdx = 0
+let p4CurrentY = {} // id → current translateY
+
+function p4MakeRow(data, isNew = false) {
+  const row = document.createElement('div')
+  row.className = 'p4-row' + (isNew ? ' fresh' : '')
+  row.dataset.id = Math.random().toString(36).slice(2)
+  row.innerHTML = `
+    <div class="td s-muted mono" style="font-size:10px;">${data.lot}</div>
+    <div class="td">${data.ing}</div>
+    <div class="td s-muted">${data.sup}</div>
+    <div class="td s-muted">${data.qty}</div>
+    <div class="td ${data.sc}">${data.status}</div>`
+  return row
+}
+
+function p4Init() {
+  const container = document.getElementById('p4-rows')
+  container.innerHTML = ''
+  p4CurrentY = {}
+  P4_INIT.forEach((data, i) => {
+    const row = p4MakeRow(data)
+    container.appendChild(row)
+    const y = i * P4_ROW_H
+    p4CurrentY[row.dataset.id] = y
+    animate(row, { y }, { duration: 0 }) // register with Motion.js immediately
+  })
+}
+
+function p4AddRow() {
+  const container = document.getElementById('p4-rows')
+  const existingRows = [...container.querySelectorAll('.p4-row')]
+
+  // Remove rows that have scrolled out of view
+  const visibleRows = existingRows.filter(r => (p4CurrentY[r.dataset.id] || 0) < P4_MAX * P4_ROW_H)
+  const exitRows = existingRows.filter(r => (p4CurrentY[r.dataset.id] || 0) >= (P4_MAX - 1) * P4_ROW_H)
+
+  exitRows.forEach(row => {
+    if (rm) { row.remove(); return }
+    animate(row, { opacity: [1, 0], x: [0, 20] }, { duration: 0.2, easing: [0.4,0,1,1] })
+      .then(() => row.remove())
+  })
+
+  // Shift all visible rows down — explicit [from, to] so Motion.js never reads stale state
+  visibleRows.forEach(row => {
+    const oldY = p4CurrentY[row.dataset.id] || 0
+    const newY = oldY + P4_ROW_H
+    p4CurrentY[row.dataset.id] = newY
+    if (rm) {
+      animate(row, { y: newY }, { duration: 0 })
+    } else {
+      animate(row, { y: [oldY, newY] }, { easing: spring(SPRING_STD) })
+    }
+  })
+
+  // Insert new row at top
+  const data = P4_INCOMING[p4IncomingIdx % P4_INCOMING.length]
+  p4IncomingIdx++
+  const newRow = p4MakeRow(data, true)
+  p4CurrentY[newRow.dataset.id] = 0
+  container.appendChild(newRow)
+
+  if (rm) {
+    newRow.style.transform = 'translateY(0px)'
+  } else {
+    animate(newRow,
+      { y: [-P4_ROW_H, 0], opacity: [0, 1] },
+      { easing: spring(SPRING_STD) }
+    )
+  }
+
+  // Fade fresh highlight off after a moment
+  setTimeout(() => {
+    newRow.classList.remove('fresh')
+  }, 1200)
+}
+
+function p4Start() {
+  p4Init()
+  if (p4Interval) clearInterval(p4Interval)
+  p4Interval = setInterval(p4AddRow, 3000)
+}
+
+function p4Reset() {
+  clearInterval(p4Interval)
+  p4Interval = null
+  p4IncomingIdx = 0
+  p4Init()
+  p4Interval = setInterval(p4AddRow, 3000)
+}
+
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PANEL 5 — Approval Chain Liquid Fill
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const P5_NAMES = ['D. Park · QC Lab', 'D. Kowalski · Supervisor', 'J. Crocker · Director']
+
+function p5Approve(i) {
+  const liq = document.getElementById(`p5-liq-${i}`)
+  const btn = document.getElementById(`p5-btn-${i}`)
+  const sub = document.getElementById(`p5-sub-${i}`)
+  btn.disabled = true
+  btn.classList.add('done')
+  btn.textContent = '✓ Signed'
+
+  // Liquid fill — soft spring for organic feel
+  animate(liq,
+    { scaleY: [0, 1] },
+    { easing: rm ? undefined : spring({ stiffness: 90, damping: 18 }), duration: rm ? 0.01 : undefined }
+  )
+
+  const names = ['D. Park', 'D. Kowalski', 'J. Crocker']
+  setTimeout(() => {
+    sub.textContent = `${names[i]} · Approved 06:5${i+1}`
+    sub.style.color = 'var(--ok)'
+
+    if (i < 2) {
+      // Fill bridge connector
+      animate(document.getElementById(`p5-bridge-${i}`),
+        { scaleX: [0, 1] },
+        { duration: 0.4, easing: [0.16, 1, 0.3, 1] }
+      )
+      // Enable next button
+      const nextBtn = document.getElementById(`p5-btn-${i + 1}`)
+      nextBtn.disabled = false
+      animate(nextBtn, { opacity: [0.22, 1], y: [4, 0] }, { easing: spring(SPRING_STD) })
+    } else {
+      // All approved
+      const complete = document.getElementById('p5-complete')
+      animate(complete, { opacity: [0, 1], y: [10, 0] }, { easing: spring(SPRING_STD) })
+    }
+  }, rm ? 0 : 480)
+}
+
+function p5Reset() {
+  for (let i = 0; i < 3; i++) {
+    const liq = document.getElementById(`p5-liq-${i}`)
+    const btn = document.getElementById(`p5-btn-${i}`)
+    const sub = document.getElementById(`p5-sub-${i}`)
+    animate(liq, { scaleY: 0 }, { duration: 0.25 })
+    btn.disabled = i > 0
+    btn.classList.remove('done')
+    btn.textContent = 'Sign off'
+    sub.style.color = ''
+    if (i < 2) {
+      animate(document.getElementById(`p5-bridge-${i}`), { scaleX: 0 }, { duration: 0.2 })
+    }
+  }
+  const subs = ['D. Park · Pending', 'D. Kowalski · Waiting', 'J. Crocker · Waiting']
+  subs.forEach((s, i) => document.getElementById(`p5-sub-${i}`).textContent = s)
+  animate(document.getElementById('p5-complete'), { opacity: 0 }, { duration: 0.2 })
+}
+
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PANEL 6 — Consequence Preview Shadow
+// ═══════════════════════════════════════════════════════════════════════════════
+
+let p6Executed = false
+
+function p6GetConAgra() {
+  return [...document.querySelectorAll('#p6-table .p6-row[data-supplier="conagra"]')]
+}
+
+function p6Preview() {
+  if (p6Executed) return
+  p6GetConAgra().forEach((row, i) => {
+    const hl = row.querySelector('.p6-highlight')
+    animate(hl, { opacity: [0, 0.14] }, { delay: i * 0.055, duration: 0.22 })
+    animate(row, { x: [0, -2] }, { delay: i * 0.055, easing: spring(SPRING_SNAP) })
+  })
+}
+
+function p6Unpreview() {
+  if (p6Executed) return
+  p6GetConAgra().forEach(row => {
+    animate(row.querySelector('.p6-highlight'), { opacity: 0 }, { duration: 0.18 })
+    animate(row, { x: 0 }, { duration: 0.18 })
+  })
+}
+
+function p6Execute() {
+  if (p6Executed) return
+  p6Executed = true
+  const btn = document.getElementById('p6-btn')
+  btn.onmouseenter = null
+  btn.onmouseleave = null
+  btn.disabled = true
+
+  p6GetConAgra().forEach((row, i) => {
+    const hl = row.querySelector('.p6-highlight')
+    setTimeout(() => {
+      animate(hl, { opacity: [0.14, 0.22, 0] }, { duration: 0.4 })
+      animate(row, { opacity: [1, 0], x: [0, 24] }, {
+        delay: 0.1,
+        duration: 0.3,
+        easing: [0.4, 0, 1, 1]
+      }).then(() => {
+        row.style.display = 'none'
+      })
+    }, i * 80)
+  })
+
+  setTimeout(() => {
+    btn.textContent = '✓ 3 ConAgra orders halted'
+    btn.className = 'btn'
+    btn.style.color = 'var(--ok)'
+    btn.style.borderColor = 'rgba(95,168,119,0.3)'
+    btn.style.opacity = '1'
+    animate(btn, { opacity: [0.3, 1] }, { easing: spring(SPRING_STD) })
+  }, 500)
+}
+
+function p6Reset() {
+  p6Executed = false
+  const btn = document.getElementById('p6-btn')
+  btn.textContent = 'Halt all ConAgra orders (3)'
+  btn.className = 'btn btn-danger'
+  btn.style.color = ''
+  btn.style.borderColor = ''
+  btn.style.opacity = ''
+  btn.disabled = false
+  btn.onmouseenter = p6Preview
+  btn.onmouseleave = p6Unpreview
+
+  document.querySelectorAll('#p6-table .p6-row').forEach(row => {
+    row.style.display = ''
+    row.style.opacity = ''
+    animate(row, { opacity: 1, x: 0 }, { duration: 0 })
+    animate(row.querySelector('.p6-highlight'), { opacity: 0 }, { duration: 0 })
+  })
+}
+
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SELECTION
+// ═══════════════════════════════════════════════════════════════════════════════
+
+let selectedPanel = null
+
+function selectPanel(panelId, name, signal) {
+  selectedPanel = panelId
+  const panels = document.querySelectorAll('.panel')
+  panels.forEach(p => {
+    if (p.id === panelId) {
+      p.classList.remove('dimmed')
+      p.classList.add('selected')
+    } else {
+      p.classList.add('dimmed')
+      p.classList.remove('selected')
+    }
+  })
+
+  document.getElementById('sel-name').textContent = name
+  document.getElementById('sel-desc').textContent = signal
+
+  const summary = document.getElementById('sel-summary')
+  if (!summary.classList.contains('visible')) {
+    summary.classList.add('visible')
+    animate(summary, { y: ['100%', '0%'] }, { easing: spring(SPRING_STD) })
+  } else {
+    animate(summary, { y: [4, 0], opacity: [0.7, 1] }, { easing: spring(SPRING_SNAP) })
+  }
+}
+
+function resetSelection() {
+  selectedPanel = null
+  document.querySelectorAll('.panel').forEach(p => {
+    p.classList.remove('dimmed', 'selected')
+  })
+  const summary = document.getElementById('sel-summary')
+  animate(summary, { y: [0, '100%'] }, { duration: 0.25, easing: [0.4, 0, 1, 1] })
+    .then(() => summary.classList.remove('visible'))
+}
+
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════════════════════
+
+p2Start()
+p4Start()
+
+// Initialise Panel 3 bar at correct scale
+;(function() {
+  const fill = document.getElementById('p3-fill')
+  if (fill) animate(fill, { scaleX: 0.60 }, { duration: 0 })
+})()
+</script>
+</body>
+</html>

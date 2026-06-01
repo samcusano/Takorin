@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { connectors, integrationSummary, semanticConflicts, integrationCategories } from '../data/integrations'
 import { AlertTriangle, CheckCircle, Zap, Radio, Search, X, Lock } from 'lucide-react'
-import { SlidePanel, Tabs, StatusPill, Btn, AnimatedScore, StatGrid, SectionLabel, EmptyState } from '../components/UI'
+import { SlidePanel, Tabs, StatusPill, Btn, AnimatedScore, StatGrid, SectionLabel, EmptyState, FilterDropdown } from '../components/UI'
 
 const STATUS_CFG = {
   active:    { label: 'Active',      dot: 'bg-ok',     text: 'text-ok',     badge: 'bg-ok/10 text-ok' },
@@ -451,34 +451,32 @@ export default function IntegrationHub() {
 
         {activeTab === 'sources' ? (
           <>
-            {/* Search + status filter */}
-            <div className="flex-shrink-0 border-b border-rule2 bg-stone2 px-3 pt-2 pb-2 space-y-2">
-              <div className="flex items-center gap-2 bg-stone border border-transparent focus-within:border-signal/50 px-2.5 py-1.5 transition-colors">
-                <Search size={11} strokeWidth={2} className="text-muted flex-shrink-0" />
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={e => setSearchQuery(e.target.value)}
-                  placeholder="Search connectors or vendors…"
-                  className="flex-1 font-body text-label text-ink bg-transparent outline-none placeholder:text-muted/60"
-                />
-                {searchQuery && (
-                  <button type="button" onClick={() => setSearchQuery('')} aria-label="Clear search"
-                    className="text-muted hover:text-ink transition-colors">
-                    <X size={11} strokeWidth={2} />
-                  </button>
-                )}
-              </div>
-              <div className="flex gap-px">
-                {STATUS_FILTERS.map(f => (
-                  <button key={f.key} type="button" onClick={() => setStatusFilter(f.key)}
-                    className={`font-body text-label px-2.5 py-1 transition-colors ${
-                      statusFilter === f.key ? 'bg-signal/10 text-signal' : 'text-muted hover:text-ink'
-                    }`}>
-                    {f.label}
-                  </button>
-                ))}
-                <span className="ml-auto font-body text-muted text-label self-center tabular-nums">{filtered.length}</span>
+            {/* Scope bar */}
+            <div className="flex items-center gap-2 px-4 py-2.5 border-b border-rule2 bg-stone flex-shrink-0">
+              <FilterDropdown
+                label="Status"
+                options={STATUS_FILTERS.map(f => ({ value: f.key, label: f.label }))}
+                value={statusFilter}
+                onChange={setStatusFilter}
+              />
+              <div className="ml-auto flex items-center gap-2">
+                <div className="flex items-center gap-2 border border-rule2 focus-within:border-signal/50 px-2.5 py-1.5 transition-colors bg-stone2">
+                  <Search size={11} strokeWidth={2} className="text-muted flex-shrink-0" />
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={e => setSearchQuery(e.target.value)}
+                    placeholder="Search connectors…"
+                    className="font-body text-label text-ink bg-transparent outline-none placeholder:text-muted/60 w-36"
+                  />
+                  {searchQuery && (
+                    <button type="button" onClick={() => setSearchQuery('')} aria-label="Clear search"
+                      className="text-muted hover:text-ink transition-colors">
+                      <X size={11} strokeWidth={2} />
+                    </button>
+                  )}
+                </div>
+                <span className="font-body text-muted text-label tabular-nums">{filtered.length}</span>
               </div>
             </div>
 

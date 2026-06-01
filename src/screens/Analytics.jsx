@@ -429,7 +429,6 @@ export default function Analytics() {
           onChange={setCompare}
         />
         <div className="ml-auto flex items-center gap-3">
-          <span className="font-body text-muted text-label">{facility.name} · Apr 16, 2026</span>
           <button type="button" onClick={handleExport} disabled={exportState === 'loading'}
             className="flex items-center gap-1.5 font-body text-label text-muted px-3 py-1.5 hover:border-ink/30 hover:text-muted transition-colors disabled:opacity-50">
             {exportState === 'done'
@@ -473,9 +472,6 @@ export default function Analytics() {
 
           {/* ── Attribution hero ─────────────────────────────────────────── */}
           <section className="mb-8">
-            <div className="font-body text-muted text-label mb-4">
-              {attr.line} · OEE attribution · {GRAINS.find(g => g.id === timeGrain)?.label}
-            </div>
 
             {/* Interpretation leads — narrative first, numbers confirm */}
             <div className="font-display font-bold text-head text-ink leading-snug mb-5">

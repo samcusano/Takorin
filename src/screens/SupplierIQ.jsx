@@ -314,7 +314,7 @@ export default function SupplierIQ() {
     <div className="flex flex-col h-full overflow-hidden content-reveal">
 
       <div className="flex flex-1 min-h-0 overflow-hidden">
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto border-r border-rule">
 
         {/* ── Resolve now ── */}
         {resolveCount > 0 && (
@@ -415,7 +415,7 @@ export default function SupplierIQ() {
         )}
 
         {/* ── Supplier intelligence ── */}
-        <div className="px-6 pt-5 pb-4">
+        <div className="px-6 pt-5 pb-6">
           <div className="font-body text-micro text-muted mb-3">
             Supplier intelligence
           </div>
@@ -444,10 +444,11 @@ export default function SupplierIQ() {
           />
         </div>
 
-        <div className="h-px bg-rule" />
+      </div>
 
-        {/* ── Supplier standings ── */}
-        <div className="px-6 pt-[18px] pb-6">
+      {/* ── Right column — Supplier standings ── */}
+      <div className="w-[304px] flex-shrink-0 overflow-y-auto bg-stone flex flex-col">
+        <div className="px-5 pt-5 pb-6">
           <div className="font-body text-micro text-muted mb-3">
             Supplier standings · {sortedSuppliers.length} active
           </div>
@@ -465,7 +466,6 @@ export default function SupplierIQ() {
             ))}
           </div>
         </div>
-
       </div>
 
       </div>

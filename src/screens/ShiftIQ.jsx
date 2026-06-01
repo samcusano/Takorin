@@ -774,9 +774,6 @@ function PrepareView({ forecast = [], onStartShift }) {
    <div className="flex-shrink-0 flex items-center gap-4 px-5 py-3 bg-stone2 border-b border-rule2">
     <div>
      <div className="font-body text-micro text-muted">T−30 · Line 4 · AM Shift · checked 05:45</div>
-     <div className="font-display font-bold text-ink text-base leading-tight">
-      {allDone ? 'Shift ready to start' : `${total - resolved} decision${total - resolved !== 1 ? 's' : ''} before shift start`}
-     </div>
     </div>
     <div className="ml-auto">
      <StatusPill tone={allDone ? 'ok' : 'warn'}>
