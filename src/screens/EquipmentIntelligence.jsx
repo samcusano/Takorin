@@ -558,8 +558,6 @@ export default function EquipmentIntelligence() {
   return (
     <div className="flex flex-col h-full overflow-hidden content-reveal">
       <SceneHeader
-        module="Equipment"
-        context="Line 4 · Active monitoring"
         metric={71}
         metricLabel="equipment health"
         metricColor="var(--color-warn)"

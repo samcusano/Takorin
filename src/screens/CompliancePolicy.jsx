@@ -326,22 +326,50 @@ function RiskExposure() {
   )
 }
 
+// ─── Audit score band ─────────────────────────────────────────────────────────
+
+function AuditBand({ onSimulate }) {
+  const passes = AUDIT_CHECKS.filter(c => c.result === 'pass').length
+  const fails  = AUDIT_CHECKS.filter(c => c.result === 'fail').length
+  const atRisk = AUDIT_CHECKS.filter(c => c.result === 'at-risk').length
+  const score  = Math.round((passes / AUDIT_CHECKS.length) * 100)
+  const scoreC = score >= 80 ? 'text-ok' : score >= 60 ? 'text-warn' : 'text-danger'
+  const barC   = score >= 80 ? 'bg-ok'   : score >= 60 ? 'bg-warn'   : 'bg-danger'
+  return (
+    <div className="flex-shrink-0 flex items-center border-b border-rule2 bg-stone2">
+      <div className="flex items-baseline gap-2 px-5 py-2.5 border-r border-rule2">
+        <span className={`display-num text-head tabular-nums leading-none ${scoreC}`}>{score}%</span>
+        <span className="font-body text-muted text-label">audit readiness</span>
+      </div>
+      <div className="flex items-center gap-4 px-5 py-2.5 flex-1">
+        <span className="font-body text-danger text-label font-medium">{fails} fail</span>
+        <span className="font-body text-warn text-label">{atRisk} at risk</span>
+        <span className="font-body text-ok text-label">{passes} pass</span>
+        <div className="flex-1 h-1 bg-rule2 ml-2 overflow-hidden">
+          <div className={`h-full ${barC}`} style={{ width: `${score}%` }} />
+        </div>
+      </div>
+      <div className="px-4 py-2.5 flex-shrink-0">
+        <button type="button" onClick={onSimulate}
+          className="font-body text-label text-muted px-3 py-1.5 border border-rule2 hover:border-muted hover:text-ink transition-colors">
+          Simulate audit →
+        </button>
+      </div>
+    </div>
+  )
+}
+
 // ─── Root ─────────────────────────────────────────────────────────────────────
 
 export default function CompliancePolicy() {
   const [selectedId, setSelectedId] = useState('fda-us')
   const [auditOpen, setAuditOpen]   = useState(false)
   const [activating, setActivating] = useState(false)
-  const [policyView, setPolicyView] = useState(
-    compliancePolicies.find(p => p.id === 'fda-us')?.nextInspection ? 'exposure' : 'detail'
-  )
   const policy = compliancePolicies.find(p => p.id === selectedId)
 
   const selectPolicy = (id) => {
-    const p = compliancePolicies.find(cp => cp.id === id)
     setSelectedId(id)
     setActivating(false)
-    setPolicyView(p?.nextInspection ? 'exposure' : 'detail')
   }
 
   // Hero metric: inspection countdown > CAPA count > framework count
@@ -457,80 +485,137 @@ export default function CompliancePolicy() {
             meta={metaItems}
           />
 
-          <div className="flex-shrink-0 border-b border-rule2 flex items-center px-5">
-            <Tabs
-              tabs={[{ id: 'detail', label: 'Policy detail' }, { id: 'exposure', label: 'Risk exposure' }]}
-              active={policyView}
-              onChange={setPolicyView}
-              className="flex-1 border-b-0"
-            />
-            {policy.nextInspection && (
-              <div className="flex-shrink-0 pl-4">
-                <Btn variant="secondary" onClick={() => setAuditOpen(true)}>Simulate audit</Btn>
-              </div>
-            )}
-          </div>
-
-          {policyView === 'exposure' ? <RiskExposure /> : (
-          <div className="flex-1 overflow-y-auto">
-
-            <EscalationStrip steps={policy.escalationLogic} />
-
-            {/* Frameworks + Evidence — two columns */}
-            <div className="flex border-b border-rule2">
-              <div className="flex-1 border-r border-rule2">
-                <PolicySectionHeader label="Frameworks" count={`${policy.frameworks.length} configured`} />
-                {policy.frameworks.map((f, i) => <FrameworkRow key={f.id} f={f} index={i} />)}
-              </div>
-              <div className="flex-1">
-                <PolicySectionHeader label="Evidence" count={`${policy.evidenceRequirements.length} requirements`} />
-                {policy.evidenceRequirements.map((e, i) => <EvidenceRow key={i} e={e} index={i} />)}
-              </div>
-            </div>
-
-            {/* Reporting templates */}
-            <div>
-              <PolicySectionHeader label="Reporting" count={`${policy.reportingTemplates.length} templates`} />
-              {policy.reportingTemplates.map(t => (
-                <div key={t.id} className="flex items-center gap-3 px-5 py-3 border-b border-rule2 last:border-0 hover:bg-stone2 transition-colors">
-                  <div className="flex-1 min-w-0">
-                    <div className="font-body font-medium text-ink text-body mb-1">{t.name}</div>
-                    <span className="font-body text-micro text-muted bg-stone3 px-1.5 py-0.5">{t.format}</span>
-                  </div>
-                  <span className="font-body text-muted text-label flex-shrink-0">
-                    {t.lastGenerated ? `Last: ${t.lastGenerated}` : 'Never generated'}
-                  </span>
-                  <Btn variant="secondary" className="flex-shrink-0">Generate</Btn>
-                </div>
-              ))}
-            </div>
-
-            {/* Inactive policy CTA */}
-            {policy.status === 'inactive' && (
-              <div className="mx-6 my-6 px-5 py-4 border-l-4 border-l-signal bg-signal/[0.06]">
-                <div className="font-body font-semibold text-ink text-base mb-1">Activate this policy</div>
-                <div className="font-body text-muted text-label leading-relaxed mb-3">
-                  All {policy.frameworks.length} frameworks will be added to your compliance dashboard. Evidence requirements and escalation rules will be enforced immediately.
-                </div>
-                {activating ? (
-                  <div className="border border-rule2 bg-stone px-4 py-3 mb-1">
-                    <div className="font-body font-medium text-ink text-body mb-1">Confirm activation</div>
-                    <div className="font-body text-muted text-label leading-relaxed mb-3">
-                      This will immediately enforce {policy.frameworks.length} frameworks and {policy.escalationLogic?.length ?? 0} escalation rules. Evidence requirements will be tracked from today. This cannot be undone without contacting your compliance admin.
-                    </div>
-                    <div className="flex gap-2">
-                      <Btn variant="primary">Confirm — activate now</Btn>
-                      <Btn variant="secondary" onClick={() => setActivating(false)}>Cancel</Btn>
-                    </div>
-                  </div>
-                ) : (
-                  <Btn variant="primary" onClick={() => setActivating(true)}>Activate policy</Btn>
-                )}
-              </div>
-            )}
-
-          </div>
+          {/* Audit score band — always visible for inspection policies */}
+          {policy.nextInspection && (
+            <AuditBand onSimulate={() => setAuditOpen(true)} />
           )}
+
+          {/* Two-column layout */}
+          <div className="flex flex-1 min-h-0 overflow-hidden">
+
+            {/* Left: risk findings (inspection policies) or framework detail (others) */}
+            <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+              {policy.nextInspection ? (
+                <RiskExposure />
+              ) : (
+                <div className="flex-1 overflow-y-auto">
+                  <PolicySectionHeader label="Frameworks" count={`${policy.frameworks.length} configured`} />
+                  {policy.frameworks.map((f, i) => <FrameworkRow key={f.id} f={f} index={i} />)}
+                  <PolicySectionHeader label="Evidence" count={`${policy.evidenceRequirements.length} requirements`} />
+                  {policy.evidenceRequirements.map((e, i) => <EvidenceRow key={i} e={e} index={i} />)}
+                </div>
+              )}
+            </div>
+
+            {/* Right: compliance posture panel */}
+            <div className="w-[304px] flex-shrink-0 overflow-y-auto bg-stone flex flex-col border-l border-rule2">
+
+              {/* Frameworks */}
+              <div className="px-5 pt-5 pb-4 border-b border-rule2">
+                <div className="font-body text-micro text-muted mb-3">
+                  Frameworks · {policy.frameworks.filter(f => f.status === 'active').length} active
+                </div>
+                <div className="border border-rule overflow-hidden">
+                  {policy.frameworks.map(f => (
+                    <div key={f.id} className={`flex items-center justify-between px-3 py-2.5 border-b border-rule2 last:border-0 border-l-2 ${STATUS_BORDER[f.status] ?? 'border-l-rule2'} ${f.status === 'inactive' ? 'opacity-40' : ''}`}>
+                      <div>
+                        <div className="font-body font-medium text-body text-ink">{f.name}</div>
+                        <div className="font-body text-muted text-label">{f.code}</div>
+                      </div>
+                      <StatusPill tone={f.status === 'active' ? 'ok' : f.status === 'inactive' ? 'muted' : 'signal'}>
+                        {STATUS_LABEL[f.status] ?? f.status}
+                      </StatusPill>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Evidence */}
+              <div className="px-5 pt-4 pb-4 border-b border-rule2">
+                <div className="font-body text-micro text-muted mb-3">
+                  Evidence · {policy.evidenceRequirements.filter(e => e.required).length} required
+                </div>
+                <div className="space-y-1.5">
+                  {policy.evidenceRequirements.map((e, i) => (
+                    <div key={i} className={`flex items-start gap-2.5 px-3 py-2 border-l-2 ${e.required ? 'border-l-ok' : 'border-l-rule2'}`}>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-body font-medium text-ink text-label">{e.domain}</div>
+                        <div className="font-body text-muted text-label leading-snug">{e.requirement}</div>
+                      </div>
+                      {e.required
+                        ? <StatusPill tone="ok" className="flex-shrink-0 mt-0.5">Required</StatusPill>
+                        : <StatusPill tone="muted" className="flex-shrink-0 mt-0.5">Optional</StatusPill>}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Escalation */}
+              <div className="px-5 pt-4 pb-4 border-b border-rule2">
+                <div className="font-body text-micro text-muted mb-3">Escalation</div>
+                <div className="space-y-2.5">
+                  {policy.escalationLogic.map((s, i) => {
+                    const isLast = i === policy.escalationLogic.length - 1
+                    const dot = isLast ? 'bg-danger' : i > 0 ? 'bg-warn' : 'bg-muted/40'
+                    const tc  = isLast ? 'text-danger' : i > 0 ? 'text-warn' : 'text-muted'
+                    return (
+                      <div key={i} className="flex items-start gap-2.5">
+                        <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 mt-1 ${dot}`} />
+                        <div>
+                          <div className={`font-body text-label font-medium ${tc}`}>{s.threshold}</div>
+                          <div className="font-body text-ink text-label leading-snug">{s.action}</div>
+                          <div className="font-body text-muted text-label">{s.channel}</div>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+
+              {/* Reporting */}
+              <div className="px-5 pt-4 pb-5 border-b border-rule2">
+                <div className="font-body text-micro text-muted mb-3">
+                  Reports · {policy.reportingTemplates.length} templates
+                </div>
+                <div className="space-y-3">
+                  {policy.reportingTemplates.map(t => (
+                    <div key={t.id} className="flex items-center justify-between gap-2">
+                      <div className="min-w-0">
+                        <div className="font-body font-medium text-ink text-label truncate">{t.name}</div>
+                        <div className="font-body text-muted text-label">{t.lastGenerated ? `Last: ${t.lastGenerated}` : 'Never generated'}</div>
+                      </div>
+                      <Btn variant="secondary" className="flex-shrink-0">Generate</Btn>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Inactive activation CTA */}
+              {policy.status === 'inactive' && (
+                <div className="mx-5 my-5 px-4 py-4 border-l-4 border-l-signal bg-signal/[0.06]">
+                  <div className="font-body font-semibold text-ink text-base mb-1">Activate this policy</div>
+                  <div className="font-body text-muted text-label leading-relaxed mb-3">
+                    All {policy.frameworks.length} frameworks will be enforced immediately. Evidence requirements and escalation rules activate today.
+                  </div>
+                  {activating ? (
+                    <div className="border border-rule2 bg-stone px-4 py-3 mb-2">
+                      <div className="font-body font-medium text-ink text-body mb-1">Confirm activation</div>
+                      <div className="font-body text-muted text-label leading-relaxed mb-3">
+                        {policy.frameworks.length} frameworks and {policy.escalationLogic?.length ?? 0} escalation rules enforced from today. Cannot be undone without contacting your compliance admin.
+                      </div>
+                      <div className="flex gap-2">
+                        <Btn variant="primary">Confirm — activate now</Btn>
+                        <Btn variant="secondary" onClick={() => setActivating(false)}>Cancel</Btn>
+                      </div>
+                    </div>
+                  ) : (
+                    <Btn variant="primary" onClick={() => setActivating(true)}>Activate policy</Btn>
+                  )}
+                </div>
+              )}
+
+            </div>
+          </div>
         </div>
       )}
     </div>

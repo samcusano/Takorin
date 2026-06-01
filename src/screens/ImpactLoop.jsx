@@ -331,8 +331,6 @@ export default function ImpactLoop() {
     <div className="flex flex-col h-full overflow-hidden content-reveal">
 
       <SceneHeader
-        module="Outcomes"
-        context="Salina Campus · Last 30 days"
         metric={positiveRate}
         metricLabel="% positive outcome rate"
         tone={headerTone}

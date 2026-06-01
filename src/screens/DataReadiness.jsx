@@ -247,7 +247,6 @@ function ReadinessInstrument({ score, resolved }) {
 
   return (
     <div className="px-5 pt-5 pb-4 border-b border-rule2 flex-shrink-0">
-      <div className="font-body text-muted text-label mb-3">Data Quality</div>
 
       {/* Score */}
       <div className="flex items-baseline gap-3 mb-1">

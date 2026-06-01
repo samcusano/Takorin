@@ -437,32 +437,6 @@ export default function RecordVault() {
 
       {/* Left: lot list */}
       <div className="w-[280px] flex-shrink-0 border-r border-rule2 flex flex-col bg-stone">
-        <div className="flex-shrink-0 px-5 py-4 border-b border-rule2 bg-stone2">
-          <div className="font-body text-muted text-label mb-0.5">Lot Traceability</div>
-          <div className="font-display font-bold text-ink text-head leading-none">Record Vault</div>
-          <div className="font-body text-muted text-label mt-1">{fsmaPosture.subpart}</div>
-          <div className="flex items-center gap-2 mt-2.5">
-            <div className="h-0.5 bg-rule2 flex-1">
-              <div className={`h-full ${postureBg(fsmaPosture.score)}`} style={{ width: `${fsmaPosture.score}%` }} />
-            </div>
-            <span className={`font-body font-medium text-label tabular-nums ${postureColor(fsmaPosture.score)}`}>
-              {fsmaPosture.score}%
-            </span>
-          </div>
-          <div className="flex items-center gap-3 mt-1.5">
-            {holdCount > 0 && (
-              <div className="flex items-center gap-1">
-                <Lock size={9} strokeWidth={2} className="text-danger" />
-                <span className="font-body text-danger text-label">{holdCount} on hold</span>
-              </div>
-            )}
-            <div className="flex items-center gap-1">
-              <CheckCircle2 size={9} strokeWidth={2} className="text-ok" />
-              <span className="font-body text-ok text-label">{fsmaPosture.submittable} submittable</span>
-            </div>
-          </div>
-          <div className="font-body text-muted text-label mt-1 opacity-60">{fsmaPosture.lastAssessed}</div>
-        </div>
 
         <div className="flex-1 overflow-y-auto">
           {traceLots.map(lot => (

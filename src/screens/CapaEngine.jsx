@@ -782,8 +782,6 @@ export default function CapaEngine() {
  <div className="flex flex-col h-full overflow-hidden content-reveal">
 
  <SceneHeader
-  module="CAPA"
-  context="Salina Campus · April 16"
   metric={18}
   metricLabel="Days to FDA inspection"
   tone={headerTone}
