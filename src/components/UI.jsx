@@ -447,7 +447,7 @@ export function Modal({ onClose, title, children }) {
    aria-labelledby={title ? titleId : undefined}
    className="fixed inset-0 z-modal flex items-center justify-center"
   >
-   <div className="absolute inset-0 bg-ink/40" onClick={handleClose} />
+   <div className="absolute inset-0 bg-black/50" onClick={handleClose} />
    <div
     ref={dialogRef}
     className={`relative z-10 bg-stone3 border border-rule w-full max-w-[480px] mx-4 flex flex-col max-h-[90vh] overflow-hidden shadow-raise ${closing ? 'modal-exit' : 'modal-enter'}`}
@@ -523,7 +523,7 @@ export function VaulDrawer({ open, onClose, title, badge, children, maxHeight = 
 
  return (
   <div className="fixed inset-0 z-modal flex flex-col justify-end">
-   <div className="absolute inset-0 bg-stone/60" onClick={handleClose} />
+   <div className="absolute inset-0 bg-black/50" onClick={handleClose} />
    <div
     ref={contentRef}
     role="dialog"
@@ -976,7 +976,7 @@ export function SlidePanel({ title, subtitle, icon: Icon, accentColor, ariaLabel
  }, [handleClose])
  return (
   <>
-   <div className="fixed inset-0 bg-stone/60 z-40" onClick={handleClose} />
+   <div className="fixed inset-0 bg-black/50 z-40" onClick={handleClose} />
    <aside ref={panelRef} role="dialog" aria-modal="true" aria-label={ariaLabel || title}
     className={`fixed top-0 right-0 bottom-0 w-full border-l border-rule z-50 flex flex-col shadow-raise ${exiting ? 'slide-right-out' : 'slide-right'}`}
     style={{ maxWidth, background: 'var(--color-stone-2)' }}>

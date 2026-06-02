@@ -41,7 +41,7 @@ function CaseDetailPanel({ caseData, onClose }) {
 
  return (
  <>
- <div className="fixed inset-0 bg-ink/30 z-40" onClick={() => exit(onClose)} />
+ <div className="fixed inset-0 bg-black/50 z-40" onClick={() => exit(onClose)} />
  <aside ref={panelRef} role="dialog" aria-modal="true" aria-label={`CAPA case — ${caseData.capaId}`} className={`fixed top-0 right-0 bottom-0 w-full max-w-[480px] bg-stone border-l border-rule2 z-50 flex flex-col ${exiting ? 'slide-right-out' : 'slide-right'}`}>
  <div className="flex items-start justify-between px-4 py-4 border-b border-rule2 bg-stone2 flex-shrink-0">
  <div>

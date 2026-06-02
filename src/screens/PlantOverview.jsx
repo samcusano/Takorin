@@ -997,7 +997,7 @@ export default function PlantOverview() {
                         </span>
                       </div>
                       <div className="px-4 pb-3 space-y-1">
-                        <div className="font-body text-micro text-muted uppercase tracking-wider">{item.category}</div>
+                        <div className="font-body text-micro text-muted">{item.category}</div>
                         <p className={`font-body font-medium text-label leading-snug ${visited ? 'text-muted' : 'text-ink'}`}>{item.action}</p>
                         <p className="font-body text-muted text-label leading-relaxed">{item.note}</p>
                         {floorLine && (
@@ -1041,7 +1041,7 @@ export default function PlantOverview() {
                             {item.lot && (
                               <span className="font-body text-micro px-1 bg-stone3 text-muted flex-shrink-0">{item.lot}</span>
                             )}
-                            <span className="font-body text-micro text-warn uppercase tracking-wider">{item.category}</span>
+                            <span className="font-body text-micro text-warn">{item.category}</span>
                           </div>
                           <div className={`font-body text-label font-medium leading-snug ${visited ? 'text-muted' : 'text-ink'}`}>{item.action}</div>
                           <div className="font-body text-micro text-muted leading-snug mt-0.5">{item.note}</div>

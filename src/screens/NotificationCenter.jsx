@@ -243,7 +243,7 @@ export default function NotificationCenter({ onClose }) {
    <div className="px-4 py-3 bg-stone flex-shrink-0">
     <div className="font-display font-bold text-ink text-head leading-tight">Notifications</div>
     <div className="font-body text-muted text-label mt-0.5">
-     {totalUnread > 0 ? `${totalUnread} unread · ` : 'All read · '}J. Crocker · April 16, 2026
+     {totalUnread > 0 ? `${totalUnread} unread · ` : 'All read · '}April 16, 2026
     </div>
    </div>
 

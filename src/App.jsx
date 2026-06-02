@@ -1,5 +1,6 @@
 import { lazy, Suspense, useEffect } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
+import { Menu } from 'lucide-react'
 
 // Track which routes have been visited in this JS session so entrance
 // animations only play on first mount — not every time you navigate back.
@@ -49,18 +50,47 @@ const ROLE_LABELS = {
 }
 
 export default function App() {
- const { viewingRole, setViewingRole, sidebarCollapsed } = useAppState()
+ const { viewingRole, setViewingRole, sidebarCollapsed, mobileNavOpen, setMobileNavOpen, notifOpen, setNotifOpen } = useAppState()
  const roleInfo = viewingRole ? ROLE_LABELS[viewingRole] : null
 
  return (
  <div className="flex h-screen bg-stone overflow-hidden">
+ {/* Notifications overlay — rendered at root to escape sidebar's transform/overflow stacking context */}
+ {notifOpen && (
+  <Suspense fallback={null}>
+   <NotificationCenter onClose={() => setNotifOpen(false)} />
+  </Suspense>
+ )}
+ {/* Mobile backdrop — closes sidebar when tapped */}
+ {mobileNavOpen && (
+  <div
+   className="fixed inset-0 z-20 bg-black/60 sm:hidden"
+   onClick={() => setMobileNavOpen(false)}
+   aria-hidden="true"
+  />
+ )}
  <Sidebar />
- <main className="flex-1 flex flex-col overflow-hidden" style={{ marginLeft: sidebarCollapsed ? 48 : 240, transition: 'margin-left 200ms cubic-bezier(0.16, 1, 0.3, 1)' }}>
+ <main
+  className="sidebar-offset flex-1 flex flex-col overflow-hidden"
+  style={{ '--sidebar-width': sidebarCollapsed ? '48px' : '240px' }}>
+ {/* Mobile topbar — hamburger + brand, hidden on sm+ */}
+ <div className="sm:hidden flex-shrink-0 flex items-center h-12 px-4 bg-stone2 border-b border-rule2">
+  <button
+   type="button"
+   onClick={() => setMobileNavOpen(true)}
+   className="text-muted hover:text-ink transition-colors p-1.5 -ml-1.5"
+   aria-label="Open navigation">
+   <Menu size={18} strokeWidth={2} />
+  </button>
+  <div className="flex-1 flex justify-center">
+   <span className="font-body font-bold text-ink text-label">Takorin</span>
+  </div>
+  <div className="w-9" />
+ </div>
  <TrustStrip />
  <Suspense fallback={<ScreenLoader />}>
  <Routes>
  <Route path="/" element={<Navigate to="/overview" replace />} />
- <Route path="/briefing" element={<Navigate to="/overview" replace />} />
  <Route path="/overview" element={<Guard k="overview"><ErrorBoundary><PlantOverview /></ErrorBoundary></Guard>} />
  <Route path="/plant" element={<Navigate to="/overview" replace />} />
  <Route path="/shift" element={<Guard k="shift"><ErrorBoundary><ShiftIQ /></ErrorBoundary></Guard>} />

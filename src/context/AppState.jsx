@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from 'react'
+import { createContext, useContext, useState, useEffect } from 'react'
 import { readinessData, systemConfidenceScore } from '../data'
 import { seedObservations } from '../data/observations'
 
@@ -113,6 +113,28 @@ export function AppStateProvider({ children }) {
   return next
  })
 
+ const [mobileNavOpen, setMobileNavOpen] = useState(false)
+ const [notifOpen, setNotifOpen] = useState(false)
+
+ const [theme, _setTheme] = useState(() => {
+  if (typeof localStorage === 'undefined') return 'auto'
+  return localStorage.getItem('takorin-theme') || 'auto'
+ })
+ const setTheme = (t) => {
+  _setTheme(t)
+  localStorage.setItem('takorin-theme', t)
+  const root = document.documentElement
+  if (t === 'auto') root.removeAttribute('data-theme')
+  else root.setAttribute('data-theme', t)
+ }
+ // Apply stored theme on first mount
+ useEffect(() => {
+  const stored = localStorage.getItem('takorin-theme') || 'auto'
+  const root = document.documentElement
+  if (stored === 'auto') root.removeAttribute('data-theme')
+  else root.setAttribute('data-theme', stored)
+ }, [])
+
  const [currentPlant, _setCurrentPlant] = useState(PLANTS.sl)
  const setCurrentPlant = (p) => { _setCurrentPlant(p); setWorkerModeState(p.workerMode) }
  const setWorkerMode = (m) => setWorkerModeState(m)
@@ -195,6 +217,9 @@ export function AppStateProvider({ children }) {
  handoffAccepted, setHandoffAccepted,
  agentDecidedKeys, markAgentDecided,
  sidebarCollapsed, toggleSidebar,
+ mobileNavOpen, setMobileNavOpen,
+ notifOpen, setNotifOpen,
+ theme, setTheme,
  }}>
  {children}
  </Ctx.Provider>

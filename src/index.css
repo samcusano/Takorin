@@ -10,7 +10,7 @@
   --dur-standard: 300ms;
   --dur-data:     500ms;
   --dur-live:    6000ms;
-  --dur-atmo:    9000ms;   /* atmospheric ambient — slow, background only */
+  --dur-atmo:    9000ms;
 
   --ease-linear:   cubic-bezier(0, 0, 1, 1);
   --ease-standard: cubic-bezier(0.25, 0.1, 0.25, 1);
@@ -23,39 +23,131 @@
 @layer base {
   * { box-sizing: border-box; }
 
+  /* ── Dark theme (default) — RGB values (space-separated for Tailwind opacity) ── */
   :root {
-    /* ── Surfaces ───────────────────────────────────────────────────────── */
-    --color-stone:   #0B0F18;
-    --color-stone-2: #131A26;
-    --color-stone-3: #1B2538;
-    --color-stone-4: #263042;
-    /* ── Text ─────────────────────────────────────────────────────────── */
-    --color-ink:     #EDE4CB;
-    --color-ink-2:   #9B9070;
-    --color-muted:   #7A8EA8;
-    /* ── Borders ─────────────────────────────────────────────────────── */
-    --color-rule:    #263042;
-    --color-rule-2:  #1A2335;
-    /* ── Semantic ────────────────────────────────────────────────────── */
-    --color-ok:      #5FA877;
-    --color-warn:    #C98E2A;
-    --color-danger:  #DE6C4E;
-    --color-signal:   #4B9CE4;
-    --color-signal-dark: #2A6AAD;
-    /* ── Narrative accent ────────────────────────────────────────────── */
-    --color-context: #C4844E;
-    --color-deep:    #7C86E8;
-    /* ── Dim (suppressed chart labels) ──────────────────────────────── */
-    --color-dim:     #4A5D74;
-    /* ── Sidebar ─────────────────────────────────────────────────────── */
-    --color-sidebar:  #080D16;
-    --color-sidebar-border: #1C2A40;
-    /* ── Geometry ────────────────────────────────────────────────────── */
-    --radius-btn:    2px;
-    --radius-sm:     2px;
-    --radius-md:     6px;
-    --radius-lg:     10px;
-    --shadow-card:   0 1px 4px rgba(0,0,0,0.30);
+    --color-stone-rgb:          11  15  24;
+    --color-stone-2-rgb:        19  26  38;
+    --color-stone-3-rgb:        27  37  56;
+    --color-stone-4-rgb:        38  48  66;
+    --color-ink-rgb:           237 228 203;
+    --color-ink-2-rgb:         155 144 112;
+    --color-muted-rgb:         122 142 168;
+    --color-rule-rgb:           38  48  66;
+    --color-rule2-rgb:          26  35  53;
+    --color-ok-rgb:             95 168 119;
+    --color-ok-dim-rgb:         13  37  24;
+    --color-warn-rgb:          201 142  42;
+    --color-warn-dim-rgb:       42  30   8;
+    --color-danger-rgb:        222 108  78;
+    --color-danger-dim-rgb:     42  16  10;
+    --color-signal-rgb:         75 156 228;
+    --color-signal-dim-rgb:     13  30  56;
+    --color-signal-dark-rgb:    42 106 173;
+    --color-signal-light-rgb:  123 189 238;
+    --color-context-rgb:       196 132  78;
+    --color-context-dim-rgb:    42  24   8;
+    --color-deep-rgb:          124 134 232;
+    --color-deep-dim-rgb:       20  24  48;
+    /* Sidebar — always dark regardless of theme */
+    --color-sidebar-rgb:         8  13  22;
+    --color-sidebar-2-rgb:      14  21  32;
+    --color-sidebar-3-rgb:      21  32  48;
+    --color-sidebar-border-rgb: 28  42  64;
+    --color-sidebar-ghost-rgb: 106 136 168;
+
+    /* Computed non-RGB aliases used in inline styles and animation values */
+    --color-stone:         rgb(var(--color-stone-rgb));
+    --color-stone-2:       rgb(var(--color-stone-2-rgb));
+    --color-stone-3:       rgb(var(--color-stone-3-rgb));
+    --color-stone-4:       rgb(var(--color-stone-4-rgb));
+    --color-ink:           rgb(var(--color-ink-rgb));
+    --color-ink-2:         rgb(var(--color-ink-2-rgb));
+    --color-muted:         rgb(var(--color-muted-rgb));
+    --color-rule:          rgb(var(--color-rule-rgb));
+    --color-rule-2:        rgb(var(--color-rule2-rgb));
+    --color-ok:            rgb(var(--color-ok-rgb));
+    --color-warn:          rgb(var(--color-warn-rgb));
+    --color-danger:        rgb(var(--color-danger-rgb));
+    --color-signal:        rgb(var(--color-signal-rgb));
+    --color-signal-dark:   rgb(var(--color-signal-dark-rgb));
+    --color-context:       rgb(var(--color-context-rgb));
+    --color-deep:          rgb(var(--color-deep-rgb));
+    --color-dim:           rgb(74  93 116);
+    --color-sidebar:       rgb(var(--color-sidebar-rgb));
+    --color-sidebar-2:     rgb(var(--color-sidebar-2-rgb));
+    --color-sidebar-3:     rgb(var(--color-sidebar-3-rgb));
+    --color-sidebar-border: rgb(var(--color-sidebar-border-rgb));
+
+    /* Geometry */
+    --radius-btn: 2px;
+    --radius-sm:  2px;
+    --radius-md:  6px;
+    --radius-lg:  10px;
+    --shadow-raise: 0 4px 20px rgba(0,0,0,0.45);
+    --shadow-card:  0 1px 4px rgba(0,0,0,0.30);
+  }
+
+  /* ── Light theme — near-white with subtle warm tint ─────────────────────── */
+  :root[data-theme="light"] {
+    --color-stone-rgb:         252 251 249;   /* #FCFBF9 — near white */
+    --color-stone-2-rgb:       245 243 238;   /* #F5F3EE — off-white */
+    --color-stone-3-rgb:       234 231 224;   /* #EAE7E0 — light warm gray */
+    --color-stone-4-rgb:       218 214 205;   /* #DAD6CD — medium warm gray */
+    --color-ink-rgb:            22  16   8;   /* #160F08 — near-black warm */
+    --color-ink-2-rgb:          72  64  50;   /* #484032 */
+    --color-muted-rgb:         120 112  98;   /* #787062 */
+    --color-rule-rgb:          206 200 188;   /* #CEC8BC */
+    --color-rule2-rgb:         228 225 218;   /* #E4E1DA */
+    --color-ok-rgb:             30 100  56;   /* #1E6438 */
+    --color-ok-dim-rgb:        220 240 228;   /* #DCF0E4 */
+    --color-warn-rgb:          140  92  10;   /* #8C5C0A */
+    --color-warn-dim-rgb:      252 242 218;   /* #FCF2DA */
+    --color-danger-rgb:        168  44  28;   /* #A82C1C */
+    --color-danger-dim-rgb:    252 228 224;   /* #FCE4E0 */
+    --color-signal-rgb:         32  88 168;   /* #2058A8 */
+    --color-signal-dim-rgb:    220 232 250;   /* #DCE8FA */
+    --color-signal-dark-rgb:    16  52 120;   /* #103478 */
+    --color-signal-light-rgb:   72 124 200;   /* #487CC8 */
+    --color-context-rgb:       144  80  44;   /* #90502C */
+    --color-context-dim-rgb:   252 238 226;   /* #FCEEE2 */
+    --color-deep-rgb:           68  80 184;   /* #4450B8 */
+    --color-deep-dim-rgb:      228 230 250;   /* #E4E6FA */
+    --color-dim:               rgb(140 148 162);
+    /* Sidebar stays dark */
+    --shadow-raise: 0 4px 16px rgba(0,0,0,0.10);
+    --shadow-card:  0 1px 3px rgba(0,0,0,0.08);
+  }
+
+  /* ── Auto mode — respect system preference when no explicit theme is set ─── */
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme]) {
+      --color-stone-rgb:         252 251 249;
+      --color-stone-2-rgb:       245 243 238;
+      --color-stone-3-rgb:       234 231 224;
+      --color-stone-4-rgb:       218 214 205;
+      --color-ink-rgb:            22  16   8;
+      --color-ink-2-rgb:          72  64  50;
+      --color-muted-rgb:         120 112  98;
+      --color-rule-rgb:          206 200 188;
+      --color-rule2-rgb:         228 225 218;
+      --color-ok-rgb:             30 100  56;
+      --color-ok-dim-rgb:        220 240 228;
+      --color-warn-rgb:          140  92  10;
+      --color-warn-dim-rgb:      252 242 218;
+      --color-danger-rgb:        168  44  28;
+      --color-danger-dim-rgb:    252 228 224;
+      --color-signal-rgb:         32  88 168;
+      --color-signal-dim-rgb:    220 232 250;
+      --color-signal-dark-rgb:    16  52 120;
+      --color-signal-light-rgb:   72 124 200;
+      --color-context-rgb:       144  80  44;
+      --color-context-dim-rgb:   252 238 226;
+      --color-deep-rgb:           68  80 184;
+      --color-deep-dim-rgb:      228 230 250;
+      --color-dim:               rgb(140 148 162);
+      --shadow-raise: 0 4px 16px rgba(0,0,0,0.10);
+      --shadow-card:  0 1px 3px rgba(0,0,0,0.08);
+    }
   }
 
   :focus-visible {
@@ -85,21 +177,19 @@
 @layer utilities {
   .tabular-nums { font-variant-numeric: tabular-nums; }
 
-  /* ── Surface backgrounds — numeric keys in Tailwind config generate
-     bg-stone-2 (hyphenated) but the codebase uses bg-stone2 (no hyphen).
-     These explicit rules bridge that gap. ──────────────────────────────── */
-  .bg-stone2  { background-color: var(--color-stone-2); }
-  .bg-stone3  { background-color: var(--color-stone-3); }
-  .bg-stone4  { background-color: var(--color-stone-4); }
-  .bg-sidebar2 { background-color: var(--color-sidebar-2, #0E1520); }
-  .bg-sidebar3 { background-color: var(--color-sidebar-3, #152030); }
-  .text-ink2  { color: var(--color-ink-2); }
+  /* ── Surface backgrounds — bridge bg-stone2 (no-hyphen codebase convention) ── */
+  .bg-stone2   { background-color: var(--color-stone-2); }
+  .bg-stone3   { background-color: var(--color-stone-3); }
+  .bg-stone4   { background-color: var(--color-stone-4); }
+  .bg-sidebar2 { background-color: var(--color-sidebar-2); }
+  .bg-sidebar3 { background-color: var(--color-sidebar-3); }
+  .text-ink2   { color: var(--color-ink-2); }
   .border-rule2 { border-color: var(--color-rule-2); }
   .hover\:bg-stone2:hover  { background-color: var(--color-stone-2); }
   .hover\:bg-stone3:hover  { background-color: var(--color-stone-3); }
   .hover\:bg-stone4:hover  { background-color: var(--color-stone-4); }
 
-  /* ── Hatch pattern — dark-mode version, subtle blue-tinted diagonal ─────── */
+  /* ── Hatch pattern — subtle diagonal texture, adapts per theme ───────────── */
   .bg-rule2 {
     background-color: var(--color-stone);
     background-image: repeating-linear-gradient(
@@ -110,8 +200,28 @@
       rgba(100, 140, 200, 0.05) 14px
     );
   }
+  :root[data-theme="light"] .bg-rule2 {
+    background-image: repeating-linear-gradient(
+      135deg,
+      transparent 0,
+      transparent 8px,
+      rgba(80, 60, 20, 0.05) 8px,
+      rgba(80, 60, 20, 0.05) 14px
+    );
+  }
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme]) .bg-rule2 {
+      background-image: repeating-linear-gradient(
+        135deg,
+        transparent 0,
+        transparent 8px,
+        rgba(80, 60, 20, 0.05) 8px,
+        rgba(80, 60, 20, 0.05) 14px
+      );
+    }
+  }
 
-  /* ── Display type — tabular numeric data values ────────────────────────── */
+  /* ── Display type — tabular numeric data values ──────────────────────────── */
   .display-num {
     font-family: 'JetBrains Mono', 'Menlo', monospace;
     font-weight: 500;
@@ -122,55 +232,53 @@
     font-variant-ligatures: none;
   }
 
-  /* ── Plant mode — high-contrast for wall-mounted displays ──────────────── */
-  .plant-mode {
-    --color-ink:     #FFFFFF;
-    --color-ink-2:   #D4D4D4;
-    --color-muted:   #9CA3AF;
-    --color-stone:   #080808;
-    --color-stone-2: #111111;
-    --color-stone-3: #1A1A1A;
-    --color-stone-4: #222222;
-    --color-rule:    #2E2E2E;
-    --color-rule-2:  #242424;
+  /* ── Sidebar-aware main content margin — resets to 0 on mobile ───────────── */
+  .sidebar-offset {
+    margin-left: var(--sidebar-width, 240px);
+    transition: margin-left 200ms cubic-bezier(0.16, 1, 0.3, 1);
   }
-  .plant-mode .font-body { letter-spacing: 0.01em; }
-  .plant-mode .display-num { font-weight: 700; }
-
-  /* ── OKLCH perceptual color tokens — progressive enhancement ───────────── */
-  @supports (color: oklch(0.5 0.2 200)) {
-    :root {
-      --color-ok:      oklch(0.65 0.13 145);
-      --color-warn:    oklch(0.65 0.13 70);
-      --color-danger:  oklch(0.58 0.17 30);
-      --color-deep:    oklch(0.58 0.18 275);
-      --color-context: oklch(0.63 0.13 55);
-    }
+  @media (max-width: 639px) {
+    .sidebar-offset { margin-left: 0 !important; }
   }
 
-  /* ── Atmospheric glow — risk-toned, slow pulse ─────────────────────────── */
+  /* ── Plant mode (floor displays / operators) — opt-in class, not media query */
+  /* Apply .floor-mode to <body> or a wrapper for plant-floor tablet displays.  */
+  .floor-mode .text-micro  { font-size: 13px !important; line-height: 1.3 !important; }
+  .floor-mode .text-label  { font-size: 15px !important; line-height: 1.3 !important; }
+  .floor-mode .text-body   { font-size: 18px !important; line-height: 1.45 !important; }
+  .floor-mode .text-head   { font-size: 26px !important; }
+  .floor-mode .text-title  { font-size: 34px !important; }
+  .floor-mode .text-metric { font-size: 36px !important; }
+  .floor-mode .text-score  { font-size: 56px !important; }
+  .floor-mode button,
+  .floor-mode [role="button"] { min-height: 52px !important; }
+  .floor-mode .display-num { letter-spacing: 0.02em; }
+  .floor-mode .font-body   { letter-spacing: 0.01em; }
+  .floor-mode .display-num { font-weight: 700; }
+
+  /* ── Atmospheric glow ───────────────────────────────────────────────────── */
   @keyframes atmoPulse {
     0%, 100% { opacity: 0.04; }
     50%       { opacity: 0.10; }
   }
-  .atmo-glow-danger { animation: atmoPulse var(--dur-atmo) ease-in-out infinite; background: radial-gradient(ellipse 55% 100% at 10% 60%, #DE6C4E22 0%, transparent 65%); }
-  .atmo-glow-warn   { animation: atmoPulse var(--dur-atmo) ease-in-out infinite; background: radial-gradient(ellipse 55% 100% at 10% 60%, #C98E2A22 0%, transparent 65%); }
-  .atmo-glow-ok     { animation: atmoPulse var(--dur-atmo) ease-in-out infinite; background: radial-gradient(ellipse 55% 100% at 10% 60%, #5FA87722 0%, transparent 65%); }
+  .atmo-glow-danger { animation: atmoPulse var(--dur-atmo) ease-in-out infinite; background: radial-gradient(ellipse 55% 100% at 10% 60%, color-mix(in srgb, var(--color-danger) 13%, transparent) 0%, transparent 65%); }
+  .atmo-glow-warn   { animation: atmoPulse var(--dur-atmo) ease-in-out infinite; background: radial-gradient(ellipse 55% 100% at 10% 60%, color-mix(in srgb, var(--color-warn)   13%, transparent) 0%, transparent 65%); }
+  .atmo-glow-ok     { animation: atmoPulse var(--dur-atmo) ease-in-out infinite; background: radial-gradient(ellipse 55% 100% at 10% 60%, color-mix(in srgb, var(--color-ok)     13%, transparent) 0%, transparent 65%); }
 
-  /* ── Live indicator — breathing dot ────────────────────────────────────── */
+  /* ── Live indicator ─────────────────────────────────────────────────────── */
   @keyframes liveDot {
     0%, 100% { opacity: 1; transform: scale(1); }
     50%       { opacity: 0.4; transform: scale(0.7); }
   }
   .live-dot { animation: liveDot 2.4s ease-in-out infinite; }
 
-  /* ── Content entrances ─────────────────────────────────────────────────── */
   @keyframes beat {
     0%, 100% { opacity: 1; transform: scale(1); }
     50%       { opacity: 0.4; transform: scale(0.75); }
   }
   .beat { animation: beat 2.4s ease-in-out infinite; }
 
+  /* ── Content entrances ──────────────────────────────────────────────────── */
   @keyframes slideIn {
     from { opacity: 0; transform: translateY(-4px); }
     to   { opacity: 1; transform: translateY(0); }
@@ -285,9 +393,9 @@
   }
 
   @keyframes dangerPulse {
-    0%   { box-shadow: 0 0 0 0 rgba(222, 108, 78, 0.30); }
-    60%  { box-shadow: 0 0 0 8px rgba(222, 108, 78, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(222, 108, 78, 0); }
+    0%   { box-shadow: 0 0 0 0 rgb(var(--color-danger-rgb) / 0.30); }
+    60%  { box-shadow: 0 0 0 8px rgb(var(--color-danger-rgb) / 0); }
+    100% { box-shadow: 0 0 0 0 rgb(var(--color-danger-rgb) / 0); }
   }
   .danger-pulse { animation: dangerPulse 600ms var(--ease-inout) both; }
 
@@ -314,14 +422,12 @@
   .drawer-in  { animation: drawerIn  320ms var(--ease-spring) both; }
   .drawer-out { animation: drawerOut 220ms var(--ease-exit) both; }
 
-  /* ── Row entrance — staggered list/card reveal (matches ShiftIQV2) ──────── */
   @keyframes rowIn {
     from { opacity: 0; transform: translateY(8px); }
     to   { opacity: 1; transform: translateY(0); }
   }
   .row-in { animation: rowIn 320ms var(--ease-spring) both; }
 
-  /* ── Metric entrance — hero display-num numbers in SceneHeader ───────────── */
   @keyframes metricIn {
     from { opacity: 0; transform: translateY(12px) scale(0.88); }
     to   { opacity: 1; transform: translateY(0)    scale(1); }
@@ -331,7 +437,6 @@
     animation-delay: 100ms;
   }
 
-  /* ── Bar grow — scaleX reveal for progress / score fill bars ─────────────── */
   @keyframes barGrow {
     from { transform: scaleX(0); }
     to   { transform: scaleX(1); }
@@ -342,7 +447,6 @@
     animation-delay: 160ms;
   }
 
-  /* ── Page entrance — screen-level entrance animations ──────────────────────── */
   @keyframes pageRise {
     from { opacity: 0; transform: translateY(12px); }
     to   { opacity: 1; transform: none; }
@@ -372,40 +476,23 @@
   .page-wipe    { animation: pageWipe   240ms cubic-bezier(0.16, 1, 0.3, 1) both; }
   .page-fade    { animation: pageFade   180ms ease-out both; }
 
-  /* Returning visits — skip entrance animations after first mount per session */
   .skip-animations .page-rise,
   .skip-animations .page-blur-in,
   .skip-animations .page-wipe,
   .skip-animations .page-fade { animation: none; }
 
-  /* ── Card lift — hover elevation for interactive cards ────────────────────── */
   .card-lift {
     transition: transform 120ms var(--ease-enter), box-shadow 120ms var(--ease-enter);
   }
   .card-lift:hover  { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,0,0,0.32); }
   .card-lift:active { transform: translateY(0) scale(0.99); transition-duration: 80ms; }
 
-  /* ── Decision weight — motion signals that a decision has been committed ── */
   @keyframes decision-commit {
-    0%   { background: rgba(95, 168, 119, 0.18); }
-    60%  { background: rgba(95, 168, 119, 0.08); }
+    0%   { background: rgb(var(--color-ok-rgb) / 0.18); }
+    60%  { background: rgb(var(--color-ok-rgb) / 0.08); }
     100% { background: transparent; }
   }
   .decision-commit { animation: decision-commit 800ms var(--ease-exit) both; }
-
-  /* ── Floor mode — tablet breakpoint, auto-activates at ≤1024px ─────────── */
-  /* Operator-facing: 4ft from screen, gloves on. No manual toggle needed.   */
-  @media (max-width: 1024px) {
-    .text-micro  { font-size: 13px !important; line-height: 1.3 !important; }
-    .text-label  { font-size: 15px !important; line-height: 1.3 !important; }
-    .text-body   { font-size: 18px !important; line-height: 1.45 !important; }
-    .text-head   { font-size: 26px !important; }
-    .text-title  { font-size: 34px !important; }
-    .text-metric { font-size: 36px !important; }
-    .text-score  { font-size: 56px !important; }
-    button, [role="button"] { min-height: 52px !important; }
-    .display-num { letter-spacing: 0.02em; }
-  }
 
   /* ── Reduced-motion overrides ───────────────────────────────────────────── */
   @media (prefers-reduced-motion: reduce) {
@@ -425,7 +512,7 @@
     .danger-pulse           { animation: none; }
     .spinner                { animation-duration: 2000ms; }
     .atmo-glow-danger, .atmo-glow-warn, .atmo-glow-ok { animation: none; opacity: 0.05; }
-    .row-in   { animation: none; opacity: 1; transform: none; }
+    .row-in    { animation: none; opacity: 1; transform: none; }
     .metric-in { animation: none; opacity: 1; transform: none; }
     .page-rise, .page-blur-in, .page-wipe, .page-fade { animation: none; opacity: 1; transform: none; filter: none; clip-path: none; }
     .bar-grow  { animation: none; transform: none; }

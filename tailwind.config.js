@@ -4,26 +4,35 @@ export default {
   theme: {
     extend: {
       colors: {
-        // ── Surfaces — dark graphite scale (cool-neutral) ──────────────────
-        stone:   { DEFAULT: '#0B0F18', 2: '#131A26', 3: '#1B2538', 4: '#263042' },
-        // ── Text — warm bone scale ─────────────────────────────────────────
-        ink:     { DEFAULT: '#EDE4CB', 2: '#9B9070' },
-        muted:   '#7A8EA8',   // secondary/muted text — cool blue-gray
-        // ── Borders ────────────────────────────────────────────────────────
-        rule:    '#263042',   // structural border
-        rule2:   '#1A2335',   // subtle border
-        // ── Semantic ───────────────────────────────────────────────────────
-        ok:      { DEFAULT: '#5FA877', dim: '#0D2518' },  // lighter green for dark bg
-        warn:    { DEFAULT: '#C98E2A', dim: '#2A1E08' },  // warm amber
-        danger:  { DEFAULT: '#DE6C4E', dim: '#2A100A' },  // warm rust
-        // ── Primary accent — steel blue (interactive, structural) ──────────
-        signal:  { DEFAULT: '#4B9CE4', dim: '#0D1E38', dark: '#2A6AAD', light: '#7BBDEE' },
-        // ── Narrative accent — clay (context, interpretation, insight) ─────
-        context: { DEFAULT: '#C4844E', dim: '#2A1808' },
-        // ── Predictive accent — indigo (historical, AI-derived) ───────────
-        deep:    { DEFAULT: '#7C86E8', dim: '#141830' },
-        // ── Sidebar — blue-black, distinct from content graphite ──────────
-        sidebar: { DEFAULT: '#080D16', 2: '#0E1520', 3: '#152030', border: '#1C2A40', ghost: '#6A88A8' },
+        // All colors reference CSS variables so light/dark theme switching works automatically.
+        // RGB format (space-separated) supports Tailwind opacity modifiers: bg-ok/10, etc.
+        stone:   {
+          DEFAULT: 'rgb(var(--color-stone-rgb) / <alpha-value>)',
+          2: 'rgb(var(--color-stone-2-rgb) / <alpha-value>)',
+          3: 'rgb(var(--color-stone-3-rgb) / <alpha-value>)',
+          4: 'rgb(var(--color-stone-4-rgb) / <alpha-value>)',
+        },
+        ink:     {
+          DEFAULT: 'rgb(var(--color-ink-rgb) / <alpha-value>)',
+          2: 'rgb(var(--color-ink-2-rgb) / <alpha-value>)',
+        },
+        muted:   'rgb(var(--color-muted-rgb) / <alpha-value>)',
+        rule:    'rgb(var(--color-rule-rgb) / <alpha-value>)',
+        rule2:   'rgb(var(--color-rule2-rgb) / <alpha-value>)',
+        ok:      { DEFAULT: 'rgb(var(--color-ok-rgb) / <alpha-value>)',      dim: 'rgb(var(--color-ok-dim-rgb) / <alpha-value>)' },
+        warn:    { DEFAULT: 'rgb(var(--color-warn-rgb) / <alpha-value>)',    dim: 'rgb(var(--color-warn-dim-rgb) / <alpha-value>)' },
+        danger:  { DEFAULT: 'rgb(var(--color-danger-rgb) / <alpha-value>)',  dim: 'rgb(var(--color-danger-dim-rgb) / <alpha-value>)' },
+        signal:  { DEFAULT: 'rgb(var(--color-signal-rgb) / <alpha-value>)',  dim: 'rgb(var(--color-signal-dim-rgb) / <alpha-value>)', dark: 'rgb(var(--color-signal-dark-rgb) / <alpha-value>)', light: 'rgb(var(--color-signal-light-rgb) / <alpha-value>)' },
+        context: { DEFAULT: 'rgb(var(--color-context-rgb) / <alpha-value>)', dim: 'rgb(var(--color-context-dim-rgb) / <alpha-value>)' },
+        deep:    { DEFAULT: 'rgb(var(--color-deep-rgb) / <alpha-value>)',    dim: 'rgb(var(--color-deep-dim-rgb) / <alpha-value>)' },
+        // Sidebar always stays dark — same values in both themes.
+        sidebar: {
+          DEFAULT: 'rgb(var(--color-sidebar-rgb) / <alpha-value>)',
+          2: 'rgb(var(--color-sidebar-2-rgb) / <alpha-value>)',
+          3: 'rgb(var(--color-sidebar-3-rgb) / <alpha-value>)',
+          border: 'rgb(var(--color-sidebar-border-rgb) / <alpha-value>)',
+          ghost: 'rgb(var(--color-sidebar-ghost-rgb) / <alpha-value>)',
+        },
       },
       fontFamily: {
         body:    ["'Plus Jakarta Sans'", 'system-ui', 'sans-serif'],
@@ -31,15 +40,15 @@ export default {
         mono:    ["'JetBrains Mono'", "'Menlo'", 'monospace'],
       },
       fontSize: {
-        // ── UI text — 4 steps ─────────────────────────────────────────────
+        // UI text — 4 steps
         micro:   ['10px', { lineHeight: '1.2' }],   // metadata, timestamps
         label:   ['11px', { lineHeight: '1.2' }],   // inline labels, badges
         body:    ['13px', { lineHeight: '1.45' }],  // primary reading text
         base:    ['15px', { lineHeight: '1.4' }],   // comfortable reading / subheadings
-        // ── Numeric / display — 6 steps ───────────────────────────────────
-        head:    ['18px', { lineHeight: '1.3' }],   // section titles, kpi labels
+        // Numeric / display — 6 steps
+        head:    ['18px', { lineHeight: '1.3' }],   // section titles, KPI labels
         title:   ['22px', { lineHeight: '1.2' }],   // stat values, callout numbers
-        metric:  ['28px', { lineHeight: '1' }],     // kpi grid cells
+        metric:  ['28px', { lineHeight: '1' }],     // KPI grid cells
         score:   ['48px', { lineHeight: '1' }],     // hero risk / shift scores
         hero:    ['64px', { lineHeight: '1' }],     // primary screen numerals
         jumbo:   ['80px', { lineHeight: '1' }],     // jumbo OEE / plant-level
@@ -57,12 +66,12 @@ export default {
         'standard': 'cubic-bezier(0.25, 0.1, 0.25, 1)',
       },
       borderRadius: {
-        'btn': '2px',  // tight — precision system, not consumer app
+        'btn': '2px',
       },
       boxShadow: {
-        'raise':      '0 4px 20px rgba(0,0,0,0.45)',       // floating overlays on dark bg
-        'card':       '0 1px 4px rgba(0,0,0,0.30)',        // card lift
-        'card-alert': '0 1px 5px rgba(222,108,78,0.20)',    // danger card lift
+        'raise':      'var(--shadow-raise)',
+        'card':       'var(--shadow-card)',
+        'card-alert': '0 1px 5px rgba(222,108,78,0.20)',
       },
       zIndex: {
         modal: '60',

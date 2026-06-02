@@ -310,7 +310,7 @@ function FDAPostureTab({ lot }) {
             return (
               <div key={i} className={`px-4 py-3 border-b border-rule2 border-l-2 ${cfg.accent}`}>
                 <div className="flex items-center gap-2 mb-0.5">
-                  <span className={`font-body text-micro uppercase tracking-wider font-medium ${cfg.cls}`}>
+                  <span className={`font-body text-micro font-medium ${cfg.cls}`}>
                     {cfg.label}
                   </span>
                   <span className="font-body text-ink text-label">{gap.field}</span>

@@ -9,11 +9,11 @@ import {
  LayoutGrid, BarChart2, Bell, User, Cpu,
  FlaskConical, Scale, Network, BookOpen, LayoutDashboard,
  Workflow, FileLock2, TrendingUp, ScanLine, CircleDot,
+ Sun, Moon, Monitor, X,
 } from 'lucide-react'
 import { useAppState, PLANTS } from '../context/AppState'
 import { commandData, agentConfigData } from '../data'
 import { PersonAvatar, StatusPill } from './UI'
-import NotificationCenter from '../screens/NotificationCenter'
 
 const modules = [
  { id:'shift',    label:'Shift',     path:'/shift',    icon:Activity,      badge:'3', badgeType:'alert' },
@@ -337,10 +337,9 @@ export default function Sidebar() {
  const plantTriggerRef = useRef(null)
  const [userOpen, setUserOpen] = useState(false)
  const userTriggerRef = useRef(null)
- const [notifOpen, setNotifOpen] = useState(false)
  const [platformExpanded, setPlatformExpanded] = useState(true)
  const [toast, setToast] = useState(null)
- const { blockingEvidenceUploaded, allergenOverride, checklistSigned, nearMisses, maintenanceTickets, viewingRole, setViewingRole, currentPlant, setCurrentPlant, workerMode, agentDecidedKeys, sidebarCollapsed, toggleSidebar } = useAppState() || {}
+ const { blockingEvidenceUploaded, allergenOverride, checklistSigned, nearMisses, maintenanceTickets, viewingRole, setViewingRole, currentPlant, setCurrentPlant, workerMode, agentDecidedKeys, sidebarCollapsed, toggleSidebar, mobileNavOpen, setMobileNavOpen, notifOpen, setNotifOpen, theme, setTheme } = useAppState() || {}
  const collapsed = !!sidebarCollapsed
  const agentPendingCount = Math.max(0, STATIC_AGENT_TOTAL - (agentDecidedKeys?.size ?? 0))
 
@@ -363,8 +362,8 @@ export default function Sidebar() {
 
  return (
  <aside
-  className="fixed inset-y-0 left-0 z-30 flex flex-col bg-sidebar border-r border-sidebar-border overflow-hidden"
-  style={{ width: collapsed ? 48 : 240, transition: 'width 200ms cubic-bezier(0.16, 1, 0.3, 1)' }}
+  className={`fixed inset-y-0 left-0 z-30 flex flex-col bg-sidebar border-r border-sidebar-border overflow-hidden transition-[transform,width] sm:translate-x-0 ${mobileNavOpen ? 'translate-x-0' : '-translate-x-full sm:translate-x-0'}`}
+  style={{ width: collapsed ? 48 : 240, transitionDuration: '200ms', transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)' }}
  >
  {/* Brand — click to toggle collapse */}
  <button
@@ -378,9 +377,19 @@ export default function Sidebar() {
    <path d="M8 13 L14 13 L14 7 Z" fill="var(--color-signal)"/>
   </svg>
   {!collapsed && (
-   <div className="flex-0 min-w-0">
+   <div className="flex-1 min-w-0">
     <div className="font-body font-bold text-ink text-label leading-none">Takorin</div>
    </div>
+  )}
+  {/* Close button — mobile only */}
+  {!collapsed && mobileNavOpen && (
+   <button
+    type="button"
+    onClick={() => setMobileNavOpen(false)}
+    className="sm:hidden ml-auto text-white/40 hover:text-white/70 transition-colors p-0.5"
+    aria-label="Close navigation">
+    <X size={14} strokeWidth={2} />
+   </button>
   )}
  </button>
 
@@ -447,7 +456,6 @@ export default function Sidebar() {
      <StatusPill tone="alert" dot={false} className="ml-auto">4</StatusPill>
     </button>
    )}
-   {notifOpen && <NotificationCenter onClose={() => setNotifOpen(false)} />}
   </>
  )}
 
@@ -499,11 +507,38 @@ export default function Sidebar() {
      <StatusPill tone="alert" dot={false} className="ml-auto">4</StatusPill>
     </button>
    )}
-   {notifOpen && <NotificationCenter onClose={() => setNotifOpen(false)} />}
   </>
  )}
 
  </nav>
+
+ {/* Theme toggle */}
+ {!collapsed && (
+  <div className="px-3 py-2 border-t border-sidebar-border flex items-center gap-px">
+   {[
+    { id: 'light', Icon: Sun,     label: 'Light' },
+    { id: 'auto',  Icon: Monitor, label: 'Auto'  },
+    { id: 'dark',  Icon: Moon,    label: 'Dark'  },
+   ].map(({ id, Icon, label }) => (
+    <button key={id} type="button" onClick={() => setTheme?.(id)}
+     className={`flex-1 flex flex-col items-center gap-0.5 py-1.5 transition-colors rounded-sm ${
+      theme === id ? 'text-white bg-sidebar2' : 'text-white/30 hover:text-white/50'
+     }`}
+     aria-label={`${label} mode`}>
+     <Icon size={11} strokeWidth={2} />
+     <span className="font-body" style={{ fontSize: 9, lineHeight: 1 }}>{label}</span>
+    </button>
+   ))}
+  </div>
+ )}
+ {collapsed && (
+  <button type="button"
+   onClick={() => setTheme?.(theme === 'dark' ? 'light' : theme === 'light' ? 'auto' : 'dark')}
+   className="flex items-center justify-center h-9 w-full text-white/30 hover:text-white/50 transition-colors border-t border-sidebar-border"
+   aria-label="Cycle theme">
+   {theme === 'light' ? <Sun size={13} strokeWidth={2} /> : theme === 'dark' ? <Moon size={13} strokeWidth={2} /> : <Monitor size={13} strokeWidth={2} />}
+  </button>
+ )}
 
  {/* Compliance + Platform — hidden when collapsed */}
  {!collapsed && <div className="px-4 py-2.5 border-t border-sidebar-border">

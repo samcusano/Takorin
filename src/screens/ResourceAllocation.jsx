@@ -51,7 +51,7 @@ function ImpactPreview({ task, onConfirm, onCancel }) {
   ]
 
   return (
-    <div className="fixed inset-0 bg-ink/30 z-40 flex items-center justify-center p-6">
+    <div className="fixed inset-0 bg-black/50 z-40 flex items-center justify-center p-6">
       <div className="bg-stone w-full max-w-md shadow-raise slide-in">
         <div className="px-5 py-4 border-b border-rule2 bg-stone2">
           <div className="font-body text-muted text-label mb-1">Reallocation preview</div>

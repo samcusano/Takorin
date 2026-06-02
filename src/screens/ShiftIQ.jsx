@@ -242,7 +242,7 @@ function OperatorPanel({ name, onClose, onSelectOperator }) {
 
  return (
  <>
- <div className="fixed inset-0 z-40 bg-ink/20" onClick={handleClose} />
+ <div className="fixed inset-0 z-40 bg-black/50" onClick={handleClose} />
  <div ref={panelRef} role="dialog" aria-modal="true" aria-label={`Operator profile — ${name}`} className={`fixed right-0 top-0 bottom-0 z-50 w-[340px] bg-stone border-l border-rule2 flex flex-col overflow-hidden ${exiting ? 'slide-right-out' : 'slide-right'}`}>
  <div className="flex items-center gap-3 px-4 py-3 border-b border-rule2 bg-stone2 flex-shrink-0" style={{ borderTop:'3px solid var(--color-danger)' }}>
  <PersonAvatar name={name} size={32} />

@@ -97,7 +97,7 @@ function OverrideModal({ agentName, actionLabel, onConfirm, onCancel }) {
   const tooShort = rationale.trim().length < 20
   useEffect(() => { ref.current?.focus() }, [])
   return (
-    <div className="fixed inset-0 bg-ink/40 z-50 flex items-center justify-center p-6">
+    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-6">
       <div className="bg-stone w-full max-w-md shadow-raise slide-in">
         <div className="px-5 py-4 border-b border-rule2 bg-stone2">
           <div className="font-body text-muted text-label mb-1">Why are you overriding?</div>
@@ -131,7 +131,7 @@ function OverrideModal({ agentName, actionLabel, onConfirm, onCancel }) {
 
 function DisableModal({ agent, onConfirm, onCancel }) {
   return (
-    <div className="fixed inset-0 bg-ink/40 z-50 flex items-center justify-center p-6">
+    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-6">
       <div className="bg-stone w-full max-w-md shadow-raise slide-in">
         <div className="px-5 py-4 border-b border-rule2 bg-stone2">
           <div className="font-body text-muted text-label mb-1">Disable agent — confirm</div>
@@ -196,7 +196,7 @@ function FlagOutcomeModal({ agentName, actionLabel, plantContext, onConfirm, onC
   const [note, setNote] = useState('')
   const canSubmit = category !== ''
   return (
-    <div className="fixed inset-0 bg-ink/40 z-50 flex items-center justify-center p-6">
+    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-6">
       <div className="bg-stone w-full max-w-md shadow-raise slide-in">
         <div className="px-5 py-4 border-b border-rule2 bg-stone2">
           <div className="font-body text-muted text-label mb-1">Flag decision for model review</div>
@@ -503,14 +503,10 @@ function DependencyGroup({ groupId, rows, commonProps }) {
 
 function BatchBar({ count, onApproveAll, onDeferAll }) {
   return (
-    <div className="flex-shrink-0 flex items-center gap-3 px-5 py-2.5 bg-ink border-t border-sidebar-border">
-      <span className="font-body text-stone text-label">{count} selected</span>
-      <Btn variant="secondary" onClick={onApproveAll} className="!bg-stone !text-ink hover:!bg-stone2 !border-stone/30">
-        Approve all low-risk
-      </Btn>
-      <Btn variant="secondary" onClick={onDeferAll} className="!border-stone/30 !text-stone hover:!bg-stone/10">
-        Defer all low confidence
-      </Btn>
+    <div className="flex-shrink-0 flex items-center gap-3 px-5 py-2.5 bg-stone3 border-t border-rule2">
+      <span className="font-body text-muted text-label">{count} selected</span>
+      <Btn variant="secondary" onClick={onApproveAll}>Approve all low-risk</Btn>
+      <Btn variant="secondary" onClick={onDeferAll}>Defer all low confidence</Btn>
     </div>
   )
 }
@@ -1412,15 +1408,13 @@ export default function AgentControl() {
               </div>
               {/* Batch action bar — sticky bottom of left panel */}
               {splitChecked.size > 0 && (
-                <div className="flex-shrink-0 flex items-center gap-3 px-4 py-3 bg-ink border-t border-sidebar-border">
-                  <span className="font-body text-stone text-label">{splitChecked.size} selected</span>
+                <div className="flex-shrink-0 flex items-center gap-3 px-4 py-3 bg-stone3 border-t border-rule2">
+                  <span className="font-body text-muted text-label">{splitChecked.size} selected</span>
                   <Btn variant="secondary"
-                    onClick={() => { [...splitChecked].forEach(k => { const pa = pending.find(p => p._key === k); if (pa && !pa._decided && pa._meta.consequence === 'medium') handleApprove(k) }); setSplitChecked(new Set()) }}
-                    className="!bg-stone !text-ink hover:!bg-stone2 !border-stone/30">
+                    onClick={() => { [...splitChecked].forEach(k => { const pa = pending.find(p => p._key === k); if (pa && !pa._decided && pa._meta.consequence === 'medium') handleApprove(k) }); setSplitChecked(new Set()) }}>
                     Approve low-risk
                   </Btn>
-                  <Btn variant="ghost" onClick={() => setSplitChecked(new Set())}
-                    className="!text-stone/60 hover:!text-stone ml-auto">
+                  <Btn variant="ghost" onClick={() => setSplitChecked(new Set())} className="ml-auto">
                     Clear
                   </Btn>
                 </div>
