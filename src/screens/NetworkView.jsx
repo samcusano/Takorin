@@ -91,7 +91,7 @@ function ExposureOverlay({ triggerRef, active, actions, onAction, onBulkAction, 
        }`}>
         {/* Card header */}
         <div className="flex items-baseline justify-between px-4 pt-3 pb-1.5">
-         <span className="font-body font-semibold text-ink text-base">{e.supplier}</span>
+         <span className="font-body font-semibold text-ink text-sub">{e.supplier}</span>
          <span className="font-body text-muted text-label">Lot {e.lotId}</span>
         </div>
         {/* Ingredient + units */}
@@ -174,7 +174,7 @@ function ExposureCommandSurface({ exposures, actions, containmentMode, onAction,
     className="w-full flex items-center gap-3 px-6 py-3.5 border-b-2 border-b-danger/30 bg-danger/[0.025] flex-shrink-0 text-left"
    >
     <div className="w-2 h-2 rounded-full bg-danger flex-shrink-0 beat" />
-    <span className="font-body font-semibold text-ink text-base flex-1">
+    <span className="font-body font-semibold text-ink text-sub flex-1">
      {active.length} active exposure{active.length > 1 ? 's' : ''}
     </span>
     <span className="font-body text-muted text-label">
@@ -239,7 +239,7 @@ function SupplierRegistry({ rows }) {
        {/* Top row — name + dot */}
        <div className="flex items-start justify-between gap-2 mb-2.5">
         <div className="min-w-0">
-         <div className={`font-display font-bold text-base leading-none mb-0.5 ${hasExposure ? 'text-danger' : 'text-ink'}`}>
+         <div className={`font-display font-bold text-sub leading-none mb-0.5 ${hasExposure ? 'text-danger' : 'text-ink'}`}>
           {s.name}
          </div>
          <div className="font-body text-muted text-label">{s.note ?? 'No active alerts'}</div>

@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react'
 import { connectors, integrationSummary, semanticConflicts, integrationCategories } from '../data/integrations'
-import { AlertTriangle, CheckCircle, Zap, Radio, Search, X, Lock, ChevronDown,
+import { AlertTriangle, CheckCircle, Zap, Search, X, Lock, ChevronDown,
   Cpu, FlaskConical, Truck, Users, Leaf, Database, Brain, Shield, Wrench, Package } from 'lucide-react'
 
 const CATEGORY_ICON = {
@@ -15,7 +15,7 @@ const CATEGORY_ICON = {
   'Compliance':           Shield,
   'Maintenance':          Wrench,
 }
-import { SlidePanel, Tabs, StatusPill, Btn, AnimatedScore, StatGrid, SectionLabel, EmptyState, FilterDropdown, SceneHeader } from '../components/UI'
+import { Tabs, StatusPill, Btn, AnimatedScore, EmptyState, FilterDropdown, SceneHeader } from '../components/UI'
 
 const STATUS_CFG = {
   active:    { label: 'Active',      dot: 'bg-ok',     text: 'text-ok',     badge: 'bg-ok/10 text-ok' },
@@ -90,7 +90,7 @@ function ConnectorRowDetail({ c }) {
             ].map(({ label, val, tone }) => (
               <div key={label}>
                 <div className="font-body text-muted text-label mb-0.5">{label}</div>
-                <div className={`display-num text-base tabular-nums ${tone}`}>{val}</div>
+                <div className={`display-num text-sub tabular-nums ${tone}`}>{val}</div>
               </div>
             ))}
           </div>
@@ -116,66 +116,6 @@ function ConnectorRowDetail({ c }) {
   )
 }
 
-function ConnectorDetailUnused({ c }) {
-  const cfg = STATUS_CFG[c.status] ?? STATUS_CFG.available
-  return (
-    <div className="space-y-5">
-      <div>
-        <div className="flex items-center gap-2 mb-2">
-          <div className="relative flex h-2 w-2 flex-shrink-0">
-            {c.status === 'active' && c.streaming && <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-ok opacity-40" />}
-            <span className={`relative inline-flex rounded-full h-2 w-2 ${cfg.dot}`} />
-          </div>
-          <StatusPill tone={c.status === 'active' ? 'ok' : c.status === 'available' ? 'muted' : 'signal'}>{cfg.label}</StatusPill>
-          {c.streaming && <span className="font-body text-ok text-label flex items-center gap-1"><Radio size={9} strokeWidth={2} />Streaming</span>}
-        </div>
-        <div className="font-display font-bold text-ink text-head leading-none mb-1">{c.name}</div>
-        <div className="font-body text-muted text-body">{c.vendor}</div>
-      </div>
-
-      {c.status === 'active' && (
-        <StatGrid cols={3} noBorder>
-          {[
-            { label: 'Data quality',   val: c.quality != null ? `${c.quality}%` : '—', tone: c.quality >= 95 ? 'text-ok' : c.quality >= 85 ? 'text-signal' : 'text-warn' },
-            { label: 'Last sync',      val: c.lastSync ?? '—',                          tone: 'text-muted' },
-            { label: 'Active signals', val: c.signals != null ? c.signals.toLocaleString() : '—', tone: 'text-ink' },
-            { label: 'Latency',        val: c.latency ?? '—',                           tone: 'text-muted' },
-            { label: 'Streaming',      val: c.streaming ? 'Yes' : 'Polling',            tone: c.streaming ? 'text-ok' : 'text-muted' },
-            { label: 'Conflicts',      val: c.conflicts > 0 ? String(c.conflicts) : 'None', tone: c.conflicts > 0 ? 'text-warn' : 'text-ok' },
-          ].map(({ label, val, tone }) => (
-            <StatGrid.Cell key={label} label={label} value={val} tone={tone} size="sm" />
-          ))}
-        </StatGrid>
-      )}
-
-      {c.note && (
-        <div className="flex items-start gap-2 px-3 py-2.5 bg-warn/[0.04] border-l-2 border-l-warn">
-          <AlertTriangle size={10} className="text-warn flex-shrink-0 mt-0.5" strokeWidth={2} />
-          <p className="font-body text-warn text-label leading-snug">{c.note}</p>
-        </div>
-      )}
-
-      {c.status === 'available' && (
-        <div className="px-4 py-4 border-l-2 border-l-signal bg-stone2">
-          <div className="font-body font-semibold text-ink text-base mb-1">Available — not connected</div>
-          <div className="font-body text-muted text-label leading-relaxed mb-2">
-            This connector is supported by the integration framework. Configuration is managed in the admin panel.
-          </div>
-          <div className="font-body text-muted/60 text-label">
-            Admin panel → Integrations → {c.name}
-          </div>
-        </div>
-      )}
-
-      {c.status === 'soon' && (
-        <div className="px-4 py-4 bg-stone2">
-          <div className="font-body font-semibold text-ink text-base mb-1">Coming soon</div>
-          <div className="font-body text-muted text-label">This connector is in development. Expected availability: Q3 2026.</div>
-        </div>
-      )}
-    </div>
-  )
-}
 
 function ConflictsPanel({ resolved, onResolve }) {
   const unresolved = semanticConflicts.filter(sc => !resolved.has(sc.id))
@@ -189,7 +129,7 @@ function ConflictsPanel({ resolved, onResolve }) {
             {/* Header */}
             <div className="flex items-start justify-between gap-3">
               <div>
-                <div className="font-body font-medium text-ink text-base leading-snug mb-0.5">{sc.field}</div>
+                <div className="font-body font-medium text-ink text-sub leading-snug mb-0.5">{sc.field}</div>
                 <div className="font-body text-muted text-label">{sc.sources.join(' · ')}</div>
               </div>
               {sc.autoEligible && (
@@ -332,7 +272,7 @@ function AIReadinessTab() {
           <div className="px-4 py-3 space-y-2">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <div className="font-body font-medium text-ink text-base leading-snug mb-0.5">{gap.label}</div>
+                <div className="font-body font-medium text-ink text-sub leading-snug mb-0.5">{gap.label}</div>
                 <div className="font-body text-muted text-label">{gap.dimension}</div>
               </div>
               <StatusPill tone={gap.severity === 'high' ? 'danger' : 'warn'} className="flex-shrink-0 capitalize">{gap.severity}</StatusPill>
@@ -344,11 +284,11 @@ function AIReadinessTab() {
             </div>
             <div className={`px-3 py-2 border-l-2 ${gap.severity === 'high' ? 'bg-danger/[0.04] border-l-danger/30' : 'bg-warn/[0.04] border-l-warn/30'}`}>
               <div className="font-body text-muted text-label mb-0.5">Impact</div>
-              <div className="font-body text-ink text-label leading-snug">{gap.impact}</div>
+              <div className="font-body text-ink text-body leading-snug">{gap.impact}</div>
             </div>
             <div className="px-3 py-2 bg-stone2">
               <div className="font-body text-muted text-label mb-0.5">Fix</div>
-              <div className="font-body text-ink text-label leading-snug">{gap.fix}</div>
+              <div className="font-body text-ink text-body leading-snug">{gap.fix}</div>
             </div>
           </div>
         </div>

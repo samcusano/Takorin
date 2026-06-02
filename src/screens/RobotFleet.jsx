@@ -289,7 +289,7 @@ function UnitCard({ unit, selected, onSelect }) {
       {/* Top row */}
       <div className="flex items-start justify-between gap-2 mb-2.5">
         <div className="min-w-0">
-          <div className="font-display font-bold text-ink text-base leading-none mb-0.5">{unit.id}</div>
+          <div className="font-display font-bold text-ink text-sub leading-none mb-0.5">{unit.id}</div>
           <div className="font-body text-muted text-label leading-snug truncate">{unit.name}</div>
         </div>
         <span className="relative flex h-2 w-2 flex-shrink-0 mt-0.5">
@@ -338,7 +338,7 @@ function SignalRow({ label, val, unit, delta, tone }) {
     <div className="flex items-baseline justify-between py-1.5 border-b border-rule2 last:border-0">
       <span className="font-body text-muted text-label w-28 flex-shrink-0">{label}</span>
       <div className="flex items-baseline gap-1.5 flex-1 justify-end">
-        <span className={`display-num text-base tabular-nums ${valColor}`}>{val}</span>
+        <span className={`display-num text-sub tabular-nums ${valColor}`}>{val}</span>
         {unit && <span className="font-body text-muted text-label">{unit}</span>}
         <span className={`font-body text-label w-10 text-right flex-shrink-0 tabular-nums ${dColor}`}>
           {delta ?? '—'}

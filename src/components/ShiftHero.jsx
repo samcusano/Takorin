@@ -43,7 +43,7 @@ function sparkDirection(trend) {
 
 function Mono({ children, color, style = {} }) {
   return (
-    <span className="font-body text-micro" style={{ color: color || P.dim, ...style }}>
+    <span className="font-body text-label" style={{ color: color || P.dim, ...style }}>
       {children}
     </span>
   )
@@ -92,7 +92,7 @@ export default function ShiftHero({
 
           {/* Vertical rule + statement */}
           <div style={{ borderLeft: `1px solid ${P.border}`, paddingLeft: 28, maxWidth: 400, flex: 1 }}>
-            <p className="font-display text-base text-ink leading-relaxed" style={{ margin: 0, marginBottom: 12 }}>
+            <p className="font-display text-sub text-ink leading-relaxed" style={{ margin: 0, marginBottom: 12 }}>
               {statement}
             </p>
             <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>

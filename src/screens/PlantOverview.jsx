@@ -112,7 +112,7 @@ function ActorBadge({ mode }) {
   return (
     <span className="flex items-center gap-0.5 flex-shrink-0" style={{ color }} aria-label={`${label} mode`} title={`${label} worker mode`}>
       <Icon size={9} strokeWidth={2} aria-hidden="true" />
-      <span className="font-body text-micro">{label}</span>
+      <span className="font-body text-label">{label}</span>
     </span>
   )
 }
@@ -320,7 +320,7 @@ function DigitalMaturityMap({ plantId }) {
                   </div>
                   <div className="text-right flex-shrink-0">
                     <div className="font-body text-muted text-label">{MATURITY_STAGES[score - 1]} · stage {score} of 5</div>
-                    {reachedAt && <div className="font-body text-muted text-micro mt-0.5">{reachedAt}</div>}
+                    {reachedAt && <div className="font-body text-muted text-label mt-0.5">{reachedAt}</div>}
                   </div>
                 </div>
                 <div className="flex gap-1 mb-2.5">
@@ -330,7 +330,7 @@ function DigitalMaturityMap({ plantId }) {
                     return (
                       <div key={j} className="flex-1 flex flex-col items-center gap-1">
                         <div className={`w-full h-[4px] ${active ? 'bg-signal' : filled ? 'bg-ok/60' : 'bg-rule2'}`} />
-                        <span className={`font-body text-micro leading-none ${active ? 'text-signal font-medium' : filled ? 'text-ok' : 'text-muted/40'}`}>
+                        <span className={`font-body text-label leading-none ${active ? 'text-signal font-medium' : filled ? 'text-ok' : 'text-muted/40'}`}>
                           {stage}
                         </span>
                       </div>
@@ -550,7 +550,7 @@ export default function PlantOverview() {
                 { label: 'Briefing', value: pendingShiftCount, tone: critShiftCount > 0 && !allCritVisited ? 'danger' : 'warn', sub: `${critShiftCount} critical`, bg: '' },
               ].map((cell, i) => (
                 <div key={i} className={`flex-1 px-4 py-3 border-r border-rule2 last:border-r-0 ${cell.bg}`}>
-                  <div className="font-body text-micro text-muted mb-1">{cell.label}</div>
+                  <div className="font-body text-label text-muted mb-1">{cell.label}</div>
                   <div className={`display-num text-head font-bold leading-none tabular-nums ${
                     cell.tone === 'danger' ? 'text-danger' : cell.tone === 'warn' ? 'text-warn' : 'text-ok'
                   }`}>{cell.value}</div>
@@ -560,7 +560,7 @@ export default function PlantOverview() {
             </div>
 
             {/* Filter strip */}
-            <div className="flex-shrink-0 flex items-center gap-2 px-5 py-2.5 border-b border-rule2 bg-stone">
+            <div className="flex-shrink-0 flex items-center gap-2 px-5 py-2 border-b border-rule2 bg-stone">
               <FilterDropdown
                 label="Zone"
                 options={[
@@ -595,9 +595,9 @@ export default function PlantOverview() {
 
             {/* Floor bar — mode switcher + findings count */}
             <div className="flex-shrink-0 flex items-center gap-3 px-5 py-1.5 border-b border-rule2 bg-stone2">
-              <span className="font-body text-micro text-muted">Floor</span>
+              <span className="font-body text-label text-muted">Floor</span>
               {allFindings.length > 0 && (
-                <span className="font-body text-micro text-warn flex items-center gap-1">
+                <span className="font-body text-label text-warn flex items-center gap-1">
                   <AlertTriangle size={8} strokeWidth={2} />{allFindings.length} finding{allFindings.length !== 1 ? 's' : ''} pending
                 </span>
               )}
@@ -908,10 +908,10 @@ export default function PlantOverview() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-0.5 flex-wrap">
                         <span className="font-body text-label font-medium text-deep">{action.agentName}</span>
-                        <span className="font-body text-micro px-1.5 py-px text-deep bg-deep/[0.12] border border-deep/25">
+                        <span className="font-body text-label px-1.5 py-px text-deep bg-deep/[0.12] border border-deep/25">
                           {action.status === 'pending-review' ? 'Awaiting review' : 'Active'}
                         </span>
-                        <span className="font-body text-micro text-muted">{action.timestamp}</span>
+                        <span className="font-body text-label text-muted">{action.timestamp}</span>
                       </div>
                       <div className="font-body font-medium text-ink text-body leading-snug">{action.action}</div>
                       <div className="font-body text-muted text-label mt-0.5">{action.target} · {action.rationale}</div>
@@ -989,7 +989,7 @@ export default function PlantOverview() {
                         <div className="flex items-center gap-1.5">
                           <StatusPill tone="danger">Critical</StatusPill>
                           {item.lot && (
-                            <span className="font-body text-micro px-1.5 bg-stone3 text-muted">{item.lot}</span>
+                            <span className="font-body text-label px-1.5 bg-stone3 text-muted">{item.lot}</span>
                           )}
                         </div>
                         <span className={`font-body text-label tabular-nums font-medium ${visited ? 'text-danger/40' : 'text-danger'}`}>
@@ -997,8 +997,8 @@ export default function PlantOverview() {
                         </span>
                       </div>
                       <div className="px-4 pb-3 space-y-1">
-                        <div className="font-body text-micro text-muted">{item.category}</div>
-                        <p className={`font-body font-medium text-label leading-snug ${visited ? 'text-muted' : 'text-ink'}`}>{item.action}</p>
+                        <div className="font-body text-label text-muted">{item.category}</div>
+                        <p className={`font-body font-medium text-body leading-snug ${visited ? 'text-muted' : 'text-ink'}`}>{item.action}</p>
                         <p className="font-body text-muted text-label leading-relaxed">{item.note}</p>
                         {floorLine && (
                           <div className="flex items-center gap-2 font-body text-label text-muted pt-0.5">
@@ -1028,7 +1028,7 @@ export default function PlantOverview() {
               {SHIFT_QUEUE.filter(q => q.urgency === 'warn').length > 0 && (
                 <div className="mt-3 border-t border-rule2/50">
                   <div className="px-4 pt-2.5 pb-1">
-                    <span className="font-body text-micro text-muted font-semibold tracking-wide">HIGH PRIORITY</span>
+                    <span className="font-body text-label text-muted font-semibold tracking-wide">HIGH PRIORITY</span>
                   </div>
                   {SHIFT_QUEUE.filter(q => q.urgency === 'warn').map((item, i) => {
                     const visited = visitedQueue.has(item.action)
@@ -1039,12 +1039,12 @@ export default function PlantOverview() {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-1.5 mb-0.5 flex-wrap">
                             {item.lot && (
-                              <span className="font-body text-micro px-1 bg-stone3 text-muted flex-shrink-0">{item.lot}</span>
+                              <span className="font-body text-label px-1 bg-stone3 text-muted flex-shrink-0">{item.lot}</span>
                             )}
-                            <span className="font-body text-micro text-warn">{item.category}</span>
+                            <span className="font-body text-label text-warn">{item.category}</span>
                           </div>
-                          <div className={`font-body text-label font-medium leading-snug ${visited ? 'text-muted' : 'text-ink'}`}>{item.action}</div>
-                          <div className="font-body text-micro text-muted leading-snug mt-0.5">{item.note}</div>
+                          <div className={`font-body text-body font-medium leading-snug ${visited ? 'text-muted' : 'text-ink'}`}>{item.action}</div>
+                          <div className="font-body text-label text-muted leading-snug mt-0.5">{item.note}</div>
                         </div>
                         {visited
                           ? <CheckCircle size={9} className="text-muted/40 flex-shrink-0 mt-0.5" />
@@ -1060,7 +1060,7 @@ export default function PlantOverview() {
               {SHIFT_QUEUE.filter(q => q.urgency === 'ok').length > 0 && (
                 <div className="border-t border-rule2/50">
                   <div className="px-4 pt-2.5 pb-1">
-                    <span className="font-body text-micro text-muted font-semibold tracking-wide">WATCH</span>
+                    <span className="font-body text-label text-muted font-semibold tracking-wide">WATCH</span>
                   </div>
                   {SHIFT_QUEUE.filter(q => q.urgency === 'ok').map((item, i) => {
                     const visited = visitedQueue.has(item.action)
@@ -1071,7 +1071,7 @@ export default function PlantOverview() {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-1.5">
                             {item.lot && (
-                              <span className="font-body text-micro px-1 bg-stone3 text-muted flex-shrink-0">{item.lot}</span>
+                              <span className="font-body text-label px-1 bg-stone3 text-muted flex-shrink-0">{item.lot}</span>
                             )}
                             <div className={`font-body text-label leading-snug truncate ${visited ? 'text-muted' : 'text-ink'}`}>{item.action}</div>
                           </div>
@@ -1137,23 +1137,23 @@ export default function PlantOverview() {
         <div className="space-y-4">
           {selectedFinding.desc && (
             <div>
-              <div className="font-body text-micro text-muted mb-1.5">Finding</div>
+              <div className="font-body text-label text-muted mb-1.5">Finding</div>
               <p className="font-display text-body text-ink leading-relaxed">{selectedFinding.desc}</p>
             </div>
           )}
           {selectedFinding.evidence && (
             <div>
-              <div className="font-body text-micro text-muted mb-1.5">Evidence</div>
+              <div className="font-body text-label text-muted mb-1.5">Evidence</div>
               <div className="font-body text-label text-muted bg-stone2 px-3 py-2.5 border-l-2 border-l-rule">{selectedFinding.evidence}</div>
             </div>
           )}
           <div>
-            <div className="font-body text-micro text-muted mb-1.5">Current owner</div>
+            <div className="font-body text-label text-muted mb-1.5">Current owner</div>
             <div className="font-body text-ink text-body">{selectedFinding.meta.supervisor}</div>
           </div>
           {selectedFinding.recommendedAction && (
             <div>
-              <div className="font-body text-micro text-muted mb-1.5">Recommended action</div>
+              <div className="font-body text-label text-muted mb-1.5">Recommended action</div>
               <p className="font-display text-body text-ink leading-relaxed">{selectedFinding.recommendedAction}</p>
             </div>
           )}

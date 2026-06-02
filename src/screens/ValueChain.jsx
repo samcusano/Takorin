@@ -204,11 +204,11 @@ export default function ValueChain() {
           <div className="flex items-center gap-4 mt-2">
             <div className="flex items-center gap-1.5">
               <div className="w-4 h-px bg-signal" />
-              <span className="font-body text-muted text-micro">Actual</span>
+              <span className="font-body text-muted text-label">Actual</span>
             </div>
             <div className="flex items-center gap-1.5">
               <div className="w-4 border-t border-dashed border-muted" />
-              <span className="font-body text-muted text-micro">Forecast</span>
+              <span className="font-body text-muted text-label">Forecast</span>
             </div>
           </div>
         </div>

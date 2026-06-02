@@ -74,7 +74,7 @@ function ActionOverlay({ triggerRef, onClose, title, width = 'w-52', children })
         <div className="plant-drop-in-content">
           {title && (
             <div className="px-4 pt-3 pb-2 border-b border-rule2">
-              <span className="font-body text-micro text-muted">{title}</span>
+              <span className="font-body text-label text-muted">{title}</span>
             </div>
           )}
           {children}
@@ -115,7 +115,7 @@ function DirectiveCard({ executed, onExecute }) {
           <span className="font-body text-muted text-label opacity-40">·</span>
           <span className="font-body text-muted text-label">{DIRECTOR_HOLD.agent}</span>
         </div>
-        <div className="font-display font-semibold text-base text-ink leading-snug">{DIRECTOR_HOLD.action}</div>
+        <div className="font-display font-semibold text-sub text-ink leading-snug">{DIRECTOR_HOLD.action}</div>
       </div>
       <div className="px-4 py-2 border-y border-rule2">
         <span className="font-body text-label text-muted">{DIRECTOR_HOLD.rationale}</span>
@@ -133,7 +133,7 @@ function DirectiveCard({ executed, onExecute }) {
           {confirmOpen && (
             <ActionOverlay triggerRef={confirmBtnRef} onClose={() => setConfirmOpen(false)} title="Hold TS-8811" width="w-56">
               <div className="px-4 pt-2 pb-3">
-                <div className="font-body text-micro text-muted mb-1.5">Notify crew</div>
+                <div className="font-body text-label text-muted mb-1.5">Notify crew</div>
                 {BRIEF_CREW.map(name => (
                   <button key={name} type="button" onClick={() => toggle(name)}
                     className="flex items-center gap-2.5 w-full py-2 transition-colors hover:opacity-70">
@@ -180,7 +180,7 @@ function FindingCard({ f, index, onAct, onDelegate }) {
 
       <div className="px-4 pt-3.5 pb-2.5">
         <div className="flex items-start justify-between gap-3 mb-2">
-          <div className="font-display font-semibold text-base text-ink leading-snug">{f.title}</div>
+          <div className="font-display font-semibold text-sub text-ink leading-snug">{f.title}</div>
           {f.recurring && (
             <Link to={`/capa?finding=${f.id}`} className="flex-shrink-0 mt-px" title="Open root cause investigation in CAPA">
               <StatusPill tone="warn"><RefreshCw size={9} strokeWidth={2} className="inline mr-1 -mt-px" />Recurring</StatusPill>
@@ -245,7 +245,7 @@ function OperatorRow({ op, index, total }) {
     <div className={`flex items-center gap-4 px-4 py-[11px] ${index < total - 1 ? 'border-b border-rule2' : ''} ${op.flag ? 'bg-warn/[0.035]' : ''}`}>
       <div className="min-w-[128px]">
         <div className={`font-body font-medium text-body ${op.flag ? 'text-warn' : 'text-ink'}`}>{op.name}</div>
-        <div className="font-body text-micro text-muted mt-[3px]">{op.role}</div>
+        <div className="font-body text-label text-muted mt-[3px]">{op.role}</div>
       </div>
       <div className="flex-1 flex items-center gap-2.5">
         <div className="flex-1 h-0.5 bg-rule">
@@ -268,7 +268,7 @@ function TimelineEntry({ ev, index, total }) {
   return (
     <div style={{ display: 'flex', gap: 12, marginBottom: 20, opacity }}>
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: 40 }}>
-        <span className="font-body text-micro text-muted" style={{ marginBottom: 6, textAlign: 'right', width: '100%' }}>{ev.time}</span>
+        <span className="font-body text-label text-muted" style={{ marginBottom: 6, textAlign: 'right', width: '100%' }}>{ev.time}</span>
         <div className={isNow ? 'v2-live' : ''} style={{ width: 6, height: 6, borderRadius: '50%', background: dotColor, flexShrink: 0 }} />
         {index < total - 1 && <div style={{ flex: 1, width: 1, background: 'var(--color-rule-2)', marginTop: 5, minHeight: 14 }} />}
       </div>
@@ -278,7 +278,7 @@ function TimelineEntry({ ev, index, total }) {
           dangerouslySetInnerHTML={{ __html: ev.text }}
         />
         {ev.delta && (
-          <span className="font-body text-micro" style={{ marginTop: 4, display: 'block', color: deltaC }}>{ev.delta}</span>
+          <span className="font-body text-label" style={{ marginTop: 4, display: 'block', color: deltaC }}>{ev.delta}</span>
         )}
       </div>
     </div>
@@ -304,10 +304,10 @@ function ScoreExplainer({ score }) {
             </span>
             <div className="flex-1">
               <div className="font-body font-medium text-label mb-0.5" style={{ color: f.contribution > 0 ? 'var(--color-ink)' : 'var(--color-muted)' }}>{f.label}</div>
-              <div className="font-body text-micro text-muted">{f.state}</div>
+              <div className="font-body text-label text-muted">{f.state}</div>
               <div className="flex items-center gap-1.5 mt-1">
                 <div style={{ width: 5, height: 5, borderRadius: '50%', background: confColor, flexShrink: 0 }} />
-                <span className="font-body text-micro text-muted">{f.confidence} · {f.source}</span>
+                <span className="font-body text-label text-muted">{f.confidence} · {f.source}</span>
               </div>
             </div>
           </div>
@@ -327,7 +327,7 @@ function TrendWatch() {
       <div className="px-6 pt-[18px]">
         <div className="flex items-center gap-2 mb-3">
           <Eye size={10} strokeWidth={2} className="text-context" />
-          <span className="font-body text-micro text-context">Trend watch · {visible.length} sub-threshold</span>
+          <span className="font-body text-label text-context">Trend watch · {visible.length} sub-threshold</span>
         </div>
         {visible.map((s, i) => {
           const pct = Math.round((s.consecutiveBatches / s.thresholdBatches) * 100)
@@ -338,19 +338,19 @@ function TrendWatch() {
               <div className="flex items-start gap-2 mb-1.5">
                 <DirIcon size={10} strokeWidth={2} className="text-context flex-shrink-0 mt-0.5" />
                 <div className="flex-1 min-w-0">
-                  <div className="font-body font-medium text-label text-ink leading-snug">{s.signal}</div>
-                  <div className="font-body text-micro text-muted mt-0.5">{s.source} · {s.consecutiveBatches} consecutive batches</div>
+                  <div className="font-body font-medium text-body text-ink leading-snug">{s.signal}</div>
+                  <div className="font-body text-label text-muted mt-0.5">{s.source} · {s.consecutiveBatches} consecutive batches</div>
                 </div>
               </div>
-              <div className="font-body text-micro text-muted mb-2 leading-snug" style={{ paddingLeft: 18 }}>{s.currentReading} · {s.note}</div>
+              <div className="font-body text-label text-muted mb-2 leading-snug" style={{ paddingLeft: 18 }}>{s.currentReading} · {s.note}</div>
               <div style={{ paddingLeft: 18 }}>
                 <div className="h-0.5 bg-rule rounded-sm mb-2">
                   <div style={{ height: '100%', width: `${pct}%`, background: 'var(--color-context)', borderRadius: 1, transition: 'width 600ms cubic-bezier(0.16,1,0.3,1)' }} />
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="font-body text-micro text-muted">{s.thresholdBatches - s.consecutiveBatches} batches from threshold</span>
+                  <span className="font-body text-label text-muted">{s.thresholdBatches - s.consecutiveBatches} batches from threshold</span>
                   <button type="button" onClick={() => acknowledgeDrift(s.id)}
-                    className="font-body text-micro text-context hover:opacity-70 transition-opacity bg-transparent border-none cursor-pointer p-0">
+                    className="font-body text-label text-context hover:opacity-70 transition-opacity bg-transparent border-none cursor-pointer p-0">
                     Acknowledge
                   </button>
                 </div>
@@ -381,16 +381,16 @@ function SupervisorQueue({ findings, signOffRequests, setSignOffRequests, logAct
   return (
     <div className="flex-1 overflow-y-auto page-rise border-r border-rule">
       <div className="px-6 pt-5">
-        <div className="font-body text-micro text-muted mb-3">Act now · {actNow.length} item{actNow.length !== 1 ? 's' : ''}</div>
+        <div className="font-body text-label text-muted mb-3">Act now · {actNow.length} item{actNow.length !== 1 ? 's' : ''}</div>
         {actNow.map((f, i) => (
           <div key={f.id} className="v2-row-in bg-stone2 border border-rule border-l-[3px] border-l-danger mb-2 px-4 py-3.5"
             style={{ animationDelay: `${i * 50}ms` }}>
             <div className="flex items-center gap-2 mb-1.5">
-              <span className="font-body text-micro px-1.5 py-0.5 text-danger bg-danger/[0.078] border border-danger/20">Blocking</span>
-              <span className="font-body text-micro text-muted">{f.source}</span>
+              <span className="font-body text-label px-1.5 py-0.5 text-danger bg-danger/[0.078] border border-danger/20">Blocking</span>
+              <span className="font-body text-label text-muted">{f.source}</span>
             </div>
             <div className="font-body font-medium text-body text-ink leading-[1.4] mb-2">{f.title}</div>
-            <div className="font-body text-micro text-muted leading-[1.5] mb-3">{f.desc}</div>
+            <div className="font-body text-label text-muted leading-[1.5] mb-3">{f.desc}</div>
             <div className="flex items-center gap-2">
               <Btn variant="primary" onClick={() => logActivity({ actor: supervisor, action: `Resolved: ${f.title}`, item: f.id, type: 'intervention' })}>Mark resolved</Btn>
               <Btn variant="secondary" onClick={() => logActivity({ actor: supervisor, action: `Escalated: ${f.title}`, item: f.id, type: 'escalation' })}>Escalate</Btn>
@@ -399,12 +399,12 @@ function SupervisorQueue({ findings, signOffRequests, setSignOffRequests, logAct
         ))}
         {watchItems.length > 0 && (
           <div className="mt-4">
-            <div className="font-body text-micro text-muted mb-3">Watch · {watchItems.length} items</div>
+            <div className="font-body text-label text-muted mb-3">Watch · {watchItems.length} items</div>
             {watchItems.map((f, i) => (
               <div key={f.id} className="v2-row-in flex items-start gap-3 bg-stone2 border border-rule border-l-[3px] border-l-warn mb-1.5 px-4 py-3"
                 style={{ animationDelay: `${(actNow.length + i) * 50}ms` }}>
                 <div className="flex-1">
-                  <div className="font-body text-micro text-muted mb-[3px]">{f.source}</div>
+                  <div className="font-body text-label text-muted mb-[3px]">{f.source}</div>
                   <div className="font-body font-medium text-label text-ink">{f.title}</div>
                 </div>
               </div>
@@ -414,14 +414,14 @@ function SupervisorQueue({ findings, signOffRequests, setSignOffRequests, logAct
       </div>
       <Divider />
       <div className="px-6 pt-[18px] pb-6">
-        <div className="font-body text-micro text-muted mb-3">Sign-off requested · {signOffRequests.length} pending</div>
+        <div className="font-body text-label text-muted mb-3">Sign-off requested · {signOffRequests.length} pending</div>
         {signOffRequests.length === 0 ? (
           <p className="font-body text-label text-muted">No pending sign-offs — operators are good to go.</p>
         ) : signOffRequests.map((req, i) => (
           <div key={req.id} className="v2-row-in bg-stone2 border border-rule border-l-[3px] border-l-ok mb-2 px-4 py-3.5"
             style={{ animationDelay: `${i * 50}ms` }}>
             <div className="font-body font-medium text-body text-ink mb-1">{req.operator}</div>
-            <div className="font-body text-micro text-muted mb-3">{req.finding} · {req.station} · {req.requestedAt}</div>
+            <div className="font-body text-label text-muted mb-3">{req.finding} · {req.station} · {req.requestedAt}</div>
             <div className="flex items-center gap-2">
               <Btn variant="primary" onClick={() => handleApprove(req)}>Approve</Btn>
               <Btn variant="secondary" onClick={() => handleDecline(req)}>Decline</Btn>
@@ -448,23 +448,23 @@ function SupervisorTeam({ taskAssignments, escalatedToDirector, setEscalatedToDi
   return (
     <div className="w-[304px] flex-shrink-0 overflow-y-auto bg-stone flex flex-col">
       <div className="px-5 pt-5 pb-4">
-        <div className="font-body text-micro text-muted mb-3">My team · {crew.length} operators</div>
+        <div className="font-body text-label text-muted mb-3">My team · {crew.length} operators</div>
         <div className="border border-rule overflow-hidden">
           {crew.map((op, i) => <OperatorRow key={op.name} op={op} index={i} total={crew.length} />)}
         </div>
       </div>
       <Divider />
       <div className="px-5 pt-[18px] pb-4">
-        <div className="font-body text-micro text-muted mb-3">Task assignments · {allTasks.length}</div>
+        <div className="font-body text-label text-muted mb-3">Task assignments · {allTasks.length}</div>
         {allTasks.length === 0 ? (
           <p className="font-body text-label text-muted">No tasks assigned this shift.</p>
         ) : allTasks.map((t, i) => (
           <div key={t.id} className={`flex items-start gap-2.5 py-[9px] ${i < allTasks.length - 1 ? 'border-b border-rule2' : ''}`}>
             <div className="flex-1">
               <div className={`font-body font-medium text-label ${t.done ? 'text-ok' : 'text-ink'}`}>{t.operator}</div>
-              <div className="font-body text-micro text-muted">{t.label}</div>
+              <div className="font-body text-label text-muted">{t.label}</div>
             </div>
-            <span className="font-body text-micro flex-shrink-0 text-muted">{t.dueTime}</span>
+            <span className="font-body text-label flex-shrink-0 text-muted">{t.dueTime}</span>
           </div>
         ))}
       </div>
@@ -561,17 +561,17 @@ export default function ShiftIQV2({ score = 78, lineLabel = 'Line 4 · AM Shift'
               </div>
               <div className="flex items-center gap-1.5 mt-2">
                 <div className="w-[5px] h-[5px] rounded-full flex-shrink-0" style={{ background: riskC }} />
-                <span className="font-body text-micro" style={{ color: riskC }}>{sLabel(score)}</span>
+                <span className="font-body text-label" style={{ color: riskC }}>{sLabel(score)}</span>
                 <button type="button" onClick={() => setScoreOverlayOpen(true)}
                   className="flex items-center gap-1 hover:opacity-70 transition-opacity ml-1.5 bg-transparent border-none cursor-pointer p-0">
                   <Brain size={10} className="text-muted" />
-                  <span className="font-body text-micro text-muted">Why?</span>
+                  <span className="font-body text-label text-muted">Why?</span>
                 </button>
               </div>
             </div>
 
             <div className="border-l border-rule pl-7 max-w-[400px] flex-1">
-              <p className="font-display text-base text-ink leading-relaxed m-0 mb-3">{statement}</p>
+              <p className="font-display text-sub text-ink leading-relaxed m-0 mb-3">{statement}</p>
               <div className="flex items-center gap-5">
                 <div>
                   <span className="font-body text-label text-muted">Scan interval</span>
@@ -589,7 +589,7 @@ export default function ShiftIQV2({ score = 78, lineLabel = 'Line 4 · AM Shift'
                 <polyline points="0,30 15,25 30,21 45,18 60,14 75,10 90,7" fill="none" stroke={riskC} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                 <circle cx="90" cy="7" r="3" fill={riskC} />
               </svg>
-              <span className="font-body text-micro text-muted block text-center mt-1">54 → {score} · 30 min · 3 signals</span>
+              <span className="font-body text-label text-muted block text-center mt-1">54 → {score} · 30 min · 3 signals</span>
             </div>
           </div>
 
@@ -620,9 +620,9 @@ export default function ShiftIQV2({ score = 78, lineLabel = 'Line 4 · AM Shift'
             <div className="flex-1 overflow-y-auto border-r border-rule">
               <div className="px-6 pt-5 pb-4">
                 <div className="flex items-center justify-between mb-3">
-                  <div className="font-body text-micro text-muted">Intelligence · {richFindings.length} findings</div>
+                  <div className="font-body text-label text-muted">Intelligence · {richFindings.length} findings</div>
                   <button type="button" onClick={() => setTimelineOpen(true)}
-                    className="font-body text-micro text-muted hover:opacity-70 transition-opacity bg-transparent border-none cursor-pointer p-0">
+                    className="font-body text-label text-muted hover:opacity-70 transition-opacity bg-transparent border-none cursor-pointer p-0">
                     Agent timeline
                   </button>
                 </div>
@@ -644,7 +644,7 @@ export default function ShiftIQV2({ score = 78, lineLabel = 'Line 4 · AM Shift'
 
             <div className="w-[304px] flex-shrink-0 overflow-y-auto bg-stone flex flex-col">
               <div className="px-5 pt-5 pb-4">
-                <div className="font-body text-micro text-muted mb-3">Crew · {crew.length} operators</div>
+                <div className="font-body text-label text-muted mb-3">Crew · {crew.length} operators</div>
                 <div className="border border-rule overflow-hidden">
                   {crew.map((op, i) => <OperatorRow key={op.name} op={op} index={i} total={crew.length} />)}
                 </div>

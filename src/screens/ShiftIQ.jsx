@@ -39,7 +39,7 @@ const FLAG_REASONS = [
 function ScoreBadge({ score }) {
  return (
   <span
-   className={`display-num text-hero leading-none ${riskColorClass(score)}`}
+   className={`display-num text-score leading-none ${riskColorClass(score)}`}
    aria-label={`Risk score ${score} — ${riskLabel(score)}`}
   >{score}</span>
  )
@@ -57,7 +57,7 @@ function AgentTimeline({ timeline, sparkline, score }) {
   <div className="flex items-start justify-between gap-3">
    <div>
     <div className="font-body text-muted text-label mb-3">Line 4 · AM shift</div>
-    <div className={`display-num text-hero leading-none ${scoreTextColor}`}>{score}</div>
+    <div className={`display-num text-score leading-none ${scoreTextColor}`}>{score}</div>
     <div className={`font-body font-medium text-label mt-1.5 ${scoreTextColor}`}>{zone}</div>
    </div>
    <div className="pt-5 flex-shrink-0">
@@ -247,7 +247,7 @@ function OperatorPanel({ name, onClose, onSelectOperator }) {
  <div className="flex items-center gap-3 px-4 py-3 border-b border-rule2 bg-stone2 flex-shrink-0" style={{ borderTop:'3px solid var(--color-danger)' }}>
  <PersonAvatar name={name} size={32} />
  <div className="flex-1 min-w-0">
- <div className="font-body font-medium text-ink text-base">{name}</div>
+ <div className="font-body font-medium text-ink text-sub">{name}</div>
  <div className="font-body text-muted text-label">{meta.station}</div>
  </div>
  <button type="button" onClick={handleClose} aria-label="Close operator panel" className="text-muted hover:text-ink transition-colors duration-100 ease-standard p-1 cursor-pointer">
@@ -474,7 +474,7 @@ function Finding({ f, onAct, onDismiss, onDelegate, dismissed }) {
         {/* Body: title + desc + evidence */}
         <div className="px-4 pb-3 space-y-1.5">
          <div className="flex items-start justify-between gap-3">
-          <p className="font-body text-ink font-medium text-base leading-snug">{f.title}</p>
+          <p className="font-body text-ink font-medium text-sub leading-snug">{f.title}</p>
           {f.recurring && (
            <Link to={`/capa?finding=${f.id}`} className="flex-shrink-0 mt-px" title="Open root cause investigation in CAPA">
             <StatusPill tone="warn"><RefreshCw size={9} strokeWidth={2} className="inline mr-1 -mt-px" />Recurring</StatusPill>
@@ -731,7 +731,7 @@ function TriageCard({ urgency, resolved, resolvedLabel, header, children, footer
      <StatusPill tone={urgencyTone}>{urgencyLabel}</StatusPill>
     </div>
     <div className="px-4 pb-3 space-y-1.5">
-     <p className="font-body text-ink font-medium text-base leading-snug">{header}</p>
+     <p className="font-body text-ink font-medium text-sub leading-snug">{header}</p>
      {children}
     </div>
     {footer && (
@@ -773,7 +773,7 @@ function PrepareView({ forecast = [], onStartShift }) {
    {/* Header */}
    <div className="flex-shrink-0 flex items-center gap-4 px-5 py-3 bg-stone2 border-b border-rule2">
     <div>
-     <div className="font-body text-micro text-muted">T−30 · Line 4 · AM Shift · checked 05:45</div>
+     <div className="font-body text-label text-muted">T−30 · Line 4 · AM Shift · checked 05:45</div>
     </div>
     <div className="ml-auto">
      <StatusPill tone={allDone ? 'ok' : 'warn'}>
@@ -887,7 +887,7 @@ function PrepareView({ forecast = [], onStartShift }) {
       </div>
       {onStartShift && (
        <button type="button" onClick={onStartShift}
-        className="mt-4 px-5 py-2.5 rounded-btn font-body font-medium text-base bg-ok/10 text-ok border border-ok/30 hover:bg-ok/20 cursor-pointer transition-colors">
+        className="mt-4 px-5 py-2.5 rounded-btn font-body font-medium text-sub bg-ok/10 text-ok border border-ok/30 hover:bg-ok/20 cursor-pointer transition-colors">
         Start shift →
        </button>
       )}
@@ -935,7 +935,7 @@ function SleepPickerDropdown({ triggerRef, onClose, onSelect }) {
      <div className="px-4 pt-3 pb-2">
       <div className="flex items-center gap-1.5 pb-2 mb-1 border-b border-rule2">
        <Moon size={10} strokeWidth={2} className="text-muted" />
-       <span className="font-body text-micro text-muted">Sleep mode</span>
+       <span className="font-body text-label text-muted">Sleep mode</span>
       </div>
       {[
        { label: '15 minutes', value: 15 },
@@ -1107,8 +1107,8 @@ export default function ShiftIQ() {
          <div className={`font-body font-medium text-label leading-none ${isActive ? 'text-ink' : seg.isNow ? 'text-ok' : 'text-muted'}`}>
           {seg.label}
          </div>
-         <div className="font-body text-micro text-muted/70 leading-none">{seg.time}</div>
-         <div className={`font-body text-micro leading-snug text-center mt-0.5 ${isActive ? 'text-muted' : 'text-muted/50'}`}>
+         <div className="font-body text-label text-muted/70 leading-none">{seg.time}</div>
+         <div className={`font-body text-label leading-snug text-center mt-0.5 ${isActive ? 'text-muted' : 'text-muted/50'}`}>
           {seg.status}
          </div>
          {isActive && <div className="absolute bottom-0 left-0 right-0 h-px bg-signal" />}
@@ -1120,13 +1120,13 @@ export default function ShiftIQ() {
      <div className="flex-shrink-0 flex items-center gap-1 px-2 border-l border-rule2">
       {hasSecondary && (
        <button type="button" onClick={() => setActiveTab('fleet')}
-        className={`font-body text-micro px-2 py-1.5 transition-colors ${activeTab === 'fleet' ? 'text-ink bg-stone3' : 'text-muted hover:text-ink'}`}>
+        className={`font-body text-label px-2 py-1.5 transition-colors ${activeTab === 'fleet' ? 'text-ink bg-stone3' : 'text-muted hover:text-ink'}`}>
         Fleet
        </button>
       )}
       {workerMode === 'hybrid' && (
        <button type="button" onClick={() => setActiveTab('allocation')}
-        className={`font-body text-micro px-2 py-1.5 transition-colors ${activeTab === 'allocation' ? 'text-ink bg-stone3' : 'text-muted hover:text-ink'}`}>
+        className={`font-body text-label px-2 py-1.5 transition-colors ${activeTab === 'allocation' ? 'text-ink bg-stone3' : 'text-muted hover:text-ink'}`}>
         Alloc
        </button>
       )}

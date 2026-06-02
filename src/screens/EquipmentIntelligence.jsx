@@ -22,7 +22,7 @@ function RULStrip({ eq }) {
           <TrendingDown size={10} strokeWidth={2} className={textColor} aria-hidden="true" />
           <span className="font-body text-label font-medium text-muted">Remaining useful life</span>
         </div>
-        <span className={`display-num text-base tabular-nums ${textColor}`}>{eq.rul}{eq.rulUnit === 'hours' ? 'h' : eq.rulUnit}</span>
+        <span className={`display-num text-sub tabular-nums ${textColor}`}>{eq.rul}{eq.rulUnit === 'hours' ? 'h' : eq.rulUnit}</span>
       </div>
       <div className="relative h-2 bg-rule2 overflow-hidden">
         {/* Failure risk zone */}
@@ -35,12 +35,12 @@ function RULStrip({ eq }) {
         <div className="absolute top-0 h-full w-0.5 bg-ink/50" style={{ left: `${pct}%` }} />
       </div>
       <div className="flex items-center justify-between mt-1.5">
-        <span className="font-body text-micro text-muted">Now</span>
-        <span className="font-body text-micro text-danger">Failure risk zone → 12h</span>
-        <span className="font-body text-micro text-muted">Normal lifecycle → {maxH}h</span>
+        <span className="font-body text-label text-muted">Now</span>
+        <span className="font-body text-label text-danger">Failure risk zone → 12h</span>
+        <span className="font-body text-label text-muted">Normal lifecycle → {maxH}h</span>
       </div>
       {eq.rulTrend === 'declining' && (
-        <div className="font-body text-micro text-warn mt-1">Trend: declining · was {eq.rul + 8}h at shift start → {eq.rul}h now</div>
+        <div className="font-body text-label text-warn mt-1">Trend: declining · was {eq.rul + 8}h at shift start → {eq.rul}h now</div>
       )}
     </div>
   )
@@ -65,7 +65,7 @@ function ProductionImpactCard({ eq }) {
         ].map(({ label, val, color }) => (
           <div key={label} className="bg-stone px-3 py-2.5 text-center">
             <div className="font-body text-muted text-label mb-0.5">{label}</div>
-            <div className={`display-num text-base tabular-nums ${color}`}>{val}</div>
+            <div className={`display-num text-sub tabular-nums ${color}`}>{val}</div>
           </div>
         ))}
       </div>
@@ -123,7 +123,7 @@ function MaintenanceWindowOptimizer({ eq, onSchedule }) {
                     <div className="font-body text-muted text-label mt-0.5">{w.note}</div>
                   </div>
                   <div className="flex-shrink-0 text-right">
-                    <div className={`display-num text-base tabular-nums ${w.confidence >= 85 ? 'text-ok' : 'text-warn'}`}>{w.confidence}%</div>
+                    <div className={`display-num text-sub tabular-nums ${w.confidence >= 85 ? 'text-ok' : 'text-warn'}`}>{w.confidence}%</div>
                     <div className="font-body text-muted text-label">conf.</div>
                   </div>
                 </div>
@@ -232,7 +232,7 @@ function BatchTempChart({ eqId }) {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex-shrink-0 px-5 py-2.5 border-b border-rule2 bg-stone2 flex items-center justify-between">
+      <div className="flex-shrink-0 px-5 py-2 border-b border-rule2 bg-stone2 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <span className="font-body text-muted text-label">Batch temperature · last 30 days</span>
           <span className="font-body text-muted text-label">Day {startDay}–{d.batchDay}</span>
@@ -270,9 +270,9 @@ function BatchTempChart({ eqId }) {
             <span className="display-num text-label font-bold" style={{ color: currentColor }}>{current.toFixed(1)}{d.unit}</span>
             <span className="font-body text-muted text-label ml-1">{trend >= 0 ? '↑' : '↓'} {Math.abs(trend).toFixed(1)} vs yesterday</span>
           </div>
-          <div className="font-body text-muted text-micro">Day {startDay}</div>
+          <div className="font-body text-muted text-label">Day {startDay}</div>
         </div>
-        <div className="font-body text-muted text-micro">Day {d.batchDay} · today</div>
+        <div className="font-body text-muted text-label">Day {d.batchDay} · today</div>
       </div>
 
       {d.note && (
@@ -321,7 +321,7 @@ function SPCChart({ eqId }) {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex-shrink-0 px-5 py-2.5 border-b border-rule2 bg-stone2 flex items-center justify-between">
+      <div className="flex-shrink-0 px-5 py-2 border-b border-rule2 bg-stone2 flex items-center justify-between">
         <div>
           <span className="font-body text-muted text-label">SPC · {param}</span>
         </div>
@@ -351,8 +351,8 @@ function SPCChart({ eqId }) {
       </div>
       {/* X axis labels */}
       <div className="flex-shrink-0 px-5 pb-2 flex justify-between">
-        <span className="font-body text-muted text-micro">Run 1</span>
-        <span className="font-body text-muted text-micro">Run {points.length}</span>
+        <span className="font-body text-muted text-label">Run 1</span>
+        <span className="font-body text-muted text-label">Run {points.length}</span>
       </div>
     </div>
   )
@@ -369,7 +369,7 @@ function RecipePanel({ recipeId }) {
           <thead>
             <tr className="border-b border-rule2 bg-stone2">
               {['Parameter', 'LCL', 'Target', 'UCL'].map(h => (
-                <th key={h} className="px-4 py-1.5 text-left font-body text-muted text-micro">{h}</th>
+                <th key={h} className="px-4 py-1.5 text-left font-body text-muted text-label">{h}</th>
               ))}
             </tr>
           </thead>
@@ -413,7 +413,7 @@ function RunHistory({ eqId }) {
             <div className="text-right flex-shrink-0">
               <StatusPill tone={r.outcome === 'in-progress' ? 'signal' : r.outcome === 'pending-qp' ? 'warn' : r.outcome === 'released' ? 'ok' : 'danger'}>{oc.label}</StatusPill>
               {r.spcViolations > 0 && (
-                <div className="font-body text-warn text-micro">{r.spcViolations} SPC violation{r.spcViolations > 1 ? 's' : ''}</div>
+                <div className="font-body text-warn text-label">{r.spcViolations} SPC violation{r.spcViolations > 1 ? 's' : ''}</div>
               )}
             </div>
           </div>

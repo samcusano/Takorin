@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { compliancePolicies, multiRegulatoryCoverage } from '../data/compliance'
-import { AlertTriangle, ArrowRight, ChevronRight, CheckCircle2, XCircle, AlertCircle } from 'lucide-react'
-import { SceneHeader, StatusPill, Btn, SlidePanel, AnimatedScore, Tabs } from '../components/UI'
+import { CheckCircle2, XCircle, AlertCircle, User, Calendar, Scale, Eye, FileClock, AlarmClock, ShieldAlert } from 'lucide-react'
+import { SceneHeader, StatusPill, Btn, SlidePanel, AnimatedScore } from '../components/UI'
 
 // ─── FDA Inspection Simulation data ──────────────────────────────────────────
 
@@ -18,9 +18,9 @@ const AUDIT_CHECKS = [
 ]
 
 const RESULT_CFG = {
-  pass:    { label: 'Pass',    icon: CheckCircle2, color: 'text-ok',     bg: 'bg-ok/[0.03]',     border: 'border-l-ok',     dot: 'bg-ok' },
-  fail:    { label: 'Fail',    icon: XCircle,      color: 'text-danger',  bg: 'bg-danger/[0.03]', border: 'border-l-danger', dot: 'bg-danger' },
-  'at-risk': { label: 'At risk', icon: AlertCircle, color: 'text-warn',  bg: 'bg-warn/[0.02]',   border: 'border-l-warn',   dot: 'bg-warn' },
+  pass:      { label: 'Pass',    icon: CheckCircle2, color: 'text-ok',    bg: 'bg-ok/[0.03]',     border: 'border-l-ok'     },
+  fail:      { label: 'Fail',    icon: XCircle,      color: 'text-danger', bg: 'bg-danger/[0.03]', border: 'border-l-danger' },
+  'at-risk': { label: 'At risk', icon: AlertCircle,  color: 'text-warn',  bg: 'bg-warn/[0.02]',   border: 'border-l-warn'   },
 }
 
 function AuditSimPanel({ onClose }) {
@@ -37,7 +37,6 @@ function AuditSimPanel({ onClose }) {
       onClose={onClose}
       footer={<Btn variant="secondary" onClick={onClose}>Close</Btn>}
     >
-      {/* Score header */}
       <div className="flex items-center gap-4 px-4 py-4 bg-stone2 border border-rule2 mb-4">
         <div className={`display-num text-score leading-none ${scoreColor}`}><AnimatedScore value={score} suffix="%" effect="glow" hero /></div>
         <div className="flex-1 min-w-0">
@@ -47,8 +46,6 @@ function AuditSimPanel({ onClose }) {
           <div className="font-body text-muted text-label mt-0.5">{passes} of {total} checks pass · {total - passes} require action before inspection</div>
         </div>
       </div>
-
-      {/* Checks */}
       <div className="space-y-2">
         {AUDIT_CHECKS.map((check, i) => {
           const cfg = RESULT_CFG[check.result]
@@ -64,7 +61,7 @@ function AuditSimPanel({ onClose }) {
                   </div>
                   <p className="font-body text-muted text-label leading-relaxed">{check.detail}</p>
                   {check.remediation && (
-                    <p className={`font-body text-label mt-1 leading-snug ${cfg.color}`}>→ {check.remediation}</p>
+                    <p className={`font-body text-body mt-1 leading-snug ${cfg.color}`}>→ {check.remediation}</p>
                   )}
                 </div>
               </div>
@@ -76,12 +73,12 @@ function AuditSimPanel({ onClose }) {
   )
 }
 
+// ─── Policy selector helpers ──────────────────────────────────────────────────
+
 const STATUS_LABEL  = { active: 'Active', inactive: 'Inactive', monitoring: 'Monitoring' }
 const STATUS_COLOR  = { active: 'text-ok', inactive: 'text-muted', monitoring: 'text-signal' }
 const STATUS_DOT    = { active: 'bg-ok',   inactive: 'bg-rule2',   monitoring: 'bg-signal'  }
 const STATUS_BORDER = { active: 'border-l-ok', inactive: 'border-l-rule2', monitoring: 'border-l-signal' }
-
-// ─── Section header ───────────────────────────────────────────────────────────
 
 function PolicySectionHeader({ label, count }) {
   return (
@@ -93,27 +90,24 @@ function PolicySectionHeader({ label, count }) {
   )
 }
 
-// ─── Framework row ────────────────────────────────────────────────────────────
-
 function FrameworkRow({ f, index = 0 }) {
   const border = STATUS_BORDER[f.status] ?? 'border-l-rule2'
-  const color  = STATUS_COLOR[f.status]  ?? 'text-muted'
   return (
     <div className={`flex items-start gap-3 px-5 py-3 border-b border-rule2 last:border-0 border-l-2 row-in ${border} ${f.status === 'inactive' ? 'opacity-40' : ''}`}
       style={{ animationDelay: `${index * 50}ms` }}>
       <div className="flex-1 min-w-0">
         <div className="flex items-baseline gap-2 flex-wrap mb-0.5">
           <span className="font-body font-medium text-ink text-body">{f.name}</span>
-          <span className="font-body text-micro text-muted bg-stone3 px-1.5 py-0.5 leading-none">{f.code}</span>
+          <span className="font-body text-label text-muted bg-stone3 px-1.5 py-0.5 leading-none">{f.code}</span>
         </div>
         <div className="font-body text-muted text-label leading-snug">{f.description}</div>
       </div>
-      <StatusPill tone={f.status === 'active' ? 'ok' : f.status === 'inactive' ? 'muted' : 'signal'} className="flex-shrink-0">{STATUS_LABEL[f.status] ?? f.status}</StatusPill>
+      <StatusPill tone={f.status === 'active' ? 'ok' : f.status === 'inactive' ? 'muted' : 'signal'} className="flex-shrink-0">
+        {STATUS_LABEL[f.status] ?? f.status}
+      </StatusPill>
     </div>
   )
 }
-
-// ─── Evidence row ─────────────────────────────────────────────────────────────
 
 function EvidenceRow({ e, index = 0 }) {
   return (
@@ -131,48 +125,9 @@ function EvidenceRow({ e, index = 0 }) {
   )
 }
 
-// ─── Escalation strip ─────────────────────────────────────────────────────────
-// Horizontal, sits below the SceneHeader. Tone escalates left → right.
+// ─── Accountability register data ─────────────────────────────────────────────
 
-function escalationTone(i, total) {
-  if (i === total - 1) return { dot: 'bg-danger', num: 'text-stone', bg: 'bg-danger/[0.04]', threshold: 'text-danger' }
-  if (i > 0 || total === 2) return { dot: 'bg-warn',   num: 'text-stone', bg: '',                threshold: 'text-warn'   }
-  return                          { dot: 'bg-stone3',  num: 'text-muted', bg: '',                threshold: 'text-muted'  }
-}
-
-function EscalationStrip({ steps }) {
-  return (
-    <div className="flex-shrink-0 flex items-stretch border-b border-rule2">
-      <div className="px-4 items-center border-r border-rule2 flex-shrink-0">
-        <span className="font-body text-micro text-muted mb-1.5">Escalation</span>
-      </div>
-      <div className="flex flex-1 items-stretch gap-0">
-        {steps.flatMap((s, i) => {
-          const t = escalationTone(i, steps.length)
-          const isLast = i === steps.length - 1
-          const cell = (
-            <div key={`step-${i}`} className={`flex-1 min-w-0 px-3 py-2.5 ${isLast ? t.bg : 'bg-stone2'}`}>
-              <div className={`font-body text-micro mb-0.5 ${t.threshold}`}>{s.threshold}</div>
-              <div className="font-body text-ink text-label leading-snug">{s.action}</div>
-              <div className="font-body text-muted text-micro mt-0.5">{s.channel}</div>
-            </div>
-          )
-          if (isLast) return [cell]
-          return [
-            cell,
-            <div key={`arrow-${i}`} className="flex items-center px-1 text-rule2 flex-shrink-0">
-              <ArrowRight size={10} />
-            </div>,
-          ]
-        })}
-      </div>
-    </div>
-  )
-}
-
-// ─── Risk Exposure data + component ──────────────────────────────────────────
-
-const fmtRisk = n => n >= 1000 ? `$${Math.round(n / 1000)}K` : n > 0 ? `$${n}` : '—'
+const fmtRisk = n => n >= 1000 ? `$${Math.round(n / 1000)}K` : n > 0 ? `$${n}` : null
 
 const RISK_FINDINGS = [
   {
@@ -182,27 +137,20 @@ const RISK_FINDINGS = [
     requirement: 'Corrective and preventive actions must be completed within established timeframes',
     severity: 'critical',
     auditFinding: 'CAPA-2604-001 overdue 7 days — auditor will flag as systemic CAPA failure requiring a written response within 15 days of inspection close',
-    recallRisk: 0,
-    contractRisk: 15000,
     closurePath: 'Close CAPA-2604-001 within 48h · submit evidence package to CAPA Engine',
-    daysToClose: 2,
-    assignee: 'QA Director',
-    link: '/capa', linkLabel: 'CAPA',
+    recallRisk: 0, contractRisk: 15000, daysToClose: 2,
+    assignee: 'QA Director', link: '/capa', documented: 'May 26',
   },
   {
     id: 'rf-fsma',
     title: 'FSMA 204 — lot traceability chain incomplete',
     rule: 'FSMA 204 (FDA Food Traceability Rule)',
-    requirement: 'Complete traceability chain required from supplier through finished product lot',
+    requirement: 'Complete traceability chain required from supplier through finished product lot — retrievable within 24 hours',
     severity: 'critical',
     auditFinding: 'TS-8811 naming conflict across MES, ERP, and supplier portal breaks lot chain at 2 handoffs. Auditor will require remediation plan and may place a hold on affected production runs.',
-    recallRisk: 85000,
-    recallProbability: 'high probability if traceability gap persists',
-    contractRisk: 40000,
     closurePath: 'Resolve TS-8811 conflict in Data Readiness · rebuild affected lot chain before inspection',
-    daysToClose: 5,
-    assignee: 'Plant Director',
-    link: '/readiness', linkLabel: 'Data Quality',
+    recallRisk: 85000, contractRisk: 40000, daysToClose: 5,
+    assignee: 'Plant Director', link: '/readiness', documented: 'Jun 2',
   },
   {
     id: 'rf-coa',
@@ -211,122 +159,134 @@ const RISK_FINDINGS = [
     requirement: 'Certificate of Analysis required before ingredient use in production',
     severity: 'moderate',
     auditFinding: 'ConAgra TS-8811 COA pending with production scheduled tomorrow. If production ran without COA, auditor will classify as a corrective action item with 30-day response window.',
-    recallRisk: 32000,
-    recallProbability: 'moderate probability if production proceeds without COA',
-    contractRisk: 0,
     closurePath: 'Delay production until COA received · document hold decision in supplier log',
-    daysToClose: 1,
-    assignee: 'Procurement Lead',
-    link: '/supplier', linkLabel: 'Supplier IQ',
+    recallRisk: 32000, contractRisk: 0, daysToClose: 1,
+    assignee: 'Procurement Lead', link: '/supplier', documented: 'Jun 2',
   },
   {
     id: 'rf-cert',
     title: 'Personnel Certifications — 2 expiring within inspection window',
     rule: 'SQF Code 2.8.3',
-    requirement: 'Operators must maintain current certifications for assigned production roles',
+    requirement: 'Operators must maintain current certifications for all assigned production roles',
     severity: 'moderate',
     auditFinding: 'Kowalski L4 expires Jun 1 · Okonkwo L2 expires Jun 15 — both within the 18-day inspection window. Auditor will request full certification roster for all active lines.',
-    recallRisk: 0,
-    contractRisk: 8000,
     closurePath: 'Schedule both renewal sessions this week · confirm enrollment before Jun 1',
-    daysToClose: 7,
-    assignee: 'HR / Line Supervisor',
+    recallRisk: 0, contractRisk: 8000, daysToClose: 7,
+    assignee: 'HR / Line Supervisor', link: '/operator', documented: 'May 28',
   },
 ]
 
-function RiskExposure() {
-  const critical      = RISK_FINDINGS.filter(f => f.severity === 'critical')
-  const moderate      = RISK_FINDINGS.filter(f => f.severity === 'moderate')
+// ─── Accountability Register — 2-column cards ─────────────────────────────────
+
+function AccountabilityRegister() {
   const totalRecall   = RISK_FINDINGS.reduce((s, f) => s + f.recallRisk, 0)
   const totalContract = RISK_FINDINGS.reduce((s, f) => s + f.contractRisk, 0)
 
   return (
-    <div className="flex-1 overflow-y-auto">
-
-      {/* Summary strip — dominant Warning Letter Risk, secondary row */}
-      <div className="flex-shrink-0 border-b border-rule2">
-        <div className={`flex items-center gap-6 px-5 py-4 border-b border-rule2 ${critical.length > 0 ? 'bg-danger/[0.04]' : ''}`}>
-          <div className={`display-num text-score leading-none tabular-nums ${critical.length > 0 ? 'text-danger' : 'text-ok'}`}>{critical.length}</div>
-          <div>
-            <div className="font-body font-medium text-ink text-body">Warning Letter risk{critical.length !== 1 ? 's' : ''}</div>
-            <div className="font-body text-muted text-label mt-0.5">if audited today</div>
+    <div className="flex-1 flex flex-col overflow-hidden">
+      {/* Record header */}
+      <div className="flex-shrink-0 border-b border-rule2 bg-stone2 px-6 py-4 flex items-center justify-between">
+        <div>
+          <div className="font-body text-label text-muted">Accountability record as of Jun 2, 2026</div>
+          <div className="font-body font-bold text-body text-ink mt-0.5">
+            FDA / FSMA 204 · {RISK_FINDINGS.length} open items · Jun 3 inspection
           </div>
         </div>
-        <div className="flex">
-          {[
-            { label: 'Observation risk',  value: String(moderate.length),  tone: moderate.length > 0 ? 'text-warn'   : 'text-ok', sub: 'flagged for follow-up'    },
-            { label: 'Recall exposure',   value: fmtRisk(totalRecall),     tone: totalRecall > 0   ? 'text-danger' : 'text-ok', sub: 'estimated recall cost'    },
-            { label: 'Contract risk',     value: fmtRisk(totalContract),   tone: totalContract > 0 ? 'text-warn'   : 'text-ok', sub: 'risk of losing contracts' },
-          ].map((cell, i) => (
-            <div key={i} className="flex-1 px-5 py-3 border-r border-rule2 last:border-r-0">
-              <div className="font-body text-muted text-label mb-1">{cell.label}</div>
-              <div className={`display-num text-head font-bold leading-none tabular-nums ${cell.tone}`}>{cell.value}</div>
-              <div className="font-body text-muted text-label mt-0.5">{cell.sub}</div>
+        <div className="flex items-center gap-6">
+          {totalRecall > 0 && (
+            <div className="text-right">
+              <div className="display-num text-metric font-bold text-danger tabular-nums leading-none">{fmtRisk(totalRecall)}</div>
+              <div className="font-body text-label text-danger">recall exposure</div>
             </div>
-          ))}
+          )}
+          {totalContract > 0 && (
+            <div className="text-right">
+              <div className="display-num text-metric font-bold text-warn tabular-nums leading-none">{fmtRisk(totalContract)}</div>
+              <div className="font-body text-label text-warn">contract risk</div>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Scenario framing */}
-      <div className="px-5 py-3 border-b border-rule2 bg-stone2">
-        <span className="font-body text-warn text-label font-medium">If audited today — </span>
-        <span className="font-body text-muted text-label">2 findings require immediate written response · 2 would be flagged with a 15-day remediation window</span>
-      </div>
+      {/* Card grid */}
+      <div className="flex-1 overflow-y-auto p-6">
+        <div className="grid grid-cols-1 gap-4">
+          {RISK_FINDINGS.map(f => {
+            const isCrit      = f.severity === 'critical'
+            const recallStr   = fmtRisk(f.recallRisk)
+            const contractStr = fmtRisk(f.contractRisk)
+            const closeColor  = f.daysToClose <= 2 ? 'text-danger' : f.daysToClose <= 7 ? 'text-warn' : 'text-muted'
+            return (
+              <Link key={f.id} to={f.link}
+                className="block bg-stone border border-rule2 overflow-hidden hover:bg-stone2 transition-colors">
+                <div className={`h-[3px] w-full ${isCrit ? 'bg-danger' : 'bg-warn'}`} />
 
-      {/* Finding cards */}
-      <div className="p-5 space-y-3">
-        {RISK_FINDINGS.map(f => {
-          const sev = f.severity === 'critical'
-            ? { accentBar: 'bg-danger', label: 'Warning Letter Risk', tone: 'danger' }
-            : { accentBar: 'bg-warn',   label: 'Observation Risk',    tone: 'warn'   }
-          return (
-            <article key={f.id} className="bg-stone border border-rule overflow-hidden">
-              <div className={`h-[3px] w-full ${sev.accentBar}`} />
-
-              {/* Header: severity pill + financial exposure */}
-              <div className="flex items-center justify-between px-4 pt-3 pb-1.5">
-                <StatusPill tone={sev.tone}>{sev.label}</StatusPill>
-                <div className="flex items-center gap-4">
-                  {f.recallRisk > 0 && <span className="font-body text-label tabular-nums text-danger font-medium">{fmtRisk(f.recallRisk)} recall</span>}
-                  {f.contractRisk > 0 && <span className="font-body text-label tabular-nums text-warn font-medium">{fmtRisk(f.contractRisk)} contract</span>}
+                {/* Zone 1: Severity + urgency clock */}
+                <div className="flex items-start justify-between px-4 pt-3 pb-2">
+                  <StatusPill tone={isCrit ? 'danger' : 'warn'}>
+                    {isCrit ? 'Warning Letter Risk' : 'Observation Risk'}
+                  </StatusPill>
+                  <div className="text-right flex-shrink-0 ml-3">
+                    <div className={`display-num text-head font-bold tabular-nums leading-none ${closeColor}`}>{f.daysToClose}d</div>
+                    <div className="font-body text-label text-muted">to close</div>
+                  </div>
                 </div>
-              </div>
 
-              {/* Body */}
-              <div className="px-4 pb-3 space-y-1.5">
-                <p className="font-body text-ink font-medium text-base leading-snug">{f.title}</p>
-                <p className="font-body text-ink text-body leading-relaxed">{f.auditFinding}</p>
-                <p className="font-body text-muted text-label flex items-start gap-1">
-                  <ChevronRight size={11} className="flex-shrink-0 mt-px" />
-                  <span><span className="text-ink font-medium">Resolve in {f.daysToClose}d: </span>{f.closurePath}</span>
-                </p>
-              </div>
-
-              {/* Footer: action + owner + rule */}
-              <div className="flex gap-2 px-4 pb-3 pt-2 border-t border-rule2/60 flex-wrap items-center">
-                {f.link && (
-                  <Link to={f.link} className="inline-flex items-center gap-2 font-body font-medium text-body px-4 py-2 border border-rule bg-stone2 text-ink hover:bg-stone3 hover:border-rule2 transition-colors rounded-btn">
-                    Go to {f.linkLabel} <ArrowRight size={12} />
-                  </Link>
-                )}
-                <div className="ml-auto flex items-center gap-3">
-                  {f.assignee && (
-                    <span className="font-body text-label text-muted">
-                      Owner: <span className="font-medium text-ink">{f.assignee}</span>
-                    </span>
+                {/* Zone 2: Title + exposure */}
+                <div className="px-4 pb-3">
+                  <p className="font-body font-medium text-ink text-sub leading-snug mb-1.5">{f.title}</p>
+                  {(recallStr || contractStr) && (
+                    <div className="flex items-center gap-4">
+                      {recallStr   && <span className="font-body text-body tabular-nums text-danger font-medium">{recallStr} recall exposure</span>}
+                      {contractStr && <span className="font-body text-body tabular-nums text-warn font-medium">{contractStr} contract risk</span>}
+                    </div>
                   )}
-                  <span className="font-body text-micro text-muted bg-stone3 px-1.5 py-0.5 leading-none">{f.rule}</span>
                 </div>
-              </div>
-            </article>
-          )
-        })}
+
+                {/* Zone 3: Regulation + auditor finding — side by side */}
+                <div className="mx-4 mb-0 grid grid-cols-2 gap-2">
+                  <div className="border border-rule2 bg-stone2 px-3 py-3">
+                    <div className="flex items-center gap-1.5 mb-1.5">
+                      <Scale size={11} strokeWidth={2} className="text-muted flex-shrink-0" />
+                      <span className="font-body font-semibold text-ink text-label truncate">{f.rule}</span>
+                    </div>
+                    <p className="font-body text-muted text-label leading-relaxed">{f.requirement}</p>
+                  </div>
+                  <div className="border border-rule2 bg-stone px-3 py-3">
+                    <div className="flex items-center gap-1.5 mb-1.5">
+                      <Eye size={11} strokeWidth={2} className="text-muted flex-shrink-0" />
+                      <span className="font-body font-semibold text-ink text-label">What the auditor will flag</span>
+                    </div>
+                    <p className="font-body text-muted text-label leading-relaxed">{f.auditFinding}</p>
+                  </div>
+                </div>
+
+                {/* Zone 4: Closure band — action + accountability trail */}
+                <div className="flex items-center justify-between gap-3 px-4 py-3 mt-2 bg-stone2 border-t border-rule2">
+                  <div className="flex-1 min-w-0">
+                    <span className="font-body text-label text-ink leading-snug">{f.closurePath}</span>
+                  </div>
+                  <div className="flex items-center gap-3 flex-shrink-0">
+                    <div className="flex items-center gap-1.5">
+                      <User size={11} strokeWidth={2} className="text-muted flex-shrink-0" />
+                      <span className="font-body text-label text-ink font-medium">{f.assignee}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <Calendar size={11} strokeWidth={2} className="text-muted flex-shrink-0" />
+                      <span className="font-body text-label text-muted">{f.documented}</span>
+                    </div>
+                  </div>
+                </div>
+              </Link>
+            )
+          })}
+        </div>
       </div>
     </div>
   )
 }
 
-// ─── Audit score band ─────────────────────────────────────────────────────────
+// ─── Defensibility score band ─────────────────────────────────────────────────
 
 function AuditBand({ onSimulate }) {
   const passes = AUDIT_CHECKS.filter(c => c.result === 'pass').length
@@ -339,7 +299,7 @@ function AuditBand({ onSimulate }) {
     <div className="flex-shrink-0 flex items-center border-b border-rule2 bg-stone2">
       <div className="flex items-baseline gap-2 px-5 py-2.5 border-r border-rule2">
         <span className={`display-num text-head tabular-nums leading-none ${scoreC}`}>{score}%</span>
-        <span className="font-body text-muted text-label">audit readiness</span>
+        <span className="font-body text-muted text-label">defensibility score</span>
       </div>
       <div className="flex items-center gap-4 px-5 py-2.5 flex-1">
         <span className="font-body text-danger text-label font-medium">{fails} fail</span>
@@ -364,15 +324,8 @@ function AuditBand({ onSimulate }) {
 export default function CompliancePolicy() {
   const [selectedId, setSelectedId] = useState('fda-us')
   const [auditOpen, setAuditOpen]   = useState(false)
-  const [activating, setActivating] = useState(false)
   const policy = compliancePolicies.find(p => p.id === selectedId)
 
-  const selectPolicy = (id) => {
-    setSelectedId(id)
-    setActivating(false)
-  }
-
-  // Hero metric: inspection countdown > CAPA count > framework count
   const heroMetric = policy?.nextInspection?.daysRemaining
     ?? policy?.openItems?.capaCount
     ?? policy?.frameworks?.length
@@ -390,9 +343,9 @@ export default function CompliancePolicy() {
       : policy?.openItems?.capaCount > 0 ? 'warn' : 'ok'
 
   const activeCount = policy?.frameworks?.filter(f => f.status === 'active').length ?? 0
-
-  const failCount  = AUDIT_CHECKS.filter(c => c.result === 'fail').length
+  const failCount   = AUDIT_CHECKS.filter(c => c.result === 'fail').length
   const atRiskCount = AUDIT_CHECKS.filter(c => c.result === 'at-risk').length
+
   const statement = policy?.nextInspection
     ? `${failCount} gap${failCount !== 1 ? 's' : ''} must close before ${policy.nextInspection.authority} arrives — ${atRiskCount} more at risk`
     : policy?.status === 'inactive'
@@ -402,10 +355,10 @@ export default function CompliancePolicy() {
     : `${activeCount} of ${policy?.frameworks?.length} frameworks active`
 
   const metaItems = [
-    policy?.nextInspection && { label: 'authority', value: policy.nextInspection.authority },
-    policy?.openItems?.capaCount > 0 && { label: 'open CAPAs', value: policy.openItems.capaCount },
-    policy?.openItems?.overdueCount > 0 && { label: 'overdue', value: policy.openItems.overdueCount, color: 'var(--color-danger)' },
-    policy?.activeSince && { label: 'active since', value: policy.activeSince },
+    policy?.nextInspection && { icon: Scale,       value: policy.nextInspection.authority },
+    policy?.openItems?.capaCount > 0    && { icon: ShieldAlert, value: `${policy.openItems.capaCount} open` },
+    policy?.openItems?.overdueCount > 0 && { icon: AlarmClock,  value: policy.openItems.overdueCount, color: 'var(--color-danger)' },
+    policy?.activeSince && { icon: FileClock, value: policy.activeSince },
   ].filter(Boolean)
 
   return (
@@ -414,18 +367,6 @@ export default function CompliancePolicy() {
       {/* ── Left: policy selector ─────────────────────────────────── */}
       <div className="w-[280px] flex-shrink-0 border-r border-rule2 flex flex-col bg-stone">
 
-        {/* Coverage gap — elevated prominence */}
-        <div className="flex-shrink-0 px-5 py-3.5 border-b border-rule2 border-l-4 border-l-warn bg-warn/[0.06]">
-          <div className="flex items-start gap-2">
-            <AlertTriangle size={11} className="text-warn flex-shrink-0 mt-0.5" strokeWidth={2} />
-            <div>
-              <div className="font-body text-warn text-body mb-1.5">Coverage gap</div>
-              <div className="font-body text-muted text-label leading-snug">{multiRegulatoryCoverage.coverageGap}</div>
-            </div>
-          </div>
-        </div>
-
-        {/* Policy list */}
         <div className="flex-1 overflow-y-auto page-wipe">
           {compliancePolicies.map(p => {
             const isSelected = selectedId === p.id
@@ -433,7 +374,7 @@ export default function CompliancePolicy() {
             const dotColor    = STATUS_DOT[p.status]    ?? 'bg-rule2'
             const statusColor = STATUS_COLOR[p.status]  ?? 'text-muted'
             return (
-              <button key={p.id} type="button" onClick={() => selectPolicy(p.id)}
+              <button key={p.id} type="button" onClick={() => setSelectedId(p.id)}
                 className={`w-full text-left px-4 py-4 border-b border-rule2 transition-colors border-l-[3px] ${
                   isSelected
                     ? `${borderColor} bg-stone2`
@@ -441,7 +382,7 @@ export default function CompliancePolicy() {
                 }`}>
                 <div className="flex items-center gap-1.5 mb-1.5">
                   <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${dotColor}`} />
-                  <span className={`font-body text-micro ${statusColor}`}>{STATUS_LABEL[p.status]}</span>
+                  <span className={`font-body text-label ${statusColor}`}>{STATUS_LABEL[p.status]}</span>
                 </div>
                 <div className="font-body font-medium text-ink text-body leading-snug mb-0.5">{p.name}</div>
                 <div className="font-body text-muted text-label mb-2">{p.jurisdiction}</div>
@@ -459,9 +400,8 @@ export default function CompliancePolicy() {
           })}
         </div>
 
-        {/* Export markets */}
         <div className="flex-shrink-0 px-5 py-3 border-t border-rule2 bg-stone2">
-          <div className="font-body text-micro text-muted mb-1.5">Export markets</div>
+          <div className="font-body text-label text-muted mb-1.5">Export markets</div>
           <div className="flex flex-wrap gap-1">
             {multiRegulatoryCoverage.currentExportMarkets.map(m => (
               <span key={m} className="font-body text-muted text-label bg-stone3 px-1.5 py-0.5">{m}</span>
@@ -476,7 +416,7 @@ export default function CompliancePolicy() {
           {auditOpen && <AuditSimPanel onClose={() => setAuditOpen(false)} />}
 
           <SceneHeader
-            module="Compliance"
+            module="Accountability"
             context={`${policy.name} · ${policy.jurisdiction}`}
             metric={heroMetric}
             metricLabel={heroLabel}
@@ -485,137 +425,21 @@ export default function CompliancePolicy() {
             meta={metaItems}
           />
 
-          {/* Audit score band — always visible for inspection policies */}
           {policy.nextInspection && (
             <AuditBand onSimulate={() => setAuditOpen(true)} />
           )}
 
-          {/* Two-column layout */}
-          <div className="flex flex-1 min-h-0 overflow-hidden">
-
-            {/* Left: risk findings (inspection policies) or framework detail (others) */}
-            <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
-              {policy.nextInspection ? (
-                <RiskExposure />
-              ) : (
-                <div className="flex-1 overflow-y-auto">
-                  <PolicySectionHeader label="Frameworks" count={`${policy.frameworks.length} configured`} />
-                  {policy.frameworks.map((f, i) => <FrameworkRow key={f.id} f={f} index={i} />)}
-                  <PolicySectionHeader label="Evidence" count={`${policy.evidenceRequirements.length} requirements`} />
-                  {policy.evidenceRequirements.map((e, i) => <EvidenceRow key={i} e={e} index={i} />)}
-                </div>
-              )}
+          {/* Full-width content */}
+          {policy.nextInspection ? (
+            <AccountabilityRegister />
+          ) : (
+            <div className="flex-1 overflow-y-auto">
+              <PolicySectionHeader label="Frameworks" count={`${policy.frameworks.length} configured`} />
+              {policy.frameworks.map((f, i) => <FrameworkRow key={f.id} f={f} index={i} />)}
+              <PolicySectionHeader label="Evidence" count={`${policy.evidenceRequirements.length} requirements`} />
+              {policy.evidenceRequirements.map((e, i) => <EvidenceRow key={i} e={e} index={i} />)}
             </div>
-
-            {/* Right: compliance posture panel */}
-            <div className="w-[304px] flex-shrink-0 overflow-y-auto bg-stone flex flex-col border-l border-rule2">
-
-              {/* Frameworks */}
-              <div className="px-5 pt-5 pb-4 border-b border-rule2">
-                <div className="font-body text-micro text-muted mb-3">
-                  Frameworks · {policy.frameworks.filter(f => f.status === 'active').length} active
-                </div>
-                <div className="border border-rule overflow-hidden">
-                  {policy.frameworks.map(f => (
-                    <div key={f.id} className={`flex items-center justify-between px-3 py-2.5 border-b border-rule2 last:border-0 border-l-2 ${STATUS_BORDER[f.status] ?? 'border-l-rule2'} ${f.status === 'inactive' ? 'opacity-40' : ''}`}>
-                      <div>
-                        <div className="font-body font-medium text-body text-ink">{f.name}</div>
-                        <div className="font-body text-muted text-label">{f.code}</div>
-                      </div>
-                      <StatusPill tone={f.status === 'active' ? 'ok' : f.status === 'inactive' ? 'muted' : 'signal'}>
-                        {STATUS_LABEL[f.status] ?? f.status}
-                      </StatusPill>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Evidence */}
-              <div className="px-5 pt-4 pb-4 border-b border-rule2">
-                <div className="font-body text-micro text-muted mb-3">
-                  Evidence · {policy.evidenceRequirements.filter(e => e.required).length} required
-                </div>
-                <div className="space-y-1.5">
-                  {policy.evidenceRequirements.map((e, i) => (
-                    <div key={i} className={`flex items-start gap-2.5 px-3 py-2 border-l-2 ${e.required ? 'border-l-ok' : 'border-l-rule2'}`}>
-                      <div className="flex-1 min-w-0">
-                        <div className="font-body font-medium text-ink text-label">{e.domain}</div>
-                        <div className="font-body text-muted text-label leading-snug">{e.requirement}</div>
-                      </div>
-                      {e.required
-                        ? <StatusPill tone="ok" className="flex-shrink-0 mt-0.5">Required</StatusPill>
-                        : <StatusPill tone="muted" className="flex-shrink-0 mt-0.5">Optional</StatusPill>}
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Escalation */}
-              <div className="px-5 pt-4 pb-4 border-b border-rule2">
-                <div className="font-body text-micro text-muted mb-3">Escalation</div>
-                <div className="space-y-2.5">
-                  {policy.escalationLogic.map((s, i) => {
-                    const isLast = i === policy.escalationLogic.length - 1
-                    const dot = isLast ? 'bg-danger' : i > 0 ? 'bg-warn' : 'bg-muted/40'
-                    const tc  = isLast ? 'text-danger' : i > 0 ? 'text-warn' : 'text-muted'
-                    return (
-                      <div key={i} className="flex items-start gap-2.5">
-                        <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 mt-1 ${dot}`} />
-                        <div>
-                          <div className={`font-body text-label font-medium ${tc}`}>{s.threshold}</div>
-                          <div className="font-body text-ink text-label leading-snug">{s.action}</div>
-                          <div className="font-body text-muted text-label">{s.channel}</div>
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-              </div>
-
-              {/* Reporting */}
-              <div className="px-5 pt-4 pb-5 border-b border-rule2">
-                <div className="font-body text-micro text-muted mb-3">
-                  Reports · {policy.reportingTemplates.length} templates
-                </div>
-                <div className="space-y-3">
-                  {policy.reportingTemplates.map(t => (
-                    <div key={t.id} className="flex items-center justify-between gap-2">
-                      <div className="min-w-0">
-                        <div className="font-body font-medium text-ink text-label truncate">{t.name}</div>
-                        <div className="font-body text-muted text-label">{t.lastGenerated ? `Last: ${t.lastGenerated}` : 'Never generated'}</div>
-                      </div>
-                      <Btn variant="secondary" className="flex-shrink-0">Generate</Btn>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Inactive activation CTA */}
-              {policy.status === 'inactive' && (
-                <div className="mx-5 my-5 px-4 py-4 border-l-4 border-l-signal bg-signal/[0.06]">
-                  <div className="font-body font-semibold text-ink text-base mb-1">Activate this policy</div>
-                  <div className="font-body text-muted text-label leading-relaxed mb-3">
-                    All {policy.frameworks.length} frameworks will be enforced immediately. Evidence requirements and escalation rules activate today.
-                  </div>
-                  {activating ? (
-                    <div className="border border-rule2 bg-stone px-4 py-3 mb-2">
-                      <div className="font-body font-medium text-ink text-body mb-1">Confirm activation</div>
-                      <div className="font-body text-muted text-label leading-relaxed mb-3">
-                        {policy.frameworks.length} frameworks and {policy.escalationLogic?.length ?? 0} escalation rules enforced from today. Cannot be undone without contacting your compliance admin.
-                      </div>
-                      <div className="flex gap-2">
-                        <Btn variant="primary">Confirm — activate now</Btn>
-                        <Btn variant="secondary" onClick={() => setActivating(false)}>Cancel</Btn>
-                      </div>
-                    </div>
-                  ) : (
-                    <Btn variant="primary" onClick={() => setActivating(true)}>Activate policy</Btn>
-                  )}
-                </div>
-              )}
-
-            </div>
-          </div>
+          )}
         </div>
       )}
     </div>

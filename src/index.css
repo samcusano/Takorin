@@ -55,6 +55,22 @@
     --color-sidebar-border-rgb: 28  42  64;
     --color-sidebar-ghost-rgb: 106 136 168;
 
+    /* ── Semantic aliases — resolve identically to palette tokens above ──
+       Use these in new inline styles; they switch with the theme automatically. */
+    --surface:          rgb(var(--color-stone-rgb));
+    --surface-raised:   rgb(var(--color-stone-2-rgb));
+    --surface-tint:     rgb(var(--color-stone-3-rgb));
+    --surface-inset:    rgb(var(--color-stone-4-rgb));
+    --on-surface:       rgb(var(--color-ink-rgb));
+    --on-surface-dim:   rgb(var(--color-ink-2-rgb));
+    --on-surface-subtle:rgb(var(--color-muted-rgb));
+    --border-strong:    rgb(var(--color-rule-rgb));
+    --border-soft:      rgb(var(--color-rule-2-rgb));
+    --interactive:      rgb(var(--color-signal-rgb));
+    --status-ok:        rgb(var(--color-ok-rgb));
+    --status-warn:      rgb(var(--color-warn-rgb));
+    --status-danger:    rgb(var(--color-danger-rgb));
+
     /* Computed non-RGB aliases used in inline styles and animation values */
     --color-stone:         rgb(var(--color-stone-rgb));
     --color-stone-2:       rgb(var(--color-stone-2-rgb));
@@ -243,18 +259,18 @@
 
   /* ── Plant mode (floor displays / operators) — opt-in class, not media query */
   /* Apply .floor-mode to <body> or a wrapper for plant-floor tablet displays.  */
-  .floor-mode .text-micro  { font-size: 13px !important; line-height: 1.3 !important; }
-  .floor-mode .text-label  { font-size: 15px !important; line-height: 1.3 !important; }
-  .floor-mode .text-body   { font-size: 18px !important; line-height: 1.45 !important; }
-  .floor-mode .text-head   { font-size: 26px !important; }
-  .floor-mode .text-title  { font-size: 34px !important; }
-  .floor-mode .text-metric { font-size: 36px !important; }
-  .floor-mode .text-score  { font-size: 56px !important; }
+  .floor-mode .text-label   { font-size: 14px !important; line-height: 1.35 !important; }
+  .floor-mode .text-label  { font-size: 16px !important; line-height: 1.35 !important; }
+  .floor-mode .text-body   { font-size: 19px !important; line-height: 1.5 !important; }
+  .floor-mode .text-sub    { font-size: 21px !important; line-height: 1.4 !important; }
+  .floor-mode .text-head   { font-size: 28px !important; }
+  .floor-mode .text-title  { font-size: 36px !important; }
+  .floor-mode .text-metric { font-size: 40px !important; }
+  .floor-mode .text-score  { font-size: 62px !important; }
   .floor-mode button,
   .floor-mode [role="button"] { min-height: 52px !important; }
-  .floor-mode .display-num { letter-spacing: 0.02em; }
+  .floor-mode .display-num { letter-spacing: 0.02em; font-weight: 700; }
   .floor-mode .font-body   { letter-spacing: 0.01em; }
-  .floor-mode .display-num { font-weight: 700; }
 
   /* ── Atmospheric glow ───────────────────────────────────────────────────── */
   @keyframes atmoPulse {

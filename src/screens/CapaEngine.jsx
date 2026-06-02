@@ -46,7 +46,7 @@ function CaseDetailPanel({ caseData, onClose }) {
  <div className="flex items-start justify-between px-4 py-4 border-b border-rule2 bg-stone2 flex-shrink-0">
  <div>
  <div className="font-body text-label text-muted mb-1">{caseData.capaId}</div>
- <div className="font-display text-base font-bold text-ink">{caseData.title}</div>
+ <div className="font-display text-sub font-bold text-ink">{caseData.title}</div>
  </div>
  <button type="button" onClick={() => exit(onClose)} aria-label="Close case detail" className="p-1 text-muted hover:text-ink transition-colors duration-100 ease-standard flex-shrink-0">
  <X size={14} strokeWidth={2} aria-hidden="true" />
@@ -246,7 +246,7 @@ function ClosureRecord({ record }) {
  <div className="px-4 py-5 border-b border-rule2 bg-ok/[0.04] slide-in">
   <div className="flex items-center gap-2 mb-4">
    <ShieldCheck size={14} strokeWidth={2} className="text-ok flex-shrink-0" />
-   <span className="font-body font-medium text-ok text-base">Case closed · Closure record generated</span>
+   <span className="font-body font-medium text-ok text-sub">Case closed · Closure record generated</span>
   </div>
   <div className="space-y-2.5 bg-stone border border-ok/20 p-4">
    <div className="flex items-center justify-between border-b border-rule2 pb-2 mb-2">
@@ -380,7 +380,7 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
  )}
  {/* ── Not director's turn — ownership context ── */}
  {!c.directorTurn && c.currentOwner && !isClosed && !actionTaken && c.handoffNote && (
-  <div className="px-4 py-2.5 border-b border-rule2 bg-stone2 flex items-center gap-2">
+  <div className="px-4 py-2 border-b border-rule2 bg-stone2 flex items-center gap-2">
    <span className="font-body text-muted text-label">Waiting on</span>
    <span className="font-body text-muted text-label font-medium">{c.currentOwner}</span>
    <span className="font-body text-muted text-label">·</span>
@@ -524,7 +524,7 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
  <div className="px-4 py-5 bg-ok/10 border-b border-ok/20 slide-in">
  <div className="flex items-center gap-2 mb-1">
  <Check size={12} strokeWidth={2} className="text-ok flex-shrink-0" />
- <span className="font-body font-medium text-ok text-base">
+ <span className="font-body font-medium text-ok text-sub">
  {actionTaken === 'uploaded' ? 'Evidence uploaded.' : 'Action delegated.'}
  </span>
  </div>
@@ -696,7 +696,7 @@ function LayoutQueue({ visibleCases, blockingEvidenceUploaded, setBlockingEviden
  </div>
 
  {/* Model ranking signal */}
- <div className="px-4 py-2.5 border-b border-rule2 bg-stone2 flex items-center gap-2 flex-shrink-0">
+ <div className="px-4 py-2 border-b border-rule2 bg-stone2 flex items-center gap-2 flex-shrink-0">
   <Brain size={10} strokeWidth={2} className="text-muted flex-shrink-0" />
   <span className="font-body text-muted text-label">
    Ranked by priority score · <span className="text-muted font-medium">88%</span> model confidence · FDA deadline + evidence gaps weighted highest

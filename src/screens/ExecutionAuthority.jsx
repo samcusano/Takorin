@@ -201,7 +201,7 @@ export default function ExecutionAuthority() {
         <div className="flex-1 flex flex-col overflow-hidden">
 
           {/* Scope bar — Agent / Tier / Outcome filters */}
-          <div className="flex items-center gap-2 px-5 py-2.5 border-b border-rule2 bg-stone flex-shrink-0">
+          <div className="flex items-center gap-2 px-5 py-2 border-b border-rule2 bg-stone flex-shrink-0">
             <FilterDropdown
               label="Agent"
               options={agentOptions}

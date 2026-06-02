@@ -214,7 +214,7 @@ function VesselGrid({ vessels }) {
                 style={{ width: `${Math.min(100, (v.daysElapsed / 185) * 100)}%` }} />
             </div>
             <div className="flex items-center justify-between">
-              <span className="font-body text-muted text-micro">{v.daysElapsed}d</span>
+              <span className="font-body text-muted text-label">{v.daysElapsed}d</span>
               {v.alert && <AlertTriangle size={10} className="text-warn flex-shrink-0" strokeWidth={2} />}
             </div>
           </div>
@@ -577,7 +577,7 @@ function StateFieldView({ site, variant, onVariantChange }) {
       />
 
       {/* System pressure summary + view toggle */}
-      <div className="flex-shrink-0 flex items-center gap-4 px-5 py-2.5 border-b border-rule2 bg-stone2 text-label font-body">
+      <div className="flex-shrink-0 flex items-center gap-4 px-5 py-2 border-b border-rule2 bg-stone2 text-label font-body">
         <div className="flex items-center gap-1.5">
           <div className="w-2 h-2 rounded-full bg-danger flex-shrink-0" />
           <span className="text-danger font-medium">{pressureZones.length} zone{pressureZones.length !== 1 ? 's' : ''} at risk</span>
@@ -723,7 +723,7 @@ export default function ProcessHierarchy() {
         scanInterval="4 min"
         trend="↑ +6 since 06:20"
       />
-      <div className="flex-shrink-0 flex items-center gap-4 px-5 py-2.5 border-b border-rule2 bg-stone2 font-body text-label">
+      <div className="flex-shrink-0 flex items-center gap-4 px-5 py-2 border-b border-rule2 bg-stone2 font-body text-label">
         {selectedBuilding ? (
           <Breadcrumb crumbs={crumbs} onNavigate={navigateTo} />
         ) : (
@@ -761,7 +761,7 @@ export default function ProcessHierarchy() {
                       <ScoreDot score={b.score} />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-baseline gap-2 mb-1">
-                          <span className="font-display font-bold text-ink text-base">{b.name}</span>
+                          <span className="font-display font-bold text-ink text-sub">{b.name}</span>
                           <span className="font-body text-muted text-label">{b.label}</span>
                         </div>
                         <div className="flex items-center gap-3 text-label font-body text-muted mb-2">
@@ -875,7 +875,7 @@ export default function ProcessHierarchy() {
             <div className="px-5 py-3.5 border-b border-rule2 bg-stone2">
               <div className="flex items-center justify-between gap-3 mb-2">
                 <div className="flex items-baseline gap-2">
-                  <span className="font-display font-bold text-ink text-base">{selectedZone.name}</span>
+                  <span className="font-display font-bold text-ink text-sub">{selectedZone.name}</span>
                   <span className="font-body text-muted text-label">{selectedZone.label}</span>
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0">

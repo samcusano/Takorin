@@ -93,7 +93,7 @@ function StageTracker({ stages }) {
           const isActive = s.status === 'active'
           return (
             <div key={s.id} className="flex-1 min-w-0">
-              <div className={`font-body text-micro truncate leading-tight ${
+              <div className={`font-body text-label truncate leading-tight ${
                 isActive ? 'text-signal font-medium' : isDone ? 'text-muted' : 'text-muted opacity-40'
               }`}>{s.label}</div>
             </div>
@@ -114,7 +114,7 @@ function SignalRow({ s }) {
       <div className="flex-1 min-w-0">
         <div className="flex items-baseline gap-2">
           <span className="font-body font-medium text-ink text-body">{s.label}</span>
-          {isCritical && <span className="font-body text-micro text-signal">critical</span>}
+          {isCritical && <span className="font-body text-label text-signal">critical</span>}
         </div>
         {s.note && <div className="font-body text-muted text-label mt-0.5 leading-snug">{s.note}</div>}
       </div>
@@ -134,7 +134,7 @@ function InfluenceChain({ chain }) {
         <div key={i} className="flex items-start gap-4 px-5 py-3.5">
           <div className="flex-shrink-0 w-10 text-right pt-0.5">
             <div className="display-num text-head leading-none text-muted tabular-nums">{c.day}</div>
-            <div className="font-body text-micro text-muted opacity-50 mt-0.5">day</div>
+            <div className="font-body text-label text-muted opacity-50 mt-0.5">day</div>
           </div>
           <div className="w-px self-stretch bg-rule2 flex-shrink-0" />
           <div className="flex-1 min-w-0">
@@ -190,9 +190,9 @@ function QualityTab() {
                             <Arrow size={9} className={`${arrowColor} flex-shrink-0 mt-0.5`} strokeWidth={2} />
                           </div>
                           <div className={`display-num text-title leading-none tabular-nums ${tc}`}>
-                            {c.val} <span className="font-body text-micro text-muted font-normal">{c.unit}</span>
+                            {c.val} <span className="font-body text-label text-muted font-normal">{c.unit}</span>
                           </div>
-                          <div className="font-body text-muted text-micro mt-1">{c.baseline}</div>
+                          <div className="font-body text-muted text-label mt-1">{c.baseline}</div>
                           {c.note && <div className="font-body text-muted text-label mt-1.5 leading-snug">{c.note}</div>}
                         </div>
                       )
@@ -200,7 +200,7 @@ function QualityTab() {
                   </div>
                   {r.expertAnnotation && (
                     <div className="mt-3 flex items-start gap-3 px-3 py-2.5 border-l-2 border-l-signal bg-signal/[0.03]">
-                      <span className="font-body font-semibold text-signal text-micro flex-shrink-0 mt-px">{r.expertAnnotation.author}</span>
+                      <span className="font-body font-semibold text-signal text-label flex-shrink-0 mt-px">{r.expertAnnotation.author}</span>
                       <span className="font-body text-ink text-body leading-relaxed">{r.expertAnnotation.note}</span>
                     </div>
                   )}
@@ -223,10 +223,10 @@ function QualityTab() {
                     </div>
                     <StatusPill tone={typeTone} className="flex-shrink-0">{typeLabel}</StatusPill>
                   </div>
-                  <p className="font-display text-ink text-base leading-relaxed mb-3">{a.observation}</p>
+                  <p className="font-display text-ink text-sub leading-relaxed mb-3">{a.observation}</p>
                   {a.modelResponse && (
                     <div className="flex items-start gap-3 px-3 py-2.5 bg-stone2 border-l-2 border-l-deep">
-                      <span className="font-body font-semibold text-deep text-micro flex-shrink-0 mt-px">Model</span>
+                      <span className="font-body font-semibold text-deep text-label flex-shrink-0 mt-px">Model</span>
                       <span className="font-body text-muted text-body leading-relaxed flex-1">{a.modelResponse}</span>
                       {a.confidenceImpact && <span className="font-body font-bold text-ok text-body flex-shrink-0">{a.confidenceImpact}</span>}
                     </div>
@@ -284,15 +284,15 @@ export default function BatchIntelligence() {
                 )}
                 <div className="flex items-baseline justify-between gap-2 mb-0.5">
                   <span className="font-body font-medium text-ink text-body leading-snug truncate">{b.name}</span>
-                  <span className={`display-num text-base tabular-nums flex-shrink-0 ${confColor}`}>{conf}%</span>
+                  <span className={`display-num text-sub tabular-nums flex-shrink-0 ${confColor}`}>{conf}%</span>
                 </div>
-                <div className="font-body text-muted text-micro mb-2">{b.vessel} · {b.daysElapsed}/{b.totalDays}d</div>
+                <div className="font-body text-muted text-label mb-2">{b.vessel} · {b.daysElapsed}/{b.totalDays}d</div>
                 <div className="h-1 bg-rule2 mb-1.5">
                   <div className={`h-full ${isComplete ? 'bg-ok' : 'bg-signal'} transition-[width]`} style={{ width: `${pctDone}%` }} />
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="font-body text-muted text-micro">{isComplete ? 'Complete' : b.stage.replace(/-/g, ' ')}</span>
-                  <span className={`font-body text-micro ${b.grade === 'Premium' ? 'text-signal' : 'text-muted'}`}>{b.grade}</span>
+                  <span className="font-body text-muted text-label">{isComplete ? 'Complete' : b.stage.replace(/-/g, ' ')}</span>
+                  <span className={`font-body text-label ${b.grade === 'Premium' ? 'text-signal' : 'text-muted'}`}>{b.grade}</span>
                 </div>
                 {b.hasFinding && (
                   <div className="mt-1.5">
@@ -331,7 +331,7 @@ export default function BatchIntelligence() {
         {/* Lifecycle progress */}
         <div className="flex-shrink-0 px-6 py-3 border-b border-rule2 bg-stone2">
           <div className="flex items-center justify-between mb-3">
-            <span className="font-display font-semibold text-ink text-base">Lifecycle</span>
+            <span className="font-display font-semibold text-ink text-sub">Lifecycle</span>
             <span className="font-body text-muted text-label">{batch.daysElapsed} of {batch.totalDays} days · {pct}%</span>
           </div>
           <StageTracker stages={batch.stages} />
@@ -399,7 +399,7 @@ export default function BatchIntelligence() {
                       <div className="flex-1 h-1.5 bg-rule2">
                         <div className={`h-full ${val >= 85 ? 'bg-ok' : val >= 70 ? 'bg-signal' : 'bg-warn'} transition-[width]`} style={{ width: `${val}%` }} />
                       </div>
-                      <span className="display-num text-base tabular-nums w-7 text-right flex-shrink-0 text-muted">{val}</span>
+                      <span className="display-num text-sub tabular-nums w-7 text-right flex-shrink-0 text-muted">{val}</span>
                     </div>
                   ))}
                 </div>
@@ -528,7 +528,7 @@ export default function BatchIntelligence() {
             <div className="flex items-center gap-3 px-6 py-6">
               <CheckCircle size={16} className="text-ok flex-shrink-0" strokeWidth={2} />
               <div>
-                <div className="font-body font-semibold text-ink text-base">Batch complete — {batch.grade}</div>
+                <div className="font-body font-semibold text-ink text-sub">Batch complete — {batch.grade}</div>
                 <div className="font-body text-muted text-label mt-0.5">Added to process memory · Available as comparable for active batches</div>
               </div>
             </div>

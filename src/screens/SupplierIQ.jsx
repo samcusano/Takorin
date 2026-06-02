@@ -175,14 +175,14 @@ function LotTicketPanel({ lot, onClose, coaRequested, setCoaRequested }) {
 
         {/* ── Status strip ─────────────────────────────────────────── */}
         <div className="flex items-center justify-between px-5 py-2.5 border-b border-rule2">
-          <span className="font-body text-micro text-muted">{coaPass ? 'RECEIVED' : 'PENDING RECEIPT'}</span>
+          <span className="font-body text-label text-muted">{coaPass ? 'RECEIVED' : 'PENDING RECEIPT'}</span>
           {!coaPass && <StatusPill tone="danger">Hold Active</StatusPill>}
         </div>
 
         {/* ── Key metrics ──────────────────────────────────────────── */}
         <StatGrid cols={2}>
           <div className={`px-5 py-4 ${lot.deliveryTone !== 'ok' ? 'bg-warn/[0.02]' : 'bg-stone'}`}>
-            <div className="font-body text-micro text-muted mb-1.5">Expected Arrival</div>
+            <div className="font-body text-label text-muted mb-1.5">Expected Arrival</div>
             <div className={`font-body font-medium text-body ${deliveryTextCls}`}>{lot.deliveryTime}</div>
           </div>
           <div className={`px-5 py-4 ${lot.shelfTone === 'danger' ? 'bg-danger/[0.025]' : lot.shelfTone === 'warn' ? 'bg-warn/[0.02]' : 'bg-stone'}`}>
@@ -190,7 +190,7 @@ function LotTicketPanel({ lot, onClose, coaRequested, setCoaRequested }) {
               {lot.shelfTone !== 'ok' && (
                 <AlertTriangle size={10} strokeWidth={2} className={lot.shelfTone === 'danger' ? 'text-danger' : 'text-warn'} />
               )}
-              <span className="font-body text-micro text-muted">Shelf Life</span>
+              <span className="font-body text-label text-muted">Shelf Life</span>
             </div>
             <div className={`display-num text-head font-bold leading-none ${shelfTextCls}`}>
               {lot.shelf}
@@ -232,7 +232,7 @@ function SupplierCard({ tone = 'warn', title, desc, evidence, children, actions,
   return (
     <div className={`row-in bg-stone2 border border-rule border-l-[3px] ${leftCls} mb-2.5`} style={{ animationDelay: `${delay}ms` }}>
       <div className="px-4 pt-3.5 pb-2.5">
-        <div className="font-display font-semibold text-base text-ink leading-snug mb-2">{title}</div>
+        <div className="font-display font-semibold text-sub text-ink leading-snug mb-2">{title}</div>
         {desc && <p className="font-body text-body text-ink leading-relaxed m-0">{desc}</p>}
       </div>
       {evidence && (
@@ -261,7 +261,7 @@ function SupplierRow({ s, audit, isDanger, certGap, index, total }) {
       style={{ animationDelay: `${index * 55}ms` }}>
       <div className="min-w-[140px]">
         <div className={`font-body font-medium text-body ${isDanger ? 'text-danger' : 'text-ink'}`}>{s.name}</div>
-        <div className="font-body text-micro text-muted mt-[3px]">{s.tier}</div>
+        <div className="font-body text-label text-muted mt-[3px]">{s.tier}</div>
       </div>
       <div className="flex-1 flex items-center gap-2.5">
         <div className="flex-1 h-0.5 bg-rule">
@@ -320,7 +320,7 @@ export default function SupplierIQ() {
         {resolveCount > 0 && (
           <>
             <div className="px-6 pt-5 pb-4">
-              <div className="font-body text-micro text-muted mb-3">
+              <div className="font-body text-label text-muted mb-3">
                 Resolve now · {resolveCount} item{resolveCount > 1 ? 's' : ''} blocking production
               </div>
 
@@ -382,7 +382,7 @@ export default function SupplierIQ() {
         {monitoringLots.length > 0 && (
           <>
             <div className="px-6 pt-5 pb-4">
-              <div className="font-body text-micro text-muted mb-3">
+              <div className="font-body text-label text-muted mb-3">
                 Lots at risk · {monitoringLots.length}
               </div>
 
@@ -416,7 +416,7 @@ export default function SupplierIQ() {
 
         {/* ── Supplier intelligence ── */}
         <div className="px-6 pt-5 pb-6">
-          <div className="font-body text-micro text-muted mb-3">
+          <div className="font-body text-label text-muted mb-3">
             Supplier intelligence
           </div>
 
@@ -449,7 +449,7 @@ export default function SupplierIQ() {
       {/* ── Right column — Supplier standings ── */}
       <div className="w-[304px] flex-shrink-0 overflow-y-auto bg-stone flex flex-col">
         <div className="px-5 pt-5 pb-6">
-          <div className="font-body text-micro text-muted mb-3">
+          <div className="font-body text-label text-muted mb-3">
             Supplier standings · {sortedSuppliers.length} active
           </div>
           <div className="border border-rule overflow-hidden">

@@ -138,7 +138,7 @@ function EntryDetail({ entry, isPromoted, onPromote }) {
         </div>
         <div className="flex items-center gap-3">
           <div className="w-5 h-5 rounded-full bg-stone3 flex items-center justify-center flex-shrink-0">
-            <span className="font-body text-muted text-micro">{entry.author.name.split(' ').map(p => p[0]).join('')}</span>
+            <span className="font-body text-muted text-label">{entry.author.name.split(' ').map(p => p[0]).join('')}</span>
           </div>
           <span className="font-body text-muted text-label">{entry.author.name} · {entry.author.title}</span>
           <span className="font-body text-muted">·</span>
@@ -148,7 +148,7 @@ function EntryDetail({ entry, isPromoted, onPromote }) {
       <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
         <div>
           <div className="font-body text-muted text-label mb-2">Expert observation</div>
-          <p className="font-body text-ink text-base leading-relaxed">{entry.body}</p>
+          <p className="font-body text-ink text-sub leading-relaxed">{entry.body}</p>
         </div>
         <div>
           <div className="font-body text-muted text-label mb-2">Encoded rule</div>
@@ -179,7 +179,7 @@ function EntryDetail({ entry, isPromoted, onPromote }) {
             entry.institutionalRisk.startsWith('MEDIUM') ? 'border-l-warn bg-warn/[0.03]'     :
             'border-l-muted bg-stone2'
           }`}>
-            <div className="font-body text-muted text-micro mb-1">Institutional risk</div>
+            <div className="font-body text-muted text-label mb-1">Institutional risk</div>
             <p className={`font-body text-body leading-snug ${entry.institutionalRisk.startsWith('HIGH') ? 'text-danger/80' : entry.institutionalRisk.startsWith('MEDIUM') ? 'text-warn/80' : 'text-muted'}`}>{entry.institutionalRisk}</p>
           </div>
         )}
@@ -264,7 +264,7 @@ function OperationalMemoryVault() {
                     <Icon size={13} className={isActive ? d.color : 'text-muted'} strokeWidth={2} />
                     <span className={`font-body font-medium text-body leading-snug ${isActive ? 'text-ink' : 'text-muted'}`}>{d.label}</span>
                   </div>
-                  <span className={`display-num text-base ${isActive ? 'text-muted' : 'text-muted/50'}`}>{dc?.count ?? 0}</span>
+                  <span className={`display-num text-sub ${isActive ? 'text-muted' : 'text-muted/50'}`}>{dc?.count ?? 0}</span>
                 </div>
                 {dc?.activeCount > 0 && (
                   <div className="flex items-center gap-1.5 mt-1">
@@ -295,7 +295,7 @@ function OperationalMemoryVault() {
       <div className="flex-1 flex flex-col overflow-hidden">
         {showMemory ? (
           <>
-            <div className="flex-shrink-0 px-5 py-2.5 border-b border-rule2 bg-stone2">
+            <div className="flex-shrink-0 px-5 py-2 border-b border-rule2 bg-stone2">
               <span className="font-body text-muted text-label">Process Memory · {processMemory.length} reference batches</span>
             </div>
             <div className="flex flex-1 min-h-0 overflow-hidden">
@@ -309,11 +309,11 @@ function OperationalMemoryVault() {
                       className={`w-full text-left px-4 py-4 border-b border-rule2 transition-colors border-l-4 ${border} hover:bg-stone2/50`}>
                       <div className="flex items-baseline justify-between mb-1">
                         <span className="font-body font-bold text-ink text-body">{m.batchId}</span>
-                        <span className={`display-num text-base ${m.grade === 'Premium' ? 'text-signal' : 'text-muted'}`}>{m.grade}</span>
+                        <span className={`display-num text-sub ${m.grade === 'Premium' ? 'text-signal' : 'text-muted'}`}>{m.grade}</span>
                       </div>
-                      <div className="font-body text-muted text-micro mb-1.5">{m.sku}</div>
+                      <div className="font-body text-muted text-label mb-1.5">{m.sku}</div>
                       <div className="flex items-center gap-3">
-                        <span className="font-body text-muted text-label">Aroma <span className="display-num text-base text-ink">{m.finalAromaScore}</span></span>
+                        <span className="font-body text-muted text-label">Aroma <span className="display-num text-sub text-ink">{m.finalAromaScore}</span></span>
                         <span className={`font-body text-label capitalize font-medium ${ocColor}`}>{m.outcome}</span>
                       </div>
                     </button>
@@ -347,7 +347,7 @@ function OperationalMemoryVault() {
                 </div>
                 <div className="flex-shrink-0 text-right">
                   <div className="display-num text-metric leading-none text-muted">{entries.length}</div>
-                  <div className="font-body text-micro text-muted mt-0.5">entries</div>
+                  <div className="font-body text-label text-muted mt-0.5">entries</div>
                 </div>
               </div>
             </div>
@@ -405,7 +405,7 @@ function OperationalMemoryVault() {
                                 <span className="font-body text-muted/40">·</span>
                                 <span className="font-body text-muted text-label">{e.evidenceBase.batchCount ?? '—'} batches</span>
                                 {e.tags?.slice(0, 2).map(tag => (
-                                  <span key={tag} className="font-body text-muted/60 text-micro px-1.5 py-0.5 bg-stone3">{tag}</span>
+                                  <span key={tag} className="font-body text-muted/60 text-label px-1.5 py-0.5 bg-stone3">{tag}</span>
                                 ))}
                               </div>
                             </button>
@@ -444,7 +444,7 @@ function OperationalMemoryVault() {
               <div className="divide-y divide-rule2">
                 {slideEntry.keySignals?.map((s, i) => (
                   <div key={i} className="flex items-start gap-3 px-4 py-2.5">
-                    <span className="display-num text-base text-muted w-10 flex-shrink-0 pt-0.5">Day {s.day}</span>
+                    <span className="display-num text-sub text-muted w-10 flex-shrink-0 pt-0.5">Day {s.day}</span>
                     <div className="flex-1">
                       <div className="font-body font-medium text-ink text-label">{s.signal}</div>
                       <div className="font-body text-muted text-label">→ {s.outcome}</div>

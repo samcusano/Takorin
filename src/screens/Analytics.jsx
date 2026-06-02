@@ -342,23 +342,21 @@ function BenchmarkBlock({ b }) {
 
 // ── Accordion module ──────────────────────────────────────────────────────────
 
-function Module({ title, badge, children, defaultOpen = false }) {
+function Module({ title, badge, badgeTone, children, defaultOpen = false }) {
   const [open, setOpen] = useState(defaultOpen)
   return (
     <div className="border border-rule2 bg-stone">
       <button type="button" onClick={() => setOpen(v => !v)}
-        className="w-full flex items-center justify-between px-5 py-3.5 hover:bg-stone2 transition-colors text-left">
+        className="w-full flex items-center justify-between px-5 py-3.5 bg-stone2 hover:bg-stone3 transition-colors text-left">
         <div className="flex items-center gap-3 min-w-0">
           <span className="font-body font-medium text-ink text-body">{title}</span>
           {badge && (
-            <span className="font-body text-muted text-label px-2 py-0.5 bg-stone2 flex-shrink-0">
-              {badge}
-            </span>
+            badgeTone
+              ? <StatusPill tone={badgeTone} className="flex-shrink-0">{badge}</StatusPill>
+              : <span className="font-body text-muted text-label px-2 py-0.5 bg-stone3 flex-shrink-0">{badge}</span>
           )}
         </div>
-        {open
-          ? <ChevronUp size={11} className="text-muted flex-shrink-0 ml-3" />
-          : <ChevronDown size={11} className="text-muted flex-shrink-0 ml-3" />}
+        <ChevronDown size={11} className={`text-muted flex-shrink-0 ml-3 transition-transform ${open ? 'rotate-180' : ''}`} />
       </button>
       {open && <div className="border-t border-rule2">{children}</div>}
     </div>
@@ -409,7 +407,7 @@ export default function Analytics() {
   return (
     <div className="flex flex-col h-full overflow-hidden content-reveal">
       {/* ── Scope bar ──────────────────────────────────────────────────────── */}
-      <div className="flex items-center gap-2 px-6 py-2.5 border-b border-rule2 bg-stone flex-shrink-0">
+      <div className="flex items-center gap-2 px-6 py-2 border-b border-rule2 bg-stone flex-shrink-0">
         <FilterDropdown
           label="Plant"
           options={PLANTS_META.map(p => ({ value: p.id, label: p.label }))}
@@ -481,7 +479,7 @@ export default function Analytics() {
             {/* Supporting data strip */}
             <div className="flex items-center gap-5 mb-5 pb-5 border-b border-rule2">
               <div>
-                <div className="display-num text-hero font-bold text-ink leading-none"><AnimatedScore value={attr.actual} suffix="%" effect="glow" hero /></div>
+                <div className="display-num text-score font-bold text-ink leading-none"><AnimatedScore value={attr.actual} suffix="%" effect="glow" hero /></div>
                 <div className="font-body text-muted text-label mt-1">Actual OEE</div>
               </div>
               <div className="h-10 w-px bg-rule2" />
@@ -516,28 +514,28 @@ export default function Analytics() {
           {/* ── Recovery table ───────────────────────────────────────────── */}
           <section className="mb-10">
             <div className="font-body text-muted text-label mb-3">Recovery actions</div>
-            <div className="border border-rule2 bg-stone divide-y divide-rule2">
-              <div className="grid px-5 py-2 bg-stone2" style={{ gridTemplateColumns: '1.1fr 1fr 116px' }}>
-                <span className="font-body text-muted text-label">Driver</span>
-                <span className="font-body text-muted text-label pl-5">Recommended action</span>
-                <span className="font-body text-muted text-label text-right">Module</span>
-              </div>
+            <div className="grid grid-cols-2 gap-4">
               {attr.drivers.map(d => (
-                <div key={d.id}
-                  className={`grid items-start px-5 py-3.5 border-l-2 ${d.delta >= 0 ? 'border-l-ok/30' : 'border-l-danger/40'}`}
-                  style={{ gridTemplateColumns: '1.1fr 1fr 116px' }}>
-                  <div>
-                    <div className="font-body font-medium text-ink text-body">{d.label}</div>
-                    <div className="font-body text-muted text-label mt-0.5">{d.note}</div>
+                <Link key={d.id} to={d.route}
+                  className={`block bg-stone border border-rule2 border-l-[3px] hover:bg-stone2 transition-colors ${d.delta >= 0 ? 'border-l-ok' : 'border-l-danger'}`}>
+                  {/* Zone 1 — identity: module + what happened */}
+                  <div className="px-4 pt-4 pb-0">
+                    <div className="font-body text-label text-muted mb-1.5">{d.module}</div>
+                    <div className="font-body font-bold text-body text-ink leading-snug">{d.label}</div>
+                    <div className="font-body text-muted text-label mt-1 leading-relaxed">{d.note}</div>
                   </div>
-                  <div className="font-body text-ink2 text-label pl-5 leading-snug pt-0.5">{d.action}</div>
-                  <div className="flex justify-end self-start pt-1">
-                    <Link to={d.route}
-                      className="flex items-center gap-1 font-body text-muted text-label hover:text-ink transition-colors">
-                      {d.module} <ArrowRight size={9} />
-                    </Link>
+                  {/* Zone 2 — recommended action */}
+                  <div className="px-4 pt-4 pb-0">
+                    <div className="font-body text-label text-muted mb-1">Recommended action</div>
+                    <div className="font-body text-label text-ink2 leading-relaxed">{d.action}</div>
                   </div>
-                </div>
+                  {/* Zone 3 — delta */}
+                  <div className="px-4 pt-4 pb-4">
+                    <div className={`display-num text-head font-bold leading-none tabular-nums ${d.delta >= 0 ? 'text-ok' : 'text-danger'}`}>
+                      {d.delta >= 0 ? '+' : ''}{d.delta}pp
+                    </div>
+                  </div>
+                </Link>
               ))}
             </div>
           </section>
@@ -545,10 +543,34 @@ export default function Analytics() {
           <div className="h-px bg-rule2 mb-8" />
 
           {/* ── Supporting intelligence ───────────────────────────────────── */}
-          <div className="font-body text-muted text-label mb-3">Supporting context</div>
-          <div className="space-y-px">
 
-            <Module title="Impact" badge="$312K protected · 47 interventions · Q2 2026" defaultOpen>
+          {/* Summary strip — at-a-glance status of all modules */}
+          {(() => {
+            const positiveCount = interventions.filter(e => e.outcomeClassification === 'positive').length
+            const networkAtRisk = [64, 89, 94].filter(r => r < 85).length // SL-04 is at risk
+            const cells = [
+              { label: 'Impact',            val: '$312K protected',                               tone: 'ok'     },
+              { label: 'Outcomes',          val: `${Math.round(positiveCount / interventions.length * 100)}% positive`, tone: positiveCount / interventions.length >= 0.7 ? 'ok' : 'warn' },
+              { label: 'CAPA',              val: overdueCount > 0 ? `${overdueCount} overdue` : `${openCount} open`, tone: overdueCount > 0 ? 'danger' : openCount > 2 ? 'warn' : 'ok' },
+              { label: 'Q2 Goals',          val: `${onTrackCount} of ${goalsData.length} on track`, tone: onTrackCount === goalsData.length ? 'ok' : onTrackCount >= goalsData.length * 0.7 ? 'warn' : 'danger' },
+              { label: 'Workflow adoption', val: adoptionAtRisk > 0 ? `${adoptionAtRisk} of ${ADOPTION_WORKFLOWS.length} at risk` : 'All on track', tone: adoptionAtRisk > 0 ? 'warn' : 'ok' },
+              { label: 'Network rollup',    val: `${networkAtRisk} of 3 at risk`,                  tone: networkAtRisk > 0 ? 'warn' : 'ok' },
+            ]
+            return (
+              <div className="grid grid-cols-3 gap-px bg-rule2 border border-rule2 mb-8">
+                {cells.map(({ label, val, tone }) => (
+                  <div key={label} className="bg-stone px-5 py-3">
+                    <div className="font-body text-muted text-label mb-1">{label}</div>
+                    <StatusPill tone={tone}>{val}</StatusPill>
+                  </div>
+                ))}
+              </div>
+            )
+          })()}
+
+          <div className="space-y-5">
+
+            <Module title="Impact" badge="$312K protected · Q2 2026" badgeTone="ok" defaultOpen>
               <div className="bg-ok/[0.02] border-b border-rule2 px-5 py-4 flex items-baseline gap-6">
                 <div>
                   <div className="font-body text-muted text-label mb-1">Value protected · Q2 2026</div>
@@ -580,7 +602,7 @@ export default function Analytics() {
             </Module>
 
             {/* ── Impact Attribution ───────────────────────────────────────── */}
-            <Module title="Outcomes" badge={`${interventionSummary.total} interventions · ${Math.round(interventionSummary.avgAttributionConfidence * 100)}% avg confidence`} defaultOpen>
+            <Module title="Outcomes" badge={`${Math.round(interventions.filter(e=>e.outcomeClassification==='positive').length/interventionSummary.total*100)}% positive · ${interventionSummary.total} interventions`} badgeTone={interventions.filter(e=>e.outcomeClassification==='positive').length/interventionSummary.total>=0.7?'ok':'warn'} defaultOpen>
               {(() => {
                 const positiveCount = interventions.filter(e => e.outcomeClassification === 'positive').length
                 const unclearCount  = interventions.filter(e => e.outcomeClassification === 'unclear').length
@@ -633,37 +655,40 @@ export default function Analytics() {
               })()}
             </Module>
 
-            <Module title="CAPA Register" badge={`${closedCount} closed · ${openCount} open · ${overdueCount} overdue`} defaultOpen>
-              <div className="divide-y divide-rule2">
+            <Module title="CAPA Register" badge={overdueCount > 0 ? `${overdueCount} overdue · ${openCount} open` : `${openCount} open · ${closedCount} closed`} badgeTone={overdueCount > 0 ? 'danger' : openCount > 2 ? 'warn' : 'ok'} defaultOpen>
+              <div className="grid grid-cols-4 gap-4 p-5">
                 {[
-                  { label: 'Closed',        val: closedCount,  bar: closedCount / (closedCount + openCount), tone: 'ok',     sub: 'This quarter',          bg: '' },
-                  { label: 'Open',          val: openCount,    bar: openCount / 12,                          tone: openCount > 2 ? 'warn' : 'ok', sub: 'Active queue', bg: '' },
-                  { label: 'Overdue',       val: overdueCount, bar: overdueCount / 5,                        tone: overdueCount > 0 ? 'danger' : 'ok', sub: 'Past due date', bg: overdueCount > 0 ? 'bg-danger/[0.025]' : '' },
-                  { label: 'Closure rate',  val: '78%',        bar: 0.78,                                    tone: 'warn',   sub: '71st pct. · unlocks at 82%', bg: '' },
-                ].map(({ label, val, bar, tone, sub, bg }) => {
+                  { label: 'Closed',       val: closedCount,  bar: closedCount / (closedCount + openCount), tone: 'ok',     sub: 'This quarter'              },
+                  { label: 'Open',         val: openCount,    bar: openCount / 12,                          tone: openCount > 2 ? 'warn' : 'ok', sub: 'Active queue' },
+                  { label: 'Overdue',      val: overdueCount, bar: overdueCount / 5,                        tone: overdueCount > 0 ? 'danger' : 'ok', sub: 'Past due date' },
+                  { label: 'Closure rate', val: '78%',        bar: 0.78,                                    tone: 'warn',   sub: '71st pct. · unlocks at 82%' },
+                ].map(({ label, val, bar, tone, sub }) => {
                   const c = tone === 'ok' ? 'var(--color-ok)' : tone === 'warn' ? 'var(--color-warn)' : 'var(--color-danger)'
-                  const borderL = tone === 'danger' ? 'border-l-danger/50' : tone === 'warn' ? 'border-l-warn/30' : 'border-l-ok/30'
+                  const borderL = tone === 'danger' ? 'border-l-danger' : tone === 'warn' ? 'border-l-warn' : 'border-l-ok'
                   return (
-                    <div key={label} className={`grid items-center px-5 py-3 border-l-2 ${bg} ${borderL}`}
-                      style={{ gridTemplateColumns: '140px 1fr 56px 180px' }}>
-                      <div className="font-body text-label font-medium text-ink">{label}</div>
-                      <div className="pr-6">
-                        <div className="h-[3px] bg-rule2 relative">
-                          {label === 'Closure rate' && (
-                            <div className="absolute top-1/2 -translate-y-1/2 w-px h-[8px] bg-warn/50" style={{ left: '82%' }} />
-                          )}
-                          <div className="h-full" style={{ width: `${Math.min(bar, 1) * 100}%`, background: c, opacity: 0.75 }} />
-                        </div>
+                    <div key={label} className={`bg-stone border border-rule2 border-l-[3px] ${borderL}`}>
+                      <div className="px-4 pt-4 pb-0">
+                        <div className="font-body font-bold text-body text-ink">{label}</div>
                       </div>
-                      <div className="display-num text-head leading-none tabular-nums" style={{ color: c }}>{val}</div>
-                      <div className="font-body text-muted text-label text-right">{sub}</div>
+                      <div className="px-4 pt-4 pb-0">
+                        <div className="display-num text-metric font-bold leading-none tabular-nums" style={{ color: c }}>{val}</div>
+                      </div>
+                      <div className="px-4 pt-4 pb-4">
+                        <div className="h-[3px] bg-rule2 relative mb-1.5">
+                          {label === 'Closure rate' && (
+                            <div className="absolute top-1/2 -translate-y-1/2 w-px h-[9px] bg-warn/50" style={{ left: '82%' }} />
+                          )}
+                          <div className="h-full" style={{ width: `${Math.min(bar, 1) * 100}%`, background: c }} />
+                        </div>
+                        <div className="font-body text-muted text-label">{sub}</div>
+                      </div>
                     </div>
                   )
                 })}
               </div>
             </Module>
 
-            <Module title="Q2 Goals" badge={`${onTrackCount} of ${goalsData.length} on track · Jun 30 deadline`} defaultOpen>
+            <Module title="Q2 Goals" badge={`${onTrackCount} of ${goalsData.length} on track · Jun 30`} badgeTone={onTrackCount === goalsData.length ? 'ok' : onTrackCount >= goalsData.length * 0.7 ? 'warn' : 'danger'} defaultOpen>
               <div className="grid grid-cols-3 divide-x divide-rule2">
                 {goalsData.map(g => {
                   const onTrack = g.direction === 'increase' ? g.current >= g.target * 0.85 : g.current <= g.target * 1.15
@@ -702,115 +727,102 @@ export default function Analytics() {
 
             <Module
               title="Workflow adoption"
-              badge={adoptionAtRisk > 0
-                ? `${adoptionAtRisk} of ${ADOPTION_WORKFLOWS.length} workflows below threshold`
-                : `All ${ADOPTION_WORKFLOWS.length} workflows at or above threshold`}
+              badge={adoptionAtRisk > 0 ? `${adoptionAtRisk} of ${ADOPTION_WORKFLOWS.length} at risk` : 'All on track'}
+              badgeTone={adoptionAtRisk > 0 ? 'warn' : 'ok'}
               defaultOpen={adoptionAtRisk > 0}
             >
-              <div className="grid px-5 py-2 bg-stone2 border-b border-rule2"
-                style={{ gridTemplateColumns: '1fr 1fr 60px 36px 140px' }}>
-                {['Workflow', 'Adoption vs target', 'Rate', '', 'Module'].map(h => (
-                  <span key={h} className="font-body text-muted text-label">{h}</span>
-                ))}
-              </div>
-              <div className="divide-y divide-rule2">
+              <div className="grid grid-cols-2 gap-4 p-5">
                 {ADOPTION_WORKFLOWS.map(w => {
                   const atRisk = w.rate < w.target
-                  const severe = w.rate < w.target * 0.8
-                  const toneColor = atRisk ? (severe ? 'var(--color-danger)' : 'var(--color-warn)') : 'var(--color-ok)'
-                  const borderL  = atRisk ? (severe ? 'border-l-danger/50' : 'border-l-warn/50') : 'border-l-ok/30'
+                  const c = atRisk ? (w.rate < w.target * 0.8 ? 'var(--color-danger)' : 'var(--color-warn)') : 'var(--color-ok)'
+                  const borderL = atRisk ? (w.rate < w.target * 0.8 ? 'border-l-danger' : 'border-l-warn') : 'border-l-ok'
+                  const gap = w.target - w.rate
                   return (
-                    <div key={w.id} className={`border-l-2 ${borderL} ${atRisk ? 'bg-warn/[0.012]' : ''}`}>
-                      <div className="grid items-center px-5 py-3"
-                        style={{ gridTemplateColumns: '1fr 1fr 60px 36px 140px' }}>
-                        <div>
-                          <div className="font-body text-ink text-label font-medium">{w.label}</div>
-                          <div className="font-body text-muted text-label">{w.role}</div>
+                    <div key={w.id} className={`bg-stone border border-rule2 border-l-[3px] ${borderL}`}>
+                      <div className="px-4 pt-4 pb-0">
+                        <div className="font-body font-bold text-body text-ink leading-snug">{w.label}</div>
+                        <div className="font-body text-muted text-label mt-1">{w.role}</div>
+                      </div>
+                      <div className="px-4 pt-4 pb-0">
+                        <div className="display-num text-metric font-bold leading-none tabular-nums" style={{ color: c }}>{w.rate}%</div>
+                        <div className="font-body text-label mt-2">
+                          {atRisk
+                            ? <span style={{ color: c }}>{gap}pp below target</span>
+                            : <span className="text-ok">{-gap}pp above target</span>}
+                          <span className="text-muted ml-2">
+                            {w.trend > 0 ? '↑' : '↓'}{Math.abs(w.trend)}pp week
+                          </span>
                         </div>
-                        <div className="pr-6">
-                          <div className="relative h-[4px] bg-rule2 mb-1">
-                            <div className="absolute top-1/2 -translate-y-1/2 w-px h-[8px] bg-ink/20"
-                              style={{ left: `${w.target}%` }} />
-                            <div className="absolute inset-y-0 left-0"
-                              style={{ width: `${w.rate}%`, background: toneColor, opacity: 0.75 }} />
-                          </div>
+                      </div>
+                      <div className="px-4 pt-4 pb-4">
+                        <div className="relative h-[3px] bg-rule2 mb-1.5">
+                          <div className="absolute top-1/2 -translate-y-1/2 w-px h-[9px] bg-ink/20" style={{ left: `${w.target}%` }} />
+                          <div className="h-full" style={{ width: `${w.rate}%`, background: c }} />
+                        </div>
+                        <div className="flex items-center justify-between">
                           <div className="font-body text-label text-muted">Target {w.target}%</div>
-                        </div>
-                        <div className="display-num text-head leading-none tabular-nums"
-                          style={{ color: toneColor }}>{w.rate}%</div>
-                        <div className={`font-body text-label font-medium ${w.trend > 0 ? 'text-ok' : w.trend < 0 ? 'text-danger' : 'text-muted'}`}>
-                          {w.trend > 0 ? '↑' : w.trend < 0 ? '↓' : '—'}{w.trend !== 0 ? Math.abs(w.trend) : ''}
-                        </div>
-                        <div className="flex justify-end">
-                          <Link to={w.route}
-                            className="flex items-center gap-1 font-body text-muted text-label hover:text-ink transition-colors">
+                          <Link to={w.route} className="flex items-center gap-1 font-body text-label font-medium text-signal hover:text-ink transition-colors">
                             {w.module} <ArrowRight size={9} />
                           </Link>
                         </div>
-                      </div>
-                      {w.warning && (
-                        <div className="mx-5 mb-3 space-y-1.5">
-                          <div className="flex items-start gap-1.5 px-3 py-2 bg-warn/[0.04] border-l-2 border-l-warn/30">
-                            <AlertTriangle size={9} className="text-warn flex-shrink-0 mt-0.5" strokeWidth={2} />
-                            <span className="font-body text-warn text-label leading-snug">{w.warning}</span>
+                        {w.warning && (
+                          <div className="mt-3 px-3 py-2 bg-warn/[0.04] border-l-2 border-l-warn/40">
+                            <div className="flex items-start gap-1.5">
+                              <AlertTriangle size={9} className="text-warn flex-shrink-0 mt-0.5" strokeWidth={2} />
+                              <span className="font-body text-warn text-label leading-snug">{w.warning}</span>
+                            </div>
                           </div>
-                          <div className="font-body text-muted text-label px-3 leading-snug">{w.action}</div>
-                        </div>
-                      )}
+                        )}
+                      </div>
                     </div>
                   )
                 })}
-              </div>
-              <div className="px-5 py-2 bg-stone2 border-t border-rule2">
-                <span className="font-body text-muted text-label">Adoption rate = workflows completed as intended · trend = change vs prior 7 days</span>
               </div>
             </Module>
 
             <Module
               title="Network rollup"
-              badge={`${networkData?.plants?.length ?? 0} plants · readiness + adoption`}
+              badge="1 of 3 at risk"
+              badgeTone="warn"
             >
-              {/* Per-plant bars */}
-              <div className="grid px-5 py-2 bg-stone2 border-b border-rule2"
-                style={{ gridTemplateColumns: '160px 1fr 60px 80px' }}>
-                {['Plant', 'Readiness', 'Score', 'Status'].map(h => (
-                  <span key={h} className="font-body text-muted text-label">{h}</span>
-                ))}
-              </div>
-              <div className="divide-y divide-rule2">
+              <div className="grid grid-cols-3 gap-4 p-5">
                 {[
-                  { id: 'sl', name: 'Salina Campus',  code: 'SL-04', readiness: 64,  adoption: 67, status: 'at-risk', active: true  },
-                  { id: 'tx', name: 'Plant TX-11',     code: 'TX-11', readiness: 89,  adoption: 91, status: 'clear',   active: false },
-                  { id: 'ks', name: 'Plant KS-02',     code: 'KS-02', readiness: 94,  adoption: 95, status: 'clear',   active: false },
+                  { id: 'sl', name: 'Salina Campus', code: 'SL-04', readiness: 64, adoption: 67, status: 'at-risk', active: true  },
+                  { id: 'tx', name: 'Plant TX-11',   code: 'TX-11', readiness: 89, adoption: 91, status: 'clear',   active: false },
+                  { id: 'ks', name: 'Plant KS-02',   code: 'KS-02', readiness: 94, adoption: 95, status: 'clear',   active: false },
                 ].map(plant => {
-                  const color = plant.readiness >= 85 ? 'var(--color-ok)' : plant.readiness >= 70 ? 'var(--color-warn)' : 'var(--color-danger)'
-                  const borderL = plant.status === 'at-risk' ? 'border-l-danger/40' : 'border-l-ok/20'
+                  const c = plant.readiness >= 85 ? 'var(--color-ok)' : plant.readiness >= 70 ? 'var(--color-warn)' : 'var(--color-danger)'
+                  const ac = plant.adoption >= 85 ? 'var(--color-ok)' : plant.adoption >= 70 ? 'var(--color-warn)' : 'var(--color-danger)'
+                  const borderL = plant.status === 'at-risk' ? 'border-l-danger' : 'border-l-ok'
                   return (
-                    <div key={plant.id} className={`grid items-center px-5 py-3.5 border-l-2 ${borderL} ${plant.active ? 'bg-signal/[0.02]' : ''}`}
-                      style={{ gridTemplateColumns: '160px 1fr 60px 80px' }}>
-                      <div>
-                        <div className={`font-body font-medium text-label ${plant.active ? 'text-ink' : 'text-muted'}`}>{plant.name}</div>
-                        <div className="font-body text-muted/60 text-micro">{plant.code}{plant.active ? ' · this plant' : ''}</div>
+                    <div key={plant.id} className={`bg-stone border border-rule2 border-l-[3px] ${borderL}`}>
+                      <div className="px-4 pt-4 pb-0">
+                        <div className={`font-body font-bold text-body leading-snug ${plant.active ? 'text-ink' : 'text-muted'}`}>{plant.name}</div>
+                        <div className="font-body text-muted text-label mt-1">{plant.code}{plant.active ? ' · active' : ''}</div>
                       </div>
-                      <div className="pr-8">
-                        <div className="relative h-[4px] bg-rule2">
-                          <div className="absolute inset-y-0 left-0" style={{ width: `${plant.readiness}%`, background: color, opacity: 0.7 }} />
+                      <div className="px-4 pt-4 pb-0 flex items-end gap-6">
+                        <div>
+                          <div className="font-body text-muted text-label mb-1">Readiness</div>
+                          <div className="display-num text-title font-bold leading-none tabular-nums" style={{ color: c }}>{plant.readiness}</div>
                         </div>
-                        <div className="font-body text-muted text-micro mt-1">Adoption: {plant.adoption}%</div>
+                        <div>
+                          <div className="font-body text-muted text-label mb-1">Adoption</div>
+                          <div className="display-num text-title font-bold leading-none tabular-nums" style={{ color: ac }}>{plant.adoption}%</div>
+                        </div>
                       </div>
-                      <div className="display-num text-head leading-none tabular-nums" style={{ color }}>{plant.readiness}</div>
-                      <div>
-                        {plant.status === 'at-risk'
-                          ? <span className="font-body text-danger text-label">At risk</span>
-                          : <span className="font-body text-ok text-label">Clear</span>
-                        }
+                      <div className="px-4 pt-4 pb-4">
+                        <div className="h-[3px] bg-rule2 mb-1.5">
+                          <div className="h-full" style={{ width: `${plant.readiness}%`, background: c }} />
+                        </div>
+                        <div className="font-body text-label">
+                          {plant.status === 'at-risk'
+                            ? <span style={{ color: c }}>Below 85% threshold</span>
+                            : <span className="text-ok">Above threshold</span>}
+                        </div>
                       </div>
                     </div>
                   )
                 })}
-              </div>
-              <div className="px-5 py-2 bg-stone2 border-t border-rule2">
-                <span className="font-body text-muted text-label">3-plant network · readiness = AI data quality · adoption = workflow completion rate</span>
               </div>
             </Module>
 
@@ -829,118 +841,111 @@ export default function Analytics() {
                           : 'border-rule2 text-muted hover:border-ink/20 hover:text-ink'
                       }`}>
                       <div className="font-medium">{opt.label}</div>
-                      <div className="font-body text-micro text-muted mt-0.5">{opt.desc}</div>
+                      <div className="font-body text-label text-muted mt-0.5">{opt.desc}</div>
                     </button>
                   ))}
                 </div>
               </div>
-              {/* Column headers */}
-              <div className="grid px-5 py-2 bg-stone2 border-b border-rule2"
-                style={{ gridTemplateColumns: '1fr 1fr 56px 56px 160px' }}>
-                {['Metric', 'Percentile position (0–100)', 'Score', 'Rank', 'Delta'].map(h => (
-                  <div key={h} className="font-body text-muted text-label">{h}</div>
-                ))}
-              </div>
-              {/* Shared percentile registry — all metrics on the same 0-100 axis */}
-              {benchmarks.map((b, i) => {
-                const toneColor = b.deltaDir === 'up' ? 'var(--color-ok)' : 'var(--color-warn)'
-                const bg = b.deltaDir === 'down' && b.percentile < 50 ? 'bg-warn/[0.02]' : ''
-                const borderL = b.deltaDir === 'down' ? 'border-l-warn/40' : 'border-l-ok/30'
-                return (
-                  <div key={i} className={`grid items-center px-5 py-3 border-b border-rule2/50 border-l-2 ${bg} ${borderL}`}
-                    style={{ gridTemplateColumns: '1fr 1fr 56px 56px 160px' }}>
-                    <div className="font-body text-ink text-label font-medium pr-4 leading-snug">{b.metric}</div>
-                    <div className="pr-6">
-                      <div className="relative h-[4px] bg-rule2">
-                        {/* Median reference at 50th */}
-                        <div className="absolute top-1/2 -translate-y-1/2 w-px h-[10px] bg-muted/30" style={{ left: '50%' }} />
-                        {/* Your position */}
-                        <div className="absolute inset-y-0 left-0" style={{ width: `${b.percentile}%`, background: toneColor, opacity: 0.75 }} />
-                        {/* Percentile dot */}
-                        <div className="absolute top-1/2 -translate-y-1/2 w-[6px] h-[6px] rounded-full border border-stone"
-                          style={{ left: `${b.percentile}%`, transform: 'translate(-50%, -50%)', background: toneColor }} />
+              <div className="grid grid-cols-3 gap-4 p-5">
+                {benchmarks.map((b, i) => {
+                  const c = b.deltaDir === 'up' ? 'var(--color-ok)' : 'var(--color-warn)'
+                  const borderL = b.deltaDir === 'down' ? 'border-l-warn' : 'border-l-ok'
+                  return (
+                    <div key={i} className={`bg-stone border border-rule2 border-l-[3px] ${borderL}`}>
+                      <div className="px-4 pt-4 pb-0">
+                        <div className="font-body font-bold text-body text-ink leading-snug">{b.metric}</div>
+                      </div>
+                      <div className="px-4 pt-4 pb-0 flex items-end gap-4">
+                        <div>
+                          <div className="font-body text-muted text-label mb-1">Score</div>
+                          <div className="display-num text-title font-bold leading-none tabular-nums" style={{ color: c }}>{b.score}</div>
+                        </div>
+                        <div className="pb-0.5">
+                          <div className="font-body text-label mb-1 text-muted">Percentile</div>
+                          <div className="font-body font-bold text-sub text-muted tabular-nums">{b.percentile}th</div>
+                        </div>
+                      </div>
+                      <div className="px-4 pt-4 pb-4">
+                        <div className="relative h-[3px] bg-rule2 mb-1.5">
+                          <div className="absolute top-1/2 -translate-y-1/2 w-px h-[9px] bg-muted/30" style={{ left: '50%' }} />
+                          <div className="h-full" style={{ width: `${b.percentile}%`, background: c }} />
+                        </div>
+                        <div className="font-body text-label text-muted">{b.delta}</div>
                       </div>
                     </div>
-                    <div className="display-num text-base tabular-nums leading-none" style={{ color: toneColor }}>{b.score}</div>
-                    <div className="font-body text-label text-muted tabular-nums">You: {b.percentile}th pct</div>
-                    <div className="font-body text-label text-muted">{b.delta}</div>
-                  </div>
-                )
-              })}
-              <div className="px-5 py-2 bg-stone2 border-t border-rule2 flex items-center gap-2">
-                <div className="w-px h-[8px] bg-muted/30 flex-shrink-0" />
-                <span className="font-body text-muted text-label">Median reference · 50th percentile</span>
+                  )
+                })}
               </div>
               {/* Top quartile practices */}
               <div className="border-t-2 border-rule2">
                 <div className="px-5 py-2.5 bg-stone2 border-b border-rule2">
                   <span className="font-body text-muted text-label font-medium">What the top quartile does differently</span>
                 </div>
-                <div className="divide-y divide-rule2">
+                <div className="grid grid-cols-2 gap-4 p-5">
                   {TOP_QUARTILE.map((p, i) => (
-                    <div key={i} className="grid items-center px-5 py-3 border-l-2 border-l-ok/30"
-                      style={{ gridTemplateColumns: '76px 1fr 56px 1fr 120px' }}>
-                      <span className="font-body text-muted text-label">{p.area}</span>
-                      <span className="font-body text-label font-medium text-ink pr-4 leading-snug">{p.practice}</span>
-                      <span className="font-body text-label text-muted tabular-nums">{p.adoption}% of plants</span>
-                      <span className="font-body text-ok text-label leading-snug">{p.lift}</span>
-                      <div className="flex justify-end">
-                        <Link to={p.route} className="flex items-center gap-1 font-body text-signal text-label font-medium hover:text-ink transition-colors">
-                          Apply this week <ArrowRight size={9} />
-                        </Link>
+                    <Link key={i} to={p.route}
+                      className="block bg-stone border border-rule2 border-l-[3px] border-l-ok hover:bg-stone2 transition-colors">
+                      {/* Zone 1 — area + practice */}
+                      <div className="px-4 pt-4 pb-0">
+                        <div className="font-body text-label text-muted mb-1.5">{p.area}</div>
+                        <div className="font-body font-bold text-body text-ink leading-snug">{p.practice}</div>
                       </div>
-                    </div>
+                      {/* Zone 2 — lift */}
+                      <div className="px-4 pt-4 pb-0">
+                        <div className="font-body text-label text-muted mb-1">Impact</div>
+                        <div className="font-body text-label text-ok leading-relaxed">{p.lift}</div>
+                      </div>
+                      {/* Zone 3 — adoption */}
+                      <div className="px-4 pt-4 pb-4">
+                        <div className="h-[3px] bg-rule2 mb-1.5">
+                          <div className="h-full bg-ok" style={{ width: `${p.adoption}%` }} />
+                        </div>
+                        <div className="font-body text-label text-muted">{p.adoption}% of top-quartile plants</div>
+                      </div>
+                    </Link>
                   ))}
-                </div>
-                <div className="px-5 py-2 bg-stone2 border-t border-rule2">
-                  <span className="font-body text-muted text-label">Adoption rate = % of top-quartile plants using this practice · lift = median improvement vs cohort</span>
                 </div>
               </div>
             </Module>
 
             <Module title="Cross-plant signals" badge="2 of 4 plants connected · 3 needed for signals">
-              {/* Column headers */}
-              <div className="grid px-5 py-2 bg-stone2 border-b border-rule2"
-                style={{ gridTemplateColumns: '1fr 120px 80px 80px' }}>
-                {['Signal', 'Plants', 'Confidence', 'Status'].map(h => (
-                  <div key={h} className="font-body text-muted text-label">{h}</div>
-                ))}
-              </div>
-              {/* Active signals */}
+              <div className="grid grid-cols-3 gap-4 p-5">
               {[
-                { label: 'Plants in network', note: 'Salina Campus · Wichita Plant active', plants: 'SL-04 · KS-09', conf: 100, status: 'Active', tone: 'ok', locked: false },
-                { label: 'Shared supplier exposure', note: 'ConAgra and ADM on overlapping lots', plants: 'Both', conf: 87, status: 'Active', tone: 'warn', locked: false },
-                { label: 'Cross-plant supplier scorecards', note: 'ConAgra reliability across all plants — updated weekly', plants: '3 needed', conf: 0, status: 'Locked', tone: 'muted', locked: true },
-                { label: 'Network OEE benchmarks (live)', note: 'Real-time percentile vs. plant network', plants: '3 needed', conf: 0, status: 'Locked', tone: 'muted', locked: true },
-                { label: 'Predictive delivery risk alerts', note: '"ConAgra delays at KS-02 → Line 4 scrap spikes within 48h"', plants: '3 needed', conf: 0, status: 'Locked', tone: 'muted', locked: true },
+                { label: 'Plants in network',              note: 'Salina Campus · Wichita Plant active',                        plants: 'SL-04 · KS-09', conf: 100, status: 'Active', tone: 'ok',   locked: false },
+                { label: 'Shared supplier exposure',       note: 'ConAgra and ADM on overlapping lots',                         plants: 'Both',          conf: 87,  status: 'Active', tone: 'warn', locked: false },
+                { label: 'Cross-plant supplier scorecards',note: 'ConAgra reliability across all plants — updated weekly',       plants: '3 needed',      conf: 0,   status: 'Locked', tone: 'muted',locked: true  },
+                { label: 'Network OEE benchmarks (live)',  note: 'Real-time percentile vs. plant network',                       plants: '3 needed',      conf: 0,   status: 'Locked', tone: 'muted',locked: true  },
+                { label: 'Predictive delivery risk alerts',note: '"ConAgra delays at KS-02 → Line 4 scrap spikes within 48h"',   plants: '3 needed',      conf: 0,   status: 'Locked', tone: 'muted',locked: true  },
               ].map((s, i) => {
-                const toneColor = s.tone === 'ok' ? 'var(--color-ok)' : s.tone === 'warn' ? 'var(--color-warn)' : 'var(--color-muted)'
+                const c = s.tone === 'ok' ? 'var(--color-ok)' : s.tone === 'warn' ? 'var(--color-warn)' : 'var(--color-muted)'
+                const borderL = s.locked ? 'border-l-rule2' : s.tone === 'warn' ? 'border-l-warn' : 'border-l-ok'
                 return (
-                  <div key={i}
-                    className={`grid items-center px-5 py-3 border-b border-rule2/50 border-l-2 ${s.locked ? 'opacity-40 border-l-transparent' : s.tone === 'warn' ? 'border-l-warn/40' : 'border-l-ok/30'}`}
-                    style={{ gridTemplateColumns: '1fr 120px 80px 80px' }}>
-                    <div>
-                      <div className="flex items-center gap-2">
+                  <div key={i} className={`bg-stone border border-rule2 border-l-[3px] ${borderL} ${s.locked ? 'opacity-40' : ''}`}>
+                    <div className="px-4 pt-4 pb-0">
+                      <div className="flex items-center gap-1.5">
                         {s.locked && <Lock size={9} strokeWidth={2} className="text-muted flex-shrink-0" />}
-                        <div className="font-body text-label font-medium text-ink">{s.label}</div>
+                        <div className="font-body font-bold text-body text-ink leading-snug">{s.label}</div>
                       </div>
-                      <div className="font-body text-muted text-label">{s.note}</div>
+                      <div className="font-body text-muted text-label mt-1 leading-relaxed">{s.note}</div>
                     </div>
-                    <div className="font-body text-label text-muted">{s.plants}</div>
-                    <div>
-                      {!s.locked && (
-                        <div className="h-[3px] bg-rule2">
-                          <div className="h-full" style={{ width: `${s.conf}%`, background: toneColor, opacity: 0.75 }} />
-                        </div>
+                    <div className="px-4 pt-4 pb-4">
+                      {!s.locked ? (
+                        <>
+                          <div className="h-[3px] bg-rule2 mb-1.5">
+                            <div className="h-full" style={{ width: `${s.conf}%`, background: c }} />
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <div className="font-body text-label tabular-nums" style={{ color: c }}>{s.conf}% confidence</div>
+                            <div className="font-body text-label font-medium" style={{ color: c }}>{s.status}</div>
+                          </div>
+                        </>
+                      ) : (
+                        <div className="font-body text-label text-muted">Connect 1 more plant to unlock</div>
                       )}
-                      {!s.locked && <div className="font-body text-label tabular-nums mt-0.5" style={{ color: toneColor }}>{s.conf}%</div>}
                     </div>
-                    <div className="font-body text-label" style={{ color: toneColor }}>{s.status}</div>
                   </div>
                 )
               })}
-              <div className="px-5 py-2 bg-stone2 border-t border-rule2">
-                <span className="font-body text-muted text-label">Network benchmarks available when 3+ plants are connected · Topeka (KS-02) not yet connected</span>
               </div>
             </Module>
 

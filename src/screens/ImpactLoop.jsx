@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { interventions, kpiTargets } from '../data/interventions'
 import { AlertTriangle, CheckCircle2, ArrowRight, RotateCcw, AlertCircle, TrendingUp, TrendingDown, Zap, Clock, Layers } from 'lucide-react'
-import { StatusPill, SceneHeader, Btn, AnimatedScore, StatGrid, EmptyState, FilterDropdown } from '../components/UI'
+import { StatusPill, SceneHeader, Btn, AnimatedScore, StatGrid, EmptyState, FilterDropdown, SlidePanel } from '../components/UI'
 
 const OUTCOME_CFG = {
   positive: { label: 'Positive',     tone: 'ok',     border: 'border-l-ok',     accent: 'bg-ok'     },
@@ -29,36 +29,122 @@ function DwellBadge({ ms }) {
 }
 
 
-function InterventionCard({ entry, selected, onClick }) {
+// Grid card — impact visible inline, no click required to see outcome
+function InterventionCard({ entry, onClick }) {
   const oc = OUTCOME_CFG[entry.outcomeClassification] ?? OUTCOME_CFG.unclear
   const dc = DECISION_CFG[entry.decision] ?? DECISION_CFG.approved
+  const confPct    = entry.attributionConfidence != null ? Math.round(entry.attributionConfidence * 100) : null
+  const isLowDwell = entry.dwellTimeMs > 0 && entry.dwellTimeMs < 5000
+  const isImprovement = entry.kpiDelta?.direction === 'improvement'
+
   return (
     <button type="button" onClick={onClick}
-      className={`w-full text-left px-4 py-3.5 border-b border-rule2 border-l-4 ${oc.border} transition-colors ${
-        selected ? 'bg-stone2' : 'hover:bg-stone2/50'
-      }`}>
-      <div className="flex items-start justify-between gap-2 mb-1.5">
+      className={`w-full text-left bg-stone2 border border-rule overflow-hidden border-l-[3px] ${oc.border} hover:bg-stone3 transition-colors group`}>
+
+      {/* Header: outcome + time */}
+      <div className="flex items-center gap-2 px-4 pt-3 pb-1.5">
         <StatusPill tone={oc.tone}>{oc.label}</StatusPill>
-        {entry.kpiDelta && (
-          <span className={`font-body text-label font-medium tabular-nums flex-shrink-0 ${
-            entry.kpiDelta.direction === 'improvement' ? 'text-ok' :
-            entry.kpiDelta.direction === 'degradation' ? 'text-warn' : 'text-muted'
-          }`}>{entry.kpiDelta.after}</span>
+        {isLowDwell && (
+          <span className="flex items-center gap-0.5 font-body text-warn text-label">
+            <Clock size={9} strokeWidth={2} />⚠ {Math.round(entry.dwellTimeMs / 1000)}s
+          </span>
         )}
+        <span className="ml-auto font-body text-muted text-label">{entry.timeLabel}</span>
       </div>
-      <div className="font-body font-medium text-ink text-body leading-snug mb-1">{entry.action}</div>
-      <div className="flex items-center gap-1.5">
-        <span className="font-body text-ink text-label font-medium">{entry.agent}</span>
-        <span className="font-body text-muted text-label opacity-40">·</span>
-        <span className={`font-body text-label ${dc.cls}`}>{dc.label}</span>
+
+      {/* Action + agent */}
+      <div className="px-4 pb-3">
+        <p className="font-body font-medium text-ink text-body leading-snug mb-1">{entry.action}</p>
+        <div className="flex items-center gap-1.5">
+          <span className="font-body text-ink text-label font-medium">{entry.agent}</span>
+          <span className="font-body text-muted text-label opacity-40">·</span>
+          <span className={`font-body text-label ${dc.cls}`}>{dc.label}</span>
+          {entry.cautionNote && (
+            <span className="ml-auto flex items-center gap-0.5 font-body text-warn text-label">
+              <AlertCircle size={9} strokeWidth={2} />Caution
+            </span>
+          )}
+        </div>
       </div>
-      {entry.cautionNote && (
-        <div className="flex items-center gap-1 mt-1.5">
-          <AlertCircle size={10} className="text-warn flex-shrink-0" />
-          <span className="font-body text-warn text-label">{entry.cautionNote}</span>
+
+      {/* Impact delta — visible inline, no click required */}
+      {entry.kpiDelta && (
+        <div className={`flex items-center gap-3 px-4 py-2.5 border-t border-rule2/60 ${
+          isImprovement ? 'bg-ok/[0.04]' : entry.kpiDelta.direction === 'degradation' ? 'bg-warn/[0.03]' : ''
+        }`}>
+          <div className="flex-1 min-w-0">
+            <div className="font-body text-muted text-label truncate">{entry.kpiDelta.metric}</div>
+            <div className={`display-num text-sub font-bold tabular-nums leading-none mt-0.5 ${
+              isImprovement ? 'text-ok' : entry.kpiDelta.direction === 'degradation' ? 'text-warn' : 'text-ink'
+            }`}>
+              {entry.kpiDelta.before} → {entry.kpiDelta.after}
+            </div>
+          </div>
+          {isImprovement ? <TrendingUp size={14} className="text-ok flex-shrink-0 opacity-50" strokeWidth={2} />
+                         : <TrendingDown size={14} className="text-warn flex-shrink-0 opacity-50" strokeWidth={2} />}
+        </div>
+      )}
+
+      {/* Confidence footer */}
+      {confPct != null && (
+        <div className="flex items-center gap-2 px-4 py-2 border-t border-rule2/60">
+          <div className="h-1 flex-1 bg-rule2 overflow-hidden">
+            <div className={`h-full ${confPct >= 85 ? 'bg-ok' : confPct >= 65 ? 'bg-warn' : 'bg-danger'}`}
+              style={{ width: `${confPct}%` }} />
+          </div>
+          <span className={`font-body text-label tabular-nums flex-shrink-0 ${
+            confPct >= 85 ? 'text-ok' : confPct >= 65 ? 'text-warn' : 'text-danger'
+          }`}>{confPct}%</span>
         </div>
       )}
     </button>
+  )
+}
+
+// Outcome distribution strip — sits between SceneHeader and grid
+function ScoreDistribution({ total, positiveCount, negativeCount, unclearCount, filter, setFilter, displayedCount }) {
+  const pct = (n) => Math.round((n / total) * 100)
+  return (
+    <div className="flex-shrink-0 flex items-center gap-4 px-6 py-3 border-b border-rule2 bg-stone2">
+      {/* Distribution bar */}
+      <div className="flex-shrink-0 w-40">
+        <div className="flex h-1.5 overflow-hidden mb-1.5 gap-px">
+          <div className="bg-ok h-full transition-all"     style={{ width: `${pct(positiveCount)}%` }} />
+          <div className="bg-signal h-full transition-all" style={{ width: `${pct(unclearCount)}%` }} />
+          <div className="bg-danger h-full flex-1" />
+        </div>
+        <div className="flex items-center gap-3">
+          {[[positiveCount,'ok'],[unclearCount,'signal'],[negativeCount,'danger']].map(([n,t],i) => (
+            <span key={i} className={`display-num text-label font-bold text-${t} tabular-nums`}>{n}</span>
+          ))}
+        </div>
+      </div>
+
+      <div className="w-px h-5 bg-rule flex-shrink-0" />
+
+      {/* Labels */}
+      {[
+        [positiveCount, 'ok',     'Positive'],
+        [unclearCount,  'signal', 'Inconclusive'],
+        [negativeCount, 'danger', 'Negative'],
+      ].map(([n, t, label]) => (
+        <div key={label} className="flex items-center gap-1.5 flex-shrink-0">
+          <div className={`w-1.5 h-1.5 rounded-full bg-${t} flex-shrink-0`} />
+          <span className="font-body text-muted text-label">{label}</span>
+        </div>
+      ))}
+
+      {/* Filter + count */}
+      <div className="ml-auto flex items-center gap-3">
+        <FilterDropdown
+          label="Outcome"
+          options={OUTCOME_FILTER_OPTIONS}
+          value={filter}
+          onChange={setFilter}
+        />
+        <span className="font-body text-muted text-label tabular-nums">{displayedCount}</span>
+      </div>
+    </div>
   )
 }
 
@@ -103,7 +189,7 @@ function InterventionDetail({ entry }) {
         )}
 
         {/* ── WHAT THIS MEANS ──────────────────────────────────────────── */}
-        <div className="font-body text-micro font-semibold text-muted tracking-wider mb-3 mt-6">What this means</div>
+        <div className="font-body text-label font-semibold text-muted tracking-wider mb-3 mt-6">What this means</div>
 
         <div className={`grid gap-3 mb-4 ${entry.outcomeNotes ? 'grid-cols-2' : 'grid-cols-1'}`}>
           <div className="border border-rule2 bg-stone2 px-4 py-4">
@@ -147,7 +233,7 @@ function InterventionDetail({ entry }) {
         )}
 
         {/* ── CONSEQUENCE ──────────────────────────────────────────────── */}
-        <div className="font-body text-micro font-semibold text-muted tracking-wider mb-3 mt-7">Consequence</div>
+        <div className="font-body text-label font-semibold text-muted tracking-wider mb-3 mt-7">Consequence</div>
 
         {entry.kpiDelta && (
           <div className={`border border-rule2 px-4 py-4 mb-4 ${
@@ -226,7 +312,7 @@ function InterventionDetail({ entry }) {
         )}
 
         {/* ── DECISION ─────────────────────────────────────────────────── */}
-        <div className="font-body text-micro font-semibold text-muted tracking-wider mb-3 mt-7">Decision</div>
+        <div className="font-body text-label font-semibold text-muted tracking-wider mb-3 mt-7">Decision</div>
 
         <div className="border border-rule2 bg-stone2 divide-y divide-rule2 mb-4">
           <div className="flex items-center gap-3 px-4 py-2.5">
@@ -257,7 +343,7 @@ function InterventionDetail({ entry }) {
         )}
 
         {/* ── WHAT TRIGGERED THIS ──────────────────────────────────────── */}
-        <div className="font-body text-micro font-semibold text-muted tracking-wider mb-3 mt-7">What triggered this</div>
+        <div className="font-body text-label font-semibold text-muted tracking-wider mb-3 mt-7">What triggered this</div>
 
         <div className="border border-rule2 bg-stone2 px-4 py-4 mb-4">
           <div className="flex items-center gap-2 mb-3">
@@ -319,11 +405,13 @@ const OUTCOME_MATCH = {
 }
 
 export default function ImpactLoop() {
-  const [selectedId, setSelectedId] = useState(interventions[0]?.id ?? null)
+  const [selectedId, setSelectedId] = useState(null)
   const [filter, setFilter]         = useState('all')
 
   const selectedEntry  = interventions.find(e => e.id === selectedId)
   const positiveCount  = interventions.filter(e => e.outcomeClassification === 'positive').length
+  const negativeCount  = interventions.filter(e => e.outcomeClassification === 'negative' || e.outcomeClassification === 'harmful').length
+  const unclearCount   = interventions.filter(e => e.outcomeClassification === 'unclear').length
   const lowDwellCount  = interventions.filter(e => e.dwellTimeMs > 0 && e.dwellTimeMs < 5000).length
   const avgAttrib      = Math.round((interventions.reduce((s, e) => s + e.attributionConfidence, 0) / interventions.length) * 100)
   const autoRunCount   = interventions.filter(e => e.decision === 'auto-executed').length
@@ -347,41 +435,49 @@ export default function ImpactLoop() {
         ]}
       />
 
-      <div className="flex flex-1 min-h-0 overflow-hidden">
+      {/* Outcome distribution strip */}
+      <ScoreDistribution
+        total={interventions.length}
+        positiveCount={positiveCount}
+        negativeCount={negativeCount}
+        unclearCount={unclearCount}
+        filter={filter}
+        setFilter={v => { setFilter(v); setSelectedId(null) }}
+        displayedCount={displayed.length}
+      />
 
-        {/* ── Left: filter + list ───────────────────────────────────── */}
-        <div className="w-[280px] flex-shrink-0 border-r border-rule2 flex flex-col bg-stone">
-
-          {/* Outcome scope bar */}
-          <div className="flex items-center gap-2 px-4 py-2.5 border-b border-rule2 bg-stone flex-shrink-0">
-            <FilterDropdown
-              label="Outcome"
-              options={OUTCOME_FILTER_OPTIONS}
-              value={filter}
-              onChange={v => { setFilter(v); setSelectedId(null) }}
-            />
-            <span className="font-body text-muted text-label ml-auto tabular-nums">{displayed.length}</span>
+      {/* Two-column intervention grid */}
+      <div className="flex-1 overflow-y-auto">
+        {displayed.length === 0 ? (
+          <div className="flex items-center justify-center h-32 font-body text-muted text-body">
+            No interventions in this category
           </div>
-
-          <div className="flex-1 overflow-y-auto">
-            {displayed.length === 0 ? (
-              <EmptyState message="No interventions in this category" />
-            ) : (
-              displayed.map(e => (
-                <InterventionCard key={e.id} entry={e}
-                  selected={selectedId === e.id}
-                  onClick={() => setSelectedId(e.id)} />
-              ))
-            )}
+        ) : (
+          <div className="grid grid-cols-2 gap-3 p-4">
+            {displayed.map(e => (
+              <InterventionCard key={e.id} entry={e} onClick={() => setSelectedId(e.id)} />
+            ))}
           </div>
-        </div>
-
-        {/* ── Right: detail ─────────────────────────────────────────── */}
-        <div className="flex-1 flex flex-col overflow-hidden bg-stone">
-          <InterventionDetail entry={selectedEntry} />
-        </div>
-
+        )}
       </div>
+
+      {/* Detail SlidePanel — job 3: audit retrieval */}
+      {selectedEntry && (
+        <SlidePanel
+          title={selectedEntry.action}
+          subtitle={`${selectedEntry.agent} · ${selectedEntry.timeLabel}`}
+          accentColor={
+            selectedEntry.outcomeClassification === 'positive' ? 'var(--color-ok)'
+            : selectedEntry.outcomeClassification === 'unclear' ? 'var(--color-signal)'
+            : 'var(--color-danger)'
+          }
+          onClose={() => setSelectedId(null)}
+          maxWidth="520px"
+        >
+          <InterventionDetail entry={selectedEntry} />
+        </SlidePanel>
+      )}
     </div>
   )
 }
+

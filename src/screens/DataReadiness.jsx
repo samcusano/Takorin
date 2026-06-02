@@ -368,7 +368,7 @@ function ResolutionFeedback({ feedback, onDismiss }) {
     <div className="flex-shrink-0 px-8 py-4 border-b-2 border-b-ok/30 bg-ok/[0.04] slide-in">
       <div className="flex items-center gap-2 mb-3">
         <Check size={14} strokeWidth={2.5} className="text-ok flex-shrink-0" />
-        <span className="font-body font-semibold text-ok text-base">{feedback.label} — resolved</span>
+        <span className="font-body font-semibold text-ok text-sub">{feedback.label} — resolved</span>
       </div>
       <div className="grid grid-cols-3 gap-6">
         {[
@@ -534,7 +534,7 @@ function WorkspacePanel({ item, isCluster, resolved, onResolve, onResolveCluster
         {/* 7. Fix sequencing */}
         {item.fixSequence?.length > 0 && (
           <div className="mb-7">
-            <div className="font-body text-micro font-semibold text-muted mb-3 tracking-wider">HOW TO FIX THIS</div>
+            <div className="font-body text-label font-semibold text-muted mb-3 tracking-wider">HOW TO FIX THIS</div>
             <div className="space-y-2">
               {item.fixSequence.map((step, i) => (
                 <div key={i} className="flex items-center gap-4 px-4 py-3 bg-stone2 border border-rule2">

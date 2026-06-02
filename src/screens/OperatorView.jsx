@@ -111,7 +111,7 @@ function DirectiveCard({ directive, onAcknowledge }) {
       <span className={`font-body text-label font-medium ${accentText}`}>From {directive.from}</span>
       <span className="font-body text-muted text-label">· {directive.role} · sent {directive.sentAt}</span>
      </div>
-     <p className="font-display text-ink text-base leading-snug font-medium">{directive.message}</p>
+     <p className="font-display text-ink text-sub leading-snug font-medium">{directive.message}</p>
      {directive.deadline && (
       <div className={`font-body text-label mt-1 ${accentText}`}>Prepare by {directive.deadline}</div>
      )}
@@ -214,7 +214,7 @@ function MyProgress({ operator, op }) {
        {tasks.map((step, i) => (
         <div key={i} className="flex items-start gap-2">
          <div className="w-4 h-4 rounded-full border-2 border-rule2 flex-shrink-0 mt-0.5 flex items-center justify-center">
-          <span className="font-body text-muted text-micro leading-none">{i + 1}</span>
+          <span className="font-body text-muted text-label leading-none">{i + 1}</span>
          </div>
          <span className="font-body text-ink text-label leading-snug">{step}</span>
         </div>
@@ -283,7 +283,7 @@ function DataCommitmentOverlay({ onAcknowledge }) {
     <div className="flex items-start gap-3 mb-4">
      <ShieldCheck size={20} strokeWidth={2} className="text-ok flex-shrink-0 mt-0.5" />
      <div>
-      <div className="font-display font-bold text-ink text-base leading-snug mb-1">What we track</div>
+      <div className="font-display font-bold text-ink text-sub leading-snug mb-1">What we track</div>
       <p className="font-body text-ink2 text-body leading-relaxed">Takorin tracks production signals to help you work safely. Here's what your supervisor can see, and what they can't.</p>
      </div>
     </div>
@@ -365,7 +365,7 @@ function PrimaryDirective({ ctx }) {
     <div className="flex items-start gap-2.5 flex-1 min-w-0">
      <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 mt-1.5 ${dotClass}`} />
      <div>
-      <div className="font-body font-medium text-ink text-base leading-snug">{ctx.directive}</div>
+      <div className="font-body font-medium text-ink text-sub leading-snug">{ctx.directive}</div>
       {ctx.guidanceLevel === 'high' && (
        <div className="font-body text-muted text-label mt-0.5">Ask your supervisor if unsure about any step</div>
       )}
@@ -449,7 +449,7 @@ function ProceduralSurface({ ctx, completions, onComplete, onRequestSignOff }) {
     <div className="px-5 py-4 bg-ok/[0.04] border-b border-ok/20">
      <div className="flex items-center gap-2 mb-1.5">
       <CheckCircle2 size={13} strokeWidth={2} className="text-ok flex-shrink-0" />
-      <span className="font-body font-medium text-ok text-base">Verification complete</span>
+      <span className="font-body font-medium text-ok text-sub">Verification complete</span>
      </div>
      <div className="font-body text-ok/80 text-label mb-3">All steps verified · Await supervisor sign-off before restarting the line</div>
      <Btn variant="secondary" onClick={onRequestSignOff}>Request supervisor sign-off</Btn>
@@ -538,7 +538,7 @@ function MonitoringSurface({ ctx, entries, onLog }) {
      {[...allEntries].reverse().map((r, i) => (
       <div key={i} className="flex items-center gap-3 py-2 border-b border-rule2 last:border-b-0">
        <span className="font-body text-muted text-label w-10 flex-shrink-0">{r.time}</span>
-       <span className={`display-num text-base font-bold ${r.value >= minTemp ? 'text-ok' : 'text-danger'}`}>{r.value}°F</span>
+       <span className={`display-num text-sub font-bold ${r.value >= minTemp ? 'text-ok' : 'text-danger'}`}>{r.value}°F</span>
        <div className={`ml-auto w-1.5 h-1.5 rounded-full flex-shrink-0 ${r.value >= minTemp ? 'bg-ok' : 'bg-danger'}`} />
       </div>
      ))}
@@ -621,8 +621,8 @@ function ObservationLogger() {
     return (
      <div key={obs.id} className="py-2.5 border-b border-rule2 last:border-b-0">
       <div className="flex items-center gap-2 mb-1">
-       {cat && <span className={`font-body text-micro px-1.5 py-0.5 ${cat.bgCls} ${cat.textCls}`}>{cat.label}</span>}
-       <span className="font-body text-micro text-muted">{obs.timeLabel} · {obs.station}</span>
+       {cat && <span className={`font-body text-label px-1.5 py-0.5 ${cat.bgCls} ${cat.textCls}`}>{cat.label}</span>}
+       <span className="font-body text-label text-muted">{obs.timeLabel} · {obs.station}</span>
       </div>
       <p className="font-body text-label text-muted leading-snug m-0">{obs.note}</p>
      </div>
@@ -754,7 +754,7 @@ function TransitionTab({ selected, isDirector }) {
       <div key={i} className="flex-1 px-5 py-4 border-r border-rule2 last:border-r-0">
        <div className="font-body text-muted text-label mb-1">{cell.label}</div>
        <div className={`display-num text-metric font-bold leading-none ${cell.tone}`}>{cell.value}</div>
-       {cell.trend && <div className="font-body text-ok text-micro mt-0.5">{cell.trend}</div>}
+       {cell.trend && <div className="font-body text-ok text-label mt-0.5">{cell.trend}</div>}
       </div>
      ))}
     </div>
@@ -775,7 +775,7 @@ function TransitionTab({ selected, isDirector }) {
          <div className={`display-num text-head font-bold leading-none tabular-nums ${rt}`}>{ot.readiness}%</div>
          <div className={`font-body text-label mt-0.5 ${rt}`}>{ot.readinessLabel}</div>
          {ot.trendNote && (
-          <div className={`font-body text-micro mt-0.5 ${ot.trend > 0 ? 'text-ok' : 'text-muted'}`}>{ot.trendNote}</div>
+          <div className={`font-body text-label mt-0.5 ${ot.trend > 0 ? 'text-ok' : 'text-muted'}`}>{ot.trendNote}</div>
          )}
         </div>
        </div>
@@ -1055,7 +1055,7 @@ export default function OperatorView({ role }) {
    {isOperatorRole && (
     <div className="flex-shrink-0 flex items-center justify-between px-5 py-3 border-b border-rule2 bg-stone2">
      <div>
-      <div className="font-display font-bold text-ink text-base leading-none">{ctx?.station || op?.station}</div>
+      <div className="font-display font-bold text-ink text-sub leading-none">{ctx?.station || op?.station}</div>
       <div className="font-body text-muted text-label mt-0.5">Line 4 · AM shift · {selected}</div>
      </div>
      {trustDegraded && (

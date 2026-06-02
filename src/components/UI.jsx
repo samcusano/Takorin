@@ -56,16 +56,16 @@ export function SceneHeader({
    {/* Module bar */}
    <div className="flex items-center justify-between px-6 pt-4 pb-0 relative">
     <div className="flex items-center gap-3">
-     <span className="font-body text-micro text-muted">{module}</span>
+     <span className="font-body text-label text-muted">{module}</span>
      {context && <>
       <div className="w-px h-3 bg-rule flex-shrink-0" />
-      <span className="font-body text-micro text-muted">{context}</span>
+      <span className="font-body text-label text-muted">{context}</span>
      </>}
     </div>
     {(live || timestamp) && (
      <div className="flex items-center gap-2">
       {live && <div className="live-dot w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: 'var(--color-signal)' }} />}
-      {timestamp && <span className="font-body text-micro text-muted">{timestamp}</span>}
+      {timestamp && <span className="font-body text-label text-muted">{timestamp}</span>}
      </div>
     )}
    </div>
@@ -83,7 +83,7 @@ export function SceneHeader({
        {metricLabel && (
         <div className="flex items-center gap-2 mt-2">
          <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: mc }} />
-         <span className="font-body text-micro" style={{ color: mc }}>{metricLabel}</span>
+         <span className="font-body text-label" style={{ color: mc }}>{metricLabel}</span>
         </div>
        )}
       </div>
@@ -92,13 +92,14 @@ export function SceneHeader({
      {/* Narrative statement */}
      {statement && (
       <div className={`max-w-md flex-1 ${metric != null ? 'border-l border-rule pl-8' : ''}`}>
-       <p className="font-display text-ink text-base leading-relaxed">{statement}</p>
+       <p className="font-display text-ink text-sub leading-relaxed">{statement}</p>
        {meta.length > 0 && (
         <div className="flex items-center gap-5 mt-3">
-         {meta.map(({ label, value, color: c }, i) => (
+         {meta.map(({ label, value, color: c, icon: Icon }, i) => (
           <div key={i} className="flex items-center gap-1.5">
-           <span className="font-body text-micro text-muted">{label}</span>
-           <span className="font-body text-micro" style={{ color: c || 'var(--color-signal)' }}>{value}</span>
+           {Icon && <Icon size={11} strokeWidth={2} className="text-muted flex-shrink-0" />}
+           {label && <span className="font-body text-label text-muted">{label}</span>}
+           <span className="font-body text-label" style={{ color: c || 'var(--color-signal)' }}>{value}</span>
           </div>
          ))}
         </div>
@@ -122,7 +123,7 @@ export function SceneHeader({
           strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
          <circle cx="78" cy={lastY} r="2.5" fill={sparkline.color} />
         </svg>
-        <span className="font-body text-micro text-muted block text-center mt-0.5">{sparkline.label}</span>
+        <span className="font-body text-label text-muted block text-center mt-0.5">{sparkline.label}</span>
        </div>
       )
      })()}
@@ -171,7 +172,7 @@ export function SectionHeader({ tone = 'muted', label, sub, title, icon: Icon, a
      {label && <StatusPill tone={tone}>{label}</StatusPill>}
      {Icon && <Icon size={12} strokeWidth={2} style={accent ? { color: accent } : undefined} />}
     </div>
-    <div className="flex-1 font-display font-semibold text-ink text-base">{title}</div>
+    <div className="flex-1 font-display font-semibold text-ink text-sub">{title}</div>
     {badge}
    </div>
   )
@@ -191,7 +192,7 @@ export function StatCell({ label, value, sub, fill, tone = 'ok', badge }) {
  const toneBorder = { ok:'border-t-ok', warn:'border-t-warn', danger:'border-t-danger', signal:'border-t-signal' }[tone] || 'border-t-ok'
  return (
  <div className={`px-5 py-4 border-r border-rule2 last:border-r-0 border-t-2 ${toneBorder}`}>
- <div className="font-body text-micro text-muted mb-2">{label}</div>
+ <div className="font-body text-label text-muted mb-2">{label}</div>
  <div className="flex items-center gap-2">
  <div className="font-body font-bold text-metric text-ink tabular-nums">{value}</div>
  {badge && <StatusPill tone="muted" dot={false}>{badge}</StatusPill>}
@@ -215,7 +216,7 @@ export function CaseCard({ urgency = 'warn', num, children }) {
  <div className="bg-stone border border-rule mb-2.5 overflow-hidden">
   <div className={`h-[3px] w-full ${topBar}`} />
   <div className="grid grid-cols-[28px_1fr] gap-0">
-   <div className={`pt-4 pl-3 font-body font-bold text-base ${numColor}`}>{num}</div>
+   <div className={`pt-4 pl-3 font-body font-bold text-sub ${numColor}`}>{num}</div>
    <div className="p-4 pl-2">{children}</div>
   </div>
  </div>
@@ -227,7 +228,7 @@ export function SP({ title, sub, children }) {
  return (
  <div className="border-b border-rule2 last:border-b-0">
  <div className="px-5 py-3 border-b border-rule2 flex items-baseline justify-between">
- <span className="font-display font-semibold text-ink text-base">{title}</span>
+ <span className="font-display font-semibold text-ink text-sub">{title}</span>
  {sub && <span className="font-body text-muted text-label">{sub}</span>}
  </div>
  <div>{children}</div>
@@ -257,7 +258,7 @@ export function ActionBanner({ tone = 'warn', headline, body, children, footer }
  <div className={`flex-shrink-0 ${s}`}>
  <div className="px-5 py-4 flex items-start gap-4">
  <div className="flex-1">
- <div className="font-display font-semibold text-ink text-base leading-tight">{headline}</div>
+ <div className="font-display font-semibold text-ink text-sub leading-tight">{headline}</div>
  {body && <div className="font-display text-muted text-body mt-1 leading-relaxed">{body}</div>}
  </div>
  {children && <div className="flex gap-2 flex-shrink-0 items-start">{children}</div>}
@@ -269,7 +270,7 @@ export function ActionBanner({ tone = 'warn', headline, body, children, footer }
 
 // ── Button variants
 export function Btn({ variant = 'primary', icon: Icon, onClick, disabled, children, className = '', style }) {
- const base = 'font-body font-medium text-body px-4 py-2.5 min-h-[40px] inline-flex items-center justify-center gap-2 transition-[background-color,box-shadow,opacity,transform] duration-100 ease-standard active:scale-[0.97] cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed rounded-btn'
+ const base = 'font-body font-medium text-body px-4 py-2 min-h-[36px] inline-flex items-center justify-center gap-2 transition-[background-color,box-shadow,opacity,transform] duration-100 ease-standard active:scale-[0.97] cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed rounded-btn'
  const cls = {
   primary:   'bg-signal text-white hover:bg-signal-dark hover:shadow-raise',
   secondary: 'border border-rule bg-stone2 text-ink hover:bg-stone3 hover:border-rule2',
@@ -349,7 +350,7 @@ export function Dot({ level = 'empty' }) {
 export function PageHead({ over, title, accent = 'var(--color-signal)', meta = [], children }) {
  return (
  <div className="px-6 py-5 border-b border-rule2 bg-stone2 relative overflow-hidden" style={{ borderLeft: `3px solid ${accent}` }}>
- {over && <div className="font-body text-micro text-muted mb-2">{over}</div>}
+ {over && <div className="font-body text-label text-muted mb-2">{over}</div>}
  <div className="font-display font-bold text-metric text-ink leading-tight">
  {title}
  {children && <span className="font-display font-normal" style={{ color: accent }}> {children}</span>}
@@ -358,7 +359,7 @@ export function PageHead({ over, title, accent = 'var(--color-signal)', meta = [
  <div className="flex flex-wrap gap-x-6 gap-y-1 mt-3">
  {meta.map(({ role, val }, i) => (
  <div key={i} className="flex gap-1.5 items-baseline">
- <span className="font-body text-micro text-muted">{role}</span>
+ <span className="font-body text-label text-muted">{role}</span>
  <span className="font-display text-ink text-body font-medium">{val}</span>
  </div>
  ))}
@@ -558,7 +559,7 @@ export function VaulDrawer({ open, onClose, title, badge, children, maxHeight = 
     {title && (
      <div className="flex items-center justify-between px-4 py-2.5 border-b border-rule flex-shrink-0">
       <div className="flex items-center gap-2">
-       <span className="font-display font-medium text-ink text-base">{title}</span>
+       <span className="font-display font-medium text-ink text-sub">{title}</span>
        {badge}
       </div>
       <button type="button" onClick={handleClose} className="text-muted hover:text-ink transition-colors duration-100 ease-standard p-1 -mr-1" aria-label={`Close ${title}`}>
@@ -838,7 +839,7 @@ export function ActionCard({ tone = 'danger', title, subtitle, metadata, actions
        {badge}
       </span>
      )}
-     <div className="font-display font-medium text-ink text-base mb-1">{title}</div>
+     <div className="font-display font-medium text-ink text-sub mb-1">{title}</div>
      {subtitle && <div className="font-body text-muted text-label mb-2">{subtitle}</div>}
      {metadata && (
       <div className="flex items-center gap-2 mb-2 flex-wrap">
@@ -1007,8 +1008,8 @@ export function SlidePanel({ title, subtitle, icon: Icon, accentColor, ariaLabel
      <div className="flex items-center gap-3 min-w-0">
       {Icon && <Icon size={20} strokeWidth={1.5} className="text-signal flex-shrink-0" aria-hidden="true" />}
       <div className="min-w-0">
-       {subtitle && <div className="font-body text-micro text-muted mb-1">{subtitle}</div>}
-       <div className="font-display font-bold text-ink text-base leading-snug">{title}</div>
+       {subtitle && <div className="font-body text-label text-muted mb-1">{subtitle}</div>}
+       <div className="font-display font-bold text-ink text-sub leading-snug">{title}</div>
       </div>
      </div>
      <button type="button" onClick={handleClose} aria-label="Close panel"
@@ -1077,8 +1078,8 @@ export function SectionLabel({ label, badge, badgeTone = 'muted' }) {
  }[badgeTone] || 'text-muted'
  return (
   <div className="px-4 py-2 bg-stone2 border-b border-rule2 flex items-center gap-2">
-   <span className="font-body text-micro text-muted tracking-wide flex-1">{label}</span>
-   {badge && <span className={`font-body text-micro font-medium ${badgeCls}`}>{badge}</span>}
+   <span className="font-body text-label text-muted tracking-wide flex-1">{label}</span>
+   {badge && <span className={`font-body text-label font-medium ${badgeCls}`}>{badge}</span>}
   </div>
  )
 }
@@ -1138,7 +1139,7 @@ export function AccentRow({ tone = 'muted', bg = false, className = '', children
 // cols: number of columns (default 4). Wrap StatGrid.Cell children inside.
 // size: 'sm' (15px base), 'md' (22px title, default for kpi grids), 'lg' (28px metric)
 function StatGridCell({ label, value, sub, tone = 'text-ink', size = 'md' }) {
- const numCls = size === 'sm' ? 'text-base' : size === 'lg' ? 'text-metric' : 'text-title'
+ const numCls = size === 'sm' ? 'text-sub' : size === 'lg' ? 'text-metric' : 'text-title'
  return (
   <div className="bg-stone px-4 py-3 min-w-0">
    <div className="font-body text-muted text-label mb-0.5">{label}</div>

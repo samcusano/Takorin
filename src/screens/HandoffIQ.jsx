@@ -58,7 +58,7 @@ function LiveDocOverlay({ triggerRef, onClose }) {
         <div className="overflow-y-auto" style={{ maxHeight: '60vh' }}>
           {SHIFT_EVENTS.map((ev, i) => (
             <div key={i} className="flex items-start gap-3 px-5 py-2.5 border-b border-rule2 last:border-b-0">
-              <span className="font-body text-muted text-micro tabular-nums w-9 flex-shrink-0 mt-px">{ev.time}</span>
+              <span className="font-body text-muted text-label tabular-nums w-9 flex-shrink-0 mt-px">{ev.time}</span>
               {ev.type === 'agent'
                 ? <Zap size={9} strokeWidth={2} className="flex-shrink-0 mt-1 text-deep" />
                 : ev.type === 'human'
@@ -171,13 +171,13 @@ function ForecastRow({ row }) {
    <div className={`display-num text-head leading-none flex-shrink-0 w-8 tabular-nums ${sc}`}>{row.score}</div>
    <div className="flex-1 min-w-0">
     <div className="font-body font-medium text-ink text-body leading-snug">{row.name}</div>
-    <div className="font-body text-muted text-micro mt-0.5">{row.time.replace('\n', ' ')}</div>
-    {row.action && <div className={`font-body text-micro mt-1 ${row.urgent ? 'text-warn' : 'text-muted'}`}>{row.action}</div>}
+    <div className="font-body text-muted text-label mt-0.5">{row.time.replace('\n', ' ')}</div>
+    {row.action && <div className={`font-body text-label mt-1 ${row.urgent ? 'text-warn' : 'text-muted'}`}>{row.action}</div>}
    </div>
    <div className="flex flex-col gap-1 items-end flex-shrink-0">
     {signals.map((s, i) => {
      const cls = s.tone === 'ok' ? 'text-ok bg-ok/10' : (s.tone === 'bad' || s.tone === 'danger') ? 'text-danger bg-danger/[0.06]' : 'text-warn bg-warn/10'
-     return <span key={i} className={`font-body text-micro px-1.5 py-px flex-shrink-0 ${cls}`}>{s.label}</span>
+     return <span key={i} className={`font-body text-label px-1.5 py-px flex-shrink-0 ${cls}`}>{s.label}</span>
     })}
    </div>
   </div>
@@ -195,16 +195,16 @@ function FloorObservationsSection() {
    <button type="button" onClick={() => setExpanded(p => !p)}
     className="w-full flex items-center gap-2 px-4 py-2.5 bg-stone2 hover:bg-stone3 transition-colors text-left">
     <Eye size={10} strokeWidth={2} className="text-muted flex-shrink-0" />
-    <span className="font-body text-micro text-muted tracking-wide flex-1">FLOOR OBSERVATIONS · {obs.length}</span>
-    <span className="font-body text-micro text-muted">{expanded ? '↑' : '↓'}</span>
+    <span className="font-body text-label text-muted tracking-wide flex-1">FLOOR OBSERVATIONS · {obs.length}</span>
+    <span className="font-body text-label text-muted">{expanded ? '↑' : '↓'}</span>
    </button>
    {expanded && obs.map(o => {
     const cat = OBSERVATION_CATEGORIES.find(c => c.id === o.category)
     return (
      <div key={o.id} className="px-4 py-3 border-b border-rule2 last:border-b-0">
       <div className="flex items-center gap-2 mb-1.5">
-       {cat && <span className={`font-body text-micro px-1.5 py-0.5 ${cat.bgCls} ${cat.textCls}`}>{cat.label}</span>}
-       <span className="font-body text-micro text-muted">{o.timeLabel} · {o.operator} · {o.station}</span>
+       {cat && <span className={`font-body text-label px-1.5 py-0.5 ${cat.bgCls} ${cat.textCls}`}>{cat.label}</span>}
+       <span className="font-body text-label text-muted">{o.timeLabel} · {o.operator} · {o.station}</span>
       </div>
       <p className="font-body text-label text-muted leading-snug m-0">{o.note}</p>
      </div>
@@ -258,7 +258,7 @@ function LayoutGrid({ d, currentPlant, carryForwardItems, acknowledgedCount, car
       <div className="flex items-center gap-3 px-5 py-2 bg-stone2 border-b border-rule2">
        <div className="w-1.5 h-1.5 rounded-full bg-ok flex-shrink-0" />
        <span className="font-body text-label font-medium text-ink">Previous shift relay</span>
-       <span className="font-body text-muted text-micro">Kowalski · AM shift · handed off 14:03</span>
+       <span className="font-body text-muted text-label">Kowalski · AM shift · handed off 14:03</span>
       </div>
       <div className="flex items-stretch">
        <div className="flex items-center gap-3 px-5 py-2.5 border-r border-rule2 flex-1">
@@ -269,7 +269,7 @@ function LayoutGrid({ d, currentPlant, carryForwardItems, acknowledgedCount, car
         <div className="w-1.5 h-1.5 rounded-full bg-warn animate-pulse flex-shrink-0" />
         <div className="flex-1 min-w-0">
          <div className="font-body text-warn text-label font-medium">Oven B SCADA stale</div>
-         <div className="font-body text-muted text-micro">No action taken · last confirmed 11h ago</div>
+         <div className="font-body text-muted text-label">No action taken · last confirmed 11h ago</div>
         </div>
        </div>
       </div>
@@ -298,11 +298,11 @@ function LayoutGrid({ d, currentPlant, carryForwardItems, acknowledgedCount, car
         <div className={`w-1 self-stretch flex-shrink-0 ${i === 0 ? 'bg-danger' : 'bg-warn'}`} />
         <div className="flex-1 min-w-0 px-3 py-2.5">
          <div className="flex items-baseline gap-2">
-          <span className={`font-body text-micro font-bold tabular-nums flex-shrink-0 ${i === 0 ? 'text-danger' : 'text-warn'}`}>{i + 1}</span>
+          <span className={`font-body text-label font-bold tabular-nums flex-shrink-0 ${i === 0 ? 'text-danger' : 'text-warn'}`}>{i + 1}</span>
           <span className="font-body font-semibold text-body text-ink">{ccp.station}</span>
           <span className="font-body text-muted text-label">· {ccp.ccp}</span>
          </div>
-         <div className="font-body text-micro text-muted mt-0.5">{ccp.limit}</div>
+         <div className="font-body text-label text-muted mt-0.5">{ccp.limit}</div>
         </div>
        </li>
       ))}
@@ -378,11 +378,11 @@ function LayoutGrid({ d, currentPlant, carryForwardItems, acknowledgedCount, car
     <div className="border-b border-rule2">
      <button type="button" onClick={() => setCoverageOpen(o => !o)}
       className="w-full flex items-center gap-2 px-4 py-2.5 bg-stone2 hover:bg-stone3 transition-colors text-left">
-      <span className="font-body text-micro text-muted tracking-wide flex-1">
+      <span className="font-body text-label text-muted tracking-wide flex-1">
        COVERAGE · STAFFING &amp; CERTS{certGaps.length > 0 ? ` · ${certGaps.length} gap${certGaps.length > 1 ? 's' : ''}` : ''}
       </span>
       {certGaps.length > 0 && <div className="w-1.5 h-1.5 rounded-full bg-warn flex-shrink-0" />}
-      <span className="font-body text-micro text-muted">{coverageOpen ? '↑' : '↓'}</span>
+      <span className="font-body text-label text-muted">{coverageOpen ? '↑' : '↓'}</span>
      </button>
      {coverageOpen && (
       <>
@@ -400,12 +400,12 @@ function LayoutGrid({ d, currentPlant, carryForwardItems, acknowledgedCount, car
          className="flex items-center gap-5 px-4 py-3 last:border-b-0">
          <div className="flex-shrink-0 w-12">
           <div className={`display-num text-head leading-none tabular-nums ${c.tone === 'danger' ? 'text-danger' : 'text-warn'}`}>{c.expiresIn}</div>
-          <div className="font-body text-micro text-muted mt-0.5">days</div>
+          <div className="font-body text-label text-muted mt-0.5">days</div>
          </div>
          <div className="flex-1 min-w-0">
           <div className={`font-body font-semibold text-body ${c.tone === 'danger' ? 'text-danger' : 'text-ink'}`}>{c.name}</div>
           <div className="font-body text-label text-muted">{c.cert}</div>
-          {c.note && <div className={`font-body text-micro mt-0.5 ${c.tone === 'danger' ? 'text-danger/70' : 'text-muted'}`}>{c.note}</div>}
+          {c.note && <div className={`font-body text-label mt-0.5 ${c.tone === 'danger' ? 'text-danger/70' : 'text-muted'}`}>{c.note}</div>}
          </div>
         </AccentRow>
        ))}
@@ -418,14 +418,14 @@ function LayoutGrid({ d, currentPlant, carryForwardItems, acknowledgedCount, car
      <div className="border-b border-rule2">
       <button type="button" onClick={() => setNotesOpen(o => !o)}
        className="w-full flex items-center gap-2 px-4 py-2.5 bg-stone2 hover:bg-stone3 transition-colors text-left">
-       <span className="font-body text-micro text-muted tracking-wide flex-1">
+       <span className="font-body text-label text-muted tracking-wide flex-1">
         SHIFT NOTES · {d.shiftNotes.author}
        </span>
-       <span className="font-body text-micro text-muted">{notesOpen ? '↑' : '↓'}</span>
+       <span className="font-body text-label text-muted">{notesOpen ? '↑' : '↓'}</span>
       </button>
       {notesOpen && (
        <div className="px-4 py-3 border-t border-rule2">
-        <div className="font-body text-micro text-muted mb-2">{d.shiftNotes.time}</div>
+        <div className="font-body text-label text-muted mb-2">{d.shiftNotes.time}</div>
         <ul className="space-y-2">
          {d.shiftNotes.body.map((note, i) => (
           <li key={i} className="flex items-start gap-2.5">
@@ -464,7 +464,7 @@ function LayoutGrid({ d, currentPlant, carryForwardItems, acknowledgedCount, car
     ) : (
      <button type="button"
       onClick={() => allAcknowledged && setHandedOff(true)}
-      className={`w-full py-2.5 rounded-btn font-body font-medium text-base transition-colors ${
+      className={`w-full py-2.5 rounded-btn font-body font-medium text-sub transition-colors ${
        allAcknowledged
         ? 'bg-ok/10 text-ok border border-ok/30 hover:bg-ok/20 cursor-pointer'
         : 'bg-stone2 text-ink border border-rule hover:border-rule2 cursor-default'
@@ -535,7 +535,7 @@ function MachineStateHandoff() {
 
     {/* Left: action items — faults + maintenance backlog */}
     <div className="w-[55%] border-r border-rule2 flex flex-col overflow-hidden">
-     <div className="flex-shrink-0 px-5 py-2.5 border-b border-rule2 bg-stone2">
+     <div className="flex-shrink-0 px-5 py-2 border-b border-rule2 bg-stone2">
       <span className="font-body font-bold text-ink text-body">Action required</span>
       {faultCount > 0 && <span className="ml-2 font-body text-danger text-label">{faultCount} fault{faultCount > 1 ? 's' : ''} blocking handoff</span>}
      </div>
@@ -574,7 +574,7 @@ function MachineStateHandoff() {
 
     {/* Right: fleet calibration & program state */}
     <div className="w-[45%] flex flex-col overflow-hidden">
-     <div className="flex-shrink-0 px-5 py-2.5 border-b border-rule2 bg-stone2">
+     <div className="flex-shrink-0 px-5 py-2 border-b border-rule2 bg-stone2">
       <span className="font-body font-bold text-ink text-body">Fleet status</span>
      </div>
      <div className="flex-1 overflow-y-auto">

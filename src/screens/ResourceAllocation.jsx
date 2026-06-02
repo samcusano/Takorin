@@ -55,7 +55,7 @@ function ImpactPreview({ task, onConfirm, onCancel }) {
       <div className="bg-stone w-full max-w-md shadow-raise slide-in">
         <div className="px-5 py-4 border-b border-rule2 bg-stone2">
           <div className="font-body text-muted text-label mb-1">Reallocation preview</div>
-          <div className="font-display font-bold text-ink text-base">{task.label} — {task.line}</div>
+          <div className="font-display font-bold text-ink text-sub">{task.label} — {task.line}</div>
         </div>
 
         <div className="px-5 py-4 space-y-4">

@@ -101,7 +101,7 @@ function OverrideModal({ agentName, actionLabel, onConfirm, onCancel }) {
       <div className="bg-stone w-full max-w-md shadow-raise slide-in">
         <div className="px-5 py-4 border-b border-rule2 bg-stone2">
           <div className="font-body text-muted text-label mb-1">Why are you overriding?</div>
-          <div className="font-display font-bold text-ink text-base">{agentName}</div>
+          <div className="font-display font-bold text-ink text-sub">{agentName}</div>
           <div className="font-body text-muted text-label mt-0.5">{actionLabel}</div>
         </div>
         <div className="px-5 py-4 space-y-3">
@@ -135,7 +135,7 @@ function DisableModal({ agent, onConfirm, onCancel }) {
       <div className="bg-stone w-full max-w-md shadow-raise slide-in">
         <div className="px-5 py-4 border-b border-rule2 bg-stone2">
           <div className="font-body text-muted text-label mb-1">Disable agent — confirm</div>
-          <div className="font-display font-bold text-ink text-base">{agent.name}</div>
+          <div className="font-display font-bold text-ink text-sub">{agent.name}</div>
         </div>
         <div className="px-5 py-4 space-y-3">
           <p className="font-body text-muted text-body leading-relaxed">
@@ -200,7 +200,7 @@ function FlagOutcomeModal({ agentName, actionLabel, plantContext, onConfirm, onC
       <div className="bg-stone w-full max-w-md shadow-raise slide-in">
         <div className="px-5 py-4 border-b border-rule2 bg-stone2">
           <div className="font-body text-muted text-label mb-1">Flag decision for model review</div>
-          <div className="font-display font-bold text-ink text-base">{agentName}</div>
+          <div className="font-display font-bold text-ink text-sub">{agentName}</div>
           <div className="font-body text-muted text-label mt-0.5">{actionLabel}</div>
         </div>
         <div className="px-5 py-4 space-y-4">
@@ -227,7 +227,7 @@ function FlagOutcomeModal({ agentName, actionLabel, plantContext, onConfirm, onC
                     onChange={() => setCategory(fc.value)} className="mt-0.5 flex-shrink-0 accent-signal" />
                   <div>
                     <div className="font-body text-ink text-label font-medium">{fc.label}</div>
-                    <div className="font-body text-muted text-micro">{fc.desc}</div>
+                    <div className="font-body text-muted text-label">{fc.desc}</div>
                   </div>
                 </label>
               ))}
@@ -680,7 +680,7 @@ function DecisionReplay({ pa, agent }) {
                     style={{ left: -38, width: 28, height: 28 }}>
                     {isPast
                       ? <svg width={10} height={10} viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
-                      : <span className={`font-body font-bold text-micro ${isActive ? 'text-stone' : 'text-muted'}`}>{i + 1}</span>
+                      : <span className={`font-body font-bold text-label ${isActive ? 'text-stone' : 'text-muted'}`}>{i + 1}</span>
                     }
                   </div>
                   {/* Text */}
@@ -830,7 +830,7 @@ function InvestigationPanel({ pa, agent, agentActions }) {
                   <div key={i} className="flex items-start gap-3 px-3 py-2.5">
                     <span className="font-body text-muted text-label flex-shrink-0 w-10 pt-px">{a.timestamp?.slice(11, 16) || '—'}</span>
                     <div className="flex-1">
-                      <div className="font-body text-ink text-label leading-snug">{a.action}</div>
+                      <div className="font-body text-ink text-body leading-snug">{a.action}</div>
                       {a.rationale && <div className="font-body text-muted text-label mt-0.5">{a.rationale}</div>}
                     </div>
                     <span className={`font-body text-label flex-shrink-0 ${a.status === 'completed' ? 'text-ok' : a.status === 'overridden' ? 'text-muted' : 'text-warn'}`}>{a.status}</span>
@@ -895,7 +895,7 @@ function ActivityLog({ agentActions }) {
         <div key={i} className="flex items-start gap-3 px-5 py-2.5 border-b border-rule2 last:border-0">
           <span className="font-body text-muted text-label flex-shrink-0 w-10 pt-px">{a.timestamp?.slice(11, 16) || '—'}</span>
           <span className="font-body text-muted text-label flex-shrink-0 w-28 truncate">{a.agentId}</span>
-          <span className="font-body text-ink text-label leading-snug flex-1">{a.action}</span>
+          <span className="font-body text-ink text-body leading-snug flex-1">{a.action}</span>
           <span className={`font-body text-label flex-shrink-0 ${a.status === 'completed' ? 'text-ok' : a.status === 'overridden' ? 'text-muted' : 'text-warn'}`}>
             {a.status}
           </span>
@@ -956,7 +956,7 @@ function Tier1Overlay({ items, agents, btnRef, onClose }) {
             <div key={pa._key} className="flex items-center gap-3 px-4 py-2.5">
               <div className="flex-1 min-w-0">
                 <div className="font-body text-muted text-label">{agent.name}</div>
-                <div className="font-body text-ink text-label leading-snug">{pa._meta.verbFirst}</div>
+                <div className="font-body text-ink text-body leading-snug">{pa._meta.verbFirst}</div>
               </div>
               <StatusPill tone="muted">Notified</StatusPill>
             </div>
@@ -1151,7 +1151,7 @@ export default function AgentControl() {
       )}
 
       {/* ── Scope bar ─────────────────────────────────────────────────── */}
-      <div className="flex items-center gap-2 px-5 py-2.5 border-b border-rule2 bg-stone flex-shrink-0">
+      <div className="flex items-center gap-2 px-5 py-2 border-b border-rule2 bg-stone flex-shrink-0">
         <FilterDropdown
           label="Agent"
           options={[{ value: 'all', label: 'All agents' }, ...agents.map(a => ({ value: a.id, label: a.name }))]}
@@ -1302,7 +1302,7 @@ export default function AgentControl() {
               <span className="font-body text-danger text-label font-medium flex-1">
                 {undecidedT3.length} critical decision{undecidedT3.length !== 1 ? 's' : ''} require your attention
               </span>
-              <span className="font-body text-danger/70 text-micro tabular-nums">
+              <span className="font-body text-danger/70 text-label tabular-nums">
                 {undecidedT3[0]?._meta?.consequence === 'critical' ? 'FDA lock risk' : 'Action required'}
               </span>
             </div>
@@ -1330,7 +1330,7 @@ export default function AgentControl() {
                   <span className="font-body text-muted/70 text-label ml-2">{exp.ingredient} · {exp.supplier} · {exp.note}</span>
                 </div>
                 <div className="flex items-center gap-1.5 flex-shrink-0">
-                  <span className="font-body text-muted text-micro">Also at:</span>
+                  <span className="font-body text-muted text-label">Also at:</span>
                   {others.map(p => (
                     <span key={p.id} className="font-body text-danger text-label bg-danger/[0.08] px-1.5 py-0.5">{p.code}</span>
                   ))}
@@ -1388,7 +1388,7 @@ export default function AgentControl() {
                                     {pa._decided === 'approved' ? 'Approved' : 'Overridden'}
                                   </StatusPill>
                                   {flaggedDecisions[pa._key] && (
-                                    <span className="flex items-center gap-0.5 font-body text-micro text-warn">
+                                    <span className="flex items-center gap-0.5 font-body text-label text-warn">
                                       <Flag size={8} strokeWidth={2} />
                                       <span>Flagged</span>
                                     </span>
@@ -1456,9 +1456,9 @@ export default function AgentControl() {
                           <div className="flex flex-wrap items-center gap-1 mt-2">
                             {pa.reasoning.map((link, i) => (
                               <span key={i} className="flex items-center gap-1">
-                                <span className="font-body text-muted text-micro leading-snug">{link}</span>
+                                <span className="font-body text-muted text-label leading-snug">{link}</span>
                                 {i < pa.reasoning.length - 1 && (
-                                  <span className="font-body text-muted/40 text-micro flex-shrink-0">→</span>
+                                  <span className="font-body text-muted/40 text-label flex-shrink-0">→</span>
                                 )}
                               </span>
                             ))}
@@ -1488,7 +1488,7 @@ export default function AgentControl() {
                               <div className="font-body text-muted text-label">conf</div>
                             </div>
                             {modelLabel && (
-                              <div className={`font-body text-micro mt-0.5 text-right ${confOk ? 'text-ok/70' : 'text-danger/80'}`}>
+                              <div className={`font-body text-label mt-0.5 text-right ${confOk ? 'text-ok/70' : 'text-danger/80'}`}>
                                 {modelLabel} · {confOk ? 'within threshold' : `below ${green}% required`}
                               </div>
                             )}
@@ -1639,7 +1639,7 @@ export default function AgentControl() {
                     {!pa._decided && pa.cohort && (
                       <div className="flex-shrink-0 flex items-center gap-2.5 px-5 py-2 border-t border-rule2 bg-deep/[0.04]">
                         <div className="w-1.5 h-1.5 rounded-full bg-deep flex-shrink-0 flex-shrink-0" />
-                        <span className="font-body text-deep text-micro leading-snug">{pa.cohort}</span>
+                        <span className="font-body text-deep text-label leading-snug">{pa.cohort}</span>
                       </div>
                     )}
 
@@ -1692,7 +1692,7 @@ export default function AgentControl() {
               <div className="flex items-center gap-3 py-4">
                 <CheckCircle size={16} className="text-ok flex-shrink-0" />
                 <div>
-                  <div className="font-body font-medium text-ink text-base">All decisions made</div>
+                  <div className="font-body font-medium text-ink text-sub">All decisions made</div>
                   <div className="font-body text-muted text-label mt-0.5">Agents operating autonomously within configured boundaries.</div>
                 </div>
               </div>
@@ -1710,7 +1710,7 @@ export default function AgentControl() {
                           <Icon size={16} className="text-danger flex-shrink-0" />
                           <div>
                             <div className="font-body text-muted text-label">{agent.name} · Auto-executing</div>
-                            <div className="font-display font-bold text-ink text-base leading-snug mt-0.5">{pa._meta.verbFirst}</div>
+                            <div className="font-display font-bold text-ink text-sub leading-snug mt-0.5">{pa._meta.verbFirst}</div>
                           </div>
                         </div>
                         <EmergencyChip overrideWindowMin={pa.overrideWindowMin} />
@@ -1755,9 +1755,9 @@ export default function AgentControl() {
                               <div className="flex items-start gap-2 mb-2">
                                 <div className="flex-1 min-w-0">
                                   <div className="font-body text-muted text-label">{agent.name}</div>
-                                  <div className="font-display font-bold text-ink text-base leading-snug mt-0.5">{pa._meta.verbFirst}</div>
+                                  <div className="font-display font-bold text-ink text-sub leading-snug mt-0.5">{pa._meta.verbFirst}</div>
                                 </div>
-                                <span className={`font-body text-micro px-1.5 py-0.5 flex-shrink-0 ${cfg.color} ${cfg.bg}`}>{cfg.label}</span>
+                                <span className={`font-body text-label px-1.5 py-0.5 flex-shrink-0 ${cfg.color} ${cfg.bg}`}>{cfg.label}</span>
                               </div>
                               {pa.impactPreview?.slice(0, 2).map((l, i) => (
                                 <div key={i} className="font-body text-muted text-label leading-snug mb-0.5">· {l}</div>
@@ -1942,7 +1942,7 @@ export default function AgentControl() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <div className={`font-body font-medium text-body ${plant.status === 'at-risk' ? 'text-danger' : 'text-ink'}`}>{plant.name}</div>
-                    {plant.active && <span className="font-body text-signal text-micro bg-signal/10 px-1.5 py-0.5">this plant</span>}
+                    {plant.active && <span className="font-body text-signal text-label bg-signal/10 px-1.5 py-0.5">this plant</span>}
                   </div>
                   <div className="font-body text-muted text-label mt-0.5">{plant.code} · {plant.lots.length} active lot{plant.lots.length !== 1 ? 's' : ''}</div>
                 </div>
@@ -1950,7 +1950,7 @@ export default function AgentControl() {
                   <div className={`display-num text-head leading-none ${plant.score >= 85 ? 'text-ok' : plant.score >= 70 ? 'text-warn' : 'text-danger'}`}>
                     {plant.score}
                   </div>
-                  <div className="font-body text-muted text-micro">readiness</div>
+                  <div className="font-body text-muted text-label">readiness</div>
                 </div>
                 <div className={`w-2 h-2 rounded-full flex-shrink-0 ${plant.status === 'at-risk' ? 'bg-danger' : 'bg-ok'}`} />
               </div>
@@ -1997,7 +1997,7 @@ export default function AgentControl() {
                   <span className="font-body text-muted text-label">Green floor: {currentPlant?.confidenceGreen ?? 70}%</span>
                   <span className="font-body text-muted text-label">Red ceiling: {currentPlant?.confidenceRed ?? 50}%</span>
                 </div>
-                <div className="font-body text-muted/60 text-micro mt-1">Shift config cannot exceed these bounds</div>
+                <div className="font-body text-muted/60 text-label mt-1">Shift config cannot exceed these bounds</div>
               </div>
             </div>
           </div>

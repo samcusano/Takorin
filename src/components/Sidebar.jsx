@@ -72,7 +72,7 @@ function SideItem({ to, icon: Icon, label, badge, badgeType, disabled, id, onDis
    <button type="button" onClick={() => onDisabledClick?.(label)}
     className="flex items-center gap-3 px-4 py-2.5 text-label opacity-40 cursor-not-allowed select-none w-full text-left">
     <Icon size={15} strokeWidth={2} className="flex-shrink-0" />
-    <span className="font-body text-base">{label}</span>
+    <span className="font-body text-sub">{label}</span>
    </button>
   )
  }
@@ -99,7 +99,7 @@ function SideItem({ to, icon: Icon, label, badge, badgeType, disabled, id, onDis
  >
  {({ isActive }) => (<>
  <Icon size={15} strokeWidth={2} className="flex-shrink-0" />
- <span className="font-body text-base">{label}</span>
+ <span className="font-body text-sub">{label}</span>
  <NavBadge badge={badge} badgeType={badgeType} />
  </>)}
  </NavLink>
@@ -132,7 +132,7 @@ function PlantItem({ collapsed }) {
   >
    {() => (<>
     <LayoutGrid size={15} strokeWidth={2} className="flex-shrink-0" />
-    <span className="font-body text-base">Overview</span>
+    <span className="font-body text-sub">Overview</span>
     <span className="ml-auto text-label font-semibold px-1.5 py-0.5 bg-danger text-white">
      {criticalCount}
     </span>
@@ -330,7 +330,7 @@ function AgentItem({ count, collapsed }) {
     `flex items-center gap-3 px-4 py-2.5 w-full text-left transition-colors hover:bg-sidebar2 border-l-2 ${isActive ? 'bg-sidebar2 border-l-danger text-white' : 'border-l-transparent text-white/50 hover:text-white'}`
    }>
    <Cpu size={15} strokeWidth={2} className="flex-shrink-0" />
-   <span className="font-body text-base">Agents</span>
+   <span className="font-body text-sub">Agents</span>
    {count > 0 && <StatusPill tone="alert" dot={false} className="ml-auto">{count}</StatusPill>}
   </NavLink>
  )
@@ -412,7 +412,7 @@ export default function Sidebar() {
   <Building2 size={15} className="text-white/50" strokeWidth={2} />
   </div>
   <div className="flex-1 min-w-0">
-  <div className="font-body text-white text-base font-medium truncate">{currentPlant?.name || 'Salina Campus'}</div>
+  <div className="font-body text-white text-sub font-medium truncate">{currentPlant?.name || 'Salina Campus'}</div>
   <div className="font-body text-white/50 text-label">Plant ID {currentPlant?.code || 'SL-04'}</div>
   </div>
   <ChevronDown
@@ -444,27 +444,11 @@ export default function Sidebar() {
  {/* ── Supervisor: 3 screens (ShiftIQ contains Handoff/Fleet/Allocation as tabs) */}
  {viewingRole === 'supervisor' && (
   <>
-   {!collapsed && <div className="px-4 pt-4 pb-1 font-body text-micro text-sidebar-ghost">Operational</div>}
+   {!collapsed && <div className="px-4 pt-4 pb-1 font-body text-label text-sidebar-ghost">Operational</div>}
    <SideItem to="/shift"  id="shift"  icon={Activity} label="Shift"        badge="3" badgeType="alert" collapsed={collapsed} />
    <AgentItem count={agentPendingCount} collapsed={collapsed} />
-   {!collapsed && <div className="px-4 pt-4 pb-1 font-body text-micro text-sidebar-ghost">Causality</div>}
+   {!collapsed && <div className="px-4 pt-4 pb-1 font-body text-label text-sidebar-ghost">Causality</div>}
    <SideItem to="/outcomes" id="outcomes" icon={CircleDot} label="Outcomes" badge={null} collapsed={collapsed} />
-   {!collapsed && <div className="px-4 pt-4 pb-1 font-body text-micro text-sidebar-ghost">Activity</div>}
-   {collapsed ? (
-    <NavTooltip label="Notifications">
-     <button type="button" onClick={() => setNotifOpen(true)}
-      className="flex items-center justify-center h-10 w-full text-white/50 hover:bg-sidebar2 hover:text-white transition-colors">
-      <Bell size={15} strokeWidth={2} />
-     </button>
-    </NavTooltip>
-   ) : (
-    <button type="button" onClick={() => setNotifOpen(true)}
-     className="flex items-center gap-3 px-4 py-2.5 w-full text-left transition-colors hover:bg-sidebar2 text-white/70">
-     <Bell size={15} strokeWidth={2} className="flex-shrink-0" />
-     <span className="font-body text-base">Notifications</span>
-     <StatusPill tone="alert" dot={false} className="ml-auto">4</StatusPill>
-    </button>
-   )}
   </>
  )}
 
@@ -473,7 +457,7 @@ export default function Sidebar() {
   <>
    <PlantItem collapsed={collapsed} />
 
-   {!collapsed && <div className="px-4 pt-4 pb-1 font-body text-micro text-sidebar-ghost">Operations</div>}
+   {!collapsed && <div className="px-4 pt-4 pb-1 font-body text-label text-sidebar-ghost">Operations</div>}
    {modules.map(m => <SideItem key={m.id} to={m.path} id={m.id} {...m} collapsed={collapsed} />)}
    <AgentItem count={agentPendingCount} collapsed={collapsed} />
    <SideItem to="/analytics" id="analytics" icon={BarChart2} label="Analytics" badge={null} collapsed={collapsed} />
@@ -481,7 +465,7 @@ export default function Sidebar() {
 
    {!collapsed && (
     <button type="button" onClick={() => setPlatformExpanded(p => !p)}
-     className="flex items-center justify-between w-full px-4 pt-4 pb-1 font-body text-micro text-sidebar-ghost hover:text-white/50 transition-colors">
+     className="flex items-center justify-between w-full px-4 pt-4 pb-1 font-body text-label text-sidebar-ghost hover:text-white/50 transition-colors">
      <span>Platform</span>
      <ChevronDown size={10} className={`transition-transform duration-200 ${platformExpanded ? 'rotate-180' : ''}`} />
     </button>
@@ -490,7 +474,7 @@ export default function Sidebar() {
     <>
      <SideItem to="/batch"       id="batch"       icon={FlaskConical}    label="Batches"      badge={null} collapsed={collapsed} />
      <SideItem to="/equipment" id="equipment"  icon={ScanLine}        label="Equipment"    badge={null} collapsed={collapsed} />
-     <SideItem to="/compliance"  id="compliance"  icon={Scale}           label="Compliance"   badge={null} collapsed={collapsed} />
+     <SideItem to="/compliance"  id="compliance"  icon={Scale}           label="Accountability" badge={null} collapsed={collapsed} />
      <SideItem to="/knowledge"   id="knowledge"   icon={BookOpen}        label="Knowledge"    badge={null} collapsed={collapsed} />
      <SideItem to="/execution"   id="execution"   icon={Workflow}        label="Autonomy"     badge={null} collapsed={collapsed} />
      <SideItem to="/hierarchy"   id="hierarchy"   icon={LayoutDashboard} label="Site"         badge={null} collapsed={collapsed} />
@@ -500,59 +484,16 @@ export default function Sidebar() {
     </>
    )}
 
-   {!collapsed && <div className="px-4 pt-4 pb-1 font-body text-micro text-sidebar-ghost">Activity</div>}
-   {collapsed ? (
-    <NavTooltip label="Notifications">
-     <button type="button" onClick={() => setNotifOpen(true)}
-      className="flex items-center justify-center h-10 w-full text-white/50 hover:bg-sidebar2 hover:text-white transition-colors">
-      <Bell size={15} strokeWidth={2} />
-     </button>
-    </NavTooltip>
-   ) : (
-    <button type="button" onClick={() => setNotifOpen(true)}
-     className="flex items-center gap-3 px-4 py-2.5 w-full text-left transition-colors hover:bg-sidebar2 text-white/70">
-     <Bell size={15} strokeWidth={2} className="flex-shrink-0" />
-     <span className="font-body text-base">Notifications</span>
-     <StatusPill tone="alert" dot={false} className="ml-auto">4</StatusPill>
-    </button>
-   )}
   </>
  )}
 
  </nav>
 
- {/* Theme toggle */}
- {!collapsed && (
-  <div className="px-3 py-2 border-t border-sidebar-border flex items-center gap-px">
-   {[
-    { id: 'light', Icon: Sun,     label: 'Light' },
-    { id: 'auto',  Icon: Monitor, label: 'Auto'  },
-    { id: 'dark',  Icon: Moon,    label: 'Dark'  },
-   ].map(({ id, Icon, label }) => (
-    <button key={id} type="button" onClick={() => setTheme?.(id)}
-     className={`flex-1 flex flex-col items-center gap-0.5 py-1.5 transition-colors rounded-sm ${
-      theme === id ? 'text-white bg-sidebar2' : 'text-white/30 hover:text-white/50'
-     }`}
-     aria-label={`${label} mode`}>
-     <Icon size={11} strokeWidth={2} />
-     <span className="font-body" style={{ fontSize: 9, lineHeight: 1 }}>{label}</span>
-    </button>
-   ))}
-  </div>
- )}
- {collapsed && (
-  <button type="button"
-   onClick={() => setTheme?.(theme === 'dark' ? 'light' : theme === 'light' ? 'auto' : 'dark')}
-   className="flex items-center justify-center h-9 w-full text-white/30 hover:text-white/50 transition-colors border-t border-sidebar-border"
-   aria-label="Cycle theme">
-   {theme === 'light' ? <Sun size={13} strokeWidth={2} /> : theme === 'dark' ? <Moon size={13} strokeWidth={2} /> : <Monitor size={13} strokeWidth={2} />}
-  </button>
- )}
 
  {/* Compliance + Platform — hidden when collapsed */}
  {!collapsed && <div className="px-4 py-2.5 border-t border-sidebar-border">
  <div className="flex items-center justify-between">
- <span className="font-body text-white/50 text-label">Compliance</span>
+ <span className="font-body text-white/50 text-label">Accountability</span>
  <span className={`font-body font-medium text-label px-2 py-0.5 ${complianceColor}`}>
  {complianceLabel}
  </span>
@@ -588,6 +529,7 @@ export default function Sidebar() {
   </div>
   </div>
   <div className="flex items-center gap-1.5 flex-shrink-0">
+   <ChevronDown size={13} className={`text-white/50 transition-transform duration-200 ease-spring ${userOpen ? 'rotate-180' : ''}`} />
    <button
     type="button"
     onClick={e => { e.stopPropagation(); setNotifOpen(true) }}
@@ -598,7 +540,6 @@ export default function Sidebar() {
      <span className="font-body text-[8px] font-bold text-white leading-none">4</span>
     </span>
    </button>
-   <ChevronDown size={13} className={`text-white/50 transition-transform duration-200 ease-spring ${userOpen ? 'rotate-180' : ''}`} />
   </div>
  </button>}
  {!collapsed && userOpen && createPortal(
