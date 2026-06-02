@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { executionLog, executionSummary, autonomyTiers, rollbackLog } from '../data/execution'
 import { CheckCircle2, AlertTriangle, Clock, RotateCcw, Zap, Eye, MessageSquare, Shield, ArrowRight } from 'lucide-react'
-import { SlidePanel, StatusPill, SceneHeader, SectionHeader, Btn } from '../components/UI'
+import { SlidePanel, StatusPill, SceneHeader, SectionHeader, Btn, FilterDropdown, MultiFilterDropdown } from '../components/UI'
 
 const TIER_ICONS = { observe: Eye, recommend: MessageSquare, execute: Zap, govern: Shield }
 
@@ -12,11 +12,11 @@ const OUTCOME_CFG = {
   rollback:  { label: 'Rolled back', tone: 'muted',  borderCls: 'border-l-muted' },
 }
 
-const FILTERS = [
-  { id: 'all',      label: 'All',          match: null },
-  { id: 'review',   label: 'Needs review', match: e => e.outcome === 'escalated' || e.outcome === 'pending' },
-  { id: 'success',  label: 'Success',      match: e => e.outcome === 'success' },
-  { id: 'rollback', label: 'Rolled back',  match: e => e.outcome === 'rollback' },
+const OUTCOME_OPTIONS = [
+  { value: 'success',   label: 'Success'     },
+  { value: 'escalated', label: 'Escalated'   },
+  { value: 'pending',   label: 'Pending'     },
+  { value: 'rollback',  label: 'Rolled back' },
 ]
 
 
@@ -136,7 +136,9 @@ function ActionDetail({ entry }) {
 }
 
 export default function ExecutionAuthority() {
-  const [filter, setFilter] = useState('all')
+  const [agentFilter, setAgentFilter]   = useState('all')
+  const [tierFilter, setTierFilter]     = useState('all')
+  const [outcomeFilter, setOutcomeFilter] = useState([])
   const [selectedId, setSelectedId] = useState(null)
   const [governActivated, setGovernActivated] = useState(false)
 
@@ -156,8 +158,23 @@ export default function ExecutionAuthority() {
 
   const needsReview = executionLog.filter(e => e.outcome === 'escalated' || e.outcome === 'pending')
 
-  const activeFilter = FILTERS.find(f => f.id === filter)
-  const filtered = activeFilter.match ? executionLog.filter(activeFilter.match) : executionLog
+  const agentOptions = [
+    { value: 'all', label: 'All agents' },
+    ...Array.from(new Set(executionLog.map(e => e.agent))).map(a => ({ value: a, label: a })),
+  ]
+
+  const tierOptions = [
+    { value: 'all',       label: 'All tiers'  },
+    { value: 'observe',   label: 'Observe'    },
+    { value: 'recommend', label: 'Recommend'  },
+    { value: 'execute',   label: 'Execute'    },
+    { value: 'govern',    label: 'Govern'     },
+  ]
+
+  const filtered = executionLog
+    .filter(e => agentFilter === 'all' || e.agent === agentFilter)
+    .filter(e => tierFilter === 'all' || e.tier === tierFilter)
+    .filter(e => outcomeFilter.length === 0 || outcomeFilter.includes(e.outcome))
 
   const selectedEntry = executionLog.find(e => e.id === selectedId)
 
@@ -183,29 +200,32 @@ export default function ExecutionAuthority() {
         {/* Full-width: outcome filter + timeline */}
         <div className="flex-1 flex flex-col overflow-hidden">
 
-          {/* Outcome filter tabs + govern action on right */}
-          <div className="flex flex-shrink-0 border-b border-rule2">
-            {FILTERS.map(f => {
-              const count = f.match ? executionLog.filter(f.match).length : executionLog.length
-              const isActive = filter === f.id
-              return (
-                <button key={f.id} type="button"
-                  onClick={() => { setFilter(f.id); setSelectedId(null) }}
-                  className={`px-4 py-2.5 font-body text-label border-r border-rule2 transition-colors whitespace-nowrap ${
-                    isActive ? 'text-ink bg-stone2' : 'text-muted hover:text-ink hover:bg-stone2/50'
-                  }`}>
-                  {f.label}
-                  {count > 0 && (
-                    <span className={`ml-1.5 ${
-                      f.id === 'review' && !isActive ? 'text-warn' : isActive ? 'text-ink' : 'text-muted'
-                    }`}>{count}</span>
-                  )}
-                </button>
-              )
-            })}
+          {/* Scope bar — Agent / Tier / Outcome filters */}
+          <div className="flex items-center gap-2 px-5 py-2.5 border-b border-rule2 bg-stone flex-shrink-0">
+            <FilterDropdown
+              label="Agent"
+              options={agentOptions}
+              value={agentFilter}
+              onChange={v => { setAgentFilter(v); setSelectedId(null) }}
+            />
+            <FilterDropdown
+              label="Tier"
+              options={tierOptions}
+              value={tierFilter}
+              onChange={v => { setTierFilter(v); setSelectedId(null) }}
+            />
+            <MultiFilterDropdown
+              label="Outcome"
+              options={OUTCOME_OPTIONS}
+              values={outcomeFilter}
+              onChange={v => { setOutcomeFilter(v); setSelectedId(null) }}
+            />
+            <div className="font-body text-muted text-label ml-2">
+              {filtered.length} events
+            </div>
 
             {!governActivated && (
-              <div className={`ml-auto flex items-center gap-3 px-4 border-l border-rule2 flex-shrink-0 ${
+              <div className={`ml-auto flex items-center gap-3 pl-4 border-l border-rule2 flex-shrink-0 ${
                 governCriteriaMet ? 'bg-ok/[0.04]' : ''
               }`}>
                 {governCriteriaMet ? (
@@ -215,7 +235,7 @@ export default function ExecutionAuthority() {
                   </>
                 ) : (
                   <span className="font-body text-muted text-label">
-                    {governCriteriaItems.filter(c => c.met).length} of {governCriteriaItems.length} criteria met for Govern tier
+                    {governCriteriaItems.filter(c => c.met).length}/{governCriteriaItems.length} criteria for Govern tier
                   </span>
                 )}
               </div>
@@ -224,7 +244,7 @@ export default function ExecutionAuthority() {
 
           {/* Timeline */}
           <div className="flex-1 overflow-y-auto">
-            {needsReview.length > 0 && filter === 'all' && (
+            {needsReview.length > 0 && outcomeFilter.length === 0 && agentFilter === 'all' && tierFilter === 'all' && (
               <>
                 <SectionHeader tone="warn" label="Needs review" sub={`${needsReview.length} unresolved`} />
                 {needsReview.map(e => (

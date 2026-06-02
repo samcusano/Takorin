@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { interventions, kpiTargets } from '../data/interventions'
 import { AlertTriangle, CheckCircle2, ArrowRight, RotateCcw, AlertCircle, TrendingUp, TrendingDown, Zap, Clock, Layers } from 'lucide-react'
-import { StatusPill, SceneHeader, Btn, AnimatedScore, StatGrid, EmptyState } from '../components/UI'
+import { StatusPill, SceneHeader, Btn, AnimatedScore, StatGrid, EmptyState, FilterDropdown } from '../components/UI'
 
 const OUTCOME_CFG = {
   positive: { label: 'Positive',     tone: 'ok',     border: 'border-l-ok',     accent: 'bg-ok'     },
@@ -305,12 +305,18 @@ function InterventionDetail({ entry }) {
 
 // ─────────────────────────────────────────────────────────────────────────────
 
-const OUTCOME_FILTERS = [
-  { id: 'all',      label: 'All' },
-  { id: 'positive', label: 'Positive',     match: e => e.outcomeClassification === 'positive' },
-  { id: 'negative', label: 'Negative',     match: e => e.outcomeClassification === 'negative' || e.outcomeClassification === 'harmful' },
-  { id: 'unclear',  label: 'Inconclusive', match: e => e.outcomeClassification === 'unclear' },
+const OUTCOME_FILTER_OPTIONS = [
+  { value: 'all',      label: 'All outcomes'  },
+  { value: 'positive', label: 'Positive'      },
+  { value: 'negative', label: 'Negative'      },
+  { value: 'unclear',  label: 'Inconclusive'  },
 ]
+
+const OUTCOME_MATCH = {
+  positive: e => e.outcomeClassification === 'positive',
+  negative: e => e.outcomeClassification === 'negative' || e.outcomeClassification === 'harmful',
+  unclear:  e => e.outcomeClassification === 'unclear',
+}
 
 export default function ImpactLoop() {
   const [selectedId, setSelectedId] = useState(interventions[0]?.id ?? null)
@@ -324,8 +330,7 @@ export default function ImpactLoop() {
   const positiveRate   = Math.round(positiveCount / interventions.length * 100)
   const headerTone     = positiveRate >= 70 ? 'ok' : positiveRate >= 50 ? 'warn' : 'danger'
 
-  const activeFilter = OUTCOME_FILTERS.find(f => f.id === filter)
-  const displayed    = activeFilter.match ? interventions.filter(activeFilter.match) : interventions
+  const displayed = OUTCOME_MATCH[filter] ? interventions.filter(OUTCOME_MATCH[filter]) : interventions
 
   return (
     <div className="flex flex-col h-full overflow-hidden content-reveal">
@@ -347,24 +352,15 @@ export default function ImpactLoop() {
         {/* ── Left: filter + list ───────────────────────────────────── */}
         <div className="w-[280px] flex-shrink-0 border-r border-rule2 flex flex-col bg-stone">
 
-          {/* Outcome filter tabs */}
-          <div className="flex flex-shrink-0 border-b border-rule2">
-            {OUTCOME_FILTERS.map(f => {
-              const count = f.match ? interventions.filter(f.match).length : interventions.length
-              const isActive = filter === f.id
-              return (
-                <button key={f.id} type="button"
-                  onClick={() => { setFilter(f.id); setSelectedId(displayed[0]?.id ?? null) }}
-                  className={`flex-1 px-2 py-2 font-body text-label border-r border-rule2 last:border-r-0 transition-colors ${
-                    isActive ? 'text-ink bg-stone2' : 'text-muted hover:text-ink hover:bg-stone2/50'
-                  }`}>
-                  <div>{f.label}</div>
-                  <div className={`tabular-nums ${
-                    f.id === 'negative' && count > 0 && !isActive ? 'text-danger' : isActive ? 'text-ink' : 'text-muted'
-                  }`}>{count}</div>
-                </button>
-              )
-            })}
+          {/* Outcome scope bar */}
+          <div className="flex items-center gap-2 px-4 py-2.5 border-b border-rule2 bg-stone flex-shrink-0">
+            <FilterDropdown
+              label="Outcome"
+              options={OUTCOME_FILTER_OPTIONS}
+              value={filter}
+              onChange={v => { setFilter(v); setSelectedId(null) }}
+            />
+            <span className="font-body text-muted text-label ml-auto tabular-nums">{displayed.length}</span>
           </div>
 
           <div className="flex-1 overflow-y-auto">

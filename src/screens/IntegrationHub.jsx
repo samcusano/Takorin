@@ -1,4 +1,4 @@
-import { useState, Fragment } from 'react'
+import { useState, useRef } from 'react'
 import { connectors, integrationSummary, semanticConflicts, integrationCategories } from '../data/integrations'
 import { AlertTriangle, CheckCircle, Zap, Radio, Search, X, Lock, ChevronDown,
   Cpu, FlaskConical, Truck, Users, Leaf, Database, Brain, Shield, Wrench, Package } from 'lucide-react'
@@ -404,6 +404,24 @@ export default function IntegrationHub() {
 
   const selectedConnector = connectors.find(c => c.id === selectedConnectorId)
 
+  // Row refs for absolute overlay positioning
+  const rowRefs = useRef({})
+  const [overlayTop, setOverlayTop] = useState(null)
+
+  const rows = []
+  for (let i = 0; i < filtered.length; i += 2) rows.push(filtered.slice(i, i + 2))
+
+  const handleCardClick = (connectorId, rowIdx) => {
+    if (connectorId === selectedConnectorId) {
+      setSelectedConnectorId(null)
+      setOverlayTop(null)
+      return
+    }
+    const rowEl = rowRefs.current[rowIdx]
+    if (rowEl) setOverlayTop(rowEl.offsetTop + rowEl.offsetHeight)
+    setSelectedConnectorId(connectorId)
+  }
+
   const categoryCounts = integrationCategories.map(cat => ({
     name: cat,
     total: connectors.filter(c => c.category === cat).length,
@@ -499,29 +517,35 @@ export default function IntegrationHub() {
               </div>
             </div>
 
-            {/* Connector grid — row-based expansion */}
+            {/* Connector grid — absolute overlay on card click */}
             <div className="flex-1 overflow-y-auto">
-              {filtered.length > 0 ? (() => {
-                const rows = []
-                for (let i = 0; i < filtered.length; i += 2) rows.push(filtered.slice(i, i + 2))
-                return rows.map((rowCards, rowIdx) => {
-                  const expandedCard = rowCards.find(c => c.id === selectedConnectorId)
-                  return (
-                    <Fragment key={rowIdx}>
+              {filtered.length > 0 ? (
+                <div className="relative">
+                  {rows.map((rowCards, rowIdx) => (
+                    <div key={rowIdx} ref={el => { rowRefs.current[rowIdx] = el }}>
                       <div className="grid grid-cols-2 gap-px bg-rule2">
                         {rowCards.map(c => (
                           <div key={c.id} className="bg-stone">
                             <ConnectorCard c={c}
                               selected={c.id === selectedConnectorId}
-                              onClick={() => setSelectedConnectorId(c.id === selectedConnectorId ? null : c.id)} />
+                              onClick={() => handleCardClick(c.id, rowIdx)} />
                           </div>
                         ))}
                       </div>
-                      {expandedCard && <ConnectorRowDetail c={expandedCard} />}
-                    </Fragment>
-                  )
-                })
-              })() : (
+                    </div>
+                  ))}
+
+                  {/* Floating overlay — appears over cards below the clicked row */}
+                  {selectedConnector && overlayTop !== null && (
+                    <div
+                      className="absolute left-0 right-0 z-10 shadow-raise slide-in"
+                      style={{ top: overlayTop }}
+                    >
+                      <ConnectorRowDetail c={selectedConnector} />
+                    </div>
+                  )}
+                </div>
+              ) : (
                 <EmptyState message={`No connectors match "${searchQuery}"`} />
               )}
             </div>
