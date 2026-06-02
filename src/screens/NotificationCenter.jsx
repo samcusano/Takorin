@@ -176,7 +176,8 @@ export default function NotificationCenter({ onClose }) {
  const [read, setRead] = useState(new Set())
  const [activeFilter, setActiveFilter] = useState('All')
 
- const markRead = (id) => setRead(p => new Set([...p, id]))
+ const markRead    = (id) => setRead(p => new Set([...p, id]))
+ const markAllRead = ()   => setRead(new Set(effectiveActivity.map(e => e.id)))
  const go = (path) => { onClose?.(); navigate(path) }
 
  // ── Activity events from dynamic state ──────────────────────────────────
@@ -240,11 +241,19 @@ export default function NotificationCenter({ onClose }) {
  const content = (
   <div className="flex flex-col h-full overflow-hidden">
    {/* Header */}
-   <div className="px-4 py-3 bg-stone flex-shrink-0">
-    <div className="font-display font-bold text-ink text-head leading-tight">Notifications</div>
-    <div className="font-body text-muted text-label mt-0.5">
-     {totalUnread > 0 ? `${totalUnread} unread · ` : 'All read · '}April 16, 2026
+   <div className="px-4 py-3 bg-stone flex-shrink-0 flex items-start justify-between gap-3">
+    <div>
+     <div className="font-display font-bold text-ink text-head leading-tight">Notifications</div>
+     <div className="font-body text-muted text-label mt-0.5">
+      {totalUnread > 0 ? `${totalUnread} unread · ` : 'All read · '}April 16, 2026
+     </div>
     </div>
+    {totalUnread > 0 && (
+     <button type="button" onClick={markAllRead}
+      className="font-body text-label text-muted hover:text-ink transition-colors flex-shrink-0 mt-0.5">
+      Mark all read
+     </button>
+    )}
    </div>
 
    {/* Filter tabs */}

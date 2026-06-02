@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { equipment, recipes, spcData, batchTrace, runHistory } from '../data/equipment'
 import { AlertTriangle, CheckCircle2, Wrench, Activity, Clock, TrendingDown, CalendarClock, Zap } from 'lucide-react'
-import { SceneHeader, SectionHeader, StatusPill, Btn, SlidePanel, AnimatedScore, Tabs, EmptyState, StatGrid, MasterDetail } from '../components/UI'
+import { SceneHeader, SectionHeader, StatusPill, Btn, SlidePanel, AnimatedScore, Tabs, EmptyState, StatGrid, MasterDetail, HoldButton } from '../components/UI'
 import { useAppState } from '../context/AppState'
 
 // ─── Remaining Useful Life strip ──────────────────────────────────────────────
@@ -461,21 +461,6 @@ function EquipmentDetail({ eq }) {
               <StatusPill tone={eq.spcStatus === 'in-control' ? 'ok' : eq.spcStatus === 'warning' ? 'warn' : 'danger'}>SPC {spcCfg.label}</StatusPill>
             )}
           </div>
-          {eq.status !== 'maintenance' && (
-            <div className="flex items-center gap-2 flex-shrink-0">
-              {existingTicket ? (
-                <span className="font-body text-label text-warn flex items-center gap-1 flex-shrink-0">
-                  <Wrench size={10} strokeWidth={2} />PM requested
-                </span>
-              ) : pmRequested ? (
-                <span className="font-body text-label text-ok flex items-center gap-1 flex-shrink-0">
-                  <CheckCircle2 size={10} strokeWidth={2} />PM ticket created
-                </span>
-              ) : (
-                <Btn variant="secondary" icon={Wrench} onClick={handleRequestPM}>Request PM</Btn>
-              )}
-            </div>
-          )}
         </div>
         <div className="font-display font-bold text-ink text-head leading-none mb-0.5">{eq.name}</div>
         <div className="font-body text-muted text-body">{eq.type} · {eq.zone}</div>
@@ -544,6 +529,32 @@ function EquipmentDetail({ eq }) {
           </div>
         )}
       </div>
+
+      {/* ── Request PM — sticky bottom CTA ── */}
+      {eq.status !== 'maintenance' && (
+        <div className="flex-shrink-0 px-5 py-3.5 border-t border-rule2 bg-stone2">
+          {existingTicket ? (
+            <div className="flex items-center gap-2 font-body text-label text-warn">
+              <Wrench size={12} strokeWidth={2} className="flex-shrink-0" />
+              PM ticket open · {existingTicket.id}
+            </div>
+          ) : pmRequested ? (
+            <div className="flex items-center gap-2 font-body text-label text-ok">
+              <CheckCircle2 size={12} strokeWidth={2} className="flex-shrink-0" />
+              PM ticket created — handoff will carry this forward
+            </div>
+          ) : (
+            <HoldButton
+              label="Hold to request PM"
+              holdLabel="Keep holding to confirm PM request…"
+              doneLabel="PM ticket created"
+              duration={1500}
+              tone={eq.healthScore != null && eq.healthScore < 75 ? 'warn' : 'ok'}
+              onConfirm={handleRequestPM}
+            />
+          )}
+        </div>
+      )}
     </div>
   )
 }

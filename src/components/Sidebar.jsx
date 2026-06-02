@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { useFocusTrap } from '../lib/utils'
 import { NavLink, useNavigate } from 'react-router-dom'
 import {
@@ -9,7 +10,7 @@ import {
  LayoutGrid, BarChart2, Bell, User, Cpu,
  FlaskConical, Scale, Network, BookOpen, LayoutDashboard,
  Workflow, FileLock2, TrendingUp, ScanLine, CircleDot,
- Sun, Moon, Monitor, X,
+ Sun, Moon, Monitor, X, PanelLeft,
 } from 'lucide-react'
 import { useAppState, PLANTS } from '../context/AppState'
 import { commandData, agentConfigData } from '../data'
@@ -239,15 +240,18 @@ function PlantDropdown({ triggerRef, onClose, complianceState, currentPlant, set
 
 function UserDropdown({ triggerRef, onClose, viewingRole, setViewingRole }) {
  const dropRef = useRef(null)
- const [pos, setPos] = useState({ top: 60 })
+ const [pos, setPos] = useState({ bottom: 60, left: 0 })
  useFocusTrap(dropRef)
  const navigate = useNavigate()
 
  useEffect(() => {
   if (triggerRef.current) {
    const r = triggerRef.current.getBoundingClientRect()
-   const estimatedH = 350
-   setPos({ top: Math.max(8, r.top - estimatedH) })
+   // Anchor dropdown bottom to 4px above the trigger top, flush with the sidebar left edge
+   setPos({
+    bottom: window.innerHeight - r.top + 4,
+    left: r.left,
+   })
   }
  }, [triggerRef])
 
@@ -278,7 +282,7 @@ function UserDropdown({ triggerRef, onClose, viewingRole, setViewingRole }) {
   <div
    ref={dropRef}
    className="fixed z-50 plant-drop-in"
-   style={{ left: 0, top: Math.max(8, pos.top) }}
+   style={{ left: pos.left, bottom: pos.bottom }}
   >
    <div className="w-[240px] bg-sidebar border border-sidebar-border shadow-raise overflow-hidden" style={{ maxHeight: 'calc(100vh - 24px)' }}>
     <div className="plant-drop-in-content">
@@ -372,14 +376,18 @@ export default function Sidebar() {
   className={`flex items-center border-b border-sidebar-border bg-sidebar2 hover:bg-sidebar-3 transition-colors flex-shrink-0 ${collapsed ? 'justify-center px-0 py-3.5' : 'gap-3 px-4 py-3.5'}`}
   aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
  >
-  <svg width="18" height="18" viewBox="0 0 22 22" aria-hidden="true" className="flex-shrink-0">
-   <path d="M11 2 L20 11 L11 20 L2 11 Z" fill="none" stroke="var(--color-signal)" strokeWidth="1.3"/>
-   <path d="M8 13 L14 13 L14 7 Z" fill="var(--color-signal)"/>
-  </svg>
-  {!collapsed && (
-   <div className="flex-1 min-w-0">
-    <div className="font-body font-bold text-ink text-label leading-none">Takorin</div>
-   </div>
+  {collapsed ? (
+   <PanelLeft size={18} strokeWidth={1.8} className="flex-shrink-0 text-sidebar-ghost" aria-hidden="true" />
+  ) : (
+   <>
+    <svg width="18" height="18" viewBox="0 0 22 22" aria-hidden="true" className="flex-shrink-0">
+     <path d="M11 2 L20 11 L11 20 L2 11 Z" fill="none" stroke="var(--color-signal)" strokeWidth="1.3"/>
+     <path d="M8 13 L14 13 L14 7 Z" fill="var(--color-signal)"/>
+    </svg>
+    <div className="flex-1 min-w-0">
+     <div className="font-body font-bold text-ink text-label leading-none">Takorin</div>
+    </div>
+   </>
   )}
   {/* Close button — mobile only */}
   {!collapsed && mobileNavOpen && (
@@ -414,14 +422,15 @@ export default function Sidebar() {
  </button>}
 
  {/* Plant dropdown — floats right of the sidebar */}
- {plantOpen && (
+ {plantOpen && createPortal(
   <PlantDropdown
    triggerRef={plantTriggerRef}
    onClose={() => setPlantOpen(false)}
    complianceState={complianceState}
    currentPlant={currentPlant || PLANTS.sl}
    setCurrentPlant={setCurrentPlant || (() => {})}
-  />
+  />,
+  document.body
  )}
 
  {/* Nav */}
@@ -571,22 +580,36 @@ export default function Sidebar() {
   onClick={() => setUserOpen(p => !p)}
   className="flex items-center gap-2.5 px-4 py-3 border-t border-sidebar-border w-full text-left hover:bg-sidebar2 transition-colors"
  >
-  <PersonAvatar name="J. Crocker" size={28} />
+  <PersonAvatar name="J. Crocker" size={16} />
   <div className="flex-1 min-w-0">
   <div className="font-body text-white text-body font-medium">J. Crocker</div>
   <div className="font-body text-white/50 text-label">
    {viewingRole === 'supervisor' ? <span className="text-signal">Viewing as Kowalski</span> : viewingRole === 'operator-reyes' ? <span className="text-signal">Viewing as C. Reyes</span> : viewingRole === 'operator-okonkwo' ? <span className="text-signal">Viewing as P. Okonkwo</span> : 'Plant Director'}
   </div>
   </div>
-  <ChevronDown size={13} className={`text-white/50 flex-shrink-0 transition-transform duration-200 ease-spring ${userOpen ? 'rotate-180' : ''}`} />
+  <div className="flex items-center gap-1.5 flex-shrink-0">
+   <button
+    type="button"
+    onClick={e => { e.stopPropagation(); setNotifOpen(true) }}
+    className="relative w-8 h-8 flex items-center justify-center text-white/40 hover:text-white/70 transition-colors flex-shrink-0"
+    aria-label="Notifications">
+    <Bell size={18} strokeWidth={2} />
+    <span className="absolute top-0 right-0 w-3.5 h-3.5 rounded-full bg-danger flex items-center justify-center">
+     <span className="font-body text-[8px] font-bold text-white leading-none">4</span>
+    </span>
+   </button>
+   <ChevronDown size={13} className={`text-white/50 transition-transform duration-200 ease-spring ${userOpen ? 'rotate-180' : ''}`} />
+  </div>
  </button>}
- {!collapsed && userOpen && (
+ {!collapsed && userOpen && createPortal(
   <UserDropdown
    triggerRef={userTriggerRef}
    onClose={() => setUserOpen(false)}
    viewingRole={viewingRole || 'director'}
    setViewingRole={setViewingRole || (() => {})}
-  />
+  />,
+  document.body
+
  )}
 
  {/* Toast */}
