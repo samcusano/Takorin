@@ -39,6 +39,7 @@ export function SceneHeader({
  statement,             // narrative sentence — the human voice
  meta = [],            // [{label, value, color}] quick stats row
  tone = 'muted',       // 'danger' | 'warn' | 'ok' | 'muted' — drives glow
+ sparkline,            // optional: { points: number[], label: string, color: string }
  children,             // signal strip or other footer content
  className = '',
 }) {
@@ -104,6 +105,27 @@ export function SceneHeader({
        )}
       </div>
      )}
+
+     {/* Sparkline — optional trend chart */}
+     {sparkline && sparkline.points?.length > 1 && (() => {
+      const pts = sparkline.points
+      const min = Math.min(...pts), max = Math.max(...pts)
+      const range = max - min || 1
+      const polyPoints = pts.map((v, i) =>
+       `${((i / (pts.length - 1)) * 76 + 2).toFixed(1)},${(30 - ((v - min) / range) * 26).toFixed(1)}`
+      ).join(' ')
+      const lastY = (30 - ((pts[pts.length - 1] - min) / range) * 26).toFixed(1)
+      return (
+       <div className="ml-auto flex-shrink-0 pl-6" style={{ opacity: 0.6 }}>
+        <svg width="80" height="34" viewBox="0 0 80 34" aria-hidden="true">
+         <polyline points={polyPoints} fill="none" stroke={sparkline.color}
+          strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+         <circle cx="78" cy={lastY} r="2.5" fill={sparkline.color} />
+        </svg>
+        <span className="font-body text-micro text-muted block text-center mt-0.5">{sparkline.label}</span>
+       </div>
+      )
+     })()}
     </div>
    )}
 

@@ -76,27 +76,17 @@ function ConnectorCard({ c, selected, onClick }) {
 // Full-width detail overlay that appears below the row containing the selected card
 function ConnectorRowDetail({ c }) {
   return (
-    <div className="border-t border-b border-rule2 bg-stone2 px-5 py-4 slide-in space-y-3">
-      <div className="flex items-start justify-between gap-4 mb-1">
-        <div>
-          <div className="font-body font-semibold text-ink text-base leading-snug">{c.name}</div>
-          <div className="font-body text-muted text-label">{c.vendor}</div>
-        </div>
-        <StatusPill tone={c.status === 'active' ? 'ok' : c.status === 'available' ? 'muted' : 'signal'}>
-          {STATUS_CFG[c.status]?.label ?? c.status}
-        </StatusPill>
-      </div>
-
+    <div className="bg-stone2 px-4 py-3.5 space-y-3">
       {c.status === 'active' && (
         <>
-          <div className="grid grid-cols-3 gap-x-8 gap-y-3">
+          <div className="grid grid-cols-2 gap-x-5 gap-y-2.5">
             {[
-              { label: 'Data quality',   val: c.quality != null ? `${c.quality}%` : '—',           tone: c.quality >= 95 ? 'text-ok' : c.quality >= 85 ? 'text-signal' : 'text-warn' },
-              { label: 'Last sync',      val: c.lastSync ?? '—',                                    tone: 'text-muted' },
-              { label: 'Active signals', val: c.signals != null ? c.signals.toLocaleString() : '—', tone: 'text-ink' },
-              { label: 'Latency',        val: c.latency ?? '—',                                     tone: 'text-muted' },
-              { label: 'Streaming',      val: c.streaming ? 'Yes' : 'Polling',                      tone: c.streaming ? 'text-ok' : 'text-muted' },
-              { label: 'Conflicts',      val: c.conflicts > 0 ? String(c.conflicts) : 'None',       tone: c.conflicts > 0 ? 'text-warn' : 'text-ok' },
+              { label: 'Quality',   val: c.quality != null ? `${c.quality}%` : '—', tone: c.quality >= 95 ? 'text-ok' : c.quality >= 85 ? 'text-signal' : 'text-warn' },
+              { label: 'Signals',   val: c.signals != null ? c.signals.toLocaleString() : '—', tone: 'text-ink' },
+              { label: 'Last sync', val: c.lastSync ?? '—', tone: 'text-muted' },
+              { label: 'Latency',   val: c.latency ?? '—', tone: 'text-muted' },
+              { label: 'Streaming', val: c.streaming ? 'Yes' : 'Polling', tone: c.streaming ? 'text-ok' : 'text-muted' },
+              { label: 'Conflicts', val: c.conflicts > 0 ? String(c.conflicts) : 'None', tone: c.conflicts > 0 ? 'text-warn' : 'text-ok' },
             ].map(({ label, val, tone }) => (
               <div key={label}>
                 <div className="font-body text-muted text-label mb-0.5">{label}</div>
@@ -105,8 +95,8 @@ function ConnectorRowDetail({ c }) {
             ))}
           </div>
           {c.note && (
-            <div className="flex items-start gap-2 px-3 py-2 bg-warn/[0.04] border-l-2 border-l-warn">
-              <AlertTriangle size={10} className="text-warn flex-shrink-0 mt-0.5" strokeWidth={2} />
+            <div className="flex items-start gap-1.5 px-2.5 py-2 bg-warn/[0.04] border-l-2 border-l-warn">
+              <AlertTriangle size={9} className="text-warn flex-shrink-0 mt-0.5" strokeWidth={2} />
               <p className="font-body text-warn text-label leading-snug m-0">{c.note}</p>
             </div>
           )}
@@ -114,11 +104,13 @@ function ConnectorRowDetail({ c }) {
       )}
       {c.status === 'available' && (
         <div className="font-body text-muted text-label leading-relaxed">
-          Available but not connected. Configure via admin panel → Integrations → {c.name}
+          Configure via admin panel → Integrations → {c.name}
         </div>
       )}
       {c.status === 'soon' && (
-        <div className="font-body text-muted text-label">Expected Q3 2026 · Contact your integration team to request early access.</div>
+        <div className="font-body text-muted text-label">
+          Expected Q3 2026 · Contact your integration team for early access.
+        </div>
       )}
     </div>
   )
@@ -407,18 +399,21 @@ export default function IntegrationHub() {
   // Row refs for absolute overlay positioning
   const rowRefs = useRef({})
   const [overlayTop, setOverlayTop] = useState(null)
+  const [overlayCol, setOverlayCol] = useState(null)
 
   const rows = []
   for (let i = 0; i < filtered.length; i += 2) rows.push(filtered.slice(i, i + 2))
 
-  const handleCardClick = (connectorId, rowIdx) => {
+  const handleCardClick = (connectorId, rowIdx, colIdx) => {
     if (connectorId === selectedConnectorId) {
       setSelectedConnectorId(null)
       setOverlayTop(null)
+      setOverlayCol(null)
       return
     }
     const rowEl = rowRefs.current[rowIdx]
     if (rowEl) setOverlayTop(rowEl.offsetTop + rowEl.offsetHeight)
+    setOverlayCol(colIdx)
     setSelectedConnectorId(connectorId)
   }
 
@@ -467,8 +462,38 @@ export default function IntegrationHub() {
 
         {activeTab === 'sources' ? (
           <>
-            {/* Category chips */}
-            <div className="flex-shrink-0 flex items-center gap-1.5 px-4 py-2.5 border-b border-rule2 bg-stone overflow-x-auto">
+            {/* Single filter bar — search · status · category chips */}
+            <div className="flex-shrink-0 flex items-center gap-2 px-4 py-2 border-b border-rule2 bg-stone overflow-x-auto">
+              {/* Search */}
+              <div className="flex items-center gap-1.5 border border-rule2 focus-within:border-signal/50 px-2.5 py-1.5 transition-colors bg-stone2 flex-shrink-0">
+                <Search size={11} strokeWidth={2} className="text-muted flex-shrink-0" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  placeholder="Search…"
+                  className="font-body text-label text-ink bg-transparent outline-none placeholder:text-muted/60 w-24"
+                />
+                {searchQuery && (
+                  <button type="button" onClick={() => setSearchQuery('')} aria-label="Clear search"
+                    className="text-muted hover:text-ink transition-colors">
+                    <X size={10} strokeWidth={2} />
+                  </button>
+                )}
+              </div>
+
+              {/* Status filter */}
+              <FilterDropdown
+                label="Status"
+                options={STATUS_FILTERS.map(f => ({ value: f.key, label: f.label }))}
+                value={statusFilter}
+                onChange={setStatusFilter}
+              />
+
+              {/* Divider */}
+              <div className="w-px h-4 bg-rule flex-shrink-0" />
+
+              {/* Category chips */}
               <button type="button"
                 onClick={() => { setSelectedCategory(null); setSelectedConnectorId(null) }}
                 className={`flex-shrink-0 flex items-center gap-1 px-2.5 py-1 font-body text-label transition-colors ${!selectedCategory ? 'bg-ink text-stone' : 'bg-stone3 text-muted hover:text-ink'}`}>
@@ -486,35 +511,8 @@ export default function IntegrationHub() {
                   </button>
                 )
               })}
-            </div>
 
-            {/* Scope bar — status + search */}
-            <div className="flex items-center gap-2 px-4 py-2 border-b border-rule2 bg-stone flex-shrink-0">
-              <FilterDropdown
-                label="Status"
-                options={STATUS_FILTERS.map(f => ({ value: f.key, label: f.label }))}
-                value={statusFilter}
-                onChange={setStatusFilter}
-              />
-              <div className="ml-auto flex items-center gap-2">
-                <div className="flex items-center gap-2 border border-rule2 focus-within:border-signal/50 px-2.5 py-1.5 transition-colors bg-stone2">
-                  <Search size={11} strokeWidth={2} className="text-muted flex-shrink-0" />
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={e => setSearchQuery(e.target.value)}
-                    placeholder="Search connectors…"
-                    className="font-body text-label text-ink bg-transparent outline-none placeholder:text-muted/60 w-32"
-                  />
-                  {searchQuery && (
-                    <button type="button" onClick={() => setSearchQuery('')} aria-label="Clear search"
-                      className="text-muted hover:text-ink transition-colors">
-                      <X size={11} strokeWidth={2} />
-                    </button>
-                  )}
-                </div>
-                <span className="font-body text-muted text-label tabular-nums">{filtered.length}</span>
-              </div>
+              <span className="font-body text-muted text-label tabular-nums ml-auto flex-shrink-0">{filtered.length}</span>
             </div>
 
             {/* Connector grid — absolute overlay on card click */}
@@ -524,22 +522,27 @@ export default function IntegrationHub() {
                   {rows.map((rowCards, rowIdx) => (
                     <div key={rowIdx} ref={el => { rowRefs.current[rowIdx] = el }}>
                       <div className="grid grid-cols-2 gap-px bg-rule2">
-                        {rowCards.map(c => (
+                        {rowCards.map((c, colIdx) => (
                           <div key={c.id} className="bg-stone">
                             <ConnectorCard c={c}
                               selected={c.id === selectedConnectorId}
-                              onClick={() => handleCardClick(c.id, rowIdx)} />
+                              onClick={() => handleCardClick(c.id, rowIdx, colIdx)} />
                           </div>
                         ))}
                       </div>
                     </div>
                   ))}
 
-                  {/* Floating overlay — appears over cards below the clicked row */}
-                  {selectedConnector && overlayTop !== null && (
+                  {/* Overlay — card-width, anchored below the clicked card */}
+                  {selectedConnector && overlayTop !== null && overlayCol !== null && (
                     <div
-                      className="absolute left-0 right-0 z-10 shadow-raise slide-in"
-                      style={{ top: overlayTop }}
+                      className="absolute z-10 slide-in border-l-2 border-l-signal border-b border-r border-rule2"
+                      style={{
+                        top: overlayTop,
+                        left: overlayCol === 0 ? 0 : 'calc(50% + 1px)',
+                        right: overlayCol === 1 ? 0 : 'calc(50% + 1px)',
+                        boxShadow: '2px 4px 12px rgba(0,0,0,0.12)',
+                      }}
                     >
                       <ConnectorRowDetail c={selectedConnector} />
                     </div>

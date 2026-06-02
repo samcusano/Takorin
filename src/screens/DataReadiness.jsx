@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import { readinessData } from '../data'
 import { useAppState } from '../context/AppState'
-import { HoldButton, Btn, SectionHeader, StatusPill, AnimatedScore } from '../components/UI'
+import { HoldButton, Btn, SectionHeader, StatusPill, AnimatedScore, SceneHeader } from '../components/UI'
 import { Check, AlertTriangle, ChevronDown, ChevronUp, Zap, Clock, Link2, Layers } from 'lucide-react'
 
 // ── Resolution queue data ─────────────────────────────────────────────────────
@@ -244,57 +244,6 @@ function ReadinessInstrument({ score, resolved }) {
     { label: 'Suppliers confidence', value: `${supplierIQConf}%`, ok: supplierIQConf >= 75 },
     { label: 'FSMA traceability',     value: fsmaBlocked ? 'At risk' : 'Clear', ok: !fsmaBlocked, danger: fsmaBlocked },
   ]
-
-  return (
-    <div className="px-5 pt-5 pb-4 border-b border-rule2 flex-shrink-0">
-
-      {/* Score */}
-      <div className="flex items-baseline gap-3 mb-1">
-        <span className={`display-num text-score leading-none ${zoneText}`}><AnimatedScore value={score} effect="blur" /></span>
-        <div className="pb-1">
-          <div className={`font-body font-semibold text-body ${zoneText}`}>{zone}</div>
-        </div>
-      </div>
-
-      {/* Projected */}
-      {totalGain > 0 ? (
-        <div className="flex items-baseline gap-1.5 mb-4">
-          <span className="font-body text-muted text-label">If all issues are resolved:</span>
-          <span className="display-num text-base font-bold text-ok">{projected}</span>
-          <span className="font-body text-ok text-label">(+{totalGain})</span>
-        </div>
-      ) : (
-        <div className="flex items-center gap-1.5 mb-4">
-          <Check size={10} strokeWidth={2.5} className="text-ok" />
-          <span className="font-body text-ok text-label">All scored gaps resolved</span>
-        </div>
-      )}
-
-      {/* Module confidence */}
-      <div className="space-y-1.5 mb-4">
-        {moduleRows.map(m => (
-          <div key={m.label} className="flex items-baseline justify-between">
-            <span className="font-body text-muted text-label">{m.label}</span>
-            <span className={`display-num text-base font-bold tabular-nums ${m.danger ? 'text-danger' : m.ok ? 'text-ok' : 'text-warn'}`}>
-              {m.value}
-            </span>
-          </div>
-        ))}
-      </div>
-
-      {/* Week summary */}
-      <div className="flex items-baseline justify-between border-t border-rule2 pt-3">
-        <div className="flex items-baseline gap-1.5">
-          <span className="display-num text-label font-bold text-ok">+6</span>
-          <span className="font-body text-muted text-label">this week</span>
-        </div>
-        <div className="flex items-baseline gap-1">
-          <span className="display-num text-label font-bold text-danger">−3</span>
-          <span className="font-body text-muted text-label">today · ERP mismatch</span>
-        </div>
-      </div>
-    </div>
-  )
 }
 
 // ── Left rail: Resolution Queue ───────────────────────────────────────────────
@@ -803,8 +752,33 @@ export default function DataReadiness() {
   const selectedItem = allItems.find(i => i.id === selectedId)
   const isCluster = selectedItem?.type === 'cluster'
 
+  const drTone = score >= 80 ? 'ok' : score >= 60 ? 'warn' : 'danger'
+  const drStatement = score >= 80
+    ? 'All data connections are verified and delivering fresh signals. Platform at full AI inference accuracy.'
+    : score >= 60
+    ? 'Key data gaps are reducing AI confidence and FSMA traceability completeness. Resolve open items to recover accuracy.'
+    : 'Critical data gaps are blocking compliance traceability and significantly reducing AI accuracy across multiple agents.'
+
+  const shiftIQConf   = resolved['ctx-0'] ? 84 : 72
+  const supplierIQConf = (resolved['conflict-0'] && resolved['conflict-1']) ? 91 : resolved['conflict-0'] ? 71 : 58
+  const fsmaBlocked   = !resolved['conflict-0'] || !resolved['conflict-1']
+
   return (
     <div className="flex flex-col h-full overflow-hidden content-reveal">
+
+      <SceneHeader
+        module="Data quality"
+        context="SL-04 · AI readiness"
+        metric={score}
+        metricLabel="readiness"
+        tone={drTone}
+        statement={drStatement}
+        meta={[
+          { label: 'ShiftIQ',   value: `${shiftIQConf}%`,          color: shiftIQConf >= 75   ? 'var(--color-ok)' : 'var(--color-warn)' },
+          { label: 'Suppliers', value: `${supplierIQConf}%`,        color: supplierIQConf >= 75 ? 'var(--color-ok)' : 'var(--color-warn)' },
+          { label: 'FSMA 204',  value: fsmaBlocked ? 'At risk' : 'Clear', color: fsmaBlocked ? 'var(--color-danger)' : 'var(--color-ok)' },
+        ]}
+      />
 
       <div className="flex flex-1 min-h-0 overflow-hidden">
 
