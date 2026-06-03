@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { equipment, recipes, spcData, batchTrace, runHistory } from '../data/equipment'
+import { equipment, spcData, batchTrace, runHistory } from '../data/equipment'
 import { AlertTriangle, CheckCircle2, Wrench, Activity, Clock, TrendingDown, CalendarClock, Zap } from 'lucide-react'
-import { SceneHeader, SectionHeader, StatusPill, Btn, SlidePanel, AnimatedScore, Tabs, EmptyState, StatGrid, MasterDetail, HoldButton } from '../components/UI'
+import { SceneHeader, StatusPill, Btn, SlidePanel, AnimatedScore, EmptyState, StatGrid, HoldButton } from '../components/UI'
 import { useAppState } from '../context/AppState'
 
 // ─── Remaining Useful Life strip ──────────────────────────────────────────────
@@ -358,33 +358,13 @@ function SPCChart({ eqId }) {
   )
 }
 
-function RecipePanel({ recipeId }) {
-  const recipe = recipeId ? recipes[recipeId] : null
-  if (!recipe) return null
+function RecipeLabel({ recipeId }) {
+  if (!recipeId) return null
   return (
-    <div className="flex-shrink-0 border-t border-rule2">
-      <SectionHeader title={`Active recipe · ${recipe.name} v${recipe.version}`} />
-      <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead>
-            <tr className="border-b border-rule2 bg-stone2">
-              {['Parameter', 'LCL', 'Target', 'UCL'].map(h => (
-                <th key={h} className="px-4 py-1.5 text-left font-body text-muted text-label">{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {recipe.parameters.map(p => (
-              <tr key={p.name} className="border-b border-rule2 hover:bg-stone2/40">
-                <td className="px-4 py-2 font-body text-ink text-label">{p.name}</td>
-                <td className="px-4 py-2 font-body text-warn text-label tabular-nums">{p.lcl}{p.unit}</td>
-                <td className="px-4 py-2 font-body font-medium text-ink text-label tabular-nums">{p.target}{p.unit}</td>
-                <td className="px-4 py-2 font-body text-warn text-label tabular-nums">{p.ucl}{p.unit}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+    <div className="flex-shrink-0 border-t border-rule2 px-5 py-3">
+      <span className="font-body text-label text-muted">Active recipe · </span>
+      <span className="font-body text-label text-ink">{recipeId}</span>
+      <span className="font-body text-label text-muted ml-2">· see Knowledge → Recipes for full specification</span>
     </div>
   )
 }
@@ -400,7 +380,7 @@ function RunHistory({ eqId }) {
   }
   return (
     <div className="flex-shrink-0 border-t border-rule2">
-      <SectionHeader title="Run history" />
+      <div className="font-body text-label text-muted px-5 pt-4 pb-2">Run history</div>
       {runs.map(r => {
         const oc = OUTCOME_CFG[r.outcome] ?? OUTCOME_CFG.released
         return (
@@ -426,15 +406,21 @@ function RunHistory({ eqId }) {
 function EquipmentDetail({ eq }) {
   const { maintenanceTickets, setMaintenanceTickets, logActivity } = useAppState()
   const [pmRequested, setPmRequested] = useState(false)
-  const [detailTab, setDetailTab] = useState('overview')
-
-  const hasImpact = eq?.rul != null && eq.rul < 24 && eq?.productionImpact
+  const [windowsOpen, setWindowsOpen] = useState(false)
 
   if (!eq) return <EmptyState message="Select equipment" sub="Choose from the list to view details" />
-  const cfg = STATUS_CFG[eq.status] ?? STATUS_CFG.idle
-  const spcCfg = eq.spcStatus ? SPC_CFG[eq.spcStatus] : null
 
+  const cfg    = STATUS_CFG[eq.status] ?? STATUS_CFG.idle
+  const spcCfg = eq.spcStatus ? SPC_CFG[eq.spcStatus] : null
   const existingTicket = maintenanceTickets.find(t => t.equipment?.includes(eq.name) && t.status === 'open')
+
+  // Equipment needs action when: alert exists, RUL is low, or SPC is out of bounds
+  const needsAction = !!eq.alertMsg || (eq.rul != null && eq.rul < 24) || eq.spcStatus === 'out-of-control' || eq.spcStatus === 'warning'
+
+  // Consequence icon + bg — adapts to severity
+  const isCritical = (eq.rul != null && eq.rul < 12) || eq.spcStatus === 'out-of-control'
+  const conseqTone = isCritical ? { cls: 'text-danger', bg: 'bg-danger/[0.03]', border: 'border-danger/20', Icon: AlertTriangle }
+                                : { cls: 'text-warn',   bg: 'bg-warn/[0.03]',   border: 'border-warn/20',   Icon: AlertTriangle }
 
   const handleRequestPM = () => {
     const urgency = eq.healthScore < 75 || spcCfg?.label === 'Out of control' ? 'danger' : 'warn'
@@ -442,31 +428,36 @@ function EquipmentDetail({ eq }) {
       id: `MT-${Date.now()}`,
       equipment: `${eq.name} · ${eq.zone}`,
       issue: `PM window requested · Health ${eq.healthScore ?? '—'} · Next scheduled ${eq.nextPM}`,
-      urgency,
-      status: 'open',
+      urgency, status: 'open',
       requestedBy: 'D. Kowalski',
       createdAt: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
     }])
     setPmRequested(true)
   }
 
+  const recommendedWindow = eq.maintenanceWindows?.find(w => w.recommended)
+  const otherWindows = eq.maintenanceWindows?.filter(w => !w.recommended) ?? []
+
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
-      {/* Header */}
+
+      {/* ── Header ─────────────────────────────────────────────── */}
       <div className="flex-shrink-0 px-6 py-4 border-b border-rule2 bg-stone">
-        <div className="flex items-start justify-between gap-3 mb-2">
-          <div className="flex items-center gap-2">
-            <StatusPill tone={eq.status === 'active' ? 'ok' : eq.status === 'maintenance' ? 'warn' : eq.status === 'offline' ? 'danger' : 'muted'}>{cfg.label}</StatusPill>
-            {spcCfg && (
-              <StatusPill tone={eq.spcStatus === 'in-control' ? 'ok' : eq.spcStatus === 'warning' ? 'warn' : 'danger'}>SPC {spcCfg.label}</StatusPill>
-            )}
-          </div>
+        <div className="flex items-center gap-2 mb-2">
+          <StatusPill tone={eq.status === 'active' ? 'ok' : eq.status === 'maintenance' ? 'warn' : eq.status === 'offline' ? 'danger' : 'muted'}>
+            {cfg.label}
+          </StatusPill>
+          {spcCfg && (
+            <StatusPill tone={eq.spcStatus === 'in-control' ? 'ok' : eq.spcStatus === 'warning' ? 'warn' : 'danger'}>
+              SPC {spcCfg.label}
+            </StatusPill>
+          )}
         </div>
         <div className="font-display font-bold text-ink text-head leading-none mb-0.5">{eq.name}</div>
         <div className="font-body text-muted text-body">{eq.type} · {eq.zone}</div>
       </div>
 
-      {/* Metrics */}
+      {/* ── Metrics strip ──────────────────────────────────────── */}
       <StatGrid cols={4}>
         {[
           { label: 'Health', val: eq.status === 'active' ? `${eq.healthScore}` : '—', raw: eq.status === 'active' ? eq.healthScore : null, tone: eq.healthScore >= 90 ? 'text-ok' : eq.healthScore >= 75 ? 'text-signal' : 'text-warn' },
@@ -478,59 +469,154 @@ function EquipmentDetail({ eq }) {
         ))}
       </StatGrid>
 
-      {/* RUL strip — always visible when data exists */}
+      {/* ── RUL strip ──────────────────────────────────────────── */}
       {eq.rul != null && <RULStrip eq={eq} />}
 
-      {/* Tab bar — only when there's production impact data worth separating */}
-      {hasImpact && (
-        <Tabs
-          tabs={[{ id: 'overview', label: 'Overview' }, { id: 'impact', label: 'Impact' }]}
-          active={detailTab} onChange={setDetailTab}
-        />
-      )}
+      {/* ── Scrollable body ────────────────────────────────────── */}
+      <div className="flex-1 overflow-y-auto">
 
-      <div className="flex-1 flex flex-col overflow-y-auto min-h-0">
-        {(!hasImpact || detailTab === 'overview') && (
-          <>
-            {eq.status === 'active' && batchTrace[eq.id] ? (
-              <div className="h-[260px] flex-shrink-0 border-b border-rule2">
-                <BatchTempChart eqId={eq.id} />
-              </div>
-            ) : eq.status === 'active' && spcData[eq.id] ? (
-              <div className="h-[220px] flex-shrink-0 overflow-hidden border-b border-rule2">
-                <SPCChart eqId={eq.id} />
-              </div>
-            ) : (
-              <div className="h-16 flex items-center justify-center border-b border-rule2">
-                <span className="font-body text-muted text-label">
-                  {eq.status === 'maintenance' ? 'Equipment in maintenance — SPC suspended' : 'No active run — SPC not available'}
-                </span>
-              </div>
-            )}
-            <RecipePanel recipeId={eq.activeRecipe} />
-            <RunHistory eqId={eq.id} />
-          </>
-        )}
+        {/* ── Action section — when issue exists ────────────── */}
+        {needsAction && (
+          <div className="border-b border-rule2">
 
-        {hasImpact && detailTab === 'impact' && (
-          <div className="p-4 space-y-4">
-            <ProductionImpactCard eq={eq} />
-            {eq.maintenanceWindows?.length > 0 && (
-              <MaintenanceWindowOptimizer eq={eq} onSchedule={(w) => {
-                logActivity?.({ actor: 'D. Kowalski', action: `Scheduled maintenance: ${w.label}`, item: eq.name, type: 'intervention' })
-              }} />
-            )}
-            {eq.before && (
-              <div className="flex items-start gap-2 px-4 py-3 border border-rule2 bg-context/[0.04]">
-                <span className="font-body text-label font-medium flex-shrink-0 text-context">Before ·</span>
-                <p className="font-body text-label text-muted leading-relaxed m-0">{eq.before}</p>
+            {/* Alert strip */}
+            {eq.alertMsg && (
+              <div className="flex items-start gap-2.5 px-5 py-3 border-b border-warn/20 bg-warn/[0.04]">
+                <AlertTriangle size={11} strokeWidth={2} className="text-warn flex-shrink-0 mt-0.5" />
+                <p className="font-body text-warn text-body leading-snug">{eq.alertMsg}</p>
               </div>
             )}
+
+            <div className="px-5 py-5 space-y-3">
+
+              {/* What triggered this — uses rationaleText if available, falls back to alertMsg */}
+              {(eq.rationaleText || eq.alertMsg) && (
+                <div className="border border-rule2 bg-stone2 px-4 py-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Zap size={12} strokeWidth={2} className="text-signal flex-shrink-0" />
+                    <span className="font-body font-semibold text-ink text-body">What triggered this</span>
+                  </div>
+                  <p className="font-body text-muted text-label leading-relaxed">
+                    {eq.rationaleText ?? eq.alertMsg}
+                  </p>
+                </div>
+              )}
+
+              {/* Consequence — production impact or SPC consequence */}
+              {eq.productionImpact ? (
+                <div className={`border ${conseqTone.border} ${conseqTone.bg} px-4 py-4`}>
+                  <div className="flex items-center gap-2 mb-3">
+                    <conseqTone.Icon size={12} strokeWidth={2} className={`${conseqTone.cls} flex-shrink-0`} />
+                    <span className="font-body font-semibold text-ink text-body">Consequence if unresolved</span>
+                  </div>
+                  <div className="flex items-center gap-5">
+                    <div>
+                      <div className="font-body text-label text-muted">Units at risk</div>
+                      <div className={`font-body font-medium text-body ${conseqTone.cls}`}>
+                        {eq.productionImpact.unitsAtRisk.toLocaleString()}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="font-body text-label text-muted">Downtime est.</div>
+                      <div className="font-body font-medium text-body text-danger">
+                        {eq.productionImpact.downtimeMins / 60}h
+                      </div>
+                    </div>
+                    <div>
+                      <div className="font-body text-label text-muted">Loss est.</div>
+                      <div className="font-body font-medium text-body text-danger">
+                        ${(eq.productionImpact.lossEstimate / 1000).toFixed(1)}K
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : eq.spcStatus && eq.spcStatus !== 'in-control' ? (
+                <div className={`border ${conseqTone.border} ${conseqTone.bg} px-4 py-4`}>
+                  <div className="flex items-center gap-2 mb-2">
+                    <conseqTone.Icon size={12} strokeWidth={2} className={`${conseqTone.cls} flex-shrink-0`} />
+                    <span className="font-body font-semibold text-ink text-body">Process control risk</span>
+                  </div>
+                  <p className="font-body text-muted text-label leading-relaxed">
+                    {eq.spcStatus === 'warning'
+                      ? 'SPC warning — process trending toward control limit. Grade impact possible if not corrected before the active batch completes.'
+                      : 'SPC out of control — process has exceeded control limits. Batch quality at risk. Immediate intervention required.'}
+                  </p>
+                </div>
+              ) : null}
+
+              {/* Recommended maintenance window */}
+              {recommendedWindow && (
+                <div className="border border-ok/25 bg-ok/[0.03] px-4 py-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <CalendarClock size={11} strokeWidth={2} className="text-ok flex-shrink-0" />
+                        <span className="font-body font-medium text-ink text-body">{recommendedWindow.label}</span>
+                        <StatusPill tone="ok">Recommended</StatusPill>
+                      </div>
+                      <div className="font-body text-label text-muted">{recommendedWindow.impact}</div>
+                      <div className="font-body text-label text-muted">{recommendedWindow.note}</div>
+                    </div>
+                    <div className="text-right flex-shrink-0">
+                      <div className={`display-num text-sub tabular-nums ${recommendedWindow.confidence >= 85 ? 'text-ok' : 'text-warn'}`}>
+                        {recommendedWindow.confidence}%
+                      </div>
+                      <div className="font-body text-label text-muted">conf.</div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Other windows — expandable */}
+              {otherWindows.length > 0 && (
+                <div>
+                  <button type="button" onClick={() => setWindowsOpen(o => !o)}
+                    className="flex items-center gap-1.5 font-body text-label text-muted hover:text-ink transition-colors">
+                    <Activity size={9} strokeWidth={2} />
+                    {windowsOpen ? 'Hide' : 'Show'} {otherWindows.length} other window{otherWindows.length > 1 ? 's' : ''}
+                  </button>
+                  {windowsOpen && otherWindows.map((w, i) => (
+                    <div key={i} className="flex items-start gap-3 px-4 py-3 border border-rule2 mt-2">
+                      <div className="flex-1 min-w-0">
+                        <div className="font-body font-medium text-ink text-body leading-snug">{w.label}</div>
+                        <div className="font-body text-muted text-label">{w.impact}</div>
+                        <div className="font-body text-muted text-label">{w.note}</div>
+                      </div>
+                      <div className="text-right flex-shrink-0">
+                        <div className={`display-num text-sub tabular-nums ${w.confidence >= 85 ? 'text-ok' : 'text-warn'}`}>{w.confidence}%</div>
+                        <div className="font-body text-muted text-label">conf.</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         )}
+
+        {/* ── Process evidence: chart ────────────────────────── */}
+        {eq.status === 'active' && batchTrace[eq.id] ? (
+          <div className="h-[260px] flex-shrink-0 border-b border-rule2">
+            <BatchTempChart eqId={eq.id} />
+          </div>
+        ) : eq.status === 'active' && spcData[eq.id] ? (
+          <div className="h-[220px] flex-shrink-0 overflow-hidden border-b border-rule2">
+            <SPCChart eqId={eq.id} />
+          </div>
+        ) : (
+          <div className="h-16 flex items-center justify-center border-b border-rule2">
+            <span className="font-body text-muted text-label">
+              {eq.status === 'maintenance' ? 'Equipment in maintenance — SPC suspended' : 'No active run'}
+            </span>
+          </div>
+        )}
+
+        <RecipeLabel recipeId={eq.activeRecipe} />
+        <RunHistory eqId={eq.id} />
+
       </div>
 
-      {/* ── Request PM — sticky bottom CTA ── */}
+      {/* ── Request PM — sticky footer ─────────────────────────── */}
       {eq.status !== 'maintenance' && (
         <div className="flex-shrink-0 px-5 py-3.5 border-t border-rule2 bg-stone2">
           {existingTicket ? (

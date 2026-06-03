@@ -23,6 +23,7 @@ export const equipment = [
       { label: 'Thursday 14:00–16:00', impact: '0 units impacted · shift changeover', confidence: 91, recommended: false, note: 'Safest window — but vibration forecast reaches critical at ~36h' },
     ],
     alertMsg: 'Vibration trending up — bearing inspection recommended within 14 hours',
+    rationaleText: 'Vibration rose from 2.1 mm/s at shift start to 3.4 mm/s now — 62% increase over 7 hours. The prior 5 shifts averaged 1.8 mm/s. Pattern matches early bearing wear signature observed before R-07 failure in April 2025, which failed at 36h after a similar progression.',
     before: 'R-03 vibration reading was 2.1 mm/s at shift start — within normal range · Same sensor was at 1.8 mm/s for the prior 5 shifts · Last bearing service was April 1',
   },
   {
@@ -39,6 +40,8 @@ export const equipment = [
     spcStatus: 'warning',
     totalRuns: 18,
     activeParam: 'Temperature',
+    rationaleText: 'Temperature drifted to 28.6°C on Day 124 — 0.6°C above the 28.0°C upper control limit. Three consecutive readings are above UCL, triggering an SPC warning. Correlated with the benzaldehyde decline flagged by the quality sensor on Day 126.',
+    alertMsg: 'Temperature SPC warning — 3 consecutive readings above UCL · Batch BTH-2026-047',
   },
   {
     id: 'EQ-F038',
