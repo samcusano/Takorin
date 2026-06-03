@@ -397,7 +397,7 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
     </div>
    </div>
    <Btn variant="secondary" onClick={() => acknowledgeCapaAssignment?.(c.id)} className="flex-shrink-0">
-    Acknowledge assignment
+    Confirm
    </Btn>
   </div>
  )}

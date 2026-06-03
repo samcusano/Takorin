@@ -111,7 +111,7 @@ function ActorBadge({ mode }) {
   const { Icon, label, color } = cfg
   return (
     <span className="flex items-center gap-0.5 flex-shrink-0" style={{ color }} aria-label={`${label} mode`} title={`${label} worker mode`}>
-      <Icon size={9} strokeWidth={2} aria-hidden="true" />
+      <Icon size={14} strokeWidth={2} aria-hidden="true" />
       <span className="font-body text-label">{label}</span>
     </span>
   )
@@ -349,14 +349,14 @@ function DigitalMaturityMap({ plantId }) {
           <div className="font-body text-muted text-label mb-3 leading-snug">{data.nextStep.lift}</div>
           <Link to={data.nextStep.route}
             className="flex items-center gap-1.5 font-body text-muted text-label hover:text-ink transition-colors">
-            {data.nextStep.linkLabel || `Open ${data.nextStep.module}`} <ArrowRight size={9} />
+            {data.nextStep.linkLabel || `Open ${data.nextStep.module}`} <ArrowRight size={14} />
           </Link>
         </div>
 
         <div className="flex justify-end mb-4">
           <button type="button"
             className="flex items-center gap-1.5 font-body text-label text-muted hover:text-ink px-3 py-1.5 border border-rule2 hover:border-ink/20 transition-colors">
-            <Download size={10} />
+            <Download size={14} />
             Download maturity report
           </button>
         </div>
@@ -581,7 +581,7 @@ export default function PlantOverview() {
               <span className="font-body text-label text-muted">Floor</span>
               {allFindings.length > 0 && (
                 <span className="font-body text-label text-warn flex items-center gap-1">
-                  <AlertTriangle size={8} strokeWidth={2} />{allFindings.length} finding{allFindings.length !== 1 ? 's' : ''} pending
+                  <AlertTriangle size={14} strokeWidth={2} />{allFindings.length} finding{allFindings.length !== 1 ? 's' : ''} pending
                 </span>
               )}
               <div className="ml-auto">
@@ -832,10 +832,10 @@ export default function PlantOverview() {
                                   <div className="w-16 flex-shrink-0 flex items-center justify-end">
                                     {pend > 0
                                       ? <span className="font-body text-label text-warn flex items-center gap-0.5">
-                                          <AlertTriangle size={9} strokeWidth={2} />{pend}
+                                          <AlertTriangle size={14} strokeWidth={2} />{pend}
                                         </span>
                                       : <span className="font-body text-label text-ok/40 flex items-center gap-0.5">
-                                          <CheckCircle size={9} strokeWidth={2} />
+                                          <CheckCircle size={14} strokeWidth={2} />
                                         </span>
                                     }
                                   </div>
@@ -869,7 +869,7 @@ export default function PlantOverview() {
               {/* Cross-line findings feed */}
               <section className="border-t-2 border-rule2 mt-0">
                 <div className="sticky top-0 z-10 flex items-center justify-between px-5 py-2 border-b border-rule2 bg-stone2">
-                  <span className="font-body font-semibold text-ink text-label">
+                  <span className="font-body text-muted text-label">
                     Pending across all lines
                     {allFindings.length > 0 && (
                       <span className="ml-2 font-body text-warn text-label font-normal">
@@ -879,7 +879,7 @@ export default function PlantOverview() {
                   </span>
                   {allFindings.length === 0 && (
                     <span className="font-body text-ok text-label flex items-center gap-1">
-                      <CheckCircle size={16} strokeWidth={2} />All lines clear
+                      <CheckCircle size={14} strokeWidth={2} />All lines clear
                     </span>
                   )}
                 </div>
@@ -909,7 +909,7 @@ export default function PlantOverview() {
                         className={`w-full text-left flex items-start gap-4 px-5 py-3.5 border-b border-rule2 transition-colors hover:bg-stone2 ${
                           f.urgency === 'danger' ? 'bg-danger/[0.05] hover:bg-danger/[0.1]' : 'bg-warn/[0.05] hover:bg-warn/[0.1]'
                         }`}>
-                        <AlertTriangle size={16}
+                        <AlertTriangle size={14}
                           className={`mt-0.5 flex-shrink-0 ${f.urgency === 'danger' ? 'text-danger' : 'text-warn'}`}
                           strokeWidth={2} />
                         <div className="flex-1 min-w-0">
@@ -918,7 +918,7 @@ export default function PlantOverview() {
                             {f.line.name} · {f.meta.supervisor}
                             {f.meta.minutesRemaining > 0 && (
                               <span className="ml-2 inline-flex items-center gap-1">
-                                <Clock size={9} strokeWidth={2} />{fmtMinutes(f.meta.minutesRemaining)} remaining
+                                <Clock size={14} strokeWidth={2} />{fmtMinutes(f.meta.minutesRemaining)} remaining
                               </span>
                             )}
                           </div>
@@ -927,7 +927,7 @@ export default function PlantOverview() {
                     ))
                   : (
                       <div className="flex items-center gap-3 px-5 py-10">
-                        <CheckCircle size={16} className="text-ok flex-shrink-0" strokeWidth={2} />
+                        <CheckCircle size={14} className="text-ok flex-shrink-0" strokeWidth={2} />
                         <span className="font-body text-muted text-body">All lines running clean — no pending findings</span>
                       </div>
                     )
@@ -943,7 +943,7 @@ export default function PlantOverview() {
             {/* Rail header */}
             <div className="flex-shrink-0 px-4 py-3 border-b border-rule2 bg-stone2">
               <div className="flex items-center justify-between">
-                <div className="font-body font-medium text-ink text-body">Shift briefing</div>
+                <div className="font-body font-medium text-ink text-label">Shift briefing</div>
                 {allCritVisited
                   ? <span className="font-body text-ok text-label flex items-center gap-1"><CheckCircle size={10} strokeWidth={2} />Critical cleared</span>
                   : <span className="font-body text-danger text-label font-medium tabular-nums">{critShiftCount} critical</span>
@@ -989,7 +989,7 @@ export default function PlantOverview() {
                             <span className={`display-num text-label font-bold tabular-nums ${riskColorClass(floorScore)}`}>{floorScore}</span>
                             {floorPend > 0 && (
                               <span className="flex items-center gap-0.5 text-warn">
-                                <AlertTriangle size={8} strokeWidth={2} />{floorPend}
+                                <AlertTriangle size={14} strokeWidth={2} />{floorPend}
                               </span>
                             )}
                           </div>
@@ -999,7 +999,7 @@ export default function PlantOverview() {
                         <Link to={item.route}
                           onClick={() => setVisitedQueue(p => new Set([...p, item.action]))}
                           className="inline-flex items-center gap-2 font-body font-medium text-label px-3 py-1.5 border border-rule bg-stone2 text-ink hover:bg-stone3 hover:border-rule2 transition-colors rounded-btn">
-                          Open {item.routeLabel} <ArrowRight size={10} />
+                          Open {item.routeLabel} <ArrowRight size={14} />
                         </Link>
                       </div>
                     </article>
@@ -1011,7 +1011,7 @@ export default function PlantOverview() {
               {SHIFT_QUEUE.filter(q => q.urgency === 'warn').length > 0 && (
                 <div className="mt-3 border-t border-rule2/50">
                   <div className="px-4 pt-2.5 pb-1">
-                    <span className="font-body text-label text-muted font-semibold tracking-wide">HIGH PRIORITY</span>
+                    <span className="font-body text-label text-muted font-semibold tracking-wide">High priorities</span>
                   </div>
                   {SHIFT_QUEUE.filter(q => q.urgency === 'warn').map((item, i) => {
                     const visited = visitedQueue.has(item.action)
@@ -1030,8 +1030,8 @@ export default function PlantOverview() {
                           <div className="font-body text-label text-muted leading-snug mt-0.5">{item.note}</div>
                         </div>
                         {visited
-                          ? <CheckCircle size={9} className="text-muted/40 flex-shrink-0 mt-0.5" />
-                          : <ArrowRight size={9} className="text-muted group-hover:text-ink flex-shrink-0 transition-colors mt-0.5" />
+                          ? <CheckCircle size={14} className="text-muted/40 flex-shrink-0 mt-0.5" />
+                          : <ArrowRight size={14} className="text-muted group-hover:text-ink flex-shrink-0 transition-colors mt-0.5" />
                         }
                       </Link>
                     )
@@ -1043,7 +1043,7 @@ export default function PlantOverview() {
               {SHIFT_QUEUE.filter(q => q.urgency === 'ok').length > 0 && (
                 <div className="border-t border-rule2/50">
                   <div className="px-4 pt-2.5 pb-1">
-                    <span className="font-body text-label text-muted font-semibold tracking-wide">WATCH</span>
+                    <span className="font-body text-label text-muted font-semibold tracking-wide">Watch</span>
                   </div>
                   {SHIFT_QUEUE.filter(q => q.urgency === 'ok').map((item, i) => {
                     const visited = visitedQueue.has(item.action)
@@ -1059,30 +1059,13 @@ export default function PlantOverview() {
                             <div className={`font-body text-label leading-snug truncate ${visited ? 'text-muted' : 'text-ink'}`}>{item.action}</div>
                           </div>
                         </div>
-                        <ArrowRight size={9} className="text-muted/40 group-hover:text-muted flex-shrink-0 transition-colors" />
+                        <ArrowRight size={14} className="text-muted/40 group-hover:text-muted flex-shrink-0 transition-colors" />
                       </Link>
                     )
                   })}
                 </div>
               )}
 
-            </div>
-
-            {/* Impact footer */}
-            <div className="flex-shrink-0 border-t border-rule2 px-4 py-2.5 bg-stone2">
-              <div className="font-body text-label text-muted">
-                <span className="text-ok font-medium">{interventionSummary.positive}</span>
-                {' of '}{interventionSummary.total} interventions positive this month
-                {interventionSummary.lowDwellDecisions > 0 && (
-                  <span className="text-danger ml-2 inline-flex items-center gap-1">
-                    <AlertTriangle size={8} strokeWidth={2} />{interventionSummary.lowDwellDecisions} low-dwell
-                  </span>
-                )}
-              </div>
-              <button type="button" onClick={() => navigate('/outcomes')}
-                className="mt-1 font-body text-label text-signal hover:text-ink transition-colors flex items-center gap-1">
-                See Outcomes <ArrowRight size={9} />
-              </button>
             </div>
 
           </div>
@@ -1106,11 +1089,11 @@ export default function PlantOverview() {
                 setShiftActed(prev => ({ ...prev, [selectedFinding.id]: true }))
                 setSelectedFinding(null)
               }}>
-                <CheckCircle size={11} strokeWidth={2} />Acknowledged
+                <CheckCircle size={14} strokeWidth={2} />Acknowledged
               </Btn>
             ) : (
               <span className="font-body text-ok text-label flex items-center gap-1.5 px-1">
-                <CheckCircle size={11} strokeWidth={2} />Acknowledged
+                <CheckCircle size={14} strokeWidth={2} />Acknowledged
               </span>
             )}
             <Btn variant="secondary" icon={ArrowRight} onClick={() => { navigate(`/shift?line=${selectedFinding.line.id}`); setSelectedFinding(null) }} />
