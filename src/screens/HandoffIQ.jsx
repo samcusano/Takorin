@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { handoffData, certExpiry, haccpData, robotFleetData } from '../data'
 import { PersonAvatar, SlidePanel, StatusPill, Btn } from '../components/UI'
-import { Check, AlertTriangle, Clock, Brain, Bot, CheckCircle, Cpu, Zap, Eye, ArrowRight, TrendingUp } from 'lucide-react'
+import { Check, AlertTriangle, Clock, Brain, Bot, CheckCircle, Cpu, Zap, Eye, ArrowRight, TrendingUp, Info } from 'lucide-react'
 import { useAppState } from '../context/AppState'
 import { OBSERVATION_CATEGORIES } from '../data/observations'
 
@@ -203,7 +203,7 @@ function BriefSection({ label, meta, action, children }) {
 
 // ── Main layout: 4-section brief ──────────────────────────────────────────────
 
-function LayoutGrid({ d, currentPlant, carryForwardItems, acknowledgedCount, carryForwardCount, allAcknowledged, carryForwardAcknowledged, handleAcknowledgeCarryForward }) {
+function LayoutGrid({ d, currentPlant, carryForwardItems, acknowledgedCount, carryForwardCount, allAcknowledged, carryForwardAcknowledged, handleAcknowledgeCarryForward, workerMode }) {
   const [viewingItem, setViewingItem]   = useState(null)
   const [handedOff, setHandedOff]       = useState(false)
   const [activityOpen, setActivityOpen] = useState(false)
@@ -307,7 +307,10 @@ function LayoutGrid({ d, currentPlant, carryForwardItems, acknowledgedCount, car
                   <div className="font-body text-label text-muted leading-snug">{item.operationalImpact}</div>
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0" onClick={e => e.stopPropagation()}>
-                  <Btn variant="ghost" onClick={() => setViewingItem(item)}>View</Btn>
+                  <button type="button" onClick={() => setViewingItem(item)}
+                    className="p-1 text-muted hover:text-ink transition-colors" aria-label="View details">
+                    <Info size={14} strokeWidth={1.75} />
+                  </button>
                   {acked ? (
                     <StatusPill tone="ok">Acknowledged</StatusPill>
                   ) : (
@@ -349,6 +352,43 @@ function LayoutGrid({ d, currentPlant, carryForwardItems, acknowledgedCount, car
             </div>
           ))}
         </BriefSection>
+
+        {/* ── FLEET STATUS — only in hybrid mode ───────────────────── */}
+        {workerMode === 'hybrid' && (() => {
+          const { units, faultLog } = robotFleetData
+          const activeFaults = faultLog.filter(f => !f.resolved && f.severity !== 'info')
+          const pmSoon = units.filter(u => u.maintenanceSchedule?.remainingHours <= 24)
+          if (activeFaults.length === 0 && pmSoon.length === 0) return null
+          return (
+            <BriefSection label="Fleet at handoff" meta={`${units.filter(u => u.status === 'online').length}/${units.length} online`}>
+              {activeFaults.map((f, i) => (
+                <div key={i} className={`flex items-start gap-3 px-5 py-3 border-b border-rule2 last:border-0 border-l-[3px] ${f.severity === 'danger' ? 'border-l-danger' : 'border-l-warn'}`}>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <span className={`font-body text-label font-medium ${f.severity === 'danger' ? 'text-danger' : 'text-warn'}`}>{f.unit}</span>
+                      <span className="font-body text-muted text-label">· {f.fault}</span>
+                    </div>
+                    {f.techAssigned && (
+                      <div className="font-body text-label text-muted">{f.techAssigned}{f.eta ? ` · ETA ${f.eta}` : ''}</div>
+                    )}
+                  </div>
+                  <span className={`font-body text-label flex-shrink-0 px-1.5 py-0.5 ${f.severity === 'danger' ? 'text-danger bg-danger/[0.08]' : 'text-warn bg-warn/[0.08]'}`}>
+                    {f.severity === 'danger' ? 'Active fault' : 'Monitoring'}
+                  </span>
+                </div>
+              ))}
+              {pmSoon.map((u, i) => (
+                <div key={u.id} className="flex items-start gap-3 px-5 py-3 border-b border-rule2 last:border-0 border-l-[3px] border-l-rule2">
+                  <div className="flex-1 min-w-0">
+                    <div className="font-body font-medium text-label text-ink">{u.id} · {u.name}</div>
+                    <div className="font-body text-label text-muted mt-0.5">PM due in {u.maintenanceSchedule.remainingHours}h · {u.line}</div>
+                  </div>
+                  <span className="font-body text-label text-muted flex-shrink-0 px-1.5 py-0.5 bg-stone3">Scheduled</span>
+                </div>
+              ))}
+            </BriefSection>
+          )
+        })()}
 
       </div>
 
@@ -563,7 +603,7 @@ export default function HandoffIQ() {
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
-      <LayoutGrid {...props} />
+      <LayoutGrid {...props} workerMode={workerMode} />
     </div>
   )
 }

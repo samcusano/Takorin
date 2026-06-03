@@ -619,14 +619,14 @@ function DecisionReplay({ pa, agent }) {
       <div className="px-4 py-3 bg-stone2">
         <div className="flex items-end gap-2 mb-2">
           <span className={`font-display font-bold text-score leading-none tabular-nums ${confColor}`}
-            style={{ transition: 'color 250ms var(--ease-standard)' }}>
+            style={{ transition: 'color var(--dur-quick) var(--ease-standard)' }}>
             {displayConf}
           </span>
           <span className="font-body text-muted text-label pb-2">% · step {activeStep + 1} of {STEPS.length}</span>
         </div>
         <div className="h-[3px] bg-rule2 overflow-hidden">
           <div className={`h-full ${barColor}`}
-            style={{ width: `${displayConf}%`, transition: 'width 500ms var(--ease-enter)' }} />
+            style={{ width: `${displayConf}%`, transition: `width var(--dur-data) var(--ease-enter)` }} />
         </div>
         <div className="font-body text-muted text-label mt-1.5">{step.label} — {step.detail}</div>
       </div>
@@ -658,7 +658,7 @@ function DecisionReplay({ pa, agent }) {
           style={{
             left: 14, top: 14, width: 1,
             height: activeStep === 0 ? 0 : `calc(${(activeStep / (STEPS.length - 1)) * 100}% - 28px)`,
-            transition: 'height 500ms var(--ease-enter)',
+            transition: `height var(--dur-data) var(--ease-enter)`,
           }} />
 
         <div>

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { AlertTriangle, CheckCircle, ShieldAlert, RotateCcw, Bot, User, ArrowRight } from 'lucide-react'
-import { PageHead, StatusPill, ActionBanner, Btn, Tabs, AnimatedScore } from '../components/UI'
+import { StatusPill, ActionBanner, Btn, Tabs } from '../components/UI'
 import { taskAllocationData } from '../data'
 import { useAppState } from '../context/AppState'
 
@@ -119,17 +119,11 @@ function TaskRow({ task, reallocated, onPreviewReallocate }) {
         <span className="font-body text-muted text-label">→</span>
         <AssigneeTag assignee={task.fallback} />
       </div>
-      <div className="flex-shrink-0">
+      <div className="flex-shrink-0 w-24">
         {reallocated ? (
           <StatusPill tone="ok">Reallocated</StatusPill>
         ) : (
-          <button
-            type="button"
-            onClick={() => onPreviewReallocate(task)}
-            className="font-body text-label text-muted hover:text-ink hover:border-rule px-2.5 py-1 transition-colors"
-          >
-            Reallocate
-          </button>
+          <Btn variant="secondary" onClick={() => onPreviewReallocate(task)}>Reallocate</Btn>
         )}
       </div>
     </div>
@@ -203,32 +197,20 @@ export default function ResourceAllocation() {
         />
       )}
 
-      <PageHead
-        over="Task Allocation · Salina Campus · Human · Robot hybrid"
-        title="Line 4 AM"
-        accent="var(--color-signal)"
-        meta={[
-          { role: 'Human tasks',   val: String(humanTasks)  },
-          { role: 'Robot tasks',   val: String(robotTasks)  },
-          { role: 'Total tasks',   val: String(tasks.length)},
-          { role: 'Coverage gaps', val: String(coverageGapCount) },
-        ]}
-      />
-
-      {/* Stat bar */}
-      <div className="flex border-b border-rule2 bg-stone flex-shrink-0">
+<div className="flex-shrink-0 flex items-center gap-6 px-6 py-[9px] border-b border-rule2 bg-stone">
         {[
-          { label: 'Robot tasks',   value: robotTasks,   sub: 'of total this shift',        fill: (robotTasks/tasks.length)*100,  tone: 'ok'     },
-          { label: 'Human tasks',   value: humanTasks,   sub: 'of total this shift',        fill: (humanTasks/tasks.length)*100,  tone: 'ok'     },
-          { label: 'Hard gaps',     value: gapCount,     sub: 'no qualified backup',        fill: null, tone: 'danger' },
-          { label: 'Cert gaps',     value: certGapCount, sub: 'fallback has cert mismatch', fill: null, tone: 'warn'   },
-        ].map(s => (
-          <div key={s.label} className="flex-1 px-5 py-4 border-r border-rule2 last:border-0">
-            <div className="font-body text-muted text-label mb-1">{s.label}</div>
-            <div className={`display-num text-metric leading-none ${
-              s.tone === 'danger' ? 'text-danger' : s.tone === 'warn' ? 'text-warn' : 'text-ink'
-            }`}><AnimatedScore value={s.value} /></div>
-            <div className="font-body text-muted text-label mt-0.5">{s.sub}</div>
+          { label: `Robot tasks · ${robotTasks}`,  tone: 'ok'                               },
+          { label: `Human tasks · ${humanTasks}`,  tone: 'ok'                               },
+          { label: `Hard gaps · ${gapCount}`,      tone: gapCount > 0     ? 'danger' : 'ok' },
+          { label: `Cert gaps · ${certGapCount}`,  tone: certGapCount > 0 ? 'warn'   : 'ok' },
+        ].map((sig, i) => (
+          <div key={i} className="flex items-center gap-1.5">
+            <div className={`w-[5px] h-[5px] rounded-full flex-shrink-0 ${
+              sig.tone === 'danger' ? 'bg-danger' : sig.tone === 'warn' ? 'bg-warn' : 'bg-ok'
+            }`} />
+            <span className={`font-body text-label ${
+              sig.tone === 'danger' ? 'text-danger' : sig.tone === 'warn' ? 'text-warn' : 'text-muted'
+            }`}>{sig.label}</span>
           </div>
         ))}
       </div>
@@ -250,7 +232,7 @@ export default function ResourceAllocation() {
               <span className="font-body text-muted text-label flex-1">Task</span>
               <span className="font-body text-muted text-label w-48">Primary</span>
               <span className="font-body text-muted text-label w-52">Fallback</span>
-              <span className="font-body text-muted text-label w-20">Action</span>
+              <span className="w-24" />
             </div>
             {tasks.map(task => (
               <TaskRow

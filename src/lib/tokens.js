@@ -13,12 +13,12 @@ export const color = {
   rule:    '#263042',
   rule2:   '#1A2335',
   // Semantic
-  ok:      '#5FA877',
-  okDim:   '#0D2518',
-  warn:    '#C98E2A',
-  warnDim: '#2A1E08',
-  danger:  '#DE6C4E',
-  dangerDim: '#2A100A',
+  ok:      '#28BFB0',
+  okDim:   '#08302C',
+  warn:    '#D4902A',
+  warnDim: '#2C2008',
+  danger:  '#C03830',
+  dangerDim: '#2C0C0A',
   // Primary accent — steel blue
   signal:     '#4B9CE4',
   signalDim:  '#0D1E38',

@@ -10,7 +10,7 @@ const C = {
   muted:  'var(--color-muted)',
   ink:    'var(--color-ink)',
   rule2:  'var(--color-stone-2)',
-  dim:    '#4A5D74',
+  dim:    'var(--color-dim)',
 }
 const FONT = "'IBM Plex Sans'"
 

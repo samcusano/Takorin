@@ -1,15 +1,15 @@
 const P = {
-  bg:       '#0B0F18',
-  surface:  '#131A26',
-  border:   '#263042',
-  border2:  '#1A2335',
-  bone:     '#EDE4CB',
-  dim:      '#4A5D74',
-  blue:     '#4B9CE4',
-  cyan:     '#3BBFDA',
-  amber:    '#C98E2A',
-  sage:     '#5FA877',
-  rust:     '#DE6C4E',
+  bg:       'var(--color-stone)',
+  surface:  'var(--color-stone-2)',
+  border:   'var(--color-rule)',
+  border2:  'var(--color-rule-2)',
+  bone:     'var(--color-ink)',
+  dim:      'var(--color-dim)',
+  blue:     'var(--color-signal)',
+  cyan:     'var(--color-stream)',
+  amber:    'var(--color-warn)',
+  sage:     'var(--color-ok)',
+  rust:     'var(--color-danger)',
 }
 
 const HERO_CSS = `
@@ -64,8 +64,8 @@ export default function ShiftHero({
     <>
       <style>{HERO_CSS}</style>
       <header style={{
-        background: `linear-gradient(180deg, ${P.surface} 0%, ${P.bg} 100%)`,
-        borderBottom: `1px solid ${P.border}`,
+        background: 'linear-gradient(180deg, var(--color-stone-2) 0%, var(--color-stone) 100%)',
+        borderBottom: '1px solid var(--color-rule)',
         flexShrink: 0,
         position: 'relative',
         overflow: 'hidden',
@@ -73,17 +73,17 @@ export default function ShiftHero({
         {/* Atmospheric risk glow */}
         <div className="hero-atmo" style={{
           position: 'absolute', inset: 0, pointerEvents: 'none',
-          background: `radial-gradient(ellipse 55% 100% at 8% 60%, ${riskC}22 0%, transparent 65%)`,
+          background: `radial-gradient(ellipse 55% 100% at 8% 60%, color-mix(in srgb, ${riskC} 13%, transparent) 0%, transparent 65%)`,
         }} />
 
         {/* Score + narrative */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 32, padding: '20px 24px 16px', position: 'relative' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-8)', padding: 'var(--space-5) var(--space-6) var(--space-4)', position: 'relative' }}>
           {/* Score block */}
           <div style={{ flexShrink: 0 }}>
             <div className="display-num text-score leading-none" style={{ color: riskC }}>
               {score}
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginTop: 8 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginTop: 'var(--space-2)' }}>
               <div style={{ width: 5, height: 5, borderRadius: '50%', background: riskC }} />
               <Mono color={riskC}>{sLabel(score)}</Mono>
               <Mono size={10} color={P.dim} style={{ marginLeft: 2 }}>· {domainLabel}</Mono>
@@ -91,11 +91,11 @@ export default function ShiftHero({
           </div>
 
           {/* Vertical rule + statement */}
-          <div style={{ borderLeft: `1px solid ${P.border}`, paddingLeft: 28, maxWidth: 400, flex: 1 }}>
+          <div style={{ borderLeft: '1px solid var(--color-rule)', paddingLeft: 'var(--space-7)', maxWidth: 400, flex: 1 }}>
             <p className="font-display text-sub text-ink leading-relaxed" style={{ margin: 0, marginBottom: 12 }}>
               {statement}
             </p>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-5)' }}>
               <div>
                 <Mono size={10} color={P.dim}>Scan interval</Mono>
                 <Mono size={10} color={P.cyan} style={{ marginLeft: 5 }}>{scanInterval}</Mono>

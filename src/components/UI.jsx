@@ -658,7 +658,7 @@ export function HoldButton({ label, holdLabel, doneLabel, duration = 1500, onCon
    {/* Fill sweep — no transition while holding (rAF-driven), spring back on release */}
    <div
     className={`absolute inset-0 origin-left ${t.fill}`}
-    style={{ transform: `scaleX(${progress / 100})`, transition: holding ? 'none' : 'transform 300ms cubic-bezier(0.19,0.91,0.38,1)' }}
+    style={{ transform: `scaleX(${progress / 100})`, transition: holding ? 'none' : `transform var(--dur-standard) var(--ease-enter)` }}
    />
    <span className={`relative flex items-center gap-2 ${done ? t.text : 'text-ink'}`}>
     {done ? (
@@ -1041,7 +1041,7 @@ export function AnimatedScore({ value, suffix, effect = 'none', hero = false }) 
  const node = (
   <NumberFlow
    value={displayed} suffix={suffix}
-   transformTiming={{ duration: dur, easing: 'cubic-bezier(0.16, 1, 0.3, 1)' }}
+   transformTiming={{ duration: dur, easing: 'cubic-bezier(0.16, 1, 0.3, 1)' /* token-audit: ignore — NumberFlow API requires raw string, mirrors --ease-spring */ }}
    opacityTiming={{ duration: Math.max(dur * 0.35, 60), easing: 'ease-out' }}
   />
  )

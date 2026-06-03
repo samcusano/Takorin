@@ -1,19 +1,19 @@
 import { useState, useRef, useEffect } from 'react'
-import { Brain, Check, CheckCircle2, Users, TrendingUp, TrendingDown, Eye, RefreshCw } from 'lucide-react'
+import { Brain, Check, CheckCircle2, Users, TrendingUp, TrendingDown, Eye, RefreshCw, Cpu } from 'lucide-react'
 import { Btn, AnimatedScore, SlidePanel, StatusPill } from '../components/UI'
 import { Link } from 'react-router-dom'
 import { useAppState } from '../context/AppState'
 import { crew, agentEvents } from '../data/shift'
-import { shiftData } from '../data'
+import { shiftData, robotFleetData } from '../data'
 import { driftSignals } from '../data/driftWatch'
 
 const sColor = (s) => s >= 75 ? 'var(--color-danger)' : s >= 60 ? 'var(--color-warn)' : 'var(--color-ok)'
 const sLabel = (s) => s >= 75 ? 'At risk' : s >= 60 ? 'Watch' : 'Clear'
 const atmoGradient = (s) => s >= 75
-  ? 'radial-gradient(ellipse 55% 100% at 8% 60%, rgba(222,108,78,0.13) 0%, transparent 65%)'
+  ? 'radial-gradient(ellipse 55% 100% at 8% 60%, rgb(var(--color-danger-rgb) / 0.13) 0%, transparent 65%)'
   : s >= 60
-  ? 'radial-gradient(ellipse 55% 100% at 8% 60%, rgba(201,142,42,0.13) 0%, transparent 65%)'
-  : 'radial-gradient(ellipse 55% 100% at 8% 60%, rgba(95,168,119,0.13) 0%, transparent 65%)'
+  ? 'radial-gradient(ellipse 55% 100% at 8% 60%, rgb(var(--color-warn-rgb) / 0.13) 0%, transparent 65%)'
+  : 'radial-gradient(ellipse 55% 100% at 8% 60%, rgb(var(--color-ok-rgb) / 0.13) 0%, transparent 65%)'
 
 // ── Score factors ──────────────────────────────────────────────────────────────
 const SCORE_FACTORS = [
@@ -32,7 +32,7 @@ const V2_CSS = `
   @keyframes v2RowIn     { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
   .v2-atmo   { animation: v2AtmoPulse 9s ease-in-out infinite; }
   .v2-live   { animation: v2LiveDot 2.4s ease-in-out infinite; }
-  .v2-row-in { animation: v2RowIn 320ms cubic-bezier(0.16,1,0.3,1) both; }
+  .v2-row-in { animation: v2RowIn var(--dur-standard) var(--ease-spring) both; }
 `
 
 // ── Divider ───────────────────────────────────────────────────────────────────
@@ -156,16 +156,29 @@ function DirectiveCard({ executed, onExecute }) {
 }
 
 // ── Finding card ──────────────────────────────────────────────────────────────
-function FindingCard({ f, index, onAct, onDelegate }) {
+const DISMISS_REASONS = [
+  'Already handled by outgoing supervisor',
+  'Not applicable — SKU change in progress',
+  'Assessment is incorrect — false positive',
+]
+
+function FindingCard({ f, index, onAct, onDelegate, onDismiss }) {
   const [dismissed, setDismissed] = useState(false)
   const [acted, setActed] = useState(false)
   const [delegatedTo, setDelegatedTo] = useState(null)
   const [assignOpen, setAssignOpen] = useState(false)
+  const [dismissOpen, setDismissOpen] = useState(false)
   const assignBtnRef = useRef(null)
+  const dismissBtnRef = useRef(null)
 
   const leftCls = f.urgency === 'danger' ? 'border-l-danger' : 'border-l-warn'
 
   if (dismissed) return null
+
+  const handleDismiss = (reason) => {
+    onDismiss?.(f.id, reason)
+    setDismissed(true)
+  }
 
   const handleDelegate = (op) => {
     setDelegatedTo(op)
@@ -176,7 +189,7 @@ function FindingCard({ f, index, onAct, onDelegate }) {
   return (
     <div
       className={`v2-row-in bg-stone2 border border-rule border-l-[3px] ${leftCls} mb-2.5`}
-      style={{ animationDelay: `${index * 90}ms`, opacity: acted ? 0.45 : 1, transition: 'opacity 400ms ease' }}>
+      style={{ animationDelay: `${index * 90}ms`, opacity: acted ? 0.45 : 1, transition: `opacity var(--dur-standard) var(--ease-standard)` }}>
 
       <div className="px-4 pt-3.5 pb-2.5">
         <div className="flex items-start justify-between gap-3 mb-2">
@@ -207,7 +220,24 @@ function FindingCard({ f, index, onAct, onDelegate }) {
       ) : (
         <div className="px-4 py-3 flex items-center gap-2">
           <Btn variant="primary" onClick={() => { setActed(true); onAct?.(f.id) }}>{f.actions?.[0]}</Btn>
-          {f.actions?.[1] && <Btn variant="secondary" onClick={() => setDismissed(true)}>{f.actions[1]}</Btn>}
+          {f.actions?.[1] && (
+            <span ref={dismissBtnRef} className="inline-flex">
+              <Btn variant="secondary" onClick={() => setDismissOpen(p => !p)}>{f.actions[1]}</Btn>
+            </span>
+          )}
+          {dismissOpen && (
+            <ActionOverlay triggerRef={dismissBtnRef} onClose={() => setDismissOpen(false)} title="Dismiss reason" width="w-64">
+              <div className="px-1 py-1">
+                {DISMISS_REASONS.map(reason => (
+                  <button key={reason} type="button" onClick={() => { setDismissOpen(false); handleDismiss(reason) }}
+                    className="flex items-start gap-2.5 w-full text-left font-body text-label text-ink px-3 py-2.5 hover:bg-stone3 transition-colors">
+                    <div className="w-1 h-1 rounded-full bg-muted flex-shrink-0 mt-1.5" />
+                    {reason}
+                  </button>
+                ))}
+              </div>
+            </ActionOverlay>
+          )}
           {(f.delegateTo?.length > 0) && (
             <span ref={assignBtnRef} className="ml-auto inline-flex">
               <Btn variant="ghost" icon={Users} onClick={() => setAssignOpen(p => !p)} className="!px-2 !min-h-0 whitespace-nowrap">
@@ -249,7 +279,7 @@ function OperatorRow({ op, index, total }) {
       </div>
       <div className="flex-1 flex items-center gap-2.5">
         <div className="flex-1 h-0.5 bg-rule">
-          <div style={{ height: '100%', width: `${cert}%`, background: certColor, transition: 'width 700ms cubic-bezier(0.16,1,0.3,1)' }} />
+          <div style={{ height: '100%', width: `${cert}%`, background: certColor, transition: `width var(--dur-live) var(--ease-spring)` }} />
         </div>
         <span className={`font-body text-label min-w-[26px] text-right ${certCls}`}>{cert}%</span>
       </div>
@@ -266,7 +296,7 @@ function TimelineEntry({ ev, index, total }) {
   const deltaC   = ev.deltaColor === 'text-danger' ? 'var(--color-danger)' : 'var(--color-warn)'
 
   return (
-    <div style={{ display: 'flex', gap: 12, marginBottom: 20, opacity }}>
+    <div style={{ display: 'flex', gap: 'var(--space-3)', marginBottom: 'var(--space-5)', opacity }}>
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: 40 }}>
         <span className="font-body text-label text-muted" style={{ marginBottom: 6, textAlign: 'right', width: '100%' }}>{ev.time}</span>
         <div className={isNow ? 'v2-live' : ''} style={{ width: 6, height: 6, borderRadius: '50%', background: dotColor, flexShrink: 0 }} />
@@ -334,7 +364,7 @@ function TrendWatch() {
           const DirIcon = s.direction === 'up' ? TrendingUp : TrendingDown
           return (
             <div key={s.id} className="v2-row-in bg-stone2 border border-rule border-l-[3px] border-l-context mb-2"
-              style={{ animationDelay: `${i * 50}ms`, padding: '12px 14px' }}>
+              style={{ animationDelay: `${i * 50}ms`, padding: 'var(--space-3) var(--space-3)' }}>
               <div className="flex items-start gap-2 mb-1.5">
                 <DirIcon size={10} strokeWidth={2} className="text-context flex-shrink-0 mt-0.5" />
                 <div className="flex-1 min-w-0">
@@ -345,7 +375,7 @@ function TrendWatch() {
               <div className="font-body text-label text-muted mb-2 leading-snug" style={{ paddingLeft: 18 }}>{s.currentReading} · {s.note}</div>
               <div style={{ paddingLeft: 18 }}>
                 <div className="h-0.5 bg-rule rounded-sm mb-2">
-                  <div style={{ height: '100%', width: `${pct}%`, background: 'var(--color-context)', borderRadius: 1, transition: 'width 600ms cubic-bezier(0.16,1,0.3,1)' }} />
+                  <div style={{ height: '100%', width: `${pct}%`, background: 'var(--color-context)', borderRadius: 1, transition: `width var(--dur-data) var(--ease-spring)` }} />
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="font-body text-label text-muted">{s.thresholdBatches - s.consecutiveBatches} batches from threshold</span>
@@ -490,7 +520,8 @@ function SupervisorTeam({ taskAssignments, escalatedToDirector, setEscalatedToDi
 // ── Main ──────────────────────────────────────────────────────────────────────
 export default function ShiftIQV2({ score = 78, lineLabel = 'Line 4 · AM Shift', supervisor = 'D. Kowalski', plant = 'Salina KS', isSupervisorView = false }) {
   const { checklistSigned, taskAssignments, setTaskAssignments, logActivity,
-    signOffRequests, setSignOffRequests, escalatedToDirector, setEscalatedToDirector } = useAppState()
+    signOffRequests, setSignOffRequests, escalatedToDirector, setEscalatedToDirector,
+    workerMode } = useAppState()
   const [scoreOverlayOpen, setScoreOverlayOpen] = useState(false)
   const [directiveExecuted, setDirectiveExecuted] = useState(false)
 
@@ -520,7 +551,7 @@ export default function ShiftIQV2({ score = 78, lineLabel = 'Line 4 · AM Shift'
         <>
           <div className="fixed inset-0 z-40 bg-black/40" onClick={() => setScoreOverlayOpen(false)} />
           <div className="fixed z-50 plant-drop-in" style={{ top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 360 }}>
-            <div className="overflow-hidden bg-stone2 border border-rule" style={{ boxShadow: '0 16px 48px rgba(0,0,0,0.5)' }}>
+            <div className="overflow-hidden bg-stone2 border border-rule" style={{ boxShadow: 'var(--shadow-modal)' }}>
               <div className="flex items-center justify-between px-5 py-3.5 border-b border-rule">
                 <div className="flex items-center gap-2">
                   <Brain size={12} className="text-muted" />
@@ -594,7 +625,7 @@ export default function ShiftIQV2({ score = 78, lineLabel = 'Line 4 · AM Shift'
 
           <div className="flex items-center gap-6 px-6 py-[9px] border-t border-rule2 relative">
             {[
-              { label: 'SCADA · Oven B', healthy: false },
+              ...(workerMode !== 'hybrid' ? [{ label: 'SCADA · Oven B', healthy: false }] : []),
               { label: 'MES · Schedule', healthy: true },
               { label: 'HR · Roster',    healthy: true },
               { label: `Checklists · ${signedCount}/13`, healthy: signedCount >= 11 },
@@ -618,6 +649,33 @@ export default function ShiftIQV2({ score = 78, lineLabel = 'Line 4 · AM Shift'
             <>
             <div className="flex-1 overflow-y-auto border-r border-rule">
               <div className="px-6 pt-5 pb-4">
+                {/* Fleet alerts — injected when robot/hybrid mode is active */}
+                {(workerMode === 'robot' || workerMode === 'hybrid') && (() => {
+                  const faulted = robotFleetData.units.filter(u => u.status === 'fault' || u.status === 'maintenance')
+                  if (faulted.length === 0) return null
+                  return (
+                    <div className="mb-4">
+                      <div className="flex items-center gap-2 mb-3">
+                        <Cpu size={10} strokeWidth={2} className="text-signal flex-shrink-0" />
+                        <span className="font-body text-label text-muted">Fleet alerts · {faulted.length}</span>
+                      </div>
+                      {faulted.map((u, i) => (
+                        <div key={u.id} className={`v2-row-in bg-stone2 border border-rule border-l-[3px] mb-2 px-4 py-3 ${u.status === 'fault' ? 'border-l-danger' : 'border-l-warn'}`}
+                          style={{ animationDelay: `${i * 60}ms` }}>
+                          <div className="flex items-center gap-2 mb-1.5">
+                            <span className={`font-body text-label px-1.5 py-0.5 border ${u.status === 'fault' ? 'text-danger bg-danger/[0.08] border-danger/20' : 'text-warn bg-warn/[0.08] border-warn/20'}`}>
+                              {u.status === 'fault' ? 'Fault' : 'In PM'} · {u.id}
+                            </span>
+                            <span className="font-body text-muted text-label">{u.line}</span>
+                          </div>
+                          <div className="font-body font-medium text-label text-ink">{u.name}</div>
+                          {u.alert && <div className="font-body text-label text-muted mt-0.5">{u.alert.msg}</div>}
+                        </div>
+                      ))}
+                      <div className="h-px bg-rule mb-4" />
+                    </div>
+                  )
+                })()}
                 <div className="font-body text-label text-muted mb-3">Intelligence · {richFindings.length} findings</div>
                 <DirectiveCard
                   executed={directiveExecuted}
@@ -630,6 +688,7 @@ export default function ShiftIQV2({ score = 78, lineLabel = 'Line 4 · AM Shift'
                   <FindingCard key={f.id} f={f} index={i}
                     onAct={(id) => logActivity({ actor: supervisor, action: `Acted on finding: ${f.title}`, item: id, type: 'intervention' })}
                     onDelegate={handleDelegate}
+                    onDismiss={(id, reason) => logActivity({ actor: supervisor, action: `Dismissed: ${reason}`, item: id, type: 'dismissal' })}
                   />
                 ))}
               </div>

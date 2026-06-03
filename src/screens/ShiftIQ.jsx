@@ -302,7 +302,7 @@ function OperatorPanel({ name, onClose, onSelectOperator }) {
  <div className="px-4 py-3">
  <div className="font-body text-muted text-label mb-2">{meta.certLabel}</div>
  <div style={{ height:5, background:'var(--color-rule)', marginBottom:8 }}>
- <div style={{ height:'100%', width:`${meta.certPct}%`, background:certC, transition:'width 500ms cubic-bezier(0.19,0.91,0.38,1)' }} />
+ <div style={{ height:'100%', width:`${meta.certPct}%`, background:certC, transition:`width var(--dur-data) var(--ease-enter)` }} />
  </div>
  <span className="display-num text-title" style={{ color: certC }}>{meta.certPct}%</span>
  </div>
@@ -444,7 +444,7 @@ function Finding({ f, onAct, onDismiss, onDelegate, dismissed }) {
     display: 'grid',
     gridTemplateRows: removing ? '0fr' : '1fr',
     opacity: removing ? 0 : 1,
-    transition: 'grid-template-rows 350ms ease-in-out, opacity 280ms ease-in-out',
+    transition: `grid-template-rows var(--dur-standard) var(--ease-inout), opacity var(--dur-quick) var(--ease-inout)`,
    }}>
     <div className="overflow-hidden">
      <article
@@ -1091,7 +1091,9 @@ export default function ShiftIQ() {
      {/* Arc segments */}
      <div className="flex flex-1 relative">
       {ARC_SEGMENTS.map((seg, i) => {
-       const isActive = activeTab === seg.id
+       const isActive   = activeTab === seg.id
+       const inModeView = activeTab === 'fleet' || activeTab === 'allocation'
+       const isDimActive = !isActive && seg.id === 'shift' && inModeView
        return (
         <button key={seg.id} type="button"
          onClick={() => setActiveTab(seg.id)}
@@ -1102,34 +1104,28 @@ export default function ShiftIQ() {
            ? 'bg-ok border-ok shadow-[0_0_6px_var(--color-ok)]'
            : isActive
            ? 'bg-signal border-signal'
+           : isDimActive
+           ? 'bg-signal/30 border-signal/40'
            : 'bg-stone3 border-rule'
          }`} />
-         <div className={`font-body font-medium text-label leading-none ${isActive ? 'text-ink' : seg.isNow ? 'text-ok' : 'text-muted'}`}>
+         <div className={`font-body font-medium text-label leading-none ${
+          isActive ? 'text-ink' : isDimActive ? 'text-signal/60' : seg.isNow ? 'text-ok' : 'text-muted'
+         }`}>
           {seg.label}
          </div>
          <div className="font-body text-label text-muted/70 leading-none">{seg.time}</div>
-         <div className={`font-body text-label leading-snug text-center mt-0.5 ${isActive ? 'text-muted' : 'text-muted/50'}`}>
+         <div className={`font-body text-label leading-snug text-center mt-0.5 ${isActive || isDimActive ? 'text-muted' : 'text-muted/50'}`}>
           {seg.status}
          </div>
-         {isActive && <div className="absolute bottom-0 left-0 right-0 h-px bg-signal" />}
+         {(isActive || isDimActive) && (
+          <div className={`absolute bottom-0 left-0 right-0 h-px ${isActive ? 'bg-signal' : 'bg-signal/30'}`} />
+         )}
         </button>
        )
       })}
      </div>
-     {/* Secondary buttons */}
-     <div className="flex-shrink-0 flex items-center gap-1 px-2 border-l border-rule2">
-      {hasSecondary && (
-       <button type="button" onClick={() => setActiveTab('fleet')}
-        className={`font-body text-label px-2 py-1.5 transition-colors ${activeTab === 'fleet' ? 'text-ink bg-stone3' : 'text-muted hover:text-ink'}`}>
-        Fleet
-       </button>
-      )}
-      {workerMode === 'hybrid' && (
-       <button type="button" onClick={() => setActiveTab('allocation')}
-        className={`font-body text-label px-2 py-1.5 transition-colors ${activeTab === 'allocation' ? 'text-ink bg-stone3' : 'text-muted hover:text-ink'}`}>
-        Alloc
-       </button>
-      )}
+     {/* Moon — sleep mode */}
+     <div className="flex-shrink-0 flex items-center px-2 border-l border-rule2">
       <button ref={moonTriggerRef} type="button" onClick={() => !currentQuiet && setQuietForm(p => ({ open: !p.open }))}
        className={`relative p-1.5 transition-colors ${currentQuiet ? 'text-signal cursor-default' : 'text-muted hover:text-ink'}`} aria-label="Sleep mode" title="Sleep mode">
        <Moon size={11} strokeWidth={2} />
@@ -1141,9 +1137,82 @@ export default function ShiftIQ() {
   })()}
  </div>
 
+ {/* ── Mode bar — robot/hybrid operational layer ───────────────────────── */}
+ {(workerMode === 'robot' || workerMode === 'hybrid' || currentPlant?.id === 'ks') && (() => {
+  const modeLabel = workerMode === 'hybrid' ? 'Hybrid mode' : 'Robotic mode'
+  const modeDot   = workerMode === 'hybrid' ? 'bg-warn' : 'bg-signal'
+  return (
+   <div className="flex-shrink-0 flex items-stretch border-b border-rule2 bg-stone">
+    {/* Identity */}
+    <div className="flex items-center gap-2 px-4 flex-1">
+     <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${modeDot}`} />
+     <span className="font-body text-label text-muted">{modeLabel}</span>
+    </div>
+    {/* Mode-view tabs */}
+    <div className="flex items-stretch border-l border-rule2">
+     <button type="button"
+      onClick={() => setActiveTab(activeTab === 'fleet' ? 'shift' : 'fleet')}
+      className={`relative font-body font-medium text-label px-4 py-1.5 transition-colors hover:bg-stone3 ${activeTab === 'fleet' ? 'text-ink bg-stone3' : 'text-muted'}`}>
+      Fleet
+      {activeTab === 'fleet' && <div className="absolute bottom-0 left-0 right-0 h-px bg-signal" />}
+     </button>
+     {workerMode === 'hybrid' && (
+      <button type="button"
+       onClick={() => setActiveTab(activeTab === 'allocation' ? 'shift' : 'allocation')}
+       className={`relative font-body font-medium text-label px-4 py-1.5 transition-colors hover:bg-stone3 ${activeTab === 'allocation' ? 'text-ink bg-stone3' : 'text-muted'}`}>
+       Allocation
+       {activeTab === 'allocation' && <div className="absolute bottom-0 left-0 right-0 h-px bg-signal" />}
+      </button>
+     )}
+    </div>
+   </div>
+  )
+ })()}
+
+ {quietForm.open && (
+  <SleepPickerDropdown
+   triggerRef={moonTriggerRef}
+   onClose={() => setQuietForm({ open: false })}
+   onSelect={handleSetSleepMode}
+  />
+ )}
  {activeTab === 'handoff'    ? <HandoffIQ />
-  : activeTab === 'fleet'      ? <RobotFleet />
-  : activeTab === 'allocation' ? <ResourceAllocation />
+  : activeTab === 'fleet'      ? (workerMode === 'robot'
+      ? <div className="flex flex-col h-full overflow-hidden">
+          <div className="flex-shrink-0 flex items-center gap-6 px-6 py-[9px] border-b border-rule2 bg-stone2">
+            {[
+              { label: 'SCADA · Oven B',                 healthy: false },
+              { label: 'MES · Schedule',                 healthy: true  },
+              { label: 'HR · Roster',                    healthy: true  },
+              { label: `Checklists · ${signedCount}/13`, healthy: signedCount >= 11 },
+            ].map((sig, i) => (
+              <div key={i} className="flex items-center gap-1.5">
+                <div className={`w-[5px] h-[5px] rounded-full flex-shrink-0 ${sig.healthy ? 'bg-ok' : 'bg-warn'}`} />
+                <span className={`font-body text-label ${sig.healthy ? 'text-muted' : 'text-warn'}`}>{sig.label}</span>
+              </div>
+            ))}
+          </div>
+          <div className="flex-1 overflow-hidden"><RobotFleet hideStats /></div>
+        </div>
+      : <RobotFleet />)
+  : activeTab === 'allocation' ? <div className="flex flex-col h-full overflow-hidden">
+      <div className="flex-shrink-0 flex items-center gap-6 px-6 py-[9px] border-b border-rule2 bg-stone2">
+        {[
+          { label: 'SCADA · Oven B',                 healthy: false },
+          { label: 'MES · Schedule',                 healthy: true  },
+          { label: 'HR · Roster',                    healthy: true  },
+          { label: `Checklists · ${signedCount}/13`, healthy: signedCount >= 11 },
+        ].map((sig, i) => (
+          <div key={i} className="flex items-center gap-1.5">
+            <div className={`w-[5px] h-[5px] rounded-full flex-shrink-0 ${sig.healthy ? 'bg-ok' : 'bg-warn'}`} />
+            <span className={`font-body text-label ${sig.healthy ? 'text-muted' : 'text-warn'}`}>{sig.label}</span>
+          </div>
+        ))}
+      </div>
+      <div className="flex-1 overflow-hidden">
+        <ResourceAllocation />
+      </div>
+    </div>
   : activeTab === 'prepare'    ? <PrepareView forecast={shiftData.forecast} onStartShift={() => setActiveTab('shift')} />
   : <>
  {/* Quiet period banner — triggered by Moon icon in tab bar */}
@@ -1156,13 +1225,6 @@ export default function ShiftIQ() {
    </div>
    <Btn variant="ghost" onClick={() => clearQuietPeriod(currentQuiet.id)} className="flex-shrink-0">End sleep mode</Btn>
   </div>
- )}
- {quietForm.open && (
-  <SleepPickerDropdown
-   triggerRef={moonTriggerRef}
-   onClose={() => setQuietForm({ open: false })}
-   onSelect={handleSetSleepMode}
-  />
  )}
  <ShiftIQV2 score={lineScore} lineLabel={`${activeLined?.name ?? 'Line 4'} · AM Shift`} supervisor={lineSupervisor} plant={currentPlant?.name ?? 'Salina KS'} isSupervisorView={viewingRole === 'supervisor'} />
  </>}

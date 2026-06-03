@@ -367,7 +367,7 @@ export default function Sidebar() {
  return (
  <aside
   className={`fixed inset-y-0 left-0 z-30 flex flex-col bg-sidebar border-r border-sidebar-border overflow-hidden transition-[transform,width] sm:translate-x-0 ${mobileNavOpen ? 'translate-x-0' : '-translate-x-full sm:translate-x-0'}`}
-  style={{ width: collapsed ? 48 : 240, transitionDuration: '200ms', transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)' }}
+  style={{ width: collapsed ? 48 : 240, transitionDuration: 'var(--dur-quick)', transitionTimingFunction: 'var(--ease-spring)' }}
  >
  {/* Brand — click to toggle collapse */}
  <button

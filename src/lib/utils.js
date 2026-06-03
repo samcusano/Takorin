@@ -12,7 +12,7 @@ export const riskLabel = (score) =>
   score >= 75 ? 'At risk' : score >= 60 ? 'Watch' : 'Clear'
 
 export const riskBgColor = (score) =>
-  score >= 75 ? '#C43820' : score >= 60 ? '#C4920A' : '#3A8A5A'
+  score >= 75 ? 'var(--color-danger)' : score >= 60 ? 'var(--color-warn)' : 'var(--color-ok)'
 
 // Exit animation helper — delays unmount so CSS exit animation can play.
 // Usage: const { exiting, exit } = useExitAnimation(200)

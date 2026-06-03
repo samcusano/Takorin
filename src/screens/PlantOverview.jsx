@@ -837,7 +837,7 @@ export default function PlantOverview() {
                                   <div className="w-14 flex-shrink-0 text-right">
                                     <span
                                       className={`display-num text-head tabular-nums ${riskColorClass(eff)}`}
-                                      style={{ transition: 'color 250ms var(--ease-standard)' }}
+                                      style={{ transition: 'color var(--dur-quick) var(--ease-standard)' }}
                                     >{eff}</span>
                                     {modified && (
                                       <span className={`font-body text-label ml-1 tabular-nums ${delta > 0 ? 'text-danger' : 'text-ok'}`}>

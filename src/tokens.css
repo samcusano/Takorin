@@ -1,0 +1,375 @@
+/*
+ * tokens.css — Takorin Design System Token Layer
+ *
+ * THREE LAYERS:
+ *   Layer 1  Primitives   — raw scale values, no semantic meaning
+ *   Layer 2  Semantic     — named aliases referencing Layer 1 with fallbacks
+ *   Layer 3  Components   — JSX/Tailwind classes referencing Layer 2 (in source files)
+ *
+ * RULE: Components use only Layer 2 tokens.
+ *       Layer 2 references Layer 1 with fallbacks.
+ *       No raw values (hex, px, rgba, cubic-bezier) in component files.
+ *
+ * This file is the single source of truth for the token audit script.
+ */
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   LAYER 1 — PRIMITIVES
+   Raw scale values. Reference only from Layer 2.
+   Prefix: --prim-*
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* ── Color channels — RGB triples (space-separated) ─────────────────────
+     This format enables Tailwind opacity modifiers: rgb(var(--X) / 0.5)
+     and is compatible with the CSS Color Level 4 spec.               */
+
+  /* Graphite surface scale — dark theme base */
+  --prim-graphite-950-rgb:  8  13  22;   /* #080D16 sidebar deepest */
+  --prim-graphite-900-rgb: 11  15  24;   /* #0B0F18 base canvas */
+  --prim-graphite-800-rgb: 14  21  32;   /* #0E1520 sidebar surface */
+  --prim-graphite-750-rgb: 19  26  38;   /* #131A26 raised panels */
+  --prim-graphite-700-rgb: 21  32  48;   /* #152030 sidebar section */
+  --prim-graphite-650-rgb: 26  35  53;   /* #1A2335 soft border */
+  --prim-graphite-600-rgb: 27  37  56;   /* #1B2538 tinted surface */
+  --prim-graphite-500-rgb: 28  42  64;   /* #1C2A40 sidebar border */
+  --prim-graphite-400-rgb: 38  48  66;   /* #263042 strong border / inset */
+
+  /* Bone ink scale — warm text on dark */
+  --prim-ink-primary-rgb: 237 228 203;   /* #EDE4CB primary text */
+  --prim-ink-secondary-rgb: 155 144 112; /* #9B9070 secondary text */
+  --prim-ink-subtle-rgb: 122 142 168;    /* #7A8EA8 metadata / labels */
+  --prim-ink-dim-rgb:     74  93 116;    /* #4A5D74 suppressed / ghost */
+  --prim-ink-sidebar-rgb: 106 136 168;   /* #6A88A8 sidebar ghost text */
+
+  /* Status — semantic signal colors (teal · gold · crimson — not traffic lights) */
+  --prim-ok-rgb:          40 191 176;    /* #28BFB0 vivid teal — nominal/clear */
+  --prim-ok-dim-rgb:       8  48  44;    /* #08302C ok tinted background */
+  --prim-warn-rgb:       212 144  42;    /* #D4902A deep amber-gold — watch/caution */
+  --prim-warn-dim-rgb:    44  32   8;    /* #2C2008 warn tinted background */
+  --prim-danger-rgb:     192  56  48;    /* #C03830 deep crimson — at-risk/fail */
+  --prim-danger-dim-rgb:  44  12  10;    /* #2C0C0A danger tinted background */
+
+  /* Accent — interactive and narrative */
+  --prim-signal-rgb:      75 156 228;    /* #4B9CE4 steel blue — primary interactive */
+  --prim-signal-dim-rgb:  13  30  56;    /* #0D1E38 signal tinted background */
+  --prim-signal-dark-rgb: 42 106 173;    /* #2A6AAD hover / pressed signal */
+  --prim-signal-light-rgb: 123 189 238;  /* #7BBDEE light signal / sparkline */
+  --prim-context-rgb:    196 132  78;    /* #C4844E clay — narrative accent */
+  --prim-context-dim-rgb: 42  24   8;    /* #2A1808 context tinted background */
+  --prim-deep-rgb:       124 134 232;    /* #7C86E8 indigo — predictive / AI */
+  --prim-deep-dim-rgb:    20  24  48;    /* #141830 deep tinted background */
+  --prim-stream-rgb:      59 191 218;    /* #3BBFDA cyan — live data stream indicator */
+
+  /* Light theme overrides for status / accent colors */
+  --prim-ok-light-rgb:    23 112 104;    /* #177068 deep teal */
+  --prim-ok-dim-light-rgb: 200 237 234;  /* #C8EDEA teal tint */
+  --prim-warn-light-rgb:  138  92  20;   /* #8A5C14 deep amber-gold */
+  --prim-warn-dim-light-rgb: 250 238 198; /* #FAEEC6 gold tint */
+  --prim-danger-light-rgb: 148  40  24;  /* #942818 deep crimson */
+  --prim-danger-dim-light-rgb: 250 218 214; /* #FADADC crimson tint */
+  --prim-signal-light-light-rgb: 32  88 168; /* #2058A8 */
+  --prim-signal-dim-light-rgb: 220 232 250;  /* #DCE8FA */
+  --prim-context-light-rgb: 144  80  44; /* #90502C */
+  --prim-deep-light-rgb:   68  80 184;   /* #4450B8 */
+
+  /* ── Spacing scale (4 px base) ──────────────────────────────────────────
+     Used for inline styles when Tailwind classes are insufficient.
+     Prefer Tailwind utilities (gap-4, p-6) over these for static spacing. */
+  --prim-space-px:  1px;
+  --prim-space-0:   0px;
+  --prim-space-1:   4px;
+  --prim-space-2:   8px;
+  --prim-space-3:  12px;
+  --prim-space-4:  16px;
+  --prim-space-5:  20px;
+  --prim-space-6:  24px;
+  --prim-space-7:  28px;
+  --prim-space-8:  32px;
+  --prim-space-10: 40px;
+  --prim-space-12: 48px;
+  --prim-space-16: 64px;
+
+  /* ── Type scale ──────────────────────────────────────────────────────────
+     Sizes match tailwind.config fontSize. Weights and line heights are extras. */
+  --prim-size-nano:   11px;   /* metadata, timestamps, chip text */
+  --prim-size-label:  12px;   /* secondary labels, badge text */
+  --prim-size-body:   14px;   /* primary reading text */
+  --prim-size-sub:    16px;   /* section subheadings, prominent labels */
+  --prim-size-head:   20px;   /* panel headers */
+  --prim-size-title:  24px;   /* callout numbers, stat values */
+  --prim-size-metric: 32px;   /* KPI grid cells */
+  --prim-size-score:  52px;   /* hero risk / shift scores */
+
+  --prim-weight-regular: 400;
+  --prim-weight-medium:  500;
+  --prim-weight-semibold: 600;
+  --prim-weight-bold:    700;
+
+  --prim-lh-none:    1;
+  --prim-lh-tight:   1.15;
+  --prim-lh-snug:    1.25;
+  --prim-lh-normal:  1.4;
+  --prim-lh-relaxed: 1.5;
+
+  /* ── Radius scale ────────────────────────────────────────────────────────*/
+  --prim-radius-none:  0px;
+  --prim-radius-sm:    2px;
+  --prim-radius-md:    6px;
+  --prim-radius-lg:   10px;
+  --prim-radius-full: 9999px;
+
+  /* ── Motion primitives ───────────────────────────────────────────────────
+     Duration names map to perceptual speed, not raw milliseconds.  */
+  --prim-dur-press:      80ms;   /* micro-interaction: card active press */
+  --prim-dur-instant:    50ms;
+  --prim-dur-fast:      100ms;
+  --prim-dur-quick:     200ms;
+  --prim-dur-standard:  300ms;
+  --prim-dur-data:      500ms;
+  --prim-dur-live:     6000ms;
+  --prim-dur-atmo:     9000ms;
+
+  --prim-ease-linear:   cubic-bezier(0, 0, 1, 1);
+  --prim-ease-standard: cubic-bezier(0.25, 0.1, 0.25, 1);
+  --prim-ease-enter:    cubic-bezier(0.19, 0.91, 0.38, 1);
+  --prim-ease-exit:     cubic-bezier(0.42, 0, 1, 1);
+  --prim-ease-inout:    cubic-bezier(0.42, 0, 0.58, 1);
+  --prim-ease-spring:   cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* ── Z-index scale ───────────────────────────────────────────────────────*/
+  --prim-z-base:     0;
+  --prim-z-sticky:  10;
+  --prim-z-dropdown: 20;
+  --prim-z-overlay:  40;
+  --prim-z-sidebar:  50;
+  --prim-z-modal:    60;
+  --prim-z-toast:    70;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   LAYER 2 — SEMANTIC TOKENS (DARK THEME, DEFAULT)
+   Theme-aware aliases that reference Layer 1.
+   Fallback hex values ensure standalone rendering if Layer 1 is missing.
+   Prefix: --color-*, --space-*, --font-*, --z-*, --dur-*, --ease-*, --radius-*, --shadow-*
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* ── Color — RGB channels (for opacity modifiers) ────────────────────── */
+  --color-stone-rgb:         var(--prim-graphite-900-rgb,    11  15  24);
+  --color-stone-2-rgb:       var(--prim-graphite-750-rgb,    19  26  38);
+  --color-stone-3-rgb:       var(--prim-graphite-600-rgb,    27  37  56);
+  --color-stone-4-rgb:       var(--prim-graphite-400-rgb,    38  48  66);
+  --color-ink-rgb:           var(--prim-ink-primary-rgb,    237 228 203);
+  --color-ink-2-rgb:         var(--prim-ink-secondary-rgb,  155 144 112);
+  --color-muted-rgb:         var(--prim-ink-subtle-rgb,     122 142 168);
+  --color-rule-rgb:          var(--prim-graphite-400-rgb,    38  48  66);
+  --color-rule2-rgb:         var(--prim-graphite-650-rgb,    26  35  53);
+  --color-ok-rgb:            var(--prim-ok-rgb,              95 168 119);
+  --color-ok-dim-rgb:        var(--prim-ok-dim-rgb,          13  37  24);
+  --color-warn-rgb:          var(--prim-warn-rgb,           201 142  42);
+  --color-warn-dim-rgb:      var(--prim-warn-dim-rgb,        42  30   8);
+  --color-danger-rgb:        var(--prim-danger-rgb,         222 108  78);
+  --color-danger-dim-rgb:    var(--prim-danger-dim-rgb,      42  16  10);
+  --color-signal-rgb:        var(--prim-signal-rgb,          75 156 228);
+  --color-signal-dim-rgb:    var(--prim-signal-dim-rgb,      13  30  56);
+  --color-signal-dark-rgb:   var(--prim-signal-dark-rgb,     42 106 173);
+  --color-signal-light-rgb:  var(--prim-signal-light-rgb,   123 189 238);
+  --color-context-rgb:       var(--prim-context-rgb,        196 132  78);
+  --color-context-dim-rgb:   var(--prim-context-dim-rgb,     42  24   8);
+  --color-deep-rgb:          var(--prim-deep-rgb,           124 134 232);
+  --color-deep-dim-rgb:      var(--prim-deep-dim-rgb,        20  24  48);
+  --color-stream-rgb:        var(--prim-stream-rgb,          59 191 218);
+  --color-sidebar-rgb:       var(--prim-graphite-950-rgb,    8  13  22);
+  --color-sidebar-2-rgb:     var(--prim-graphite-800-rgb,   14  21  32);
+  --color-sidebar-3-rgb:     var(--prim-graphite-700-rgb,   21  32  48);
+  --color-sidebar-border-rgb: var(--prim-graphite-500-rgb,  28  42  64);
+  --color-sidebar-ghost-rgb: var(--prim-ink-sidebar-rgb,   106 136 168);
+
+  /* ── Color — computed aliases (for inline styles and SVG attributes) ──── */
+  --color-stone:           rgb(var(--color-stone-rgb));
+  --color-stone-2:         rgb(var(--color-stone-2-rgb));
+  --color-stone-3:         rgb(var(--color-stone-3-rgb));
+  --color-stone-4:         rgb(var(--color-stone-4-rgb));
+  --color-ink:             rgb(var(--color-ink-rgb));
+  --color-ink-2:           rgb(var(--color-ink-2-rgb));
+  --color-muted:           rgb(var(--color-muted-rgb));
+  --color-rule:            rgb(var(--color-rule-rgb));
+  --color-rule-2:          rgb(var(--color-rule2-rgb));
+  --color-ok:              rgb(var(--color-ok-rgb));
+  --color-warn:            rgb(var(--color-warn-rgb));
+  --color-danger:          rgb(var(--color-danger-rgb));
+  --color-signal:          rgb(var(--color-signal-rgb));
+  --color-signal-dark:     rgb(var(--color-signal-dark-rgb));
+  --color-signal-light:    rgb(var(--color-signal-light-rgb));
+  --color-context:         rgb(var(--color-context-rgb));
+  --color-deep:            rgb(var(--color-deep-rgb));
+  --color-stream:          rgb(var(--color-stream-rgb));
+  --color-dim:             rgb(var(--prim-ink-dim-rgb, 74 93 116));
+  --color-sidebar:         rgb(var(--color-sidebar-rgb));
+  --color-sidebar-2:       rgb(var(--color-sidebar-2-rgb));
+  --color-sidebar-3:       rgb(var(--color-sidebar-3-rgb));
+  --color-sidebar-border:  rgb(var(--color-sidebar-border-rgb));
+
+  /* ── Color — surface + content semantic roles ────────────────────────── */
+  --surface:             rgb(var(--color-stone-rgb));       /* base canvas */
+  --surface-raised:      rgb(var(--color-stone-2-rgb));     /* elevated panels, headers */
+  --surface-tint:        rgb(var(--color-stone-3-rgb));     /* hover targets, section bg */
+  --surface-inset:       rgb(var(--color-stone-4-rgb));     /* recessed / inset areas */
+  --on-surface:          rgb(var(--color-ink-rgb));         /* primary text */
+  --on-surface-dim:      rgb(var(--color-ink-2-rgb));       /* secondary text */
+  --on-surface-subtle:   rgb(var(--color-muted-rgb));       /* labels, metadata */
+  --border-strong:       rgb(var(--color-rule-rgb));        /* hard separation lines */
+  --border-soft:         rgb(var(--color-rule2-rgb));       /* standard borders */
+  --interactive:         rgb(var(--color-signal-rgb));      /* primary interactive element */
+  --status-ok:           rgb(var(--color-ok-rgb));
+  --status-warn:         rgb(var(--color-warn-rgb));
+  --status-danger:       rgb(var(--color-danger-rgb));
+
+  /* ── Spacing — semantic aliases ──────────────────────────────────────── */
+  --space-px:   var(--prim-space-px,   1px);
+  --space-1:    var(--prim-space-1,    4px);
+  --space-2:    var(--prim-space-2,    8px);
+  --space-3:    var(--prim-space-3,   12px);
+  --space-4:    var(--prim-space-4,   16px);
+  --space-5:    var(--prim-space-5,   20px);
+  --space-6:    var(--prim-space-6,   24px);
+  --space-7:    var(--prim-space-7,   28px);
+  --space-8:    var(--prim-space-8,   32px);
+  --space-10:   var(--prim-space-10,  40px);
+  --space-12:   var(--prim-space-12,  48px);
+  --space-16:   var(--prim-space-16,  64px);
+
+  /* ── Typography — semantic aliases ──────────────────────────────────── */
+  --font-family-body:    'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-family-display: 'Bricolage Grotesque', 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-family-mono:    'JetBrains Mono', 'Menlo', monospace;
+
+  --font-size-nano:   var(--prim-size-nano,   11px);
+  --font-size-label:  var(--prim-size-label,  12px);
+  --font-size-body:   var(--prim-size-body,   14px);
+  --font-size-sub:    var(--prim-size-sub,    16px);
+  --font-size-head:   var(--prim-size-head,   20px);
+  --font-size-title:  var(--prim-size-title,  24px);
+  --font-size-metric: var(--prim-size-metric, 32px);
+  --font-size-score:  var(--prim-size-score,  52px);
+
+  --font-weight-regular:  var(--prim-weight-regular,  400);
+  --font-weight-medium:   var(--prim-weight-medium,   500);
+  --font-weight-semibold: var(--prim-weight-semibold, 600);
+  --font-weight-bold:     var(--prim-weight-bold,     700);
+
+  --line-height-none:    var(--prim-lh-none,    1);
+  --line-height-tight:   var(--prim-lh-tight,   1.15);
+  --line-height-snug:    var(--prim-lh-snug,    1.25);
+  --line-height-normal:  var(--prim-lh-normal,  1.4);
+  --line-height-relaxed: var(--prim-lh-relaxed, 1.5);
+
+  /* ── Border radius ───────────────────────────────────────────────────── */
+  --radius-btn:  var(--prim-radius-sm,   2px);   /* buttons, chips */
+  --radius-sm:   var(--prim-radius-sm,   2px);   /* small UI elements */
+  --radius-md:   var(--prim-radius-md,   6px);   /* cards, panels */
+  --radius-lg:   var(--prim-radius-lg,  10px);   /* modals, large surfaces */
+  --radius-full: var(--prim-radius-full, 9999px); /* pills, avatars */
+
+  /* ── Elevation / shadows ────────────────────────────────────────────── */
+  --shadow-card:      0 1px 4px rgba(0,0,0,0.30);   /* subtle card lift */
+  --shadow-raise:     0 4px 20px rgba(0,0,0,0.45);  /* floating elements */
+  --shadow-overlay:   0 2px 12px rgba(0,0,0,0.40);  /* overlay details, dropdowns */
+  --shadow-modal:     0 16px 48px rgba(0,0,0,0.50); /* full modal */
+  --shadow-card-alert: 0 1px 5px rgba(192,56,48,0.20); /* alert state card */
+
+  /* ── Motion / transition ─────────────────────────────────────────────── */
+  --dur-press:     var(--prim-dur-press,       80ms);   /* card active press */
+  --dur-instant:   var(--prim-dur-instant,    50ms);
+  --dur-fast:      var(--prim-dur-fast,      100ms);
+  --dur-quick:     var(--prim-dur-quick,     200ms);
+  --dur-standard:  var(--prim-dur-standard,  300ms);
+  --dur-data:      var(--prim-dur-data,      500ms);
+  --dur-live:      var(--prim-dur-live,     6000ms);
+  --dur-atmo:      var(--prim-dur-atmo,     9000ms);
+
+  --ease-linear:   var(--prim-ease-linear,   cubic-bezier(0, 0, 1, 1));
+  --ease-standard: var(--prim-ease-standard, cubic-bezier(0.25, 0.1, 0.25, 1));
+  --ease-enter:    var(--prim-ease-enter,    cubic-bezier(0.19, 0.91, 0.38, 1));
+  --ease-exit:     var(--prim-ease-exit,     cubic-bezier(0.42, 0, 1, 1));
+  --ease-inout:    var(--prim-ease-inout,    cubic-bezier(0.42, 0, 0.58, 1));
+  --ease-spring:   var(--prim-ease-spring,   cubic-bezier(0.16, 1, 0.3, 1));
+
+  /* ── Z-index ─────────────────────────────────────────────────────────── */
+  --z-base:     var(--prim-z-base,      0);
+  --z-sticky:   var(--prim-z-sticky,   10);
+  --z-dropdown: var(--prim-z-dropdown, 20);
+  --z-overlay:  var(--prim-z-overlay,  40);
+  --z-sidebar:  var(--prim-z-sidebar,  50);
+  --z-modal:    var(--prim-z-modal,    60);
+  --z-toast:    var(--prim-z-toast,    70);
+}
+
+
+/* ── Light theme override ─────────────────────────────────────────────────── */
+:root[data-theme="light"] {
+  --color-stone-rgb:         252 251 249;
+  --color-stone-2-rgb:       245 243 238;
+  --color-stone-3-rgb:       234 231 224;
+  --color-stone-4-rgb:       218 214 205;
+  --color-ink-rgb:            22  16   8;
+  --color-ink-2-rgb:          72  64  50;
+  --color-muted-rgb:         120 112  98;
+  --color-rule-rgb:          206 200 188;
+  --color-rule2-rgb:         228 225 218;
+  --color-ok-rgb:    var(--prim-ok-light-rgb,          30 100  56);
+  --color-ok-dim-rgb: var(--prim-ok-dim-light-rgb,    220 240 228);
+  --color-warn-rgb:  var(--prim-warn-light-rgb,        140  92  10);
+  --color-warn-dim-rgb: var(--prim-warn-dim-light-rgb, 252 242 218);
+  --color-danger-rgb: var(--prim-danger-light-rgb,     168  44  28);
+  --color-danger-dim-rgb: var(--prim-danger-dim-light-rgb, 252 228 224);
+  --color-signal-rgb: var(--prim-signal-light-light-rgb, 32  88 168);
+  --color-signal-dim-rgb: var(--prim-signal-dim-light-rgb, 220 232 250);
+  --color-signal-dark-rgb:    16  52 120;
+  --color-signal-light-rgb:   72 124 200;
+  --color-context-rgb: var(--prim-context-light-rgb,  144  80  44);
+  --color-context-dim-rgb:   252 238 226;
+  --color-deep-rgb:  var(--prim-deep-light-rgb,        68  80 184);
+  --color-deep-dim-rgb:      228 230 250;
+  --color-dim:               rgb(140 148 162);
+  --shadow-raise:  0 4px 16px rgba(0,0,0,0.10);
+  --shadow-card:   0 1px 3px rgba(0,0,0,0.08);
+  --shadow-overlay: 0 2px 12px rgba(0,0,0,0.12);
+  --shadow-modal:  0 16px 48px rgba(0,0,0,0.15);
+}
+
+/* ── System light preference (auto mode) ─────────────────────────────────── */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme]) {
+    --color-stone-rgb:         252 251 249;
+    --color-stone-2-rgb:       245 243 238;
+    --color-stone-3-rgb:       234 231 224;
+    --color-stone-4-rgb:       218 214 205;
+    --color-ink-rgb:            22  16   8;
+    --color-ink-2-rgb:          72  64  50;
+    --color-muted-rgb:         120 112  98;
+    --color-rule-rgb:          206 200 188;
+    --color-rule2-rgb:         228 225 218;
+    --color-ok-rgb:             30 100  56;
+    --color-ok-dim-rgb:        220 240 228;
+    --color-warn-rgb:          140  92  10;
+    --color-warn-dim-rgb:      252 242 218;
+    --color-danger-rgb:        168  44  28;
+    --color-danger-dim-rgb:    252 228 224;
+    --color-signal-rgb:         32  88 168;
+    --color-signal-dim-rgb:    220 232 250;
+    --color-signal-dark-rgb:    16  52 120;
+    --color-signal-light-rgb:   72 124 200;
+    --color-context-rgb:       144  80  44;
+    --color-context-dim-rgb:   252 238 226;
+    --color-deep-rgb:           68  80 184;
+    --color-deep-dim-rgb:      228 230 250;
+    --color-dim:               rgb(140 148 162);
+    --shadow-raise:  0 4px 16px rgba(0,0,0,0.10);
+    --shadow-card:   0 1px 3px rgba(0,0,0,0.08);
+    --shadow-overlay: 0 2px 12px rgba(0,0,0,0.12);
+    --shadow-modal:  0 16px 48px rgba(0,0,0,0.15);
+  }
+}

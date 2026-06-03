@@ -481,7 +481,7 @@ export default function IntegrationHub() {
                         top: overlayTop,
                         left: overlayCol === 0 ? 0 : 'calc(50% + 1px)',
                         right: overlayCol === 1 ? 0 : 'calc(50% + 1px)',
-                        boxShadow: '2px 4px 12px rgba(0,0,0,0.12)',
+                        boxShadow: 'var(--shadow-overlay)',
                       }}
                     >
                       <ConnectorRowDetail c={selectedConnector} />

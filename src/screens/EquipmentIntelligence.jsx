@@ -226,7 +226,7 @@ function BatchTempChart({ eqId }) {
   const current = d.points[d.points.length - 1]
   const prev    = d.points[d.points.length - 2]
   const trend   = current - prev
-  const currentColor = current > d.ucl || current < d.lcl ? '#E55' : current > d.ucl - range * 0.12 || current < d.lcl + range * 0.12 ? '#D4913A' : '#3A9E6F'
+  const currentColor = current > d.ucl || current < d.lcl ? 'var(--color-danger)' : current > d.ucl - range * 0.12 || current < d.lcl + range * 0.12 ? 'var(--color-warn)' : 'var(--color-ok)'
 
   const startDay = d.batchDay - d.points.length + 1
 
@@ -247,17 +247,17 @@ function BatchTempChart({ eqId }) {
       <div className="flex-1 px-5 py-3 min-h-0">
         <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-full" preserveAspectRatio="none">
           {/* Control band fill */}
-          <rect x={pad.left} y={uclY} width={cW} height={parseFloat(lclY) - parseFloat(uclY)} fill="rgba(58,158,111,0.04)" />
+          <rect x={pad.left} y={uclY} width={cW} height={parseFloat(lclY) - parseFloat(uclY)} fill="rgb(var(--color-ok-rgb) / 0.04)" />
           {/* UCL */}
-          <line x1={pad.left} y1={uclY} x2={W - pad.right} y2={uclY} stroke="#E55" strokeWidth="0.5" strokeDasharray="2,1.5" />
+          <line x1={pad.left} y1={uclY} x2={W - pad.right} y2={uclY} stroke="var(--color-danger)" strokeWidth="0.5" strokeDasharray="2,1.5" />
           {/* LCL */}
-          <line x1={pad.left} y1={lclY} x2={W - pad.right} y2={lclY} stroke="#E55" strokeWidth="0.5" strokeDasharray="2,1.5" />
+          <line x1={pad.left} y1={lclY} x2={W - pad.right} y2={lclY} stroke="var(--color-danger)" strokeWidth="0.5" strokeDasharray="2,1.5" />
           {/* Target */}
-          <line x1={pad.left} y1={tgtY} x2={W - pad.right} y2={tgtY} stroke="#3A9E6F" strokeWidth="0.5" strokeDasharray="1,2" opacity="0.6" />
+          <line x1={pad.left} y1={tgtY} x2={W - pad.right} y2={tgtY} stroke="var(--color-ok)" strokeWidth="0.5" strokeDasharray="1,2" opacity="0.6" />
           {/* Area fill */}
-          <path d={areaPath} fill="rgba(123,110,100,0.06)" />
+          <path d={areaPath} fill="rgb(var(--color-ink-2-rgb) / 0.06)" />
           {/* Line */}
-          <path d={linePath} fill="none" stroke="#7B6E64" strokeWidth="0.9" strokeLinejoin="round" />
+          <path d={linePath} fill="none" stroke="var(--color-ink-2)" strokeWidth="0.9" strokeLinejoin="round" />
           {/* Current point */}
           <circle cx={toX(d.points.length - 1)} cy={toY(current)} r="1.5" fill={currentColor} />
         </svg>
@@ -314,9 +314,9 @@ function SPCChart({ eqId }) {
   const tgtY = toY(target).toFixed(1)
 
   const pointColor = (v) => {
-    if (v > ucl || v < lcl) return '#E55'
-    if (v > ucl - range * 0.1 || v < lcl + range * 0.1) return '#D4913A'
-    return '#3A9E6F'
+    if (v > ucl || v < lcl) return 'var(--color-danger)'
+    if (v > ucl - range * 0.1 || v < lcl + range * 0.1) return 'var(--color-warn)'
+    return 'var(--color-ok)'
   }
 
   return (
@@ -334,15 +334,15 @@ function SPCChart({ eqId }) {
       <div className="flex-1 px-5 py-4">
         <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-full" preserveAspectRatio="none">
           {/* UCL */}
-          <line x1={pad.left} y1={uclY} x2={W - pad.right} y2={uclY} stroke="#E55" strokeWidth="0.5" strokeDasharray="2,1.5" />
+          <line x1={pad.left} y1={uclY} x2={W - pad.right} y2={uclY} stroke="var(--color-danger)" strokeWidth="0.5" strokeDasharray="2,1.5" />
           {/* LCL */}
-          <line x1={pad.left} y1={lclY} x2={W - pad.right} y2={lclY} stroke="#E55" strokeWidth="0.5" strokeDasharray="2,1.5" />
+          <line x1={pad.left} y1={lclY} x2={W - pad.right} y2={lclY} stroke="var(--color-danger)" strokeWidth="0.5" strokeDasharray="2,1.5" />
           {/* Target */}
-          <line x1={pad.left} y1={tgtY} x2={W - pad.right} y2={tgtY} stroke="#3A9E6F" strokeWidth="0.5" strokeDasharray="1,2" opacity="0.6" />
+          <line x1={pad.left} y1={tgtY} x2={W - pad.right} y2={tgtY} stroke="var(--color-ok)" strokeWidth="0.5" strokeDasharray="1,2" opacity="0.6" />
           {/* Band */}
-          <rect x={pad.left} y={uclY} width={cW} height={parseFloat(lclY) - parseFloat(uclY)} fill="rgba(58,158,111,0.04)" />
+          <rect x={pad.left} y={uclY} width={cW} height={parseFloat(lclY) - parseFloat(uclY)} fill="rgb(var(--color-ok-rgb) / 0.04)" />
           {/* Line */}
-          <path d={linePath} fill="none" stroke="#7B6E64" strokeWidth="0.8" />
+          <path d={linePath} fill="none" stroke="var(--color-ink-2)" strokeWidth="0.8" />
           {/* Points */}
           {points.map((p, i) => (
             <circle key={i} cx={toX(i)} cy={toY(p.value)} r="1.2" fill={pointColor(p.value)} />
