@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { executionLog, executionSummary, autonomyTiers, rollbackLog } from '../data/execution'
-import { CheckCircle2, AlertTriangle, Clock, RotateCcw, Zap, Eye, MessageSquare, Shield, ArrowRight } from 'lucide-react'
+import { CheckCircle2, AlertTriangle, Clock, RotateCcw, Zap, Eye, MessageSquare, Shield } from 'lucide-react'
 import { SlidePanel, StatusPill, SceneHeader, SectionHeader, Btn, FilterDropdown, MultiFilterDropdown } from '../components/UI'
 
 const TIER_ICONS = { observe: Eye, recommend: MessageSquare, execute: Zap, govern: Shield }
@@ -46,73 +46,79 @@ function LogRow({ entry, selected, onClick }) {
 
 function ActionDetail({ entry }) {
   const out = OUTCOME_CFG[entry.outcome] ?? OUTCOME_CFG.pending
-  const TierIcon = TIER_ICONS[entry.tier]
-  const rb = rollbackLog.find(r => r.executionRef === entry.id)
+  const rb  = rollbackLog.find(r => r.executionRef === entry.id)
+  const isIssue = entry.outcome === 'escalated' || entry.outcome === 'rollback'
+
+  // Second inset box adapts to outcome
+  const consequenceBox = {
+    success:   { label: 'Outcome',     Icon: CheckCircle2, cls: 'text-ok',   bg: 'bg-ok/[0.04]'   },
+    escalated: { label: 'Consequence', Icon: AlertTriangle, cls: 'text-warn', bg: 'bg-warn/[0.04]' },
+    pending:   { label: 'Consequence', Icon: Clock,         cls: 'text-muted', bg: 'bg-stone2'     },
+    rollback:  { label: 'Rolled back', Icon: RotateCcw,     cls: 'text-muted', bg: 'bg-stone2'     },
+  }[entry.outcome] ?? { label: 'Consequence', Icon: AlertTriangle, cls: 'text-muted', bg: 'bg-stone2' }
+
+  const ConsequenceIcon = consequenceBox.Icon
 
   return (
     <div className="space-y-4">
 
-      {/* Escalation / rollback banner */}
-      {(entry.outcome === 'escalated' || entry.outcome === 'rollback') && (
-        <div className="flex items-start gap-3 px-4 py-3 bg-warn/[0.06] border-l-4 border-l-warn">
-          <AlertTriangle size={11} strokeWidth={2} className="text-warn flex-shrink-0 mt-0.5" />
-          <div className="flex-1 min-w-0">
-            <div className="font-body font-medium text-ink text-body mb-0.5">
-              {entry.outcome === 'escalated' ? 'This action escalated' : 'This action was rolled back'}
-            </div>
-            <p className="font-body text-warn text-label leading-snug">
-              {entry.escalationNote ?? 'See details below.'}
-            </p>
-          </div>
-          <Btn variant="secondary" className="flex-shrink-0">Mark reviewed</Btn>
-        </div>
-      )}
-
-      {/* Context: who acted, at what tier, with what outcome */}
-      <div className="flex items-center gap-2">
-        <TierIcon size={10} strokeWidth={2} className="text-muted" />
-        <span className="font-body text-muted text-label capitalize">{entry.tier} tier</span>
-        <span className="font-body text-muted text-label opacity-40">·</span>
-        <span className="font-body text-ink text-body">{entry.agent}</span>
-        <span className="font-body text-muted text-label ml-auto">{entry.timeLabel}</span>
+      {/* Meta row — outcome + deviation + agent + time */}
+      <div className="flex items-center gap-2 flex-wrap">
         <StatusPill tone={out.tone}>{out.label}</StatusPill>
+        {entry.deviation && <StatusPill tone="warn">Deviation</StatusPill>}
+        <span className="font-body text-label text-muted">{entry.agent}</span>
+        <span className="font-body text-label text-muted ml-auto">{entry.timeLabel}</span>
       </div>
 
-      {/* Rationale — dominant section, the payload */}
-      <div className="px-5 py-4 bg-stone2 border-l-4 border-l-signal">
-        <div className="font-body font-semibold text-muted text-label mb-2">Agent rationale</div>
-        <p className="font-display text-ink text-body leading-relaxed">{entry.rationale}</p>
-      </div>
-
-      {/* Impact — key result */}
-      {entry.impact && (
-        <div className={`flex items-center gap-4 px-4 py-3 border border-rule2 border-l-4 ${
-          entry.impact.positive ? 'border-l-ok bg-ok/[0.04]' : 'border-l-warn bg-warn/[0.04]'
-        }`}>
-          <div className="flex-1 min-w-0">
-            <div className="font-body text-muted text-label mb-1">{entry.impact.metric}</div>
-            <div className={`font-display font-bold text-title leading-none ${
-              entry.impact.positive ? 'text-ok' : 'text-warn'
-            }`}>{entry.impact.delta}</div>
-          </div>
-          <ArrowRight size={14} className={`flex-shrink-0 ${entry.impact.positive ? 'text-ok' : 'text-warn'}`} strokeWidth={2} />
+      {/* Escalation note — between meta and inset boxes */}
+      {entry.escalationNote && (
+        <div className="flex items-start gap-3 px-4 py-3 bg-warn/[0.04] border border-warn/20">
+          <AlertTriangle size={10} strokeWidth={2} className="text-warn flex-shrink-0 mt-0.5" />
+          <p className="font-body text-warn text-body leading-snug">{entry.escalationNote}</p>
         </div>
       )}
 
-      {/* Audit facts */}
-      <div className="divide-y divide-rule2 border-y border-rule2">
-        {[
-          { label: 'Monitoring window',  val: entry.monitoringWindow ?? 'N/A', tone: 'text-muted' },
-          { label: 'Reversible',         val: entry.reversible ? 'Yes' : 'No',        tone: entry.reversible ? 'text-ok' : 'text-muted' },
-          { label: 'Rollback available', val: entry.rollbackAvailable ? 'Yes' : 'No', tone: entry.rollbackAvailable ? 'text-ok' : 'text-muted' },
-          { label: 'Deviation detected', val: entry.deviation ? 'Yes' : 'No',         tone: entry.deviation ? 'text-warn' : 'text-ok' },
-          { label: 'Escalated',          val: entry.escalated ? 'Yes' : 'No',         tone: entry.escalated ? 'text-warn' : 'text-ok' },
-        ].map(({ label, val, tone }) => (
-          <div key={label} className="flex items-center px-4 py-2.5">
-            <span className="font-body text-muted text-label flex-1">{label}</span>
-            <span className={`font-body text-label font-medium ${tone}`}>{val}</span>
+      {/* What triggered this — inset box (matches Outcomes overlay) */}
+      <div className="border border-rule2 bg-stone2 px-4 py-4">
+        <div className="flex items-center gap-2 mb-3">
+          <Zap size={12} strokeWidth={2} className="text-signal flex-shrink-0" />
+          <span className="font-body font-semibold text-ink text-body">What triggered this</span>
+        </div>
+        <p className="font-body text-muted text-label leading-relaxed">{entry.rationale}</p>
+      </div>
+
+      {/* Consequence / Outcome — inset box, adapts per outcome */}
+      {entry.impact && (
+        <div className={`border border-rule2 px-4 py-4 ${consequenceBox.bg}`}>
+          <div className="flex items-center gap-2 mb-3">
+            <ConsequenceIcon size={12} strokeWidth={2} className={`${consequenceBox.cls} flex-shrink-0`} />
+            <span className="font-body font-semibold text-ink text-body">{consequenceBox.label}</span>
           </div>
-        ))}
+          <div className={`display-num text-title font-bold leading-none mb-1 ${consequenceBox.cls}`}>
+            {entry.impact.delta}
+          </div>
+          <div className="font-body text-label text-muted">{entry.impact.metric}</div>
+        </div>
+      )}
+
+      {/* Audit strip — compact 3 items */}
+      <div className="flex items-center gap-5 py-2.5 border-y border-rule2 flex-wrap">
+        <div>
+          <div className="font-body text-label text-muted">Monitoring</div>
+          <div className="font-body text-label font-medium text-ink">{entry.monitoringWindow ?? '—'}</div>
+        </div>
+        <div>
+          <div className="font-body text-label text-muted">Reversible</div>
+          <div className={`font-body text-label font-medium ${entry.reversible ? 'text-ok' : 'text-muted'}`}>
+            {entry.reversible ? 'Yes' : 'No'}
+          </div>
+        </div>
+        <div>
+          <div className="font-body text-label text-muted">Rollback</div>
+          <div className={`font-body text-label font-medium ${entry.rollbackAvailable ? 'text-ok' : 'text-muted'}`}>
+            {entry.rollbackAvailable ? 'Available' : 'N/A'}
+          </div>
+        </div>
       </div>
 
       {/* Rollback record */}
@@ -268,6 +274,11 @@ export default function ExecutionAuthority() {
           title={selectedEntry.action}
           subtitle={`${selectedEntry.tier} tier · ${selectedEntry.timeLabel}`}
           onClose={() => setSelectedId(null)}
+          footer={
+            (selectedEntry.outcome === 'escalated' || selectedEntry.outcome === 'rollback')
+              ? <Btn variant="secondary">Mark reviewed</Btn>
+              : null
+          }
         >
           <ActionDetail entry={selectedEntry} />
         </SlidePanel>

@@ -492,7 +492,6 @@ export default function ShiftIQV2({ score = 78, lineLabel = 'Line 4 · AM Shift'
   const { checklistSigned, taskAssignments, setTaskAssignments, logActivity,
     signOffRequests, setSignOffRequests, escalatedToDirector, setEscalatedToDirector } = useAppState()
   const [scoreOverlayOpen, setScoreOverlayOpen] = useState(false)
-  const [timelineOpen, setTimelineOpen] = useState(false)
   const [directiveExecuted, setDirectiveExecuted] = useState(false)
 
   const signedCount  = 7 + Object.keys(checklistSigned).length
@@ -619,13 +618,7 @@ export default function ShiftIQV2({ score = 78, lineLabel = 'Line 4 · AM Shift'
             <>
             <div className="flex-1 overflow-y-auto border-r border-rule">
               <div className="px-6 pt-5 pb-4">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="font-body text-label text-muted">Intelligence · {richFindings.length} findings</div>
-                  <button type="button" onClick={() => setTimelineOpen(true)}
-                    className="font-body text-label text-muted hover:opacity-70 transition-opacity bg-transparent border-none cursor-pointer p-0">
-                    Agent timeline
-                  </button>
-                </div>
+                <div className="font-body text-label text-muted mb-3">Intelligence · {richFindings.length} findings</div>
                 <DirectiveCard
                   executed={directiveExecuted}
                   onExecute={(selected) => {
@@ -643,27 +636,19 @@ export default function ShiftIQV2({ score = 78, lineLabel = 'Line 4 · AM Shift'
             </div>
 
             <div className="w-[304px] flex-shrink-0 overflow-y-auto bg-stone flex flex-col">
-              <div className="px-5 pt-5 pb-4">
+              <div className="px-5 pt-5 pb-4 border-b border-rule2">
                 <div className="font-body text-label text-muted mb-3">Crew · {crew.length} operators</div>
                 <div className="border border-rule overflow-hidden">
                   {crew.map((op, i) => <OperatorRow key={op.name} op={op} index={i} total={crew.length} />)}
                 </div>
               </div>
-
-            </div>
-
-            {timelineOpen && (
-              <SlidePanel
-                onClose={() => setTimelineOpen(false)}
-                title="Agent timeline"
-                subtitle="This shift · Line 4"
-                maxWidth="400px"
-              >
+              <div className="px-5 pt-4 pb-4">
+                <div className="font-body text-label text-muted mb-3">Agent timeline · this shift</div>
                 {agentEvents.map((ev, i) => (
                   <TimelineEntry key={i} ev={ev} index={i} total={agentEvents.length} />
                 ))}
-              </SlidePanel>
-            )}
+              </div>
+            </div>
             </>
           )}
         </div>
