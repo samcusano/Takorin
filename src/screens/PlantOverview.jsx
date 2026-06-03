@@ -515,10 +515,12 @@ export default function PlantOverview() {
         tone={plantTone}
         statement={plantStatement}
         meta={[
-          ...(critCount > 0 ? [{ label: 'At risk', value: String(critCount), color: 'var(--color-danger)' }] : []),
+          ...(critCount > 0 ? [{ label: 'Risk', value: String(critCount), color: 'var(--color-danger)' }] : []),
           ...(watchCount > 0 ? [{ label: 'Watch', value: String(watchCount), color: 'var(--color-warn)' }] : []),
-          { label: 'Workers on floor', value: String(totalWorkers) },
+          { label: 'Workers', value: String(totalWorkers) },
           { label: 'Lines', value: String(rawLines.length) },
+          { label: 'Findings', value: allFindings.length,   tone: allFindings.length > 0 ? 'warn' : 'ok', sub: 'pending', bg: '' },
+          { label: 'Briefing', value: pendingShiftCount, tone: critShiftCount > 0 && !allCritVisited ? 'danger' : 'warn', sub: `${critShiftCount} critical`, bg: '' },
         ]}
       />
 
@@ -540,25 +542,6 @@ export default function PlantOverview() {
 
           {/* ── Left: floor surface ──────────────────────────────────────── */}
           <div className="flex-1 flex flex-col overflow-hidden">
-
-            {/* Pulse strip — at-a-glance plant status */}
-            <div className="flex-shrink-0 flex border-b border-rule2">
-              {[
-                { label: 'At risk',  value: critCount,            tone: critCount > 0 ? 'danger' : 'ok',  sub: critCount === 1 ? 'line' : 'lines',  bg: critCount > 0 ? 'bg-danger/[0.03]' : '' },
-                { label: 'Watch',    value: watchCount,           tone: watchCount > 0 ? 'warn'   : 'ok',  sub: watchCount === 1 ? 'line' : 'lines', bg: '' },
-                { label: 'Findings', value: allFindings.length,   tone: allFindings.length > 0 ? 'warn' : 'ok', sub: 'pending', bg: '' },
-                { label: 'Briefing', value: pendingShiftCount, tone: critShiftCount > 0 && !allCritVisited ? 'danger' : 'warn', sub: `${critShiftCount} critical`, bg: '' },
-              ].map((cell, i) => (
-                <div key={i} className={`flex-1 px-4 py-3 border-r border-rule2 last:border-r-0 ${cell.bg}`}>
-                  <div className="font-body text-label text-muted mb-1">{cell.label}</div>
-                  <div className={`display-num text-head font-bold leading-none tabular-nums ${
-                    cell.tone === 'danger' ? 'text-danger' : cell.tone === 'warn' ? 'text-warn' : 'text-ok'
-                  }`}>{cell.value}</div>
-                  <div className="font-body text-muted text-label mt-0.5">{cell.sub}</div>
-                </div>
-              ))}
-            </div>
-
             {/* Filter strip */}
             <div className="flex-shrink-0 flex items-center gap-2 px-5 py-2 border-b border-rule2 bg-stone">
               <FilterDropdown

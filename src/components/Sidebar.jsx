@@ -384,8 +384,8 @@ export default function Sidebar() {
      <path d="M11 2 L20 11 L11 20 L2 11 Z" fill="none" stroke="var(--color-signal)" strokeWidth="1.3"/>
      <path d="M8 13 L14 13 L14 7 Z" fill="var(--color-signal)"/>
     </svg>
-    <div className="flex-1 min-w-0">
-     <div className="font-body font-bold text-ink text-label leading-none">Takorin</div>
+    <div className="flex-1 text-left min-w-0">
+     <div className="font-body font-semibold text-ink text-label">Takorin</div>
     </div>
    </>
   )}
@@ -408,7 +408,7 @@ export default function Sidebar() {
   onClick={() => setPlantOpen(p => !p)}
   className="flex items-center gap-2.5 px-4 py-3 border-b border-sidebar-border w-full text-left hover:bg-sidebar2 transition-colors"
  >
-  <div className="w-8 h-8 rounded-full bg-sidebar-2 flex items-center justify-center flex-shrink-0">
+  <div className="w-8 h-8 rounded-full bg-sidebar-2 flex items-center flex-shrink-0">
   <Building2 size={15} className="text-white/50" strokeWidth={2} />
   </div>
   <div className="flex-1 min-w-0">
