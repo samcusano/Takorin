@@ -17,8 +17,8 @@ export const color = {
   okDim:   '#08302C',
   warn:    '#D4902A',
   warnDim: '#2C2008',
-  danger:  '#C03830',
-  dangerDim: '#2C0C0A',
+  danger:  '#DC5C42',
+  dangerDim: '#2C0E08',
   // Primary accent — steel blue
   signal:     '#4B9CE4',
   signalDim:  '#0D1E38',

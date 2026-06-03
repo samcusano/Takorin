@@ -269,7 +269,7 @@ function AccountabilityRegister() {
                   <div className="flex items-center gap-3 flex-shrink-0">
                     <div className="flex items-center gap-1.5">
                       <User size={11} strokeWidth={2} className="text-muted flex-shrink-0" />
-                      <span className="font-body text-label text-ink font-medium">{f.assignee}</span>
+                      <span className="font-body text-label text-muted">{f.assignee}</span>
                     </div>
                     <div className="flex items-center gap-1.5">
                       <Calendar size={11} strokeWidth={2} className="text-muted flex-shrink-0" />

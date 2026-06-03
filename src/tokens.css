@@ -47,8 +47,8 @@
   --prim-ok-dim-rgb:       8  48  44;    /* #08302C ok tinted background */
   --prim-warn-rgb:       212 144  42;    /* #D4902A deep amber-gold — watch/caution */
   --prim-warn-dim-rgb:    44  32   8;    /* #2C2008 warn tinted background */
-  --prim-danger-rgb:     192  56  48;    /* #C03830 deep crimson — at-risk/fail */
-  --prim-danger-dim-rgb:  44  12  10;    /* #2C0C0A danger tinted background */
+  --prim-danger-rgb:     220  92  66;    /* #DC5C42 bold rust-ember — at-risk/fail */
+  --prim-danger-dim-rgb:  44  14   8;    /* #2C0E08 danger tinted background */
 
   /* Accent — interactive and narrative */
   --prim-signal-rgb:      75 156 228;    /* #4B9CE4 steel blue — primary interactive */
@@ -66,8 +66,8 @@
   --prim-ok-dim-light-rgb: 200 237 234;  /* #C8EDEA teal tint */
   --prim-warn-light-rgb:  138  92  20;   /* #8A5C14 deep amber-gold */
   --prim-warn-dim-light-rgb: 250 238 198; /* #FAEEC6 gold tint */
-  --prim-danger-light-rgb: 148  40  24;  /* #942818 deep crimson */
-  --prim-danger-dim-light-rgb: 250 218 214; /* #FADADC crimson tint */
+  --prim-danger-light-rgb: 164  48  28;  /* #A4301C bold rust — light theme */
+  --prim-danger-dim-light-rgb: 252 226 220; /* #FCE2DC rust tint */
   --prim-signal-light-light-rgb: 32  88 168; /* #2058A8 */
   --prim-signal-dim-light-rgb: 220 232 250;  /* #DCE8FA */
   --prim-context-light-rgb: 144  80  44; /* #90502C */
@@ -278,7 +278,7 @@
   --shadow-raise:     0 4px 20px rgba(0,0,0,0.45);  /* floating elements */
   --shadow-overlay:   0 2px 12px rgba(0,0,0,0.40);  /* overlay details, dropdowns */
   --shadow-modal:     0 16px 48px rgba(0,0,0,0.50); /* full modal */
-  --shadow-card-alert: 0 1px 5px rgba(192,56,48,0.20); /* alert state card */
+  --shadow-card-alert: 0 1px 5px rgba(220,92,66,0.20); /* alert state card */
 
   /* ── Motion / transition ─────────────────────────────────────────────── */
   --dur-press:     var(--prim-dur-press,       80ms);   /* card active press */
