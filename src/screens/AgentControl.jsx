@@ -1657,8 +1657,8 @@ export default function AgentControl() {
       {/* ── Investigation drawer ─────────────────────────────────────── */}
       {investigationDrawer && (
         <SlidePanel
-          title={investigationDrawer.agent.name}
-          subtitle={investigationDrawer.pa._meta.verbFirst}
+          title={investigationDrawer.pa._meta.verbFirst}
+          subtitle={investigationDrawer.agent.name}
           icon={ICON_MAP[investigationDrawer.agent.icon] || Shield}
           onClose={() => setInvestigationDrawer(null)}
           maxWidth="480px"
