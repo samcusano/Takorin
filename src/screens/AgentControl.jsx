@@ -972,15 +972,7 @@ function Tier1Overlay({ items, agents, btnRef, onClose }) {
 
 function AgentRailDetail({ pa, agent, onClose, onApprove, onOverride, onInvestigate, navigate }) {
   const meta = pa._meta
-  const [rationaleAcked, setRationaleAcked] = useState(false)
-  const [dwellSec, setDwellSec] = useState(0)
-  const requiresAck = meta.consequence === 'critical' || meta.consequence === 'high'
   const confColor = pa.confidence >= 85 ? 'text-ok' : pa.confidence >= 65 ? 'text-warn' : 'text-danger'
-
-  useEffect(() => {
-    const t = setInterval(() => setDwellSec(s => s + 1), 1000)
-    return () => clearInterval(t)
-  }, [])
 
   return (
     <div className="flex flex-col h-full">
@@ -1018,23 +1010,6 @@ function AgentRailDetail({ pa, agent, onClose, onApprove, onOverride, onInvestig
           </div>
         )}
 
-        {requiresAck && (
-          <div className="px-4 py-3 border-b border-rule2">
-            <div className="flex items-center gap-3 mb-1">
-              <Timer size={9} strokeWidth={2} className={dwellSec < 5 ? 'text-warn' : 'text-ok'} />
-              <span className={`font-body text-label tabular-nums ${dwellSec < 5 ? 'text-warn' : 'text-ok'}`}>{dwellSec}s reviewing</span>
-            </div>
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" checked={rationaleAcked} onChange={e => setRationaleAcked(e.target.checked)} className="accent-signal" />
-              <span className="font-body text-muted text-label">I have read the AI rationale</span>
-            </label>
-            {requiresAck && !rationaleAcked && (
-              <p className="font-body text-label text-muted/50 mt-1.5 leading-snug">
-                Approval records your ratification and timestamp.
-              </p>
-            )}
-          </div>
-        )}
 
         <button type="button" onClick={() => onInvestigate(pa, agent)}
           className="flex items-center gap-1.5 w-full px-4 py-3 font-body text-label text-muted hover:text-ink transition-colors">
@@ -1045,7 +1020,6 @@ function AgentRailDetail({ pa, agent, onClose, onApprove, onOverride, onInvestig
 
       <div className="flex gap-2 px-4 py-3 border-t border-rule2 flex-shrink-0">
         <Btn variant="primary" className="flex-1"
-          disabled={requiresAck && !rationaleAcked}
           onClick={() => onApprove(pa._key)}>Approve</Btn>
         <Btn variant="secondary" onClick={() => onOverride(pa, agent)}>Override</Btn>
       </div>
@@ -1591,12 +1565,6 @@ export default function AgentControl() {
                               </StatusPill>
                             ) : (
                               <StatusPill tone={pillTone}>{pillLabel}</StatusPill>
-                            )}
-                            {!pa._decided && (
-                              <Btn variant="ghost" onClick={e => { e.stopPropagation(); setInvestigationDrawer({ pa, agent }) }}
-                                aria-label="Investigate" className="!px-2 !min-h-0">
-                                <InspectionPanel size={12} strokeWidth={2} />
-                              </Btn>
                             )}
                           </div>
                         </div>
