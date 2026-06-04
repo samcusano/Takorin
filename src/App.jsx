@@ -38,7 +38,6 @@ const RecordVault           = lazy(() => import('./screens/RecordVault'))
 const ValueChain            = lazy(() => import('./screens/ValueChain'))
 const EquipmentIntelligence = lazy(() => import('./screens/EquipmentIntelligence'))
 const ImpactLoop            = lazy(() => import('./screens/ImpactLoop'))
-const DesignLab             = lazy(() => import('./screens/__DesignLab'))
 function ScreenLoader() {
  return <div className="flex-1 flex items-center justify-center font-body text-muted text-label">Loading…</div>
 }
@@ -119,7 +118,6 @@ export default function App() {
  <Route path="/equipment"   element={<Guard k="equipment"><ErrorBoundary><EquipmentIntelligence /></ErrorBoundary></Guard>} />
  <Route path="/outcomes"    element={<Guard k="outcomes"><ErrorBoundary><ImpactLoop /></ErrorBoundary></Guard>} />
  <Route path="/impact"      element={<Navigate to="/outcomes" replace />} />
- <Route path="/__design_lab" element={<DesignLab />} />
  </Routes>
  </Suspense>
  </main>

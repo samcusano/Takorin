@@ -3,6 +3,7 @@ import {
   AlertTriangle, Truck, Users, Wrench, Handshake, Bell,
   ClipboardCheck, Shield, Database, ChevronDown, ChevronRight,
   Timer, CheckCircle, XCircle, Check, Flag, InspectionPanel, TrendingUp,
+  Activity, Network, Settings,
 } from 'lucide-react'
 import { Btn, SlidePanel, Tabs, StatusPill, Checkbox, AnimatedScore, EmptyState, SectionLabel, FilterDropdown, MultiFilterDropdown } from '../components/UI'
 import { agentConfigData, dataSourceHealth, networkData } from '../data'
@@ -967,6 +968,219 @@ function Tier1Overlay({ items, agents, btnRef, onClose }) {
   )
 }
 
+// ─── Rail: decision detail ────────────────────────────────────────────────────
+
+function AgentRailDetail({ pa, agent, onClose, onApprove, onOverride, onInvestigate, navigate }) {
+  const meta = pa._meta
+  const [rationaleAcked, setRationaleAcked] = useState(false)
+  const [dwellSec, setDwellSec] = useState(0)
+  const requiresAck = meta.consequence === 'critical' || meta.consequence === 'high'
+  const confColor = pa.confidence >= 85 ? 'text-ok' : pa.confidence >= 65 ? 'text-warn' : 'text-danger'
+
+  useEffect(() => {
+    const t = setInterval(() => setDwellSec(s => s + 1), 1000)
+    return () => clearInterval(t)
+  }, [])
+
+  return (
+    <div className="flex flex-col h-full">
+      <div className="flex items-center justify-between px-4 py-2 border-b border-rule2 bg-stone2 flex-shrink-0">
+        <div className="flex items-center gap-2">
+          <span className="font-body text-label text-muted">{agent.name}</span>
+          {meta.tier === 3 && <StatusPill tone="danger">T3</StatusPill>}
+        </div>
+        <button type="button" onClick={onClose}
+          className="font-body text-label text-muted hover:text-ink transition-colors p-0.5">✕</button>
+      </div>
+
+      <div className="flex-1 overflow-y-auto">
+        <div className="px-4 pt-3 pb-2.5 border-b border-rule2">
+          <div className="font-display font-semibold text-body text-ink leading-snug">{meta.verbFirst}</div>
+        </div>
+
+        {[
+          ['Confidence', `${pa.confidence}%`, confColor],
+          ['Window',     meta.expiresLabel,   'text-ink'],
+          ['Priority',   meta.consequence === 'critical' ? 'Critical' : meta.consequence === 'high' ? 'High' : 'Medium',
+                         meta.consequence === 'critical' ? 'text-danger' : meta.consequence === 'high' ? 'text-warn' : 'text-muted'],
+          ...(meta.blastRadius ? [['Blast radius', meta.blastRadius, 'text-muted']] : []),
+        ].map(([label, val, cls]) => (
+          <div key={label} className="flex items-baseline gap-3 px-4 py-2.5 border-b border-rule2">
+            <span className="font-body text-label text-muted w-20 flex-shrink-0">{label}</span>
+            <span className={`font-body text-label ${cls}`}>{val}</span>
+          </div>
+        ))}
+
+        {pa.rationale && (
+          <div className="px-4 py-3 border-b border-rule2">
+            <div className="font-body text-label text-muted mb-1.5">Why the agent recommended this</div>
+            <p className="font-body text-label text-ink leading-relaxed m-0">{pa.rationale}</p>
+          </div>
+        )}
+
+        {requiresAck && (
+          <div className="px-4 py-3 border-b border-rule2">
+            <div className="flex items-center gap-3 mb-1">
+              <Timer size={9} strokeWidth={2} className={dwellSec < 5 ? 'text-warn' : 'text-ok'} />
+              <span className={`font-body text-label tabular-nums ${dwellSec < 5 ? 'text-warn' : 'text-ok'}`}>{dwellSec}s reviewing</span>
+            </div>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" checked={rationaleAcked} onChange={e => setRationaleAcked(e.target.checked)} className="accent-signal" />
+              <span className="font-body text-muted text-label">I have read the AI rationale</span>
+            </label>
+            {requiresAck && !rationaleAcked && (
+              <p className="font-body text-label text-muted/50 mt-1.5 leading-snug">
+                Approval records your ratification and timestamp.
+              </p>
+            )}
+          </div>
+        )}
+
+        <button type="button" onClick={() => onInvestigate(pa, agent)}
+          className="flex items-center gap-1.5 w-full px-4 py-3 font-body text-label text-muted hover:text-ink transition-colors">
+          <InspectionPanel size={11} strokeWidth={2} />
+          Full investigation →
+        </button>
+      </div>
+
+      <div className="flex gap-2 px-4 py-3 border-t border-rule2 flex-shrink-0">
+        <Btn variant="primary" className="flex-1"
+          disabled={requiresAck && !rationaleAcked}
+          onClick={() => onApprove(pa._key)}>Approve</Btn>
+        <Btn variant="secondary" onClick={() => onOverride(pa, agent)}>Override</Btn>
+      </div>
+    </div>
+  )
+}
+
+// ─── Rail: network ────────────────────────────────────────────────────────────
+
+function AgentNetworkRail({ currentPlant }) {
+  const plantId = currentPlant?.id ?? 'sl'
+  const plants  = networkData?.plants ?? []
+  const exposures = networkData?.sharedExposure?.filter(e => e.risk === 'danger' && e.affectedPlants.length > 1) ?? []
+  return (
+    <div className="flex flex-col h-full overflow-hidden">
+      {exposures.length > 0 && (
+        <div className="flex-shrink-0 flex items-center gap-2 px-4 py-2 border-b border-rule2 bg-danger/[0.03]">
+          <AlertTriangle size={10} strokeWidth={2} className="text-danger flex-shrink-0" />
+          <span className="font-body text-label text-danger">Shared lot exposure · {exposures.length} active</span>
+        </div>
+      )}
+      <div className="flex-1 overflow-y-auto">
+        {plants.map(p => {
+          const sc = p.riskScore ?? 0
+          const tone = sc >= 75 ? 'text-danger' : sc >= 60 ? 'text-warn' : 'text-ok'
+          const isHere = p.id === plantId
+          return (
+            <div key={p.id} className={`flex items-center gap-3 px-4 py-3 border-b border-rule2 ${isHere ? 'bg-stone2' : ''}`}>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <div className="font-body font-medium text-body text-ink">{p.name}</div>
+                  {isHere && <span className="font-body text-label text-muted">· here</span>}
+                </div>
+                <div className="font-body text-label text-muted">{p.supervisor} · {(p.pendingDecisions ?? 0)} pending</div>
+              </div>
+              <div className={`display-num text-title font-bold tabular-nums leading-none ${tone}`}>{sc}</div>
+            </div>
+          )
+        })}
+        {exposures.map(exp => {
+          const others = exp.affectedPlants.filter(pid => pid !== plantId).map(pid => plants.find(p => p.id === pid)).filter(Boolean)
+          if (!others.length) return null
+          return (
+            <div key={exp.lotId} className="px-4 py-3 border-b border-rule2 bg-danger/[0.02]">
+              <div className="font-body text-label text-danger font-medium">Lot {exp.lotId}</div>
+              <div className="font-body text-label text-muted mt-0.5">{exp.ingredient} · {exp.note}</div>
+              <div className="flex items-center gap-1.5 mt-1">
+                <span className="font-body text-label text-muted">Also held at:</span>
+                {others.map(p => <span key={p.id} className="font-body text-label text-danger bg-danger/[0.08] px-1.5 py-0.5">{p.code}</span>)}
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+// ─── Rail: shift config ───────────────────────────────────────────────────────
+
+function AgentConfigRail({ thresholds, onThresholdChange, currentPlant }) {
+  return (
+    <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+      <div>
+        <div className="flex items-baseline justify-between mb-0.5">
+          <span className="font-body font-medium text-body text-ink">Autonomous confidence</span>
+          <span className="display-num text-label tabular-nums text-ok">{thresholds.green}%</span>
+        </div>
+        <div className="font-body text-label text-muted mb-2">Act without approval at or above this level</div>
+        <input type="range" min={40} max={95} value={thresholds.green}
+          onChange={e => onThresholdChange({ ...thresholds, green: Number(e.target.value) })}
+          className="w-full accent-signal" />
+      </div>
+      <div className="h-px bg-rule2" />
+      <div>
+        <div className="flex items-baseline justify-between mb-0.5">
+          <span className="font-body font-medium text-body text-ink">Escalation confidence</span>
+          <span className="display-num text-label tabular-nums text-danger">{thresholds.red}%</span>
+        </div>
+        <div className="font-body text-label text-muted mb-2">Director review required below this level</div>
+        <input type="range" min={20} max={70} value={thresholds.red}
+          onChange={e => onThresholdChange({ ...thresholds, red: Number(e.target.value) })}
+          className="w-full accent-signal" />
+      </div>
+      <div className="h-px bg-rule2" />
+      <div className="space-y-3">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <div className="font-body font-medium text-body text-ink">Auto-escalate T3</div>
+            <div className="font-body text-label text-muted mt-0.5">Compliance decisions always sent to director</div>
+          </div>
+          <div className="w-8 h-4 bg-signal rounded-full relative flex-shrink-0 mt-1">
+            <div className="absolute right-0.5 top-0.5 w-3 h-3 bg-white rounded-full" />
+          </div>
+        </div>
+        <div className="flex items-baseline justify-between gap-3">
+          <div>
+            <div className="font-body font-medium text-body text-ink">T2 approval budget</div>
+            <div className="font-body text-label text-muted mt-0.5">Max decisions queued per shift</div>
+          </div>
+          <span className="display-num text-label tabular-nums text-warn flex-shrink-0">3 / 8</span>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ─── Rail: activity log ───────────────────────────────────────────────────────
+
+function AgentActivityRail({ agentActions }) {
+  const items = (agentActions ?? []).slice(0, 20)
+  if (items.length === 0) return (
+    <div className="px-4 py-5 font-body text-muted text-label">No agent activity recorded this session.</div>
+  )
+  return (
+    <div className="flex-1 overflow-y-auto px-5 pt-4 pb-3">
+      {items.map((a, i) => (
+        <div key={i} className="flex gap-3" style={{ marginBottom: i < items.length - 1 ? 16 : 0 }}>
+          <div className="flex flex-col items-end flex-shrink-0" style={{ width: 36 }}>
+            <span className="font-body text-muted text-label tabular-nums leading-none pt-0.5">
+              {a.timestamp?.slice(11, 16) || '—'}
+            </span>
+            <div className={`w-[5px] h-[5px] rounded-full flex-shrink-0 mt-1.5 ${a.status === 'completed' ? 'bg-ok' : a.status === 'overridden' ? 'bg-muted' : 'bg-warn'}`} />
+            {i < items.length - 1 && <div className="flex-1 w-px bg-rule2 mt-1.5" style={{ minHeight: 12 }} />}
+          </div>
+          <div className="flex-1 pb-1">
+            <div className="font-body text-label text-ink leading-snug">{a.action}</div>
+            <div className="font-body text-label text-muted mt-0.5">{a.agentId}</div>
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
 // ─── Root ─────────────────────────────────────────────────────────────────────
 
 export default function AgentControl() {
@@ -989,28 +1203,25 @@ export default function AgentControl() {
   const [pending, setPending]             = useState(allPending)
   const [selected, setSelected]           = useState(new Set())
   const [investigationDrawer, setInvestigationDrawer] = useState(null)
-  const [activityDrawer, setActivityDrawer]           = useState(false)
   const [overrideModal, setOverrideModal] = useState(null)
   const [disableModal, setDisableModal]   = useState(null)
-  const [splitFocused, setSplitFocused]   = useState(null)
+  const [splitFocused, setSplitFocused]   = useState(null) // selected decision key for rail
   const [agentFilter, setAgentFilter]     = useState('all')
   const [tierFilter, setTierFilter]       = useState('all')
   const [consequenceFilter, setConsequenceFilter] = useState([])
-  const [splitChecked, setSplitChecked]   = useState(new Set())
   const [tier1Open, setTier1Open]         = useState(false)
   const tier1BtnRef                       = useRef(null)
-  const [detailTab, setDetailTab]         = useState('why')
   const [freshnessOpen, setFreshnessOpen] = useState(false)
   const [flaggedDecisions, setFlaggedDecisions] = useState({})
   const [flagModal, setFlagModal]         = useState(null)
-  const [networkOpen, setNetworkOpen]     = useState(false)
-  const [shiftConfigOpen, setShiftConfigOpen] = useState(false)
   const [shiftThresholds, setShiftThresholds] = useState({
     green: currentPlant?.confidenceGreen ?? 70,
     red:   currentPlant?.confidenceRed   ?? 50,
   })
+  // Rail state
+  const [railMode, setRailMode] = useState('context') // 'context' | 'detail'
+  const [railTab, setRailTab]   = useState('network')
 
-  useEffect(() => { setDetailTab('why') }, [splitFocused])
 
   const tier1Items = pending.filter(p => p._meta.tier === 1)
   const tier2Items = pending.filter(p => p._meta.tier === 2)
@@ -1022,6 +1233,7 @@ export default function AgentControl() {
     setPending(prev => prev.map(p => p._key === key ? { ...p, _decided: 'approved' } : p))
     setSelected(prev => { const n = new Set(prev); n.delete(key); return n })
     if (investigationDrawer?.pa._key === key) setInvestigationDrawer(null)
+    if (splitFocused === key) { setSplitFocused(null); setRailMode('context') }
     markAgentDecided?.(key)
     logAgentAction?.({ agentId: pa?._agentId, action: 'Director approved', status: 'completed', timestamp: new Date().toISOString() })
   }
@@ -1199,12 +1411,6 @@ export default function AgentControl() {
             </div>
             <div className="font-body text-muted text-label">system conf</div>
           </div>
-          {staleSource && (
-            <span className="flex items-center gap-1 font-body text-warn text-label">
-              <AlertTriangle size={10} strokeWidth={2} className="flex-shrink-0" />
-              {dataSourceHealth?.filter(s => s.status === 'stale').length} stale
-            </span>
-          )}
         </button>
 
         {/* Tier 0 — autonomous */}
@@ -1282,14 +1488,9 @@ export default function AgentControl() {
         {/* Queue header */}
         <div className="flex-shrink-0 flex items-center border-b border-rule2 bg-stone">
           <span className="font-body text-label text-ink px-4 py-2.5">Decision queue</span>
-          <div className="flex items-center gap-2 ml-auto px-5">
-            {undecidedCount > 0 && (
-              <span className="font-body text-label text-warn bg-warn/[0.08] px-1.5 py-0.5">{undecidedCount} awaiting</span>
-            )}
-            <Btn variant="ghost" onClick={() => setShiftConfigOpen(true)}>Shift config</Btn>
-            <Btn variant="ghost" onClick={() => setNetworkOpen(true)}>Network</Btn>
-            <Btn variant="ghost" onClick={() => setActivityDrawer(true)}>Activity</Btn>
-          </div>
+          {undecidedCount > 0 && (
+            <span className="font-body text-label text-warn bg-warn/[0.08] px-1.5 py-0.5 ml-auto mr-5">{undecidedCount} awaiting</span>
+          )}
         </div>
 
         {/* ── T3 critical banner ── */}
@@ -1340,504 +1541,123 @@ export default function AgentControl() {
           })
         })()}
 
-        {/* ── Split Decision Panel ─────────────────────────────────── */}
+        {/* ── Queue + Rail ─────────────────────────────────────────── */}
         <div className="flex flex-1 min-h-0 overflow-hidden">
-            {/* Left: compact selection list with checkboxes */}
-            <div className="w-[280px] flex-shrink-0 border-r border-rule2 flex flex-col overflow-hidden">
+            {/* ── Queue (65%) ── */}
+            <div className="flex flex-col border-r border-rule flex-shrink-0 overflow-hidden" style={{ flex: '0 0 65%' }}>
               <div className="flex-1 overflow-y-auto">
                 {undecidedCount === 0 && pending.every(p => p._decided) ? (
-                  <div className="flex items-center gap-2 px-4 py-5">
+                  <div className="flex items-center gap-2 px-5 py-5">
                     <CheckCircle size={14} className="text-ok flex-shrink-0" />
-                    <span className="font-body text-ink text-body">All decisions made</span>
+                    <span className="font-body text-ink text-body">All decisions made this shift</span>
                   </div>
                 ) : (
-                  <div className="divide-y divide-rule2">
+                  <div>
                     {[...undecidedPending.filter(p => p._meta.tier >= 2), ...pending.filter(p => p._decided && p._meta.tier >= 2)].map(pa => {
                       const agent = agents.find(a => a.id === pa._agentId)
                       if (!agent) return null
-                      const cfg = CONSEQUENCE_CFG[pa._meta.consequence]
-                      const isFocused = splitFocused === pa._key
-                      const isChecked = splitChecked.has(pa._key)
+                      const isFocused = splitFocused === pa._key && railMode === 'detail'
+                      const pillTone  = pa._meta.consequence === 'critical' ? 'danger' : pa._meta.consequence === 'high' ? 'warn' : 'muted'
+                      const pillLabel = pa._meta.consequence === 'critical' ? 'Critical' : pa._meta.consequence === 'high' ? 'High' : 'Medium'
+                      const confColor = pa.confidence >= 85 ? 'text-ok' : pa.confidence >= 65 ? 'text-warn' : 'text-danger'
                       return (
                         <div key={pa._key}
-                          className={`flex items-center border-l-[3px] transition-colors ${
-                            isFocused
-                              ? `${cfg.border} bg-stone2`
-                              : pa._meta.consequence === 'critical' && !pa._decided ? 'border-l-danger/40'
-                              : pa._meta.consequence === 'high' && !pa._decided ? 'border-l-warn/40'
-                              : 'border-l-transparent'
-                          } ${pa._decided ? 'opacity-40' : ''}`}>
-                          {/* Checkbox */}
-                          {!pa._decided && (
-                            <div className="pl-3 flex-shrink-0" onClick={e => e.stopPropagation()}>
-                              <Checkbox checked={isChecked}
-                                onChange={() => setSplitChecked(prev => { const n = new Set(prev); n.has(pa._key) ? n.delete(pa._key) : n.add(pa._key); return n })} />
+                          onClick={() => {
+                            if (pa._decided) return
+                            if (isFocused) { setSplitFocused(null); setRailMode('context') }
+                            else { setSplitFocused(pa._key); setRailMode('detail') }
+                          }}
+                          className={`flex items-center gap-4 px-5 py-3 border-b border-rule2 transition-colors ${
+                            pa._decided ? 'opacity-40' : isFocused ? 'bg-stone3' : 'cursor-pointer hover:bg-stone2'
+                          }`}>
+                          <div className="flex-1 min-w-0">
+                            <div className={`font-body font-medium text-body leading-snug ${pa._decided ? 'text-muted line-through' : 'text-ink'}`}>
+                              {pa._meta.verbFirst}
                             </div>
-                          )}
-                          <button type="button"
-                            onClick={() => setSplitFocused(isFocused ? null : pa._key)}
-                            className="flex-1 min-w-0 flex items-center gap-3 px-3 py-4 hover:bg-stone2/50 transition-colors text-left">
-                            <div className="flex-1 min-w-0">
-                              <div className="font-body text-muted text-label truncate">{agent.name}</div>
-                              <div className={`font-body font-medium text-body leading-snug truncate ${pa._decided ? 'text-muted' : 'text-ink'}`}>
-                                {pa._meta.verbFirst}
-                              </div>
-                              {pa._decided ? (
-                                <div className="flex items-center gap-1.5 mt-0.5">
-                                  <StatusPill tone={pa._decided === 'approved' ? 'ok' : 'muted'}>
-                                    {pa._decided === 'approved' ? 'Approved' : 'Overridden'}
-                                  </StatusPill>
-                                  {flaggedDecisions[pa._key] && (
-                                    <span className="flex items-center gap-0.5 font-body text-label text-warn">
-                                      <Flag size={8} strokeWidth={2} />
-                                      <span>Flagged</span>
-                                    </span>
-                                  )}
-                                </div>
-                              ) : pa._meta.showExpiry ? (
-                                <StatusPill tone={pa._meta.consequence === 'critical' ? 'danger' : 'warn'} className="whitespace-nowrap mt-0.5">
-                                  {pa._meta.expiresLabel}
-                                </StatusPill>
-                              ) : null}
+                            <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                              <span className="font-body text-label text-muted">{agent.name}</span>
+                              <span className="text-rule">·</span>
+                              <span className={`display-num text-label tabular-nums ${confColor}`}>{pa.confidence}%</span>
+                              {pa._meta.groupId && GROUP_META[pa._meta.groupId] && (
+                                <span className="font-body text-label text-context">· {GROUP_META[pa._meta.groupId].label}</span>
+                              )}
                             </div>
-                          </button>
+                          </div>
+                          <div className="flex items-center gap-2 flex-shrink-0">
+                            {pa.isEmergencyAutoAct && <EmergencyChip overrideWindowMin={pa.overrideWindowMin} />}
+                            {pa._decided ? (
+                              <StatusPill tone={pa._decided === 'approved' ? 'ok' : 'muted'}>
+                                {pa._decided === 'approved' ? 'Approved' : 'Overridden'}
+                              </StatusPill>
+                            ) : (
+                              <StatusPill tone={pillTone}>{pillLabel}</StatusPill>
+                            )}
+                            {!pa._decided && (
+                              <Btn variant="ghost" onClick={e => { e.stopPropagation(); setInvestigationDrawer({ pa, agent }) }}
+                                aria-label="Investigate" className="!px-2 !min-h-0">
+                                <InspectionPanel size={12} strokeWidth={2} />
+                              </Btn>
+                            )}
+                          </div>
                         </div>
                       )
                     })}
                   </div>
                 )}
               </div>
-              {/* Batch action bar — sticky bottom of left panel */}
-              {splitChecked.size > 0 && (
-                <div className="flex-shrink-0 flex items-center gap-3 px-4 py-3 bg-stone3 border-t border-rule2">
-                  <span className="font-body text-muted text-label">{splitChecked.size} selected</span>
-                  <Btn variant="secondary"
-                    onClick={() => { [...splitChecked].forEach(k => { const pa = pending.find(p => p._key === k); if (pa && !pa._decided && pa._meta.consequence === 'medium') handleApprove(k) }); setSplitChecked(new Set()) }}>
-                    Approve low-risk
-                  </Btn>
-                  <Btn variant="ghost" onClick={() => setSplitChecked(new Set())} className="ml-auto">
-                    Clear
-                  </Btn>
+            </div>
+
+            {/* ── Rail (35%) ── */}
+            <div className="flex flex-col flex-1 overflow-hidden">
+              {/* Persistent tab strip */}
+              <div className="flex border-b border-rule2 flex-shrink-0">
+                {[['network', Network, 'Network'], ['config', Settings, 'Config'], ['activity', Activity, 'Activity']].map(([id, Icon, label]) => {
+                  const isActive = railMode === 'context' && railTab === id
+                  return (
+                    <button key={id} type="button"
+                      onClick={() => { setRailTab(id); setRailMode('context') }}
+                      className={`relative flex items-center gap-1.5 flex-1 px-3 py-2.5 font-body text-label transition-colors ${
+                        isActive ? 'text-ink bg-stone2' : 'text-muted hover:text-ink'
+                      }`}>
+                      <Icon size={10} strokeWidth={2} />
+                      {label}
+                      {isActive && <div className="absolute bottom-0 left-0 right-0 h-px bg-signal" />}
+                    </button>
+                  )
+                })}
+              </div>
+
+              {/* Rail content */}
+              {railMode === 'detail' && splitFocused ? (() => {
+                const pa    = pending.find(p => p._key === splitFocused)
+                const agent = pa ? agents.find(a => a.id === pa._agentId) : null
+                if (!pa || !agent) return null
+                return (
+                  <AgentRailDetail
+                    pa={pa}
+                    agent={agent}
+                    onClose={() => { setSplitFocused(null); setRailMode('context') }}
+                    onApprove={handleApprove}
+                    onOverride={(pa, agent) => setOverrideModal({ pa, agent })}
+                    onInvestigate={(pa, agent) => setInvestigationDrawer({ pa, agent })}
+                    navigate={navigate}
+                  />
+                )
+              })() : (
+                <div className="flex-1 overflow-hidden flex flex-col">
+                  {railTab === 'network'  && <AgentNetworkRail currentPlant={currentPlant} />}
+                  {railTab === 'config'   && (
+                    <AgentConfigRail
+                      thresholds={shiftThresholds}
+                      onThresholdChange={setShiftThresholds}
+                      currentPlant={currentPlant}
+                    />
+                  )}
+                  {railTab === 'activity' && <AgentActivityRail agentActions={agentActions} />}
                 </div>
               )}
             </div>
-
-            {/* Right: decision detail panel with sticky header + footer */}
-            <div className="flex-1 flex flex-col overflow-hidden">
-              {(() => {
-                const pa = pending.find(p => p._key === splitFocused)
-                const agent = pa ? agents.find(a => a.id === pa._agentId) : null
-                if (!pa || !agent) return <EmptyState message="Select a decision from the left panel to review evidence and act" />
-                const cfg = CONSEQUENCE_CFG[pa._meta.consequence]
-                const isCompliance = agent.isComplianceCategory
-                const Icon = ICON_MAP[agent.icon] || Shield
-                return (
-                  <>
-                    {/* Sticky header */}
-                    <div className={`flex-shrink-0 flex items-start gap-4 px-6 py-4 border-b border-rule2 bg-stone border-l-[3px] ${cfg.border}`}>
-                      <div className="flex-1 min-w-0">
-                        <div className="font-body text-muted text-label mb-0.5">
-                          {agent.name} · {cfg.label} consequence
-                          {agent.trustScore != null && (() => {
-                            const plantId = currentPlant?.id ?? 'sl'
-                            const plantScore = PLANT_TRUST_SCORES[agent.id]?.[plantId]
-                            const score = plantScore ?? agent.trustScore
-                            const isLocal = plantScore != null
-                            return (
-                              <span className={`ml-2 display-num text-label ${score >= 85 ? 'text-ok' : score >= 70 ? 'text-warn' : 'text-danger'}`}
-                                title={isLocal ? `${currentPlant?.code} local trust score (network avg: ${agent.trustScore})` : 'Network average trust score'}>
-                                {score} {isLocal ? `trust · ${currentPlant?.code}` : 'trust · network avg'}
-                              </span>
-                            )
-                          })()}
-                        </div>
-                        <div className="font-display font-bold text-ink text-head leading-snug">{pa._meta.verbFirst}</div>
-                        {pa.reasoning?.length > 0 && (
-                          <div className="flex flex-wrap items-center gap-1 mt-2">
-                            {pa.reasoning.map((link, i) => (
-                              <span key={i} className="flex items-center gap-1">
-                                <span className="font-body text-muted text-label leading-snug">{link}</span>
-                                {i < pa.reasoning.length - 1 && (
-                                  <span className="font-body text-muted/40 text-label flex-shrink-0">→</span>
-                                )}
-                              </span>
-                            ))}
-                          </div>
-                        )}
-                        {pa._decided && (
-                          <div className={`font-body text-label mt-0.5 ${pa._decided === 'approved' ? 'text-ok' : 'text-muted'}`}>
-                            {pa._decided === 'approved' ? '✓ Approved' : '↩ Overridden'} ·{' '}
-                            <button type="button" onClick={() => navigate('/outcomes')} className="text-signal hover:text-ink underline-offset-2">View in ImpactLoop</button>
-                          </div>
-                        )}
-                      </div>
-                      {(() => {
-                        const green = currentPlant?.confidenceGreen ?? 85
-                        const red = currentPlant?.confidenceRed ?? 65
-                        const confOk = pa.confidence >= green
-                        const confColor = pa.confidence >= green ? 'text-ok' : pa.confidence >= red ? 'text-warn' : 'text-danger'
-                        const modelLabel = currentPlant?.confidenceModel === 'biological' ? 'Biological fermentation'
-                          : currentPlant?.confidenceModel === 'regulated' ? 'Regulated process (GxP)'
-                          : currentPlant?.confidenceModel === 'precision' ? 'Precision manufacturing'
-                          : null
-                        return (
-                          <div className="text-right flex-shrink-0">
-                            <div className="flex items-baseline gap-1.5 justify-end">
-                              <div className={`display-num text-metric tabular-nums leading-none ${confColor}`}
-                                style={{ opacity: Math.max(0.45, pa.confidence / 100) }}>{pa.confidence}%</div>
-                              <div className="font-body text-muted text-label">conf</div>
-                            </div>
-                            {modelLabel && (
-                              <div className={`font-body text-label mt-0.5 text-right ${confOk ? 'text-ok/70' : 'text-danger/80'}`}>
-                                {modelLabel} · {confOk ? 'within threshold' : `below ${green}% required`}
-                              </div>
-                            )}
-                          </div>
-                        )
-                      })()}
-                    </div>
-
-                    <Tabs
-                      tabs={[{ id: 'why', label: 'Why' }, { id: 'approved', label: 'If approved' }]}
-                      active={detailTab}
-                      onChange={setDetailTab}
-                      className="flex-shrink-0 bg-stone"
-                    />
-
-                    {/* Scrollable body */}
-                    <div className="flex-1 overflow-y-auto page-blur-in">
-
-                      {/* ── Why tab ── */}
-                      {detailTab === 'why' && (
-                        <div className="px-6 py-5 space-y-5">
-
-                          {/* Rationale — dominant */}
-                          {pa.rationale && (
-                            <div className="px-4 py-4 bg-stone2 border-l-4 border-l-signal">
-                              <div className="font-body font-semibold text-muted text-label mb-2">Agent rationale</div>
-                              <p className="font-body text-ink text-body leading-relaxed">{pa.rationale}</p>
-                            </div>
-                          )}
-
-                          {/* What triggered this — active signals only */}
-                          {(() => {
-                            const active = (pa.evidence?.causalSignals ?? []).filter(s => s.stage !== 'suppressed')
-                            if (active.length === 0) return null
-                            return (
-                              <div>
-                                <div className="font-body text-muted text-label mb-2">What triggered this</div>
-                                <div className="divide-y divide-rule2 border-y border-rule2">
-                                  {active.map((s, i) => {
-                                    const tone = s.status === 'breach' || s.status === 'stale' ? 'danger' : s.status === 'warn' ? 'warn' : 'ok'
-                                    const label = s.status === 'breach' ? 'Breach' : s.status === 'stale' ? 'Stale' : s.status === 'warn' ? 'Watch' : 'OK'
-                                    return (
-                                      <div key={i} className="flex items-start gap-3 px-4 py-2.5">
-                                        <div className="flex-1 min-w-0">
-                                          <div className="font-body text-muted text-label mb-0.5">{s.signal}</div>
-                                          <div className="font-body text-ink text-body font-medium">{s.reading}</div>
-                                          {s.threshold && <div className="font-body text-muted text-label">vs. {s.threshold}</div>}
-                                        </div>
-                                        <StatusPill tone={tone}>{label}</StatusPill>
-                                      </div>
-                                    )
-                                  })}
-                                </div>
-                              </div>
-                            )
-                          })()}
-
-                          {/* Confidence — verdict, not breakdown */}
-                          {(() => {
-                            const threshold = agent.confidenceThreshold ?? 80
-                            const delta = pa.confidence - threshold
-                            const above = delta >= 0
-                            return (
-                              <div className="flex items-center gap-4 px-4 py-3 border border-rule2">
-                                <div className="flex-1 h-1 bg-stone3 relative">
-                                  <div className={`h-full ${pa.confidence >= 85 ? 'bg-ok' : pa.confidence >= 65 ? 'bg-warn' : 'bg-danger'}`}
-                                    style={{ width: `${pa.confidence}%` }} />
-                                  <div className="absolute top-0 bottom-0 w-px bg-ink/40" style={{ left: `${threshold}%` }} />
-                                </div>
-                                <span className={`font-body text-label font-medium flex-shrink-0 ${above ? 'text-ok' : 'text-warn'}`}>
-                                  {pa.confidence}% — {above ? `+${delta}pts above` : `${delta}pts below`} threshold
-                                </span>
-                              </div>
-                            )
-                          })()}
-                        </div>
-                      )}
-
-                      {/* ── If approved tab ── */}
-                      {detailTab === 'approved' && (
-                        <div className="px-6 py-5 space-y-5">
-
-                          {/* What happens next */}
-                          {pa.impactPreview?.length > 0 && (
-                            <div>
-                              <div className="font-body text-muted text-label mb-2">What happens next</div>
-                              <div className="divide-y divide-rule2 border-y border-rule2">
-                                {pa.impactPreview.map((line, i) => {
-                                  const isNeg = /delay|liability|legal|loss|risk/i.test(line)
-                                  const isWarn = /stale|⚠/.test(line)
-                                  return (
-                                    <div key={i} className="flex items-start gap-3 px-4 py-2.5">
-                                      <div className={`w-1 h-1 rounded-full flex-shrink-0 mt-1.5 ${isNeg || isWarn ? 'bg-warn' : 'bg-ok'}`} />
-                                      <span className={`font-body text-label leading-snug ${isNeg ? 'text-warn' : 'text-ink'}`}>{line}</span>
-                                    </div>
-                                  )
-                                })}
-                              </div>
-                            </div>
-                          )}
-
-                          {/* Risk if not approved */}
-                          {pa.evidence?.riskForecast && (
-                            <div className="px-4 py-4 bg-warn/[0.04] border-l-4 border-l-warn">
-                              <div className="font-body font-semibold text-muted text-label mb-2">Risk if not approved</div>
-                              <p className="font-display text-ink text-body leading-relaxed">{pa.evidence.riskForecast}</p>
-                            </div>
-                          )}
-
-                          {/* Agent track record — per-plant */}
-                          {agent.trustScore != null && (
-                            <div className="divide-y divide-rule2 border-y border-rule2">
-                              {(() => {
-                                const plantId = currentPlant?.id ?? 'sl'
-                                const plantScore = PLANT_TRUST_SCORES[agent.id]?.[plantId]
-                                const networkScore = agent.trustScore
-                                return (
-                                  <>
-                                    <div className="flex items-center px-4 py-2.5">
-                                      <span className="font-body text-muted text-label flex-1">
-                                        Trust score · {currentPlant?.code ?? 'this plant'}
-                                      </span>
-                                      <span className={`font-body text-label font-medium ${(plantScore ?? networkScore) >= 85 ? 'text-ok' : (plantScore ?? networkScore) >= 70 ? 'text-warn' : 'text-danger'}`}>
-                                        {plantScore ?? networkScore}%
-                                      </span>
-                                    </div>
-                                    {plantScore != null && plantScore !== networkScore && (
-                                      <div className="flex items-center px-4 py-2 bg-stone2">
-                                        <span className="font-body text-muted/60 text-label flex-1">Network average</span>
-                                        <span className="font-body text-muted/60 text-label">{networkScore}%</span>
-                                      </div>
-                                    )}
-                                  </>
-                                )
-                              })()}
-                              {agent.confidenceMethodology && (
-                                <div className="px-4 py-2.5">
-                                  <p className="font-body text-muted text-label leading-snug">{agent.confidenceMethodology}</p>
-                                </div>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Cohort intelligence — shown above action bar when undecided */}
-                    {!pa._decided && pa.cohort && (
-                      <div className="flex-shrink-0 flex items-center gap-2.5 px-5 py-2 border-t border-rule2 bg-deep/[0.04]">
-                        <div className="w-1.5 h-1.5 rounded-full bg-deep flex-shrink-0 flex-shrink-0" />
-                        <span className="font-body text-deep text-label leading-snug">{pa.cohort}</span>
-                      </div>
-                    )}
-
-                    {/* Sticky action bar */}
-                    <div key={pa._decided} className={`flex-shrink-0 flex items-center gap-3 px-5 py-3.5 border-t border-rule2 ${pa._decided === 'approved' ? 'decision-commit bg-stone2' : pa._decided ? 'bg-stone2' : 'bg-stone'}`}>
-                      {pa._decided ? (
-                        <div className="flex items-center gap-3 flex-1">
-                          <span className={`font-body text-label ${pa._decided === 'approved' ? 'text-ok' : 'text-muted'}`}>
-                            {pa._decided === 'approved' ? '✓ Decision approved and logged' : '↩ Decision overridden'}
-                          </span>
-                          {flaggedDecisions[pa._key] ? (
-                            <span className="flex items-center gap-1 font-body text-label text-warn ml-auto">
-                              <Flag size={10} strokeWidth={2} />
-                              <span>{FLAG_CATEGORIES.find(f => f.value === flaggedDecisions[pa._key].category)?.label ?? 'Flagged'}</span>
-                            </span>
-                          ) : (
-                            <button type="button"
-                              onClick={() => setFlagModal({ pa, agent })}
-                              className="flex items-center gap-1.5 font-body text-label text-muted/40 hover:text-warn transition-colors ml-auto"
-                              title="Flag this decision for model review">
-                              <Flag size={10} strokeWidth={2} />
-                              <span>Flag outcome</span>
-                            </button>
-                          )}
-                        </div>
-                      ) : (
-                        <>
-                          <ApproveBtn isCompliance={isCompliance} disabled={false} onApprove={() => handleApprove(pa._key)} />
-                          <Btn variant="ghost" onClick={() => setOverrideModal({ pa, agent })}
-                            aria-label="Override" title="Override" className="!px-2.5 !min-h-[44px]">
-                            <Flag size={13} strokeWidth={2} />
-                          </Btn>
-                          <Btn variant="ghost" onClick={() => setInvestigationDrawer({ pa, agent })}
-                            aria-label="Investigate" title="Investigate" className="!px-2.5 !min-h-[44px]">
-                            <InspectionPanel size={13} strokeWidth={2} />
-                          </Btn>
-                          <span className="font-body text-muted text-label ml-1">{pa._meta.blastRadius}</span>
-                        </>
-                      )}
-                    </div>
-                  </>
-                )
-              })()}
-            </div>
         </div>
-
-        {false && (
-          <div className="hidden">
-            {undecidedCount === 0 && pending.every(p => p._decided) ? (
-              <div className="flex items-center gap-3 py-4">
-                <CheckCircle size={16} className="text-ok flex-shrink-0" />
-                <div>
-                  <div className="font-body font-medium text-ink text-sub">All decisions made</div>
-                  <div className="font-body text-muted text-label mt-0.5">Agents operating autonomously within configured boundaries.</div>
-                </div>
-              </div>
-            ) : (
-              <>
-                {/* Emergency cards — full width */}
-                {pending.filter(p => p.isEmergencyAutoAct && !p._decided).map(pa => {
-                  const agent = agents.find(a => a.id === pa._agentId)
-                  if (!agent) return null
-                  const Icon = ICON_MAP[agent.icon] || Shield
-                  return (
-                    <div key={pa._key} className="border border-danger/30 bg-danger/[0.04] border-l-[5px] border-l-danger p-5">
-                      <div className="flex items-start justify-between gap-4 mb-3">
-                        <div className="flex items-center gap-3">
-                          <Icon size={16} className="text-danger flex-shrink-0" />
-                          <div>
-                            <div className="font-body text-muted text-label">{agent.name} · Auto-executing</div>
-                            <div className="font-display font-bold text-ink text-sub leading-snug mt-0.5">{pa._meta.verbFirst}</div>
-                          </div>
-                        </div>
-                        <EmergencyChip overrideWindowMin={pa.overrideWindowMin} />
-                      </div>
-                      {pa.rationale && <p className="font-display text-muted text-body leading-relaxed mb-3">{pa.rationale}</p>}
-                      <Btn variant="secondary" onClick={() => setOverrideModal({ pa, agent })}
-                        className="!border-danger/40 !text-danger hover:!bg-danger/[0.04]">
-                        <Flag size={11} strokeWidth={2} />Override before window closes
-                      </Btn>
-                    </div>
-                  )
-                })}
-
-                {/* Critical + High cards — 2-column grid */}
-                {(() => {
-                  const highItems = pending.filter(p => !p.isEmergencyAutoAct && (p._meta.consequence === 'critical' || p._meta.consequence === 'high'))
-                  if (highItems.length === 0) return null
-                  const groups = {}
-                  highItems.forEach(pa => { if (pa._meta.groupId) { groups[pa._meta.groupId] = groups[pa._meta.groupId] ?? []; groups[pa._meta.groupId].push(pa) } })
-                  const rendered = new Set()
-                  return (
-                    <div>
-                      <div className="font-body text-muted text-label mb-2">High consequence</div>
-                      <div className="grid grid-cols-2 gap-3">
-                        {highItems.map(pa => {
-                          if (pa._meta.groupId && rendered.has(pa._meta.groupId)) return null
-                          if (pa._meta.groupId) rendered.add(pa._meta.groupId)
-                          const agent = agents.find(a => a.id === pa._agentId)
-                          if (!agent) return null
-                          const cfg = CONSEQUENCE_CFG[pa._meta.consequence]
-                          const Icon = ICON_MAP[agent.icon] || Shield
-                          const isCompliance = agent.isComplianceCategory
-                          const groupPair = pa._meta.groupId ? groups[pa._meta.groupId] : null
-                          return (
-                            <div key={pa._key} className={`border ${cfg.borderW} ${cfg.border} p-4 ${pa._decided ? 'opacity-40' : ''}`}>
-                              {groupPair?.length > 1 && (
-                                <div className="flex items-center gap-1.5 mb-2 pb-2 border-b border-rule2">
-                                  <div className="h-1 w-1 rounded-full bg-signal" />
-                                  <span className="font-body text-signal text-label">{GROUP_META[pa._meta.groupId]?.label}</span>
-                                </div>
-                              )}
-                              <div className="flex items-start gap-2 mb-2">
-                                <div className="flex-1 min-w-0">
-                                  <div className="font-body text-muted text-label">{agent.name}</div>
-                                  <div className="font-display font-bold text-ink text-sub leading-snug mt-0.5">{pa._meta.verbFirst}</div>
-                                </div>
-                                <span className={`font-body text-label px-1.5 py-0.5 flex-shrink-0 ${cfg.color} ${cfg.bg}`}>{cfg.label}</span>
-                              </div>
-                              {pa.impactPreview?.slice(0, 2).map((l, i) => (
-                                <div key={i} className="font-body text-muted text-label leading-snug mb-0.5">· {l}</div>
-                              ))}
-                              <div className="mt-2 mb-3">
-                                <div className="h-1 bg-stone3 relative">
-                                  <div className={`h-full ${pa.confidence >= 85 ? 'bg-ok' : pa.confidence >= 65 ? 'bg-warn' : 'bg-danger'}`} style={{ width: `${pa.confidence}%` }} />
-                                  <div className="absolute top-0 bottom-0 w-px bg-ink/30" style={{ left: `${agent.confidenceThreshold ?? 80}%` }} />
-                                </div>
-                                <div className="font-body text-muted text-label mt-0.5">{pa.confidence}% confidence</div>
-                              </div>
-                              {!pa._decided && (
-                                <div className="flex items-center gap-2">
-                                  <ApproveBtn isCompliance={isCompliance} disabled={false} onApprove={() => handleApprove(pa._key)} />
-                                  <Btn variant="ghost" onClick={() => setOverrideModal({ pa, agent })}
-                                    aria-label="Override" title="Override" className="!px-2.5 !min-h-[44px]">
-                                    <Flag size={12} strokeWidth={2} />
-                                  </Btn>
-                                  <Btn variant="ghost" onClick={() => setInvestigationDrawer({ pa, agent })}
-                                    aria-label="Investigate" title="Investigate" className="!px-2.5 !min-h-[44px]">
-                                    <InspectionPanel size={12} strokeWidth={2} />
-                                  </Btn>
-                                </div>
-                              )}
-                              {pa._decided && (
-                                <div className={`font-body text-label ${pa._decided === 'approved' ? 'text-ok' : 'text-muted'}`}>
-                                  {pa._decided === 'approved' ? '✓ Approved' : '↩ Overridden'}
-                                </div>
-                              )}
-                            </div>
-                          )
-                        })}
-                      </div>
-                    </div>
-                  )
-                })()}
-
-                {/* Medium rows — compact */}
-                {(() => {
-                  const medItems = pending.filter(p => p._meta.consequence === 'medium' && !p.isEmergencyAutoAct)
-                  if (medItems.length === 0) return null
-                  return (
-                    <div>
-                      <div className="font-body text-muted text-label mb-2">Medium consequence</div>
-                      <div className="border border-rule2 divide-y divide-rule2">
-                        {medItems.map(pa => {
-                          const agent = agents.find(a => a.id === pa._agentId)
-                          if (!agent) return null
-                          return (
-                            <div key={pa._key} className={`flex items-center gap-3 px-4 py-3 ${pa._decided ? 'opacity-40' : ''}`}>
-                              <div className="h-1.5 w-1.5 rounded-full bg-muted flex-shrink-0" />
-                              <div className="flex-1 min-w-0">
-                                <div className="font-body text-muted text-label">{agent.name}</div>
-                                <div className="font-body font-medium text-ink text-label leading-snug truncate">{pa._meta.verbFirst}</div>
-                              </div>
-                              {!pa._decided && (
-                                <div className="flex items-center gap-1.5">
-                                  <ApproveBtn isCompliance={false} disabled={false} onApprove={() => handleApprove(pa._key)} />
-                                  <Btn variant="ghost" onClick={() => setOverrideModal({ pa, agent })}
-                                    aria-label="Override" title="Override" className="!px-2.5 !min-h-[44px]">
-                                    <Flag size={12} strokeWidth={2} />
-                                  </Btn>
-                                </div>
-                              )}
-                              {pa._decided && (
-                                <span className={`font-body text-label ${pa._decided === 'approved' ? 'text-ok' : 'text-muted'}`}>
-                                  {pa._decided === 'approved' ? 'Approved' : 'Overridden'}
-                                </span>
-                              )}
-                            </div>
-                          )
-                        })}
-                      </div>
-                    </div>
-                  )
-                })()}
-              </>
-            )}
-          </div>
-        )}
       </div>
 
       {/* ── Modals ──────────────────────────────────────────────────── */}
@@ -1883,20 +1703,9 @@ export default function AgentControl() {
         </SlidePanel>
       )}
 
-      {/* ── Activity log drawer ──────────────────────────────────────── */}
-      {activityDrawer && (
-        <SlidePanel
-          title="Agent activity"
-          subtitle="Actions taken this session"
-          onClose={() => setActivityDrawer(false)}
-          maxWidth="480px"
-        >
-          <ActivityLog agentActions={agentActions} />
-        </SlidePanel>
-      )}
+      {/* Network + Config + Activity moved to persistent rail — panels removed */}
 
-      {/* ── Network queue panel (Break 3) ───────────────────────────── */}
-      {networkOpen && (
+      {false && networkOpen && (
         <SlidePanel
           title="Network queue"
           subtitle={`${networkData?.plants?.length ?? 0} plants · cross-plant decision view`}
@@ -1959,8 +1768,7 @@ export default function AgentControl() {
         </SlidePanel>
       )}
 
-      {/* ── Shift config panel (Break 4) ─────────────────────────────── */}
-      {shiftConfigOpen && (
+      {false && shiftConfigOpen && (
         <SlidePanel
           title="Shift autonomy config"
           subtitle={`${currentPlant?.name ?? 'This plant'} · current shift`}
