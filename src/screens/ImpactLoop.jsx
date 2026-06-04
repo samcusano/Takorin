@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { interventions, kpiTargets } from '../data/interventions'
-import { AlertTriangle, CheckCircle2, ArrowRight, RotateCcw, AlertCircle, TrendingUp, TrendingDown, Zap, Clock, ChevronDown, User } from 'lucide-react'
-import { StatusPill, SceneHeader, Btn, AnimatedScore, StatGrid, EmptyState, FilterDropdown, SlidePanel } from '../components/UI'
+import { interventions, kpiTargets, platformBaseline } from '../data/interventions'
+import { goalsData } from '../data'
+import { AlertTriangle, CheckCircle2, ArrowRight, RotateCcw, AlertCircle, TrendingUp, TrendingDown, Zap, Clock, ChevronDown, ChevronRight, User } from 'lucide-react'
+import { StatusPill, SceneHeader, Tabs, Btn, AnimatedScore, StatGrid, EmptyState, FilterDropdown, SlidePanel } from '../components/UI'
 
 const OUTCOME_CFG = {
   positive: { label: 'Positive',     tone: 'ok',     border: 'border-l-ok',     accent: 'bg-ok'     },
@@ -402,6 +403,304 @@ function InterventionDetail({ entry }) {
   )
 }
 
+// ─── Benchmarks tab (formerly Analytics) ─────────────────────────────────────
+
+const ADOPTION_WORKFLOWS = [
+  { id: 'handoff',   label: 'Shift handoff',          role: 'Supervisors', target: 90, rate: 67,  trend: -3, warning: 'D. Kowalski · J. Torres — 0 of last 3 shifts completed. Incoming supervisors reconstructing context manually.' },
+  { id: 'checklist', label: 'Operator checklists',    role: 'Operators',   target: 95, rate: 81,  trend: +5, warning: null },
+  { id: 'decisions', label: 'Agent decision review',  role: 'Director',    target: 80, rate: 92,  trend: +2, warning: null },
+  { id: 'evidence',  label: 'CAPA evidence submission',role:'Supervisors',  target: 85, rate: 58,  trend: -6, warning: 'CAPA-2604-006 · CAPA-2604-011 blocked — evidence not filed.' },
+]
+
+const TOP_QUARTILE = [
+  { area: 'OEE',          practice: 'Run AI checks before every shift — not just when something goes wrong',         lift: '+4.2pp avg OEE vs cohort median' },
+  { area: 'CAPA',         practice: 'Package evidence automatically when a CAPA opens — don\'t wait until closure',  lift: '38% faster closure vs cohort median' },
+  { area: 'Downtime',     practice: 'Schedule maintenance from sensor data, not from the calendar',                  lift: '23% fewer unplanned stops' },
+  { area: 'Traceability', practice: 'Check lot chain completeness as ingredients arrive — catch gaps at the door',   lift: '2.1h faster recall response window' },
+]
+
+function BenchmarksTab() {
+  return (
+    <div className="flex-1 overflow-y-auto">
+      <div className="max-w-[820px] px-6 py-6 space-y-8">
+
+        {/* Goals */}
+        <div>
+          <div className="font-body text-label font-semibold text-muted mb-4 tracking-wider">Q2 GOALS</div>
+          <div className="space-y-3">
+            {goalsData.map(g => {
+              const onTrack = g.direction === 'increase' ? g.current >= g.target * 0.85 : g.current <= g.target * 1.15
+              const pct = g.direction === 'increase'
+                ? Math.min(100, (g.current / g.target) * 100)
+                : Math.min(100, (1 - (g.current - g.target) / g.target) * 100)
+              return (
+                <div key={g.id} className="border border-rule2 px-5 py-4">
+                  <div className="flex items-start justify-between gap-4 mb-3">
+                    <div>
+                      <div className="font-body font-medium text-ink text-body mb-0.5">{g.label}</div>
+                      <div className="font-body text-label text-muted">Target: {g.target} {g.unit} by {g.deadline}</div>
+                    </div>
+                    <div className="text-right flex-shrink-0">
+                      <div className={`display-num text-head font-bold tabular-nums leading-none ${onTrack ? 'text-ok' : 'text-warn'}`}>{g.current}</div>
+                      <div className="font-body text-label text-muted">{g.unit}</div>
+                    </div>
+                  </div>
+                  <div className="relative h-[4px] bg-rule2">
+                    <div className={`absolute inset-y-0 left-0 ${onTrack ? 'bg-ok' : 'bg-warn'}`} style={{ width: `${pct}%` }} />
+                    <div className="absolute top-1/2 -translate-y-1/2 w-0.5 h-2 bg-ink/30" style={{ left: '85%' }} />
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* Workflow adoption */}
+        <div>
+          <div className="font-body text-label font-semibold text-muted mb-4 tracking-wider">WORKFLOW ADOPTION</div>
+          <div className="border border-rule2 divide-y divide-rule2">
+            {ADOPTION_WORKFLOWS.map(w => {
+              const atRisk = w.rate < w.target
+              const pct = Math.min(100, (w.rate / w.target) * 100)
+              return (
+                <div key={w.id} className={`px-5 py-4 ${atRisk ? 'bg-warn/[0.02]' : ''}`}>
+                  <div className="flex items-center gap-4 mb-2">
+                    <div className="flex-1 min-w-0">
+                      <span className="font-body font-medium text-ink text-body">{w.label}</span>
+                      <span className="font-body text-label text-muted ml-2">· {w.role}</span>
+                    </div>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <span className={`display-num text-sub font-bold tabular-nums ${atRisk ? 'text-warn' : 'text-ok'}`}>{w.rate}%</span>
+                      <span className="font-body text-label text-muted">/ {w.target}% target</span>
+                    </div>
+                  </div>
+                  <div className="h-1.5 bg-rule2 overflow-hidden">
+                    <div className={`h-full ${atRisk ? 'bg-warn' : 'bg-ok'}`} style={{ width: `${pct}%` }} />
+                  </div>
+                  {w.warning && (
+                    <p className="font-body text-label text-warn mt-1.5 leading-snug">{w.warning}</p>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* Top quartile practices */}
+        <div>
+          <div className="font-body text-label font-semibold text-muted mb-4 tracking-wider">TOP QUARTILE PRACTICES · SIMILAR PLANTS</div>
+          <div className="space-y-2">
+            {TOP_QUARTILE.map((t, i) => (
+              <div key={i} className="flex items-start gap-4 px-5 py-4 border border-rule2">
+                <div className="w-24 flex-shrink-0">
+                  <div className="font-body text-label font-semibold text-muted">{t.area}</div>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="font-body text-body text-ink leading-snug mb-1">{t.practice}</div>
+                  <div className="font-body text-label text-ok">{t.lift}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+      </div>
+    </div>
+  )
+}
+
+// ─── Platform ROI tab ─────────────────────────────────────────────────────────
+
+function MetricRow({ metric }) {
+  const [open, setOpen] = useState(false)
+  const isImprovement = metric.direction === 'improvement'
+  const attribPct     = Math.round(metric.attribution * 100)
+  const attribColor   = attribPct >= 80 ? 'bg-ok' : attribPct >= 65 ? 'bg-warn' : 'bg-signal'
+  const deltaStr      = metric.delta > 0 ? `+${metric.delta}` : `${metric.delta}`
+  const valueStr      = `$${(metric.annualValue / 1000).toFixed(0)}K/yr`
+
+  return (
+    <div className="border-b border-rule2">
+      <button type="button" onClick={() => setOpen(o => !o)}
+        className="flex items-center gap-4 w-full px-5 py-4 text-left hover:bg-stone2 transition-colors">
+        <div className="flex-1 min-w-0">
+          <div className="font-body font-medium text-ink text-body leading-snug mb-0.5">{metric.label}</div>
+          <div className="flex items-center gap-3">
+            <span className="font-body text-muted text-label tabular-nums">{metric.before} {metric.unitLabel}</span>
+            <ArrowRight size={10} strokeWidth={2} className="text-muted flex-shrink-0" />
+            <span className={`font-body font-medium text-label tabular-nums ${isImprovement ? 'text-ok' : 'text-danger'}`}>
+              {metric.after} {metric.unitLabel}
+            </span>
+            <span className={`font-body text-label tabular-nums ${isImprovement ? 'text-ok' : 'text-danger'}`}>
+              ({deltaStr} {metric.unit})
+            </span>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-4 flex-shrink-0">
+          {/* Attribution bar */}
+          <div className="text-right">
+            <div className="flex items-center gap-2 justify-end mb-1">
+              <span className="font-body text-label text-muted">{attribPct}% conf.</span>
+              <div className="w-16 h-1 bg-rule2 overflow-hidden">
+                <div className={`h-full ${attribColor}`} style={{ width: `${attribPct}%` }} />
+              </div>
+            </div>
+          </div>
+          {/* Annual value */}
+          <div className="text-right w-20">
+            <div className="font-body font-bold text-body tabular-nums text-ok">{valueStr}</div>
+            <div className="font-body text-label text-muted">est.</div>
+          </div>
+          <Link to={metric.sourceRoute}
+            className="font-body text-label text-signal hover:text-ink transition-colors flex-shrink-0"
+            onClick={e => e.stopPropagation()}>
+            {metric.sourceModule} →
+          </Link>
+          {open
+            ? <ChevronDown  size={10} className="text-muted flex-shrink-0" />
+            : <ChevronRight size={10} className="text-muted flex-shrink-0" />}
+        </div>
+      </button>
+
+      {open && (
+        <div className="px-5 pb-4 border-t border-rule2 bg-stone2 space-y-2.5">
+          <div className="pt-3">
+            <div className="font-body text-label text-muted mb-0.5">How this was calculated</div>
+            <p className="font-body text-label text-muted leading-relaxed">{metric.how}</p>
+          </div>
+          <div>
+            <div className="font-body text-label text-muted mb-0.5">Caveat</div>
+            <p className="font-body text-label text-muted leading-snug">{metric.caveat}</p>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function PlatformROI() {
+  const b   = platformBaseline
+  const s   = b.summary
+  const roiColor = s.year1ROI >= 200 ? 'text-ok' : s.year1ROI >= 100 ? 'text-signal' : 'text-warn'
+
+  return (
+    <div className="flex-1 overflow-y-auto">
+      <div className="max-w-[820px] px-6 py-6 space-y-8">
+
+        {/* Attribution notice */}
+        <div className="flex items-start gap-3 px-4 py-3 bg-stone2 border-l-2 border-l-muted">
+          <AlertTriangle size={11} strokeWidth={2} className="text-muted flex-shrink-0 mt-px" />
+          <p className="font-body text-label text-muted leading-relaxed">{b.attributionNote}</p>
+        </div>
+
+        {/* Summary strip */}
+        <div>
+          <div className="font-body text-label font-semibold text-muted mb-4 tracking-wider">
+            PLATFORM RETURN · {b.evaluationPeriod}
+          </div>
+          <div className="grid grid-cols-3 gap-3 mb-4">
+            <div className="px-5 py-4 bg-stone2 border border-rule2">
+              <div className="font-body text-label text-muted mb-2">Est. annual value</div>
+              <div className="display-num text-score font-bold tabular-nums text-ok leading-none">
+                ${(s.totalAnnualValue / 1000).toFixed(0)}K
+              </div>
+              <div className="font-body text-label text-muted mt-1.5">
+                across {b.metrics.length} measured metrics
+              </div>
+            </div>
+            <div className="px-5 py-4 bg-stone2 border border-rule2">
+              <div className="font-body text-label text-muted mb-2">First-year cost</div>
+              <div className="display-num text-score font-bold tabular-nums text-ink leading-none">
+                ${(s.year1Cost / 1000).toFixed(0)}K
+              </div>
+              <div className="font-body text-label text-muted mt-1.5">
+                license + implementation + integration
+              </div>
+            </div>
+            <div className="px-5 py-4 bg-stone2 border border-rule2">
+              <div className="font-body text-label text-muted mb-2">Year 1 ROI</div>
+              <div className={`display-num text-score font-bold tabular-nums ${roiColor} leading-none`}>
+                {s.year1ROI}%
+              </div>
+              <div className="font-body text-label text-muted mt-1.5">
+                ${(s.year1Net / 1000).toFixed(0)}K net · {Math.round(s.avgAttribution * 100)}% avg confidence
+              </div>
+            </div>
+          </div>
+          <p className="font-body text-label text-muted leading-relaxed">{s.note}</p>
+        </div>
+
+        {/* Per-metric breakdown */}
+        <div>
+          <div className="font-body text-label font-semibold text-muted mb-3 tracking-wider">METRIC BREAKDOWN</div>
+          <div className="border border-rule2 divide-y divide-rule2 overflow-hidden">
+            {/* Header */}
+            <div className="grid grid-cols-[1fr_120px_80px_80px] gap-4 px-5 py-2 bg-stone3">
+              <span className="font-body text-label text-muted">Metric</span>
+              <span className="font-body text-label text-muted text-right">Attribution conf.</span>
+              <span className="font-body text-label text-muted text-right">Est. value</span>
+              <span className="font-body text-label text-muted" />
+            </div>
+            {b.metrics.map(m => <MetricRow key={m.id} metric={m} />)}
+          </div>
+        </div>
+
+        {/* Cost breakdown */}
+        <div>
+          <div className="font-body text-label font-semibold text-muted mb-3 tracking-wider">PLATFORM COST</div>
+          <div className="border border-rule2 divide-y divide-rule2">
+            {[
+              ['Annual license',           b.costs.annualLicense,           'recurring'],
+              ['Implementation (year 1)',  b.costs.implementationYear1,     'one-time' ],
+              ['Integration maintenance',  b.costs.integrationMaintenance,  'recurring'],
+            ].map(([label, val, type]) => (
+              <div key={label} className="flex items-center gap-4 px-5 py-3">
+                <span className="font-body text-body text-ink flex-1">{label}</span>
+                <span className="font-body text-label text-muted">{type}</span>
+                <span className="font-body font-medium text-body text-ink tabular-nums w-20 text-right">
+                  ${(val / 1000).toFixed(0)}K
+                </span>
+              </div>
+            ))}
+            <div className="flex items-center gap-4 px-5 py-3 bg-stone2">
+              <span className="font-body font-medium text-body text-ink flex-1">Year 1 total</span>
+              <span className="font-body text-label text-muted">license + implementation + integration</span>
+              <span className="font-body font-bold text-body text-ink tabular-nums w-20 text-right">
+                ${(b.costs.totalYear1 / 1000).toFixed(0)}K
+              </span>
+            </div>
+            <div className="flex items-center gap-4 px-5 py-3 bg-ok/[0.04]">
+              <span className="font-body font-medium text-body text-ok flex-1">Year 1 net</span>
+              <span className="font-body text-label text-ok">{s.year1ROI}% ROI</span>
+              <span className="font-body font-bold text-body text-ok tabular-nums w-20 text-right">
+                +${(s.year1Net / 1000).toFixed(0)}K
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Not yet counted */}
+        <div>
+          <div className="font-body text-label font-semibold text-muted mb-3 tracking-wider">NOT YET IN THESE NUMBERS</div>
+          <div className="space-y-2">
+            {b.notYetCounted.map((item, i) => (
+              <div key={i} className="flex items-start gap-3 px-4 py-3 border border-rule2">
+                <div className="w-1.5 h-1.5 rounded-full bg-signal flex-shrink-0 mt-1.5" />
+                <div>
+                  <div className="font-body font-medium text-ink text-body mb-0.5">{item.area}</div>
+                  <p className="font-body text-label text-muted leading-snug">{item.potential}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+      </div>
+    </div>
+  )
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 
 const OUTCOME_FILTER_OPTIONS = [
@@ -417,7 +716,14 @@ const OUTCOME_MATCH = {
   unclear:  e => e.outcomeClassification === 'unclear',
 }
 
+const IMPACT_TABS = [
+  { id: 'interventions', label: 'Interventions' },
+  { id: 'roi',           label: 'Platform ROI'  },
+  { id: 'benchmarks',    label: 'Benchmarks'    },
+]
+
 export default function ImpactLoop() {
+  const [tab, setTab]              = useState('interventions')
   const [selectedId, setSelectedId] = useState(null)
   const [filter, setFilter]         = useState('all')
 
@@ -448,48 +754,57 @@ export default function ImpactLoop() {
         ]}
       />
 
-      {/* Outcome distribution strip */}
-      <ScoreDistribution
-        total={interventions.length}
-        positiveCount={positiveCount}
-        negativeCount={negativeCount}
-        unclearCount={unclearCount}
-        filter={filter}
-        setFilter={v => { setFilter(v); setSelectedId(null) }}
-        displayedCount={displayed.length}
-      />
+      <Tabs tabs={IMPACT_TABS} active={tab} onChange={t => { setTab(t); setSelectedId(null) }} />
 
-      {/* Two-column intervention grid */}
-      <div className="flex-1 overflow-y-auto">
-        {displayed.length === 0 ? (
-          <div className="flex items-center justify-center h-32 font-body text-muted text-body">
-            No interventions in this category
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 gap-3 p-4">
-            {displayed.map(e => (
-              <InterventionCard key={e.id} entry={e} onClick={() => setSelectedId(e.id)} />
-            ))}
-          </div>
-        )}
-      </div>
+      {tab === 'interventions' && (
+        <>
+          {/* Outcome distribution strip */}
+          <ScoreDistribution
+            total={interventions.length}
+            positiveCount={positiveCount}
+            negativeCount={negativeCount}
+            unclearCount={unclearCount}
+            filter={filter}
+            setFilter={v => { setFilter(v); setSelectedId(null) }}
+            displayedCount={displayed.length}
+          />
 
-      {/* Detail SlidePanel — job 3: audit retrieval */}
-      {selectedEntry && (
-        <SlidePanel
-          title={selectedEntry.action}
-          subtitle={`${selectedEntry.agent} · ${selectedEntry.timeLabel}`}
-          accentColor={
-            selectedEntry.outcomeClassification === 'positive' ? 'var(--color-ok)'
-            : selectedEntry.outcomeClassification === 'unclear' ? 'var(--color-signal)'
-            : 'var(--color-danger)'
-          }
-          onClose={() => setSelectedId(null)}
-          maxWidth="520px"
-        >
-          <InterventionDetail entry={selectedEntry} />
-        </SlidePanel>
+          {/* Two-column intervention grid */}
+          <div className="flex-1 overflow-y-auto">
+            {displayed.length === 0 ? (
+              <div className="flex items-center justify-center h-32 font-body text-muted text-body">
+                No interventions in this category
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-3 p-4">
+                {displayed.map(e => (
+                  <InterventionCard key={e.id} entry={e} onClick={() => setSelectedId(e.id)} />
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Detail SlidePanel */}
+          {selectedEntry && (
+            <SlidePanel
+              title={selectedEntry.action}
+              subtitle={`${selectedEntry.agent} · ${selectedEntry.timeLabel}`}
+              accentColor={
+                selectedEntry.outcomeClassification === 'positive' ? 'var(--color-ok)'
+                : selectedEntry.outcomeClassification === 'unclear' ? 'var(--color-signal)'
+                : 'var(--color-danger)'
+              }
+              onClose={() => setSelectedId(null)}
+              maxWidth="520px"
+            >
+              <InterventionDetail entry={selectedEntry} />
+            </SlidePanel>
+          )}
+        </>
       )}
+
+      {tab === 'roi'        && <PlatformROI />}
+      {tab === 'benchmarks' && <BenchmarksTab />}
     </div>
   )
 }

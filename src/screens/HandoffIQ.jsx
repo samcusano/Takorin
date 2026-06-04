@@ -16,7 +16,7 @@ const SHIFT_EVENTS = [
   { time: '09:15', actor: 'System',                 text: 'Auto-escalation: CAPA-2604-001 overdue (2nd notice)',            type: 'system' },
   { time: '06:48', actor: 'D. Kowalski',            text: 'Martinez reassigned to Sauce Dosing — staffing 72% → 83%',      type: 'human' },
   { time: '06:42', actor: 'D. Kowalski',            text: 'Completed 4 overdue startup checklists',                        type: 'human' },
-  { time: '06:12', actor: 'ShiftIQ',               text: 'Shift started — risk score 54, normal early-shift',             type: 'system' },
+  { time: '06:12', actor: 'Shift',               text: 'Shift started — risk score 54, normal early-shift',             type: 'system' },
 ]
 
 // Top 3 operationally significant events for the brief

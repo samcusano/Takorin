@@ -315,7 +315,7 @@ export default function ResourceAllocation() {
           <div>
             <div className="px-5 py-3 border-b border-rule2 bg-stone2">
               <p className="font-body text-muted text-body">
-                Human-robot overrides are logged here. Patterns (same operator + robot repeatedly) surface as ShiftIQ findings.
+                Human-robot overrides are logged here. Patterns (same operator + robot repeatedly) surface as Shift findings.
               </p>
             </div>
             {overrideLog.map((entry, i) => (

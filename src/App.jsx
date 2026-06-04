@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect } from 'react'
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { Menu } from 'lucide-react'
 
 // Track which routes have been visited in this JS session so entrance
@@ -24,20 +24,18 @@ const SupplierIQ            = lazy(() => import('./screens/SupplierIQ'))
 const CAPAEngine            = lazy(() => import('./screens/CapaEngine'))
 const DataReadiness         = lazy(() => import('./screens/DataReadiness'))
 const OperatorView          = lazy(() => import('./screens/OperatorView'))
-const Analytics             = lazy(() => import('./screens/Analytics'))
 const NotificationCenter    = lazy(() => import('./screens/NotificationCenter'))
 const AgentControl          = lazy(() => import('./screens/AgentControl'))
 
 const BatchIntelligence     = lazy(() => import('./screens/BatchIntelligence'))
 const CompliancePolicy      = lazy(() => import('./screens/CompliancePolicy'))
 const ProcessHierarchy      = lazy(() => import('./screens/ProcessHierarchy'))
-const IntegrationHub        = lazy(() => import('./screens/IntegrationHub'))
 const KnowledgeVault        = lazy(() => import('./screens/KnowledgeVault'))
-const ExecutionAuthority    = lazy(() => import('./screens/ExecutionAuthority'))
-const RecordVault           = lazy(() => import('./screens/RecordVault'))
 const ValueChain            = lazy(() => import('./screens/ValueChain'))
 const EquipmentIntelligence = lazy(() => import('./screens/EquipmentIntelligence'))
 const ImpactLoop            = lazy(() => import('./screens/ImpactLoop'))
+const SecurityIQ            = lazy(() => import('./screens/SecurityIQ'))
+const QualityIQ             = lazy(() => import('./screens/QualityIQ'))
 function ScreenLoader() {
  return <div className="flex-1 flex items-center justify-center font-body text-muted text-label">Loading…</div>
 }
@@ -51,6 +49,7 @@ const ROLE_LABELS = {
 
 export default function App() {
  const { viewingRole, setViewingRole, sidebarCollapsed, mobileNavOpen, setMobileNavOpen, notifOpen, setNotifOpen } = useAppState()
+ const location = useLocation()
  const roleInfo = viewingRole ? ROLE_LABELS[viewingRole] : null
 
  return (
@@ -90,34 +89,43 @@ export default function App() {
  <TrustStrip />
  <Suspense fallback={<ScreenLoader />}>
  <Routes>
- <Route path="/" element={<Navigate to="/overview" replace />} />
- <Route path="/overview" element={<Guard k="overview"><ErrorBoundary><PlantOverview /></ErrorBoundary></Guard>} />
- <Route path="/plant" element={<Navigate to="/overview" replace />} />
- <Route path="/shift" element={<Guard k="shift"><ErrorBoundary><ShiftIQ /></ErrorBoundary></Guard>} />
- <Route path="/handoff" element={<Navigate to="/shift" replace />} />
- <Route path="/supplier" element={<Guard k="supplier"><ErrorBoundary><SupplierIQ /></ErrorBoundary></Guard>} />
- <Route path="/capa" element={<Guard k="capa"><ErrorBoundary><CAPAEngine /></ErrorBoundary></Guard>} />
- <Route path="/readiness" element={<Guard k="readiness"><ErrorBoundary><DataReadiness /></ErrorBoundary></Guard>} />
- <Route path="/network" element={<Navigate to="/overview" replace />} />
- <Route path="/operator" element={<Guard k="operator"><ErrorBoundary><OperatorView role={viewingRole} /></ErrorBoundary></Guard>} />
- <Route path="/analytics" element={<Guard k="analytics"><ErrorBoundary><Analytics /></ErrorBoundary></Guard>} />
- <Route path="/digest" element={<Navigate to="/analytics" replace />} />
- <Route path="/notifications" element={<Guard k="notifications"><ErrorBoundary><NotificationCenter /></ErrorBoundary></Guard>} />
- <Route path="/robots" element={<Navigate to="/shift" replace />} />
- <Route path="/allocation" element={<Navigate to="/shift" replace />} />
- <Route path="/agents" element={<Guard k="agents"><ErrorBoundary><AgentControl /></ErrorBoundary></Guard>} />
-
- <Route path="/batch"       element={<Guard k="batch"><ErrorBoundary><BatchIntelligence /></ErrorBoundary></Guard>} />
- <Route path="/compliance"  element={<Guard k="compliance"><ErrorBoundary><CompliancePolicy /></ErrorBoundary></Guard>} />
- <Route path="/hierarchy"   element={<Guard k="hierarchy"><ErrorBoundary><ProcessHierarchy /></ErrorBoundary></Guard>} />
- <Route path="/integration" element={<Guard k="integration"><ErrorBoundary><IntegrationHub /></ErrorBoundary></Guard>} />
- <Route path="/knowledge"   element={<Guard k="knowledge"><ErrorBoundary><KnowledgeVault /></ErrorBoundary></Guard>} />
- <Route path="/execution"   element={<Guard k="execution"><ErrorBoundary><ExecutionAuthority /></ErrorBoundary></Guard>} />
- <Route path="/records"     element={<Guard k="records"><ErrorBoundary><RecordVault /></ErrorBoundary></Guard>} />
- <Route path="/delivery"    element={<Guard k="delivery"><ErrorBoundary><ValueChain /></ErrorBoundary></Guard>} />
- <Route path="/equipment"   element={<Guard k="equipment"><ErrorBoundary><EquipmentIntelligence /></ErrorBoundary></Guard>} />
- <Route path="/outcomes"    element={<Guard k="outcomes"><ErrorBoundary><ImpactLoop /></ErrorBoundary></Guard>} />
- <Route path="/impact"      element={<Navigate to="/outcomes" replace />} />
+  {/* ── Canonical routes ─────────────────────────────────────────── */}
+  <Route path="/"               element={<Navigate to={`/overview${location.search}`} replace />} />
+  <Route path="/overview"       element={<Guard k="overview"><ErrorBoundary><PlantOverview /></ErrorBoundary></Guard>} />
+  <Route path="/shift"          element={<Guard k="shift"><ErrorBoundary><ShiftIQ /></ErrorBoundary></Guard>} />
+  <Route path="/suppliers"      element={<Guard k="supplier"><ErrorBoundary><SupplierIQ /></ErrorBoundary></Guard>} />
+  <Route path="/quality"        element={<Guard k="quality"><ErrorBoundary><QualityIQ /></ErrorBoundary></Guard>} />
+  <Route path="/capa"           element={<Guard k="capa"><ErrorBoundary><CAPAEngine /></ErrorBoundary></Guard>} />
+  <Route path="/agents"         element={<Guard k="agents"><ErrorBoundary><AgentControl /></ErrorBoundary></Guard>} />
+  <Route path="/performance"    element={<Guard k="outcomes"><ErrorBoundary><ImpactLoop /></ErrorBoundary></Guard>} />
+  <Route path="/operator"       element={<Guard k="operator"><ErrorBoundary><OperatorView role={viewingRole} /></ErrorBoundary></Guard>} />
+  <Route path="/notifications"  element={<Guard k="notifications"><ErrorBoundary><NotificationCenter /></ErrorBoundary></Guard>} />
+  <Route path="/batches"        element={<Guard k="batch"><ErrorBoundary><BatchIntelligence /></ErrorBoundary></Guard>} />
+  <Route path="/equipment"      element={<Guard k="equipment"><ErrorBoundary><EquipmentIntelligence /></ErrorBoundary></Guard>} />
+  <Route path="/accountability" element={<Guard k="compliance"><ErrorBoundary><CompliancePolicy /></ErrorBoundary></Guard>} />
+  <Route path="/knowledge"      element={<Guard k="knowledge"><ErrorBoundary><KnowledgeVault /></ErrorBoundary></Guard>} />
+  <Route path="/plant-map"      element={<Guard k="hierarchy"><ErrorBoundary><ProcessHierarchy /></ErrorBoundary></Guard>} />
+  <Route path="/data"           element={<Guard k="readiness"><ErrorBoundary><DataReadiness /></ErrorBoundary></Guard>} />
+  <Route path="/security"       element={<Guard k="security"><ErrorBoundary><SecurityIQ /></ErrorBoundary></Guard>} />
+  <Route path="/delivery"       element={<Guard k="delivery"><ErrorBoundary><ValueChain /></ErrorBoundary></Guard>} />
+  {/* ── Backward-compat redirects ─────────────────────────────────── */}
+  <Route path="/outcomes"    element={<Navigate to="/performance"    replace />} />
+  <Route path="/compliance"  element={<Navigate to="/accountability" replace />} />
+  <Route path="/readiness"   element={<Navigate to="/data"           replace />} />
+  <Route path="/hierarchy"   element={<Navigate to="/plant-map"      replace />} />
+  <Route path="/supplier"    element={<Navigate to="/suppliers"      replace />} />
+  <Route path="/batch"       element={<Navigate to="/batches"        replace />} />
+  <Route path="/impact"      element={<Navigate to="/performance"    replace />} />
+  <Route path="/analytics"   element={<Navigate to="/performance"    replace />} />
+  <Route path="/digest"      element={<Navigate to="/performance"    replace />} />
+  <Route path="/records"     element={<Navigate to="/accountability" replace />} />
+  <Route path="/integration" element={<Navigate to="/data"           replace />} />
+  <Route path="/execution"   element={<Navigate to="/agents"         replace />} />
+  <Route path="/plant"       element={<Navigate to="/overview"       replace />} />
+  <Route path="/handoff"     element={<Navigate to="/shift"          replace />} />
+  <Route path="/network"     element={<Navigate to="/overview"       replace />} />
+  <Route path="/robots"      element={<Navigate to="/shift"          replace />} />
+  <Route path="/allocation"  element={<Navigate to="/shift"          replace />} />
  </Routes>
  </Suspense>
  </main>

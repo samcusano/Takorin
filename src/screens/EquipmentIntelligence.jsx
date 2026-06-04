@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import { equipment, spcData, batchTrace, runHistory } from '../data/equipment'
-import { AlertTriangle, CheckCircle2, Wrench, Activity, Clock, TrendingDown, CalendarClock, Zap } from 'lucide-react'
-import { SceneHeader, StatusPill, Btn, SlidePanel, AnimatedScore, EmptyState, StatGrid, HoldButton } from '../components/UI'
+import { AlertTriangle, CheckCircle2, Wrench, Activity, Clock, TrendingDown, CalendarClock, Zap, Target, ChevronDown, ChevronRight } from 'lucide-react'
+import { SceneHeader, StatusPill, Btn, SlidePanel, AnimatedScore, EmptyState, StatGrid, HoldButton, Tabs } from '../components/UI'
 import { useAppState } from '../context/AppState'
+import RobotFleet from './RobotFleet'
+import ResourceAllocation from './ResourceAllocation'
 
 // ─── Remaining Useful Life strip ──────────────────────────────────────────────
 
@@ -358,6 +360,138 @@ function SPCChart({ eqId }) {
   )
 }
 
+// ─── Alert Calibration Panel ──────────────────────────────────────────────────
+// Answers: is this equipment's predictive model well-calibrated or generating noise?
+// McKinsey: "false-positive rates were high, extra service calls wiped out the savings entirely."
+
+function CalibrationPanel({ cal }) {
+  const [open, setOpen] = useState(false)
+  if (!cal) return null
+
+  const fpPct    = Math.round(cal.falsePositiveRate * 100)
+  const tpPct    = 100 - fpPct
+  const targetPct = Math.round(cal.targetFalsePositiveRate * 100)
+  const overTarget = fpPct > targetPct
+  const actionPct = Math.round(cal.alertToActionRate * 100)
+
+  const fpColor  = fpPct <= targetPct ? 'text-ok' : fpPct <= 20 ? 'text-warn' : 'text-danger'
+  const fpBg     = fpPct <= targetPct ? 'bg-ok'   : fpPct <= 20 ? 'bg-warn'   : 'bg-danger'
+
+  return (
+    <div className="border-t border-rule2">
+      <button type="button" onClick={() => setOpen(o => !o)}
+        className="flex items-center justify-between w-full px-5 py-3 hover:bg-stone2 transition-colors text-left">
+        <div className="flex items-center gap-2">
+          <Target size={11} strokeWidth={2} className={overTarget ? 'text-warn' : 'text-ok'} />
+          <span className="font-body text-label font-medium text-muted">Signal calibration · {cal.window}</span>
+        </div>
+        <div className="flex items-center gap-3">
+          {overTarget && (
+            <span className={`font-body text-label font-semibold ${fpColor}`}>{fpPct}% false positive rate</span>
+          )}
+          {open ? <ChevronDown size={10} className="text-muted" /> : <ChevronRight size={10} className="text-muted" />}
+        </div>
+      </button>
+
+      {open && (
+        <div className="border-t border-rule2 bg-stone2">
+
+          {/* Metric row */}
+          <div className="grid grid-cols-4 gap-px bg-rule2">
+            {[
+              { label: 'Alerts generated', val: cal.alertsGenerated, color: 'text-ink' },
+              { label: 'Confirmed real',   val: cal.truePositives,   color: 'text-ok'  },
+              { label: 'False positives',  val: cal.falsePositives,  color: fpPct > targetPct ? fpColor : 'text-muted' },
+              { label: 'Alert → action',   val: `${actionPct}%`,     color: actionPct >= 70 ? 'text-ok' : 'text-warn' },
+            ].map(({ label, val, color }) => (
+              <div key={label} className="bg-stone2 px-4 py-3 text-center">
+                <div className={`display-num text-sub font-bold tabular-nums leading-none ${color}`}>{val}</div>
+                <div className="font-body text-label text-muted mt-1">{label}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Calibration bar */}
+          <div className="px-5 py-3 border-t border-rule2">
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="font-body text-label text-muted">Signal vs. noise</span>
+              <span className="font-body text-label text-muted">Target: ≤{targetPct}% false positives</span>
+            </div>
+            <div className="h-2 bg-rule2 overflow-hidden flex">
+              <div className="h-full bg-ok transition-[width]"     style={{ width: `${tpPct}%` }} />
+              <div className={`h-full ${fpBg} transition-[width]`} style={{ width: `${fpPct}%` }} />
+            </div>
+            <div className="flex items-center justify-between mt-1">
+              <div className="flex items-center gap-1.5">
+                <div className="w-2 h-2 rounded-full bg-ok flex-shrink-0" />
+                <span className="font-body text-label text-muted">{tpPct}% real signal</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className={`w-2 h-2 rounded-full ${fpBg} flex-shrink-0`} />
+                <span className={`font-body text-label ${fpColor}`}>{fpPct}% noise</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Threshold */}
+          <div className="px-5 py-3 border-t border-rule2">
+            <div className="flex items-center gap-3 flex-wrap">
+              <div>
+                <span className="font-body text-label text-muted">Threshold: </span>
+                <span className="font-body text-label text-ink font-medium">{cal.threshold.value}</span>
+                <span className="font-body text-label text-muted ml-1">{cal.threshold.condition}</span>
+              </div>
+              <div className="font-body text-label text-muted">
+                Calibrated {cal.threshold.calibratedDate} · {cal.threshold.calibratedBy}
+              </div>
+            </div>
+          </div>
+
+          {/* False positive breakdown */}
+          {cal.falsePositiveBreakdown?.length > 0 && (
+            <div className="px-5 py-3 border-t border-rule2 space-y-1.5">
+              <div className="font-body text-label text-muted mb-2">False positive causes</div>
+              {cal.falsePositiveBreakdown.map((fp, i) => (
+                <div key={i} className="flex items-start gap-2">
+                  <span className="font-body text-label text-muted flex-shrink-0">{fp.count}×</span>
+                  <div>
+                    <span className="font-body text-label text-ink">{fp.cause}</span>
+                    <span className="font-body text-label text-muted ml-2">— {fp.note}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Suggestion */}
+          {cal.suggestion && (
+            <div className="mx-5 mb-4 mt-1 px-4 py-3 border-l-2 border-l-signal bg-signal/[0.04]">
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="font-body text-label font-semibold text-ink">Suggested threshold adjustment</span>
+                <span className="font-body text-label font-bold text-signal tabular-nums">{cal.suggestion.confidence}%</span>
+              </div>
+              <p className="font-body text-label text-muted leading-snug mb-1.5">{cal.suggestion.text}</p>
+              <p className="font-body text-label text-ok leading-snug">{cal.suggestion.impact}</p>
+            </div>
+          )}
+
+          {/* Cost callout — only when false positives have a service cost */}
+          {cal.falsePosServiceCost > 0 && (
+            <div className="flex items-center gap-2 px-5 pb-4">
+              <AlertTriangle size={10} strokeWidth={2} className="text-warn flex-shrink-0" />
+              <span className="font-body text-label text-warn">
+                {cal.falsePositives} false positive{cal.falsePositives !== 1 ? 's' : ''} this period
+                · ${cal.falsePosServiceCost.toLocaleString()} in unnecessary service calls
+              </span>
+            </div>
+          )}
+
+        </div>
+      )}
+    </div>
+  )
+}
+
 function RecipeLabel({ recipeId }) {
   if (!recipeId) return null
   return (
@@ -613,6 +747,7 @@ function EquipmentDetail({ eq }) {
 
         <RecipeLabel recipeId={eq.activeRecipe} />
         <RunHistory eqId={eq.id} />
+        <CalibrationPanel cal={eq.calibration} />
 
       </div>
 
@@ -645,8 +780,15 @@ function EquipmentDetail({ eq }) {
   )
 }
 
+const EQUIP_TABS = [
+  { id: 'equipment',   label: 'Equipment'   },
+  { id: 'fleet',       label: 'Fleet'       },
+  { id: 'allocation',  label: 'Allocation'  },
+]
+
 export default function EquipmentIntelligence() {
   const [selectedId, setSelectedId] = useState(null)
+  const [equipTab, setEquipTab] = useState('equipment')
   const selectedEq = equipment.find(e => e.id === selectedId)
 
   const warnings = equipment.filter(e => e.spcStatus === 'warning' || e.spcStatus === 'out-of-control')
@@ -662,26 +804,28 @@ export default function EquipmentIntelligence() {
         tone="warn"
         meta={[{ label: 'SPC warnings', value: warnings.length }, { label: 'In maintenance', value: maintenance.length }]}
       />
-      <div className="flex flex-1 overflow-hidden">
+      <Tabs tabs={EQUIP_TABS} active={equipTab} onChange={setEquipTab} />
 
-      {/* Left: equipment list */}
-      <div className="w-[280px] flex-shrink-0 border-r border-rule2 flex flex-col bg-stone">
-
-        <div className="flex-1 overflow-y-auto page-rise">
-          {equipment.map(eq => (
-            <EquipmentCard key={eq.id} eq={eq}
-              selected={selectedId === eq.id}
-              onClick={() => setSelectedId(eq.id)} />
-          ))}
+      {equipTab === 'fleet'      && <div className="flex-1 overflow-hidden"><RobotFleet /></div>}
+      {equipTab === 'allocation' && <div className="flex-1 overflow-hidden"><ResourceAllocation /></div>}
+      {equipTab === 'equipment'  && (
+        <div className="flex flex-1 overflow-hidden">
+          {/* Left: equipment list */}
+          <div className="w-[280px] flex-shrink-0 border-r border-rule2 flex flex-col bg-stone">
+            <div className="flex-1 overflow-y-auto page-rise">
+              {equipment.map(eq => (
+                <EquipmentCard key={eq.id} eq={eq}
+                  selected={selectedId === eq.id}
+                  onClick={() => setSelectedId(eq.id)} />
+              ))}
+            </div>
+          </div>
+          {/* Right: equipment detail */}
+          <div className="flex-1 flex flex-col overflow-hidden bg-stone">
+            <EquipmentDetail eq={selectedEq} />
+          </div>
         </div>
-
-      </div>
-
-      {/* Right: equipment detail + SPC + recipe + runs */}
-      <div className="flex-1 flex flex-col overflow-hidden bg-stone">
-        <EquipmentDetail eq={selectedEq} />
-      </div>
-      </div>
+      )}
     </div>
   )
 }

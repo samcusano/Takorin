@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
+import ProcessHierarchy from './ProcessHierarchy'
 import { shiftData, line6Data, wichitaData, denverData, facility } from '../data'
 import { useAppState } from '../context/AppState'
 import { riskColorClass, riskLabel, riskBgColor } from '../lib/utils'
@@ -44,7 +45,7 @@ const SHIFT_QUEUE = [
     note: 'Certificate of Analysis required before Line 4 production can start. COA request sent 05:47 — no response from ConAgra.',
     timeWindow: '05:47',
     lot: 'TS-8811',
-    route: '/supplier',
+    route: '/suppliers',
     routeLabel: 'Suppliers',
     lineId: 'l4',
   },
@@ -55,7 +56,7 @@ const SHIFT_QUEUE = [
     note: 'Expected Apr 18 · Delayed 6h. COA requested and pending. Pre-production compliance hold active.',
     timeWindow: 'Today',
     lot: 'L-0891',
-    route: '/supplier',
+    route: '/suppliers',
     routeLabel: 'Suppliers',
   },
   {
@@ -74,7 +75,7 @@ const SHIFT_QUEUE = [
     action: 'ConAgra: 3rd COA delay — review threshold reached',
     note: 'Supplier standing: 71. Contract review criteria met. Pattern-based escalation logged by Supplier Intelligence Agent.',
     timeWindow: '06:00',
-    route: '/supplier',
+    route: '/suppliers',
     routeLabel: 'Suppliers',
   },
   {
@@ -248,7 +249,7 @@ const MATURITY_BY_PLANT = {
     ],
     reachedAt: ['Reached Monitored · Feb 2025', 'Reached Monitored · Jan 2025', 'Reached Monitored · Mar 2025', 'Reached Monitored · Apr 2025'],
     laggingReasons: [null, 'Workforce hybrid certification at 38% deployed — floor rollout pending', null, null],
-    nextStep: { action: 'Restore Oven B SCADA sensor feed', lift: 'Unblocks Predictive Maintenance at full accuracy (+11pp model confidence)', route: '/readiness', module: 'Data Quality', linkLabel: 'Restore Oven B feed in Data Quality' },
+    nextStep: { action: 'Restore Oven B SCADA sensor feed', lift: 'Unblocks Predictive Maintenance at full accuracy (+11pp model confidence)', route: '/data', module: 'Data Quality', linkLabel: 'Restore Oven B feed in Data Quality' },
   },
   ks: {
     scores: [2, 3, 2, 2],
@@ -260,7 +261,7 @@ const MATURITY_BY_PLANT = {
     ],
     reachedAt: ['Reached Connected · Sep 2024', 'Reached Monitored · Nov 2024', 'Reached Connected · Aug 2024', 'Reached Connected · Oct 2024'],
     laggingReasons: ['ERP–MES integration incomplete — AI data pipeline blocked', null, 'AI agents not onboarded — awaiting data pipeline', null],
-    nextStep: { action: 'Complete ERP–MES data pipeline integration', lift: 'Enables AI agent deployment at Wichita — mirrors Salina architecture', route: '/readiness', module: 'Data Quality', linkLabel: 'Integrate ERP–MES in Data Quality' },
+    nextStep: { action: 'Complete ERP–MES data pipeline integration', lift: 'Enables AI agent deployment at Wichita — mirrors Salina architecture', route: '/data', module: 'Data Quality', linkLabel: 'Integrate ERP–MES in Data Quality' },
   },
   co: {
     scores: [4, 4, 4, 3],
@@ -272,7 +273,7 @@ const MATURITY_BY_PLANT = {
     ],
     reachedAt: ['Reached Predictive · Jan 2025', 'Reached Predictive · Feb 2025', 'Reached Predictive · Mar 2025', 'Reached Monitored · Dec 2024'],
     laggingReasons: [null, null, null, 'CAPA evidence packaging still manual — automation not yet active'],
-    nextStep: { action: 'Activate automated CAPA evidence packaging', lift: 'Closes last gap to Predictive stage across all 4 dimensions', route: '/compliance', module: 'Compliance', linkLabel: 'Set up CAPA packaging in Compliance' },
+    nextStep: { action: 'Activate automated CAPA evidence packaging', lift: 'Closes last gap to Predictive stage across all 4 dimensions', route: '/accountability', module: 'Compliance', linkLabel: 'Set up CAPA packaging in Compliance' },
   },
 }
 
@@ -527,13 +528,15 @@ export default function PlantOverview() {
       {/* ── View switcher ────────────────────────────────────────────────── */}
       <div className="flex-shrink-0 border-b border-rule2 px-5">
         <Tabs
-          tabs={[{ id: 'lines', label: 'Live view' }, { id: 'maturity', label: 'Maturity map' }, { id: 'network', label: 'Network' }]}
+          tabs={[{ id: 'lines', label: 'Live view' }, { id: 'maturity', label: 'Maturity map' }, { id: 'network', label: 'Network' }, { id: 'zones', label: 'Zones' }]}
           active={plantView}
           onChange={setPlantView}
         />
       </div>
 
-      {plantView === 'network'
+      {plantView === 'zones'
+        ? <div className="flex-1 overflow-hidden"><ProcessHierarchy /></div>
+        : plantView === 'network'
         ? <NetworkView />
         : plantView === 'maturity'
         ? <DigitalMaturityMap plantId={currentPlant?.id || 'sl'} />
@@ -788,7 +791,7 @@ export default function PlantOverview() {
                                     mode === 'compare' && isCompSel ? 'bg-signal/[0.03]' : 'hover:bg-stone2/50'
                                   }`}
                                   onClick={() => mode === 'compare' ? toggleCompare(line.id) : navigate(`/shift?line=${line.id}`)}
-                                  aria-label={`${line.name} — score ${eff}${mode === 'compare' ? (isCompSel ? ', selected' : ', click to select') : ', open ShiftIQ'}`}
+                                  aria-label={`${line.name} — score ${eff}${mode === 'compare' ? (isCompSel ? ', selected' : ', click to select') : ', open Shift'}`}
                                   aria-pressed={mode === 'compare' ? isCompSel : undefined}
                                 >
                                   <span className="display-num text-label text-muted tabular-nums w-4 text-right flex-shrink-0">{idx + 1}</span>

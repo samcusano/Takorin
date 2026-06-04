@@ -17,8 +17,10 @@ function stalePct() {
   return { stale: stale.length, total: active.length }
 }
 
+const DEMO_APPROVAL_IDS = new Set(['pa3-emergency', 'pa2'])
+
 export default function TrustStrip() {
-  const { agentActions, agentDecidedKeys } = useAppState()
+  const { agentActions, agentDecidedKeys, isDemoMode } = useAppState()
 
   const activeConnectors = integrationSummary.active
   const totalConnectors  = integrationSummary.total
@@ -40,7 +42,11 @@ export default function TrustStrip() {
 
   const pendingApprovals = (agentConfigData.agents ?? []).reduce((n, agent) => {
     if (!agent.isComplianceCategory && !agent.isEmergencyCategory) return n
-    return n + (agent.pendingActions ?? []).filter((_, idx) => !agentDecidedKeys?.has(`${agent.id}:${idx}`)).length
+    const actions = (agent.pendingActions ?? []).filter((pa, idx) => {
+      if (isDemoMode && !DEMO_APPROVAL_IDS.has(pa.id)) return false
+      return !agentDecidedKeys?.has(`${agent.id}:${idx}`)
+    })
+    return n + actions.length
   }, 0)
 
   const activeAgents = (agentActions ?? []).filter(a => a.status !== 'overridden')

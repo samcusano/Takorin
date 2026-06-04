@@ -2,16 +2,17 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { compliancePolicies, multiRegulatoryCoverage } from '../data/compliance'
 import { CheckCircle2, XCircle, AlertCircle, User, Calendar, Scale, Eye, FileClock, AlarmClock, ShieldAlert } from 'lucide-react'
-import { SceneHeader, StatusPill, Btn, SlidePanel, AnimatedScore } from '../components/UI'
+import { SceneHeader, StatusPill, Btn, SlidePanel, AnimatedScore, Tabs } from '../components/UI'
+import RecordVault from './RecordVault'
 
 // ─── FDA Inspection Simulation data ──────────────────────────────────────────
 
 const AUDIT_CHECKS = [
   { category: 'CAPA Register',           result: 'fail',    detail: '1 case overdue 7 days (CAPA-2604-001) · 1 awaiting closure (CAPA-2604-003) · 1 in progress', remediation: 'Close CAPA-2604-001 before inspection — 7-day gap is visible in audit package', link: '/capa' },
-  { category: 'FSMA 204 Traceability',   result: 'fail',    detail: 'TS-8811 naming conflict across MES, ERP, and supplier portal — lot chain incomplete', remediation: 'Resolve 3-name conflict in DataReadiness before FDA walkthrough', link: '/readiness' },
+  { category: 'FSMA 204 Traceability',   result: 'fail',    detail: 'TS-8811 naming conflict across MES, ERP, and supplier portal — lot chain incomplete', remediation: 'Resolve 3-name conflict in DataReadiness before FDA walkthrough', link: '/data' },
   { category: 'Sanitation Records',       result: 'pass',    detail: 'All active lines current · Last Line 6 PM gap resolved (CAPA-2604-003 evidence submitted)' },
   { category: 'HACCP CCP Documentation', result: 'pass',    detail: 'CCP-1, CCP-3, CCP-4 all within limits · Logs current for active SKU' },
-  { category: 'COA Documentation',        result: 'at-risk', detail: 'ConAgra TS-8811 pending · Production scheduled tomorrow · 24h to resolve', remediation: 'Follow up with ConAgra QA — COA required before production use', link: '/supplier' },
+  { category: 'COA Documentation',        result: 'at-risk', detail: 'ConAgra TS-8811 pending · Production scheduled tomorrow · 24h to resolve', remediation: 'Follow up with ConAgra QA — COA required before production use', link: '/suppliers' },
   { category: 'Personnel Certifications', result: 'at-risk', detail: 'Kowalski L4 cert expires Jun 1 (10 days) · Okonkwo L2 expires Jun 15', remediation: 'Schedule renewal sessions before FDA window closes' },
   { category: 'Escalation Procedures',   result: 'pass',    detail: 'All escalation logic documented and tested · R-03 incident demonstrates working chain' },
   { category: 'SQF Certification',        result: 'pass',    detail: 'Valid through 2027 · Last audit Jan 2026 · 0 findings' },
@@ -137,7 +138,7 @@ const RISK_FINDINGS = [
     requirement: 'Corrective and preventive actions must be completed within established timeframes',
     severity: 'critical',
     auditFinding: 'CAPA-2604-001 overdue 7 days — auditor will flag as systemic CAPA failure requiring a written response within 15 days of inspection close',
-    closurePath: 'Close CAPA-2604-001 within 48h · submit evidence package to CAPA Engine',
+    closurePath: 'Close CAPA-2604-001 within 48h · submit evidence package to CAPA',
     recallRisk: 0, contractRisk: 15000, daysToClose: 2,
     assignee: 'QA Director', link: '/capa', documented: 'May 26',
   },
@@ -150,7 +151,7 @@ const RISK_FINDINGS = [
     auditFinding: 'TS-8811 naming conflict across MES, ERP, and supplier portal breaks lot chain at 2 handoffs. Auditor will require remediation plan and may place a hold on affected production runs.',
     closurePath: 'Resolve TS-8811 conflict in Data Readiness · rebuild affected lot chain before inspection',
     recallRisk: 85000, contractRisk: 40000, daysToClose: 5,
-    assignee: 'Plant Director', link: '/readiness', documented: 'Jun 2',
+    assignee: 'Plant Director', link: '/data', documented: 'Jun 2',
   },
   {
     id: 'rf-coa',
@@ -161,7 +162,7 @@ const RISK_FINDINGS = [
     auditFinding: 'ConAgra TS-8811 COA pending with production scheduled tomorrow. If production ran without COA, auditor will classify as a corrective action item with 30-day response window.',
     closurePath: 'Delay production until COA received · document hold decision in supplier log',
     recallRisk: 32000, contractRisk: 0, daysToClose: 1,
-    assignee: 'Procurement Lead', link: '/supplier', documented: 'Jun 2',
+    assignee: 'Procurement Lead', link: '/suppliers', documented: 'Jun 2',
   },
   {
     id: 'rf-cert',
@@ -361,8 +362,13 @@ export default function CompliancePolicy() {
     policy?.activeSince && { icon: FileClock, value: policy.activeSince },
   ].filter(Boolean)
 
+  const [compTab, setCompTab] = useState('register')
+
   return (
-    <div className="flex h-full overflow-hidden content-reveal">
+    <div className="flex flex-col h-full overflow-hidden content-reveal">
+      <Tabs tabs={[{id:'register',label:'Register'},{id:'traceability',label:'Traceability'}]} active={compTab} onChange={setCompTab} />
+      {compTab === 'traceability' && <div className="flex flex-1 min-h-0 overflow-hidden"><RecordVault /></div>}
+      {compTab === 'register' && <div className="flex flex-1 min-h-0 overflow-hidden">
 
       {/* ── Left: policy selector ─────────────────────────────────── */}
       <div className="w-[280px] flex-shrink-0 border-r border-rule2 flex flex-col bg-stone">
@@ -442,6 +448,7 @@ export default function CompliancePolicy() {
           )}
         </div>
       )}
+      </div>} {/* end register tab */}
     </div>
   )
 }

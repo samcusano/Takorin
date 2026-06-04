@@ -5,8 +5,8 @@ import { useAppState } from '../context/AppState'
 import { VaulDrawer, StatusPill, Tabs } from '../components/UI'
 
 const INTELLIGENCE_SIGNALS = [
-  { confidence: 87, label: 'Line 4 intervention window closing', detail: 'Staffing mismatch + allergen log unresolved · 27 min remaining in window', route: '/shift', routeLabel: 'ShiftIQ', tone: 'danger' },
-  { confidence: 82, label: 'ConAgra Lot TS-8811 — cross-plant exposure', detail: '2 plants affected · 5,840 units at risk · COA not received', route: '/supplier', routeLabel: 'Suppliers', tone: 'danger' },
+  { confidence: 87, label: 'Line 4 intervention window closing', detail: 'Staffing mismatch + allergen log unresolved · 27 min remaining in window', route: '/shift', routeLabel: 'Shift', tone: 'danger' },
+  { confidence: 82, label: 'ConAgra Lot TS-8811 — cross-plant exposure', detail: '2 plants affected · 5,840 units at risk · COA not received', route: '/suppliers', routeLabel: 'Suppliers', tone: 'danger' },
   { confidence: 74, label: 'FDA inspection in 18 days — 3 evidence gaps remain', detail: 'CAPA-2604-001 and -006 blocking audit export · FSMA 204 traceability incomplete', route: '/capa', routeLabel: 'CAPA', tone: 'warn' },
 ]
 
@@ -60,7 +60,7 @@ const sampleActivity = [
     time: '05:47',
     title: 'COA request sent to ConAgra — Lot TS-8811',
     body: 'Automated COA request dispatched. Production scheduled for 08:00 today. Hold remains active until COA is received and verified.',
-    link: '/supplier',
+    link: '/suppliers',
     linkLabel: 'Open Suppliers',
   },
   {
@@ -69,7 +69,7 @@ const sampleActivity = [
     time: '05:33',
     title: 'Delivery delay — Lot L-0891 · Pepperoni · +6h',
     body: 'Expected arrival delayed 6 hours. COA not yet received. Pre-production hold active per FSMA 204. Supplier Intelligence Agent has escalated.',
-    link: '/supplier',
+    link: '/suppliers',
     linkLabel: 'Open Suppliers',
   },
   {
@@ -97,7 +97,7 @@ const sampleActivity = [
     title: 'Shift handoff complete — D. Kowalski to AM crew',
     body: 'Handoff report signed. Open items: TS-8811 hold, Sensor A-7 variance pattern, staffing gap on Line 4 AM. All items documented.',
     link: '/shift',
-    linkLabel: 'Open ShiftIQ',
+    linkLabel: 'Open Shift',
   },
   {
     id: 'sample-ack',
@@ -106,7 +106,7 @@ const sampleActivity = [
     title: 'C. Reyes acknowledged safety briefing',
     body: 'Operator confirmed Sauce Dosing allergen and CCP requirements before shift start.',
     link: '/shift',
-    linkLabel: 'Open ShiftIQ',
+    linkLabel: 'Open Shift',
   },
   {
     id: 'sample-near-miss',
@@ -115,7 +115,7 @@ const sampleActivity = [
     title: 'Near-miss reported at Pack Line',
     body: 'Floor spill near condiment station identified and secured by crew. Corrective action logged.',
     link: '/shift',
-    linkLabel: 'Review ShiftIQ',
+    linkLabel: 'Review Shift',
   },
 ]
 

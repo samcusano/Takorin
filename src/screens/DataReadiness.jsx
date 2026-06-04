@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import { readinessData } from '../data'
 import { useAppState } from '../context/AppState'
-import { HoldButton, Btn, SectionHeader, StatusPill, AnimatedScore, SceneHeader } from '../components/UI'
+import { HoldButton, Btn, SectionHeader, StatusPill, AnimatedScore, SceneHeader, Tabs } from '../components/UI'
 import { Check, AlertTriangle, ChevronDown, ChevronUp, Zap, Clock, Link2, Layers } from 'lucide-react'
+import IntegrationHub from './IntegrationHub'
 
 // ── Resolution queue data ─────────────────────────────────────────────────────
 
@@ -11,6 +12,7 @@ const CLUSTER_A = {
   type: 'cluster',
   id: 'cluster-a',
   label: 'Supplier data normalization block',
+  directorStake: 'FSMA export is blocked — FDA audit window opens in 18 days',
   severity: 'critical',
   combinedGain: 18,
   gainLabel: '+18 readiness · unlocks FSMA export',
@@ -50,13 +52,14 @@ const ISSUE_CTX = {
   id: 'ctx-0',
   key: 'ctx-0',
   label: 'Oven B — SKU context gap',
+  directorStake: 'CCP evaluations at Oven B are unreliable — false positives may be masking real deviations this shift',
   severity: 'high',
   points: 12,
-  gainLabel: '+12 readiness · restores ShiftIQ CCP accuracy',
+  gainLabel: '+12 readiness · restores Shift CCP accuracy',
   detectedAgo: '11 days ago',
-  systemsImpacted: ['ShiftIQ CCP-3', 'Model context layer', 'Oven B risk signals'],
+  systemsImpacted: ['Shift CCP-3', 'Model context layer', 'Oven B risk signals'],
   confidenceDrop: 12,
-  unlocks: ['ShiftIQ CCP accuracy', 'Oven B risk signal reliability'],
+  unlocks: ['Shift CCP accuracy', 'Oven B risk signal reliability'],
   blockedBy: null,
   action: 'Add SKU profiles',
   aiAssessment: {
@@ -66,7 +69,7 @@ const ISSUE_CTX = {
   fixSequence: [
     { step: 'List active SKUs running through Oven B from production schedule', duration: '5 min' },
     { step: 'Define target temperature range per SKU from production specs', duration: '12 min' },
-    { step: 'Upload profiles to context layer and verify ShiftIQ readings update', duration: '5 min' },
+    { step: 'Upload profiles to context layer and verify Shift readings update', duration: '5 min' },
   ],
   estimatedMinutes: 22,
   autoEligible: true,
@@ -75,9 +78,9 @@ const ISSUE_CTX = {
     'No audit conflict detected in current shift',
     'Prior approval pattern matches this SKU class',
   ],
-  baseline: 'Oven B SKU profiles complete for all active products · ShiftIQ CCP-3 evaluating within ±1% of expected accuracy · No false positives flagged in the prior 30-day window',
+  baseline: 'Oven B SKU profiles complete for all active products · Shift CCP-3 evaluating within ±1% of expected accuracy · No false positives flagged in the prior 30-day window',
   riskForecast: [
-    { hours: 12, consequence: 'ShiftIQ CCP evaluations remain unreliable for Oven B' },
+    { hours: 12, consequence: 'Shift CCP evaluations remain unreliable for Oven B' },
     { hours: 24, consequence: 'Model confidence in Oven B signals may fall below 70%' },
   ],
 }
@@ -87,6 +90,7 @@ const ISSUE_SCADA = {
   id: 'scada',
   key: 'scada',
   label: 'SCADA feed degraded — Oven B',
+  directorStake: 'Oven B sensor has been dark for 3 days — every maintenance decision on that unit is running without live data',
   severity: 'moderate',
   points: 4,
   permanent: true,
@@ -119,6 +123,7 @@ const ISSUE_ERP = {
   id: 'erp',
   key: 'erp',
   label: 'ERP ingredient map incomplete',
+  directorStake: '14 ingredient records are unlinked — chain-of-custody gaps will show up in the next FSMA 204 audit export',
   severity: 'moderate',
   points: 6,
   gainLabel: '+6 readiness · improves traceability coverage',
@@ -151,6 +156,7 @@ const ISSUE_TRACE = {
   id: 'traceability',
   key: 'traceability',
   label: 'Supplier lot traceability incomplete',
+  directorStake: '3 incoming lots from ConAgra and ADM cannot appear in the FSMA 204 traceability export',
   severity: 'high',
   points: 8,
   gainLabel: '+8 readiness · restores FSMA lot chain',
@@ -183,21 +189,22 @@ const ISSUE_CHECK = {
   id: 'checklists',
   key: 'checklists',
   label: 'Checklist items unsynced with MES',
+  directorStake: '3 startup sign-offs cannot be verified against machine state — those items are invisible in an audit',
   severity: 'moderate',
   points: 4,
   gainLabel: '+4 readiness · closes operator-to-MES gap',
   detectedAgo: '9 days ago',
-  systemsImpacted: ['ShiftIQ checklist', 'MES workflow engine'],
+  systemsImpacted: ['Shift checklist', 'MES workflow engine'],
   confidenceDrop: 4,
-  unlocks: ['ShiftIQ-to-MES verification loop', 'Startup check auditability'],
+  unlocks: ['Shift-to-MES verification loop', 'Startup check auditability'],
   blockedBy: null,
   action: 'Map checklist steps',
   aiAssessment: {
-    text: '3 startup checklist items in ShiftIQ have no corresponding MES workflow mapping — operator sign-off is logged but cannot be verified against machine-side completion. These items were added during the March ShiftIQ update and were never linked to MES.',
+    text: '3 startup checklist items in Shift have no corresponding MES workflow mapping — operator sign-off is logged but cannot be verified against machine-side completion. These items were added during the March Shift update and were never linked to MES.',
     confidence: 96,
   },
   fixSequence: [
-    { step: 'Identify the 3 unlinked checklist items in ShiftIQ admin', duration: '5 min' },
+    { step: 'Identify the 3 unlinked checklist items in Shift admin', duration: '5 min' },
     { step: 'Match each item to the corresponding MES workflow step', duration: '10 min' },
     { step: 'Test the sync and confirm items update MES state on completion', duration: '5 min' },
   ],
@@ -208,7 +215,7 @@ const ISSUE_CHECK = {
     'No audit conflict — both systems agree on the checklist items',
     'Zero production impact during sync',
   ],
-  baseline: 'All 12 ShiftIQ startup checklist items mapped to corresponding MES workflow steps · Operator sign-off verified against machine-side completion since last ShiftIQ update in February',
+  baseline: 'All 12 Shift startup checklist items mapped to corresponding MES workflow steps · Operator sign-off verified against machine-side completion since last Shift update in February',
   riskForecast: [
     { hours: 24, consequence: 'Operator sign-offs remain unverifiable against MES for these 3 items' },
   ],
@@ -240,7 +247,7 @@ function ReadinessInstrument({ score, resolved }) {
   const fsmaBlocked   = !resolved['conflict-0'] || !resolved['conflict-1']
 
   const moduleRows = [
-    { label: 'ShiftIQ confidence',    value: `${shiftIQConf}%`,    ok: shiftIQConf >= 75 },
+    { label: 'Shift confidence',    value: `${shiftIQConf}%`,    ok: shiftIQConf >= 75 },
     { label: 'Suppliers confidence', value: `${supplierIQConf}%`, ok: supplierIQConf >= 75 },
     { label: 'FSMA traceability',     value: fsmaBlocked ? 'At risk' : 'Clear', ok: !fsmaBlocked, danger: fsmaBlocked },
   ]
@@ -373,8 +380,8 @@ function ResolutionFeedback({ feedback, onDismiss }) {
       <div className="grid grid-cols-3 gap-6">
         {[
           { label: 'Readiness', from: feedback.prevScore, to: feedback.newScore, unit: '', gain: true },
-          { label: 'ShiftIQ confidence', from: `${feedback.prevShiftIQ}%`, to: `${feedback.newShiftIQ}%`, gain: feedback.newShiftIQ > feedback.prevShiftIQ },
-          { label: 'Suppliers confidence', from: `${feedback.prevSupplierIQ}%`, to: `${feedback.newSupplierIQ}%`, gain: feedback.newSupplierIQ > feedback.prevSupplierIQ },
+          { label: 'Shift confidence', from: `${feedback.prevShift}%`, to: `${feedback.newShift}%`, gain: feedback.newShift > feedback.prevShift },
+          { label: 'Suppliers confidence', from: `${feedback.prevSuppliers}%`, to: `${feedback.newSuppliers}%`, gain: feedback.newSuppliers > feedback.prevSuppliers },
         ].map(r => (
           <div key={r.label}>
             <div className="font-body text-muted text-label mb-1">{r.label}</div>
@@ -462,6 +469,14 @@ function WorkspacePanel({ item, isCluster, resolved, onResolve, onResolveCluster
             {item.systemsImpacted.map(s => (
               <span key={s} className="font-body text-label text-muted bg-stone2 border border-rule2 px-2 py-0.5">{s}</span>
             ))}
+          </div>
+        )}
+
+        {/* 3.5 Director stakes — what this costs today, not what's broken technically */}
+        {item.directorStake && !isResolved && (
+          <div className="flex items-start gap-3 mb-5 px-4 py-3 bg-danger/[0.04] border-l-2 border-l-danger">
+            <AlertTriangle size={12} strokeWidth={2} className="text-danger flex-shrink-0 mt-px" />
+            <span className="font-body text-danger text-body leading-snug">{item.directorStake}</span>
           </div>
         )}
 
@@ -685,6 +700,12 @@ const ADVISORY_ITEMS = [
   { key: 'adv-3', label: 'Sensor calibration schedule alignment',     detail: 'Annual calibration cycle misaligned with FSMA review period by ~6 weeks' },
 ]
 
+// ── Integrations tab — delegates to IntegrationHub with SceneHeader suppressed ─
+
+function IntegrationsTab() {
+  return <IntegrationHub embedded />
+}
+
 // ── Main ──────────────────────────────────────────────────────────────────────
 
 export default function DataReadiness() {
@@ -692,6 +713,7 @@ export default function DataReadiness() {
     readinessResolved: resolved, setReadinessResolved: setResolved,
     resolvedConflicts, setResolvedConflicts } = useAppState()
 
+  const [dataTab, setDataTab] = useState('quality')
   const [selectedId, setSelectedId] = useState(CLUSTER_A.id)
   const [resolvedFeedback, setResolvedFeedback] = useState(null)
   const location = useLocation()
@@ -724,7 +746,7 @@ export default function DataReadiness() {
       shiftIQ:    key === 'ctx-0' ? 84 : before.shiftIQ,
       supplierIQ: (key === 'conflict-0' || key === 'conflict-1') ? 91 : before.supplierIQ,
     }
-    setResolvedFeedback({ label, prevScore: before.score, newScore: Math.min(100, before.score + points), prevShiftIQ: before.shiftIQ, newShiftIQ: after.shiftIQ, prevSupplierIQ: before.supplierIQ, newSupplierIQ: after.supplierIQ, downgradedCount: 0 })
+    setResolvedFeedback({ label, prevScore: before.score, newScore: Math.min(100, before.score + points), prevShift: before.shiftIQ, newShift: after.shiftIQ, prevSuppliers: before.supplierIQ, newSuppliers: after.supplierIQ, downgradedCount: 0 })
   }
 
   const resolveCluster = (cluster) => {
@@ -744,8 +766,8 @@ export default function DataReadiness() {
     })
     setResolved(newResolved)
     setScore(s => Math.min(100, s + totalPoints))
-    const newSupplierIQ = (newResolved['conflict-0'] && newResolved['conflict-1']) ? 91 : before.supplierIQ
-    setResolvedFeedback({ label: cluster.label, prevScore: before.score, newScore: Math.min(100, before.score + totalPoints), prevShiftIQ: before.shiftIQ, newShiftIQ: before.shiftIQ, prevSupplierIQ: before.supplierIQ, newSupplierIQ, downgradedCount: 2 })
+    const newSuppliers = (newResolved['conflict-0'] && newResolved['conflict-1']) ? 91 : before.supplierIQ
+    setResolvedFeedback({ label: cluster.label, prevScore: before.score, newScore: Math.min(100, before.score + totalPoints), prevShift: before.shiftIQ, newShift: before.shiftIQ, prevSuppliers: before.supplierIQ, newSuppliers, downgradedCount: 2 })
   }
 
   const allItems = [CLUSTER_A, ISSUE_CTX, ISSUE_SCADA, ISSUE_ERP, ISSUE_TRACE, ISSUE_CHECK]
@@ -774,39 +796,42 @@ export default function DataReadiness() {
         tone={drTone}
         statement={drStatement}
         meta={[
-          { label: 'ShiftIQ',   value: `${shiftIQConf}%`,          color: shiftIQConf >= 75   ? 'var(--color-ok)' : 'var(--color-warn)' },
+          { label: 'Shift',   value: `${shiftIQConf}%`,          color: shiftIQConf >= 75   ? 'var(--color-ok)' : 'var(--color-warn)' },
           { label: 'Suppliers', value: `${supplierIQConf}%`,        color: supplierIQConf >= 75 ? 'var(--color-ok)' : 'var(--color-warn)' },
           { label: 'FSMA 204',  value: fsmaBlocked ? 'At risk' : 'Clear', color: fsmaBlocked ? 'var(--color-danger)' : 'var(--color-ok)' },
         ]}
       />
 
-      <div className="flex flex-1 min-h-0 overflow-hidden">
+      <Tabs tabs={[{id:'quality',label:'Quality'},{id:'integrations',label:'Integrations'}]} active={dataTab} onChange={setDataTab} />
 
-      {/* Left rail */}
-      <div className="w-[280px] flex-shrink-0 border-r border-rule2 flex flex-col overflow-hidden bg-stone">
-        <ReadinessInstrument score={score} resolved={resolved} />
-        <ResolutionQueue selected={selectedId} onSelect={setSelectedId} resolved={resolved} />
-      </div>
+      {dataTab === 'quality' && (
+        <div className="flex flex-1 min-h-0 overflow-hidden">
+          {/* Left rail */}
+          <div className="w-[280px] flex-shrink-0 border-r border-rule2 flex flex-col overflow-hidden bg-stone">
+            <ReadinessInstrument score={score} resolved={resolved} />
+            <ResolutionQueue selected={selectedId} onSelect={setSelectedId} resolved={resolved} />
+          </div>
+          {/* Right workspace */}
+          <div className="flex-1 overflow-hidden flex flex-col bg-stone">
+            {resolvedFeedback && (
+              <ResolutionFeedback feedback={resolvedFeedback} onDismiss={() => setResolvedFeedback(null)} />
+            )}
+            {selectedItem ? (
+              <WorkspacePanel
+                item={selectedItem}
+                isCluster={isCluster}
+                resolved={resolved}
+                onResolve={resolveItem}
+                onResolveCluster={resolveCluster}
+              />
+            ) : (
+              <EmptyWorkspace />
+            )}
+          </div>
+        </div>
+      )}
 
-      {/* Right workspace */}
-      <div className="flex-1 overflow-hidden flex flex-col bg-stone">
-        {resolvedFeedback && (
-          <ResolutionFeedback feedback={resolvedFeedback} onDismiss={() => setResolvedFeedback(null)} />
-        )}
-        {selectedItem ? (
-          <WorkspacePanel
-            item={selectedItem}
-            isCluster={isCluster}
-            resolved={resolved}
-            onResolve={resolveItem}
-            onResolveCluster={resolveCluster}
-          />
-        ) : (
-          <EmptyWorkspace />
-        )}
-      </div>
-
-      </div>
+      {dataTab === 'integrations' && <IntegrationsTab />}
     </div>
   )
 }

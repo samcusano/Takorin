@@ -32,9 +32,9 @@ const KDE_ICON = {
 }
 
 const KDE_ACTION = {
-  missing:  { label: 'Supplier IQ',  to: '/supplier'  },
-  conflict: { label: 'Data Quality', to: '/readiness' },
-  gap:      { label: 'Data Quality', to: '/readiness' },
+  missing:  { label: 'Supplier IQ',  to: '/suppliers'  },
+  conflict: { label: 'Data Quality', to: '/data' },
+  gap:      { label: 'Data Quality', to: '/data' },
 }
 
 function postureColor(p) { return p >= 80 ? 'text-ok' : p >= 50 ? 'text-warn' : 'text-danger' }

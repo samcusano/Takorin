@@ -11,15 +11,22 @@ export const PLANTS = {
 }
 
 export function AppStateProvider({ children }) {
+ // Determined once at mount from the URL — stays stable even as React Router
+ // changes the pathname. ?demo=true seeds a clean, presentation-ready state:
+ // compliance as "Attention" (not "Blocked"), agent queue trimmed to 2 decisions.
+ const [isDemoMode] = useState(() =>
+  typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('demo') === 'true'
+ )
+
  const [workerMode, setWorkerModeState] = useState('human')
 
  // Escalation state machine — tracks who has each finding
  // States: open → assigned → acknowledged → escalated → resolved
  const [escalationStates, setEscalationStates] = useState({
-  sf1: { state: 'assigned', owner: 'D. Kowalski', chain: [{ owner: 'D. Kowalski', at: '06:42', via: 'ShiftIQ auto-assign' }] },
+  sf1: { state: 'assigned', owner: 'D. Kowalski', chain: [{ owner: 'D. Kowalski', at: '06:42', via: 'Shift auto-assign' }] },
   sf2: { state: 'acknowledged', owner: 'D. Kowalski', chain: [{ owner: 'D. Kowalski', at: '06:48', via: 'Director action' }] },
   sf3: { state: 'escalated', owner: 'J. Crocker', chain: [
-   { owner: 'D. Kowalski', at: '06:42', via: 'ShiftIQ auto-assign' },
+   { owner: 'D. Kowalski', at: '06:42', via: 'Shift auto-assign' },
    { owner: 'J. Crocker', at: '09:15', via: 'No response — 2nd escalation' },
   ]},
   sf4: { state: 'open', owner: null, chain: [] },
@@ -53,7 +60,7 @@ export function AppStateProvider({ children }) {
  const [readinessResolved, setReadinessResolved] = useState({})
  const [resolvedConflicts, setResolvedConflicts] = useState(new Set())
  const [trainingPlans, setTrainingPlans] = useState({})
- const [blockingEvidenceUploaded, setBlockingEvidenceUploaded] = useState(false)
+ const [blockingEvidenceUploaded, setBlockingEvidenceUploaded] = useState(isDemoMode)
  const [rfqSent, setRfqSent] = useState(false)
  const [briefingAcknowledged, setBriefingAcknowledged] = useState(false)
  const [checklistSigned, setChecklistSigned] = useState({})
@@ -153,7 +160,7 @@ export function AppStateProvider({ children }) {
  { time:'09:15', actor:'System', action:'Auto-escalation: CAPA-2604-001 overdue (2nd notice)', item:'CAPA-2604-001', type:'escalation' },
  { time:'06:48', actor:'D. Kowalski', action:'Martinez reassigned to Sauce Dosing', item:'Finding II', type:'intervention' },
  { time:'06:42', actor:'D. Kowalski', action:'Completed 4 overdue startup checklists', item:'Finding I', type:'intervention' },
- { time:'06:12', actor:'ShiftIQ', action:'Shift started — risk score 54, normal', item:'Line 4 AM', type:'system' },
+ { time:'06:12', actor:'Shift', action:'Shift started — risk score 54, normal', item:'Line 4 AM', type:'system' },
  ])
  const logActivity = (entry) => setActivityLog(p => [{ ...entry, time: new Date().toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' }) }, ...p])
 
@@ -220,6 +227,7 @@ export function AppStateProvider({ children }) {
  mobileNavOpen, setMobileNavOpen,
  notifOpen, setNotifOpen,
  theme, setTheme,
+ isDemoMode,
  }}>
  {children}
  </Ctx.Provider>

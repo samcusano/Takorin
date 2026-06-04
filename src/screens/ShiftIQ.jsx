@@ -1,9 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useSearchParams, Link } from 'react-router-dom'
-import ShiftIQV2 from './ShiftIQV2'
+import ShiftLinePanel from './ShiftLinePanel'
 import HandoffIQ from './HandoffIQ'
-import RobotFleet from './RobotFleet'
-import ResourceAllocation from './ResourceAllocation'
 import { useFocusTrap, useExitAnimation, riskColorClass, riskLabel, riskBgColor } from '../lib/utils'
 import { shiftData, line6Data, wichitaData, denverData, haccpData, productionRate, crewHoursData } from '../data'
 import {
@@ -268,7 +266,7 @@ function OperatorPanel({ name, onClose, onSelectOperator }) {
  <div className="border-b border-rule2">
  <SectionHeader label="Today's tasks" badge={myTasks.some(t => !t.done) ? <span className="font-body text-warn text-label">{myTasks.filter(t => !t.done).length} pending</span> : undefined} />
  {myTasks.length === 0 ? (
- <div className="px-4 py-3 font-body text-muted text-body">No tasks assigned — tasks created in ShiftIQ appear here.</div>
+ <div className="px-4 py-3 font-body text-muted text-body">No tasks assigned — tasks created in Shift appear here.</div>
  ) : myTasks.map((t, i) => (
  <div key={i} className={`flex items-center gap-3 px-4 py-3 border-b border-rule2 last:border-b-0 ${t.done ? 'opacity-50' : ''}`}>
  <div className={`w-4 h-4 rounded-full flex-shrink-0 flex items-center justify-center ${t.done ? 'bg-ok' : 'border-2 border-rule2'}`}>
@@ -1148,23 +1146,6 @@ export default function ShiftIQ() {
      <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${modeDot}`} />
      <span className="font-body text-label text-muted">{modeLabel}</span>
     </div>
-    {/* Mode-view tabs */}
-    <div className="flex items-stretch border-l border-rule2">
-     <button type="button"
-      onClick={() => setActiveTab(activeTab === 'fleet' ? 'shift' : 'fleet')}
-      className={`relative font-body font-medium text-label px-4 py-1.5 transition-colors hover:bg-stone3 ${activeTab === 'fleet' ? 'text-ink bg-stone3' : 'text-muted'}`}>
-      Fleet
-      {activeTab === 'fleet' && <div className="absolute bottom-0 left-0 right-0 h-px bg-signal" />}
-     </button>
-     {workerMode === 'hybrid' && (
-      <button type="button"
-       onClick={() => setActiveTab(activeTab === 'allocation' ? 'shift' : 'allocation')}
-       className={`relative font-body font-medium text-label px-4 py-1.5 transition-colors hover:bg-stone3 ${activeTab === 'allocation' ? 'text-ink bg-stone3' : 'text-muted'}`}>
-       Allocation
-       {activeTab === 'allocation' && <div className="absolute bottom-0 left-0 right-0 h-px bg-signal" />}
-      </button>
-     )}
-    </div>
    </div>
   )
  })()}
@@ -1177,42 +1158,6 @@ export default function ShiftIQ() {
   />
  )}
  {activeTab === 'handoff'    ? <HandoffIQ />
-  : activeTab === 'fleet'      ? (workerMode === 'robot'
-      ? <div className="flex flex-col h-full overflow-hidden">
-          <div className="flex-shrink-0 flex items-center gap-6 px-6 py-[9px] border-b border-rule2 bg-stone2">
-            {[
-              { label: 'SCADA · Oven B',                 healthy: false },
-              { label: 'MES · Schedule',                 healthy: true  },
-              { label: 'HR · Roster',                    healthy: true  },
-              { label: `Checklists · ${signedCount}/13`, healthy: signedCount >= 11 },
-            ].map((sig, i) => (
-              <div key={i} className="flex items-center gap-1.5">
-                <div className={`w-[5px] h-[5px] rounded-full flex-shrink-0 ${sig.healthy ? 'bg-ok' : 'bg-warn'}`} />
-                <span className={`font-body text-label ${sig.healthy ? 'text-muted' : 'text-warn'}`}>{sig.label}</span>
-              </div>
-            ))}
-          </div>
-          <div className="flex-1 overflow-hidden"><RobotFleet hideStats /></div>
-        </div>
-      : <RobotFleet />)
-  : activeTab === 'allocation' ? <div className="flex flex-col h-full overflow-hidden">
-      <div className="flex-shrink-0 flex items-center gap-6 px-6 py-[9px] border-b border-rule2 bg-stone2">
-        {[
-          { label: 'SCADA · Oven B',                 healthy: false },
-          { label: 'MES · Schedule',                 healthy: true  },
-          { label: 'HR · Roster',                    healthy: true  },
-          { label: `Checklists · ${signedCount}/13`, healthy: signedCount >= 11 },
-        ].map((sig, i) => (
-          <div key={i} className="flex items-center gap-1.5">
-            <div className={`w-[5px] h-[5px] rounded-full flex-shrink-0 ${sig.healthy ? 'bg-ok' : 'bg-warn'}`} />
-            <span className={`font-body text-label ${sig.healthy ? 'text-muted' : 'text-warn'}`}>{sig.label}</span>
-          </div>
-        ))}
-      </div>
-      <div className="flex-1 overflow-hidden">
-        <ResourceAllocation />
-      </div>
-    </div>
   : activeTab === 'prepare'    ? <PrepareView forecast={shiftData.forecast} onStartShift={() => setActiveTab('shift')} />
   : <>
  {/* Quiet period banner — triggered by Moon icon in tab bar */}
@@ -1226,7 +1171,7 @@ export default function ShiftIQ() {
    <Btn variant="ghost" onClick={() => clearQuietPeriod(currentQuiet.id)} className="flex-shrink-0">End sleep mode</Btn>
   </div>
  )}
- <ShiftIQV2 score={lineScore} lineLabel={`${activeLined?.name ?? 'Line 4'} · AM Shift`} supervisor={lineSupervisor} plant={currentPlant?.name ?? 'Salina KS'} isSupervisorView={viewingRole === 'supervisor'} />
+ <ShiftLinePanel score={lineScore} lineLabel={`${activeLined?.name ?? 'Line 4'} · AM Shift`} supervisor={lineSupervisor} plant={currentPlant?.name ?? 'Salina KS'} isSupervisorView={viewingRole === 'supervisor'} />
  </>}
  </div>
  )

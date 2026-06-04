@@ -4,7 +4,7 @@ import { useFocusTrap } from '../lib/utils'
 import { NavLink, useNavigate } from 'react-router-dom'
 import {
  Activity, Truck, ClipboardCheck,
- Gauge,
+ Gauge, Eye,
  Building2, ChevronDown,
  MapPin, ShieldCheck, AlertTriangle,
  LayoutGrid, BarChart2, Bell, User, Cpu,
@@ -17,9 +17,10 @@ import { commandData, agentConfigData } from '../data'
 import { PersonAvatar, StatusPill } from './UI'
 
 const modules = [
- { id:'shift',    label:'Shift',     path:'/shift',    icon:Activity,      badge:'3', badgeType:'alert' },
- { id:'supplier', label:'Suppliers', path:'/supplier', icon:Truck,         badge:'1', badgeType:'alert' },
- { id:'capa',     label:'CAPA',      path:'/capa',     icon:ClipboardCheck,badge:'2', badgeType:'alert' },
+ { id:'shift',    label:'Shift',     path:'/shift',     icon:Activity,      badge:'3', badgeType:'alert' },
+ { id:'suppliers',label:'Suppliers', path:'/suppliers', icon:Truck,         badge:'1', badgeType:'alert' },
+ { id:'quality',  label:'Quality',   path:'/quality',   icon:Eye,           badge:'1', badgeType:'alert' },
+ { id:'capa',     label:'CAPA',      path:'/capa',      icon:ClipboardCheck,badge:'2', badgeType:'alert' },
 ]
 
 function NavBadge({ badge, badgeType }) {
@@ -311,6 +312,7 @@ function UserDropdown({ triggerRef, onClose, viewingRole, setViewingRole }) {
 }
 
 const STATIC_AGENT_TOTAL = agentConfigData.agents.reduce((n, a) => n + (a.pendingActions?.length ?? 0), 0)
+const DEMO_AGENT_KEYS = ['resource-0', 'supplier-0'] // pa3-emergency and pa2 in demo mode
 
 function AgentItem({ count, collapsed }) {
  if (collapsed) return (
@@ -343,9 +345,11 @@ export default function Sidebar() {
  const userTriggerRef = useRef(null)
  const [platformExpanded, setPlatformExpanded] = useState(true)
  const [toast, setToast] = useState(null)
- const { blockingEvidenceUploaded, allergenOverride, checklistSigned, nearMisses, maintenanceTickets, viewingRole, setViewingRole, currentPlant, setCurrentPlant, workerMode, agentDecidedKeys, sidebarCollapsed, toggleSidebar, mobileNavOpen, setMobileNavOpen, notifOpen, setNotifOpen, theme, setTheme } = useAppState() || {}
+ const { blockingEvidenceUploaded, allergenOverride, checklistSigned, nearMisses, maintenanceTickets, viewingRole, setViewingRole, currentPlant, setCurrentPlant, workerMode, agentDecidedKeys, sidebarCollapsed, toggleSidebar, mobileNavOpen, setMobileNavOpen, notifOpen, setNotifOpen, theme, setTheme, isDemoMode } = useAppState() || {}
  const collapsed = !!sidebarCollapsed
- const agentPendingCount = Math.max(0, STATIC_AGENT_TOTAL - (agentDecidedKeys?.size ?? 0))
+ const agentPendingCount = isDemoMode
+  ? DEMO_AGENT_KEYS.filter(k => !agentDecidedKeys?.has(k)).length
+  : Math.max(0, STATIC_AGENT_TOTAL - (agentDecidedKeys?.size ?? 0))
 
  const allergenSigned = checklistSigned?.['allergen'] || !!allergenOverride
  const complianceState = currentPlant?.id === 'ks' ? 'clear' : (!blockingEvidenceUploaded ? 'blocked' : !allergenSigned ? 'attention' : 'clear')
@@ -445,10 +449,11 @@ export default function Sidebar() {
  {viewingRole === 'supervisor' && (
   <>
    {!collapsed && <div className="px-4 pt-4 pb-1 font-body text-label text-sidebar-ghost">Operational</div>}
-   <SideItem to="/shift"  id="shift"  icon={Activity} label="Shift"        badge="3" badgeType="alert" collapsed={collapsed} />
+   <SideItem to="/shift"   id="shift"   icon={Activity}      label="Shift"    badge="3" badgeType="alert" collapsed={collapsed} />
+   <SideItem to="/quality" id="quality" icon={Eye}           label="Quality"  badge="1" badgeType="alert" collapsed={collapsed} />
    <AgentItem count={agentPendingCount} collapsed={collapsed} />
    {!collapsed && <div className="px-4 pt-4 pb-1 font-body text-label text-sidebar-ghost">Causality</div>}
-   <SideItem to="/outcomes" id="outcomes" icon={CircleDot} label="Outcomes" badge={null} collapsed={collapsed} />
+   <SideItem to="/performance" id="outcomes" icon={CircleDot} label="Performance" badge={null} collapsed={collapsed} />
   </>
  )}
 
@@ -460,8 +465,7 @@ export default function Sidebar() {
    {!collapsed && <div className="px-4 pt-4 pb-1 font-body text-label text-sidebar-ghost">Operations</div>}
    {modules.map(m => <SideItem key={m.id} to={m.path} id={m.id} {...m} collapsed={collapsed} />)}
    <AgentItem count={agentPendingCount} collapsed={collapsed} />
-   <SideItem to="/analytics" id="analytics" icon={BarChart2} label="Analytics" badge={null} collapsed={collapsed} />
-   <SideItem to="/outcomes" id="outcomes" icon={CircleDot} label="Outcomes" badge={null} collapsed={collapsed} />
+   <SideItem to="/performance" id="outcomes" icon={CircleDot} label="Performance" badge={null} collapsed={collapsed} />
 
    {!collapsed && (
     <button type="button" onClick={() => setPlatformExpanded(p => !p)}
@@ -472,15 +476,12 @@ export default function Sidebar() {
    )}
    {(collapsed || platformExpanded) && (
     <>
-     <SideItem to="/batch"       id="batch"       icon={FlaskConical}    label="Batches"      badge={null} collapsed={collapsed} />
-     <SideItem to="/equipment" id="equipment"  icon={ScanLine}        label="Equipment"    badge={null} collapsed={collapsed} />
-     <SideItem to="/compliance"  id="compliance"  icon={Scale}           label="Accountability" badge={null} collapsed={collapsed} />
-     <SideItem to="/knowledge"   id="knowledge"   icon={BookOpen}        label="Knowledge"    badge={null} collapsed={collapsed} />
-     <SideItem to="/execution"   id="execution"   icon={Workflow}        label="Autonomy"     badge={null} collapsed={collapsed} />
-     <SideItem to="/hierarchy"   id="hierarchy"   icon={LayoutDashboard} label="Site"         badge={null} collapsed={collapsed} />
-     <SideItem to="/records"   id="records"    icon={FileLock2}  label="Records"     badge={null} collapsed={collapsed} />
-     <SideItem to="/integration" id="integration" icon={Network} label="Integrations" badge={null} collapsed={collapsed} />
-     <SideItem to="/readiness"   id="readiness"   icon={Gauge}   label="Data Quality"  badge={null} collapsed={collapsed} />
+     <SideItem to="/batch"      id="batch"      icon={FlaskConical}    label="Batches"    badge={null} collapsed={collapsed} />
+     <SideItem to="/equipment"  id="equipment"  icon={ScanLine}        label="Equipment"  badge={null} collapsed={collapsed} />
+     <SideItem to="/accountability" id="compliance" icon={Scale}           label="Accountability" badge={null} collapsed={collapsed} />
+     <SideItem to="/knowledge"  id="knowledge"  icon={BookOpen}        label="Knowledge"  badge={null} collapsed={collapsed} />
+     <SideItem to="/data"  id="readiness"  icon={Gauge}           label="Data"       badge={null} collapsed={collapsed} />
+     <SideItem to="/security"   id="security"   icon={ShieldCheck}     label="Security"   badge="3"   badgeType="alert" collapsed={collapsed} />
     </>
    )}
 

@@ -3,10 +3,11 @@ import {
   AlertTriangle, Truck, Users, Wrench, Handshake, Bell,
   ClipboardCheck, Shield, Database, ChevronDown, ChevronRight,
   Timer, CheckCircle, XCircle, Check, Flag, InspectionPanel, TrendingUp,
-  Activity, Network, Settings,
+  Activity, Network, Settings, Eye, MessageSquare, Zap, RotateCcw,
 } from 'lucide-react'
 import { Btn, SlidePanel, Tabs, StatusPill, Checkbox, AnimatedScore, EmptyState, SectionLabel, FilterDropdown, MultiFilterDropdown } from '../components/UI'
 import { agentConfigData, dataSourceHealth, networkData } from '../data'
+import { executionLog, executionSummary, autonomyTiers, rollbackLog } from '../data/execution'
 import { agentPrompts } from '../data/prompts'
 import { useAppState } from '../context/AppState'
 import { useNavigate } from 'react-router-dom'
@@ -331,9 +332,9 @@ function LedgerRow({ pa, agent, onInvestigate, onApprove, onOverrideRequest, sel
           {pa._decided === 'approved' ? 'Approved' : 'Overridden'}
         </StatusPill>
         {pa._decided === 'approved' && navigate && (
-          <button type="button" onClick={() => navigate('/outcomes')}
+          <button type="button" onClick={() => navigate('/performance')}
             className="flex items-center gap-1 font-body text-label text-signal hover:text-ink transition-colors flex-shrink-0"
-            title="View outcome in ImpactLoop">
+            title="View outcome in Performance">
             <TrendingUp size={9} strokeWidth={2} />
             <span>Monitoring</span>
           </button>
@@ -906,6 +907,40 @@ function ActivityLog({ agentActions }) {
   )
 }
 
+// ─── Tier guide ──────────────────────────────────────────────────────────────
+
+const TIER_ROWS = [
+  { tier: 'T3', label: 'Compliance lock', desc: 'Director ratification required before AI acts — FDA / FSMA consequence', color: 'text-danger', dot: 'bg-danger' },
+  { tier: 'T2', label: 'Approval',        desc: 'Director approves within shift budget — high-confidence operational decisions', color: 'text-warn',   dot: 'bg-warn'   },
+  { tier: 'T1', label: 'Informed',        desc: 'AI acted autonomously — you see what happened and can flag disagreement',   color: 'text-signal', dot: 'bg-signal' },
+  { tier: 'T0', label: 'Autonomous',      desc: 'AI acted and self-certified — no director input required',                  color: 'text-ok',     dot: 'bg-ok'     },
+]
+
+function TierGuide({ open, onToggle }) {
+  return (
+    <div className="flex-shrink-0 border-b border-rule2">
+      <button type="button" onClick={onToggle}
+        className="flex items-center gap-2 w-full px-5 py-2 hover:bg-stone2 transition-colors text-left">
+        <span className="font-body text-muted text-label">How tiers work</span>
+        <ChevronDown size={9} strokeWidth={2} className={`text-muted flex-shrink-0 ml-auto transition-transform ${open ? 'rotate-180' : ''}`} />
+      </button>
+      {open && (
+        <div className="px-5 pb-3 space-y-2 bg-stone2 slide-in">
+          {TIER_ROWS.map(r => (
+            <div key={r.tier} className="flex items-start gap-3">
+              <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 mt-1 ${r.dot}`} />
+              <div>
+                <span className={`font-body text-label font-semibold ${r.color}`}>{r.tier} · {r.label}</span>
+                <span className="font-body text-label text-muted"> — {r.desc}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ─── Fleet confidence strip ───────────────────────────────────────────────────
 
 const STALE_AGENTS = new Set(['pre-shift', 'resource', 'handoff'])
@@ -1157,9 +1192,150 @@ function AgentActivityRail({ agentActions }) {
 
 // ─── Root ─────────────────────────────────────────────────────────────────────
 
+// ─── History tab (formerly ExecutionAuthority) ───────────────────────────────
+
+const EXEC_TIER_CFG = {
+  observe:   { icon: Eye,          label: 'Observe',    color: 'text-muted'  },
+  recommend: { icon: MessageSquare,label: 'Recommend',  color: 'text-signal'  },
+  execute:   { icon: Zap,          label: 'Execute',    color: 'text-warn'   },
+  govern:    { icon: Shield,       label: 'Govern',     color: 'text-ok'     },
+}
+const EXEC_OUT_CFG = {
+  success:   { tone: 'ok',     label: 'Success'     },
+  escalated: { tone: 'warn',   label: 'Escalated'   },
+  pending:   { tone: 'signal', label: 'Pending'     },
+  rollback:  { tone: 'muted',  label: 'Rolled back' },
+}
+
+function HistoryTab() {
+  const [agentFilter, setAgentFilter] = useState('all')
+  const [tierFilter, setTierFilter]   = useState('all')
+  const [outcomeFilter, setOutcomeFilter] = useState([])
+
+  const successPct = Math.round(executionSummary.successRate * 100)
+  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+  const recentRollbacks = rollbackLog.filter(r => new Date(r.timestamp) > sevenDaysAgo).length
+  const governCriteriaMet = executionSummary.successRate >= 0.95 && recentRollbacks === 0
+  const activeCeiling = [...autonomyTiers].reverse().find(t => t.agentCount > 0)
+
+  const agentOptions = [
+    { value: 'all', label: 'All agents' },
+    ...Array.from(new Set(executionLog.map(e => e.agent))).map(a => ({ value: a, label: a })),
+  ]
+  const tierOptions = [
+    { value: 'all', label: 'All tiers' },
+    { value: 'observe', label: 'Observe' }, { value: 'recommend', label: 'Recommend' },
+    { value: 'execute', label: 'Execute'  }, { value: 'govern',    label: 'Govern'    },
+  ]
+  const outcomeOptions = [
+    { value: 'success', label: 'Success' }, { value: 'escalated', label: 'Escalated' },
+    { value: 'pending', label: 'Pending' }, { value: 'rollback',  label: 'Rolled back' },
+  ]
+
+  const filtered = executionLog
+    .filter(e => agentFilter === 'all' || e.agent === agentFilter)
+    .filter(e => tierFilter === 'all' || e.tier === tierFilter)
+    .filter(e => outcomeFilter.length === 0 || outcomeFilter.includes(e.outcome))
+
+  const needsReview = executionLog.filter(e => e.outcome === 'escalated' || e.outcome === 'pending')
+
+  return (
+    <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
+
+      {/* Summary strip */}
+      <div className="flex-shrink-0 flex items-stretch border-b border-rule2 bg-stone">
+        {[
+          { label: 'Success rate',    val: `${successPct}%`,   color: successPct >= 95 ? 'text-ok' : 'text-warn' },
+          { label: 'Total actions',   val: executionSummary.totalActions, color: 'text-ink' },
+          { label: 'Escalation rate', val: `${Math.round(executionSummary.escalationRate * 100)}%`, color: 'text-muted' },
+          { label: 'Rollback rate',   val: `${Math.round(executionSummary.rollbackRate * 100)}%`,   color: recentRollbacks > 0 ? 'text-warn' : 'text-muted' },
+        ].map(({ label, val, color }) => (
+          <div key={label} className="flex-1 px-4 py-2.5 border-r border-rule2 last:border-r-0">
+            <div className={`display-num text-sub font-bold tabular-nums leading-none ${color}`}>{val}</div>
+            <div className="font-body text-label text-muted mt-1">{label} · 30d</div>
+          </div>
+        ))}
+        {/* Govern tier readiness */}
+        <div className={`flex items-center gap-2 px-4 py-2.5 flex-shrink-0 ${governCriteriaMet ? 'bg-ok/[0.04]' : ''}`}>
+          <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${governCriteriaMet ? 'bg-ok' : 'bg-muted'}`} />
+          <div>
+            <div className={`font-body text-label font-medium ${governCriteriaMet ? 'text-ok' : 'text-muted'}`}>
+              {governCriteriaMet ? 'Govern tier eligible' : 'Govern tier locked'}
+            </div>
+            <div className="font-body text-label text-muted">
+              {governCriteriaMet ? 'All criteria met' : `${recentRollbacks > 0 ? 'Rollbacks in 7d · ' : ''}${successPct}% success rate`}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Active tier — current ceiling */}
+      {activeCeiling && (
+        <div className="flex-shrink-0 flex items-center gap-3 px-5 py-2 border-b border-rule2 bg-stone2">
+          <Zap size={11} strokeWidth={2} className="text-warn flex-shrink-0" />
+          <span className="font-body text-label font-medium text-ink">Active ceiling: {activeCeiling.label}</span>
+          <span className="font-body text-label text-muted">·</span>
+          <span className="font-body text-label text-muted">{activeCeiling.description}</span>
+        </div>
+      )}
+
+      {/* Filter bar */}
+      <div className="flex-shrink-0 flex items-center gap-2 px-5 py-2 border-b border-rule2 bg-stone">
+        <FilterDropdown label="Agent"   options={agentOptions}   value={agentFilter}   onChange={setAgentFilter} />
+        <FilterDropdown label="Tier"    options={tierOptions}    value={tierFilter}    onChange={setTierFilter} />
+        <MultiFilterDropdown label="Outcome" options={outcomeOptions} values={outcomeFilter} onChange={setOutcomeFilter} />
+        <span className="ml-auto font-body text-label text-muted">{filtered.length} events</span>
+      </div>
+
+      {/* Log */}
+      <div className="flex-1 overflow-y-auto">
+        {needsReview.length > 0 && outcomeFilter.length === 0 && agentFilter === 'all' && tierFilter === 'all' && (
+          <div className="px-5 py-2 border-b border-rule2 bg-warn/[0.03]">
+            <span className="font-body text-warn text-label font-medium">{needsReview.length} event{needsReview.length !== 1 ? 's' : ''} need review</span>
+          </div>
+        )}
+        {filtered.map(e => {
+          const tc  = EXEC_TIER_CFG[e.tier]  ?? EXEC_TIER_CFG.execute
+          const oc  = EXEC_OUT_CFG[e.outcome] ?? EXEC_OUT_CFG.success
+          const TierIcon = tc.icon
+          return (
+            <div key={e.id} className="flex items-start gap-3 px-5 py-3 border-b border-rule2 hover:bg-stone2/50 transition-colors">
+              <div className="flex-1 min-w-0">
+                <div className="font-body font-medium text-ink text-body leading-snug mb-0.5">{e.action}</div>
+                <div className="flex items-center gap-2">
+                  <span className="font-body text-label text-muted">{e.agent}</span>
+                  <span className="font-body text-muted text-label opacity-40">·</span>
+                  <TierIcon size={9} strokeWidth={2} className={`flex-shrink-0 ${tc.color}`} />
+                  <span className={`font-body text-label ${tc.color} capitalize`}>{e.tier}</span>
+                  {e.monitoringWindow && <span className="font-body text-label text-muted">· {e.monitoringWindow}</span>}
+                </div>
+              </div>
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <StatusPill tone={oc.tone}>{oc.label}</StatusPill>
+                <span className="font-body text-label text-muted tabular-nums">{e.timeLabel}</span>
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+// In demo mode, show only the two decisions that best demonstrate the platform's PMF:
+// pa3-emergency — AI auto-assigning a robot with a 15-min override window (highest urgency drama)
+// pa2           — lot hold recommendation with FSMA compliance consequence (Tier 3 ratification)
+const DEMO_DECISION_IDS = new Set(['pa3-emergency', 'pa2'])
+
+const AGENT_TABS = [
+  { id: 'decisions', label: 'Decisions' },
+  { id: 'history',   label: 'History'   },
+]
+
 export default function AgentControl() {
-  const { agentActions, systemConfidence, logAgentAction, overrideAgentAction, markAgentDecided, currentPlant } = useAppState()
+  const { agentActions, systemConfidence, logAgentAction, overrideAgentAction, markAgentDecided, currentPlant, isDemoMode } = useAppState()
   const navigate = useNavigate()
+  const [agentTab, setAgentTab] = useState('decisions')
   const agents = agentConfigData?.agents ?? []
 
   const allPending = agents
@@ -1173,6 +1349,7 @@ export default function AgentControl() {
       }))
     )
     .sort((a, b) => a._meta.sortKey - b._meta.sortKey)
+    .filter(pa => !isDemoMode || DEMO_DECISION_IDS.has(pa.id))
 
   const [pending, setPending]             = useState(allPending)
   const [selected, setSelected]           = useState(new Set())
@@ -1195,6 +1372,7 @@ export default function AgentControl() {
   // Rail state
   const [railMode, setRailMode] = useState('context') // 'context' | 'detail'
   const [railTab, setRailTab]   = useState('network')
+  const [tierGuideOpen, setTierGuideOpen] = useState(false)
 
 
   const tier1Items = pending.filter(p => p._meta.tier === 1)
@@ -1313,6 +1491,12 @@ export default function AgentControl() {
 
   return (
     <div className="flex flex-col h-full overflow-hidden content-reveal">
+
+      <Tabs tabs={AGENT_TABS} active={agentTab} onChange={setAgentTab} />
+
+      {agentTab === 'history' && <HistoryTab />}
+
+      {agentTab === 'decisions' && <>
 
       {/* ── Merged command strip: confidence + tiers ───────────────────── */}
       {freshnessOpen && (
@@ -1466,6 +1650,7 @@ export default function AgentControl() {
             <span className="font-body text-label text-warn bg-warn/[0.08] px-1.5 py-0.5 ml-auto mr-5">{undecidedCount} awaiting</span>
           )}
         </div>
+        <TierGuide open={tierGuideOpen} onToggle={() => setTierGuideOpen(o => !o)} />
 
         {/* ── T3 critical banner ── */}
         {(() => {
@@ -1779,6 +1964,8 @@ export default function AgentControl() {
           </div>
         </SlidePanel>
       )}
+
+      </> /* end decisions tab */}
     </div>
   )
 }

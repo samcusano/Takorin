@@ -314,7 +314,7 @@ function AIReadinessTab() {
   )
 }
 
-export default function IntegrationHub() {
+export default function IntegrationHub({ embedded = false }) {
   const [selectedCategory, setSelectedCategory] = useState(null)
   const [selectedConnectorId, setSelectedConnectorId] = useState(null)
   const [activeTab, setActiveTab] = useState('sources')
@@ -372,7 +372,7 @@ export default function IntegrationHub() {
   return (
     <div className="flex flex-col h-full overflow-hidden content-reveal">
 
-      <SceneHeader
+      {!embedded && <SceneHeader
         module="Integrations"
         context={`${integrationSummary.active} sources · network-wide`}
         metric={integrationSummary.active}
@@ -384,7 +384,7 @@ export default function IntegrationHub() {
           { label: 'Streaming', value: String(integrationSummary.streamingSources) },
           { label: 'Conflicts', value: String(unresolvedCount), color: unresolvedCount > 0 ? 'var(--color-warn)' : undefined },
         ]}
-      />
+      />}
 
       {/* ── Tabs + connector grid or conflicts ──────────── */}
       <div className="flex-1 flex flex-col overflow-hidden">

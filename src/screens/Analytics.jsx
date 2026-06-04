@@ -16,10 +16,10 @@ const COHORT_OPTIONS = [
 ]
 
 const TOP_QUARTILE = [
-  { area: 'OEE',          practice: 'Run AI checks before every shift — not just when something goes wrong',          adoption: 82, lift: '+4.2pp avg OEE vs cohort median',   route: '/shift',      module: 'ShiftIQ'       },
+  { area: 'OEE',          practice: 'Run AI checks before every shift — not just when something goes wrong',          adoption: 82, lift: '+4.2pp avg OEE vs cohort median',   route: '/shift',      module: 'Shift'       },
   { area: 'CAPA',         practice: 'Package evidence automatically when a CAPA opens — don\'t wait until closure',   adoption: 74, lift: '38% faster closure vs cohort median',route: '/capa',       module: 'CAPA'   },
   { area: 'Downtime',     practice: 'Schedule maintenance from sensor data, not from the calendar',                   adoption: 68, lift: '23% fewer unplanned stops',          route: '/agents',     module: 'Agents' },
-  { area: 'Traceability', practice: 'Check lot chain completeness as ingredients arrive — catch gaps at the door',    adoption: 61, lift: '2.1h faster recall response window', route: '/readiness',  module: 'Data Quality'},
+  { area: 'Traceability', practice: 'Check lot chain completeness as ingredients arrive — catch gaps at the door',    adoption: 61, lift: '2.1h faster recall response window', route: '/data',  module: 'Data Quality'},
 ]
 
 // ── Workflow adoption ─────────────────────────────────────────────────────────
@@ -35,9 +35,9 @@ const ADOPTION_WORKFLOWS = [
     rate: 67,
     trend: -3,
     warning: 'D. Kowalski · J. Torres — 0 of last 3 shifts completed. Incoming supervisors reconstructing context manually.',
-    action: 'Review completion in ShiftIQ · brief conversation with both supervisors before next shift',
+    action: 'Review completion in Shift · brief conversation with both supervisors before next shift',
     route: '/shift',
-    module: 'ShiftIQ',
+    module: 'Shift',
   },
   {
     id: 'checklist',
@@ -106,21 +106,21 @@ const ATTR = {
       baseline: 75.0, actual: 81.0,
       narrative: 'recovered from its mid-week dip',
       drivers: [
-        { id: 'staff',    label: 'Staffing correction',    short: 'Staffing',    delta: +2.1, note: 'Martinez → Sauce Dosing · cert gap closed',              action: 'Pre-assign via ShiftIQ staffing panel for next shift',          route: '/shift',     module: 'ShiftIQ'        },
-        { id: 'allergen', label: 'Allergen changeover',    short: 'Allergen',    delta: +1.5, note: 'Changeover log signed · production unblocked',           action: 'Standardize Line 4 changeover procedure across all shifts',    route: '/shift',     module: 'ShiftIQ'        },
-        { id: 'check',    label: 'Checklist completion',   short: 'Checklists',  delta: +1.4, note: '4 overdue startup items cleared at T+42',               action: 'Enable automated startup reminders in ShiftIQ',                route: '/shift',     module: 'ShiftIQ'        },
-        { id: 'sensor',   label: 'Sensor A-7 flagged',    short: 'Sensor A-7',  delta: +0.8, note: 'Bearing inspection scheduled · variance caught early',   action: 'Complete sensor calibration before next shift',                route: '/readiness', module: 'Data Quality' },
-        { id: 'scada',    label: 'SCADA gap',              short: 'SCADA gap',   delta: -0.3, note: 'Oven B sensor stale · model accuracy reduced',             action: 'Restore Oven B sensor feed to recover full model accuracy',   route: '/readiness', module: 'Data Quality' },
+        { id: 'staff',    label: 'Staffing correction',    short: 'Staffing',    delta: +2.1, note: 'Martinez → Sauce Dosing · cert gap closed',              action: 'Pre-assign via Shift staffing panel for next shift',          route: '/shift',     module: 'Shift'        },
+        { id: 'allergen', label: 'Allergen changeover',    short: 'Allergen',    delta: +1.5, note: 'Changeover log signed · production unblocked',           action: 'Standardize Line 4 changeover procedure across all shifts',    route: '/shift',     module: 'Shift'        },
+        { id: 'check',    label: 'Checklist completion',   short: 'Checklists',  delta: +1.4, note: '4 overdue startup items cleared at T+42',               action: 'Enable automated startup reminders in Shift',                route: '/shift',     module: 'Shift'        },
+        { id: 'sensor',   label: 'Sensor A-7 flagged',    short: 'Sensor A-7',  delta: +0.8, note: 'Bearing inspection scheduled · variance caught early',   action: 'Complete sensor calibration before next shift',                route: '/data', module: 'Data Quality' },
+        { id: 'scada',    label: 'SCADA gap',              short: 'SCADA gap',   delta: -0.3, note: 'Oven B sensor stale · model accuracy reduced',             action: 'Restore Oven B sensor feed to recover full model accuracy',   route: '/data', module: 'Data Quality' },
       ],
     },
     day: {
       baseline: 75.5, actual: 79.8,
       narrative: 'AM shift recovered; PM shift catching up — day closes below target',
       drivers: [
-        { id: 'staff',    label: 'Staff coverage (both shifts)',   short: 'Staffing',    delta: +2.1, note: 'Martinez coverage held AM and PM · no cert gaps throughout', action: 'Carry pre-assignment forward into tomorrow',                   route: '/shift',     module: 'ShiftIQ'        },
-        { id: 'check',    label: 'Checklist adherence rate',       short: 'Checklists',  delta: +1.6, note: 'AM: 9/11 cleared · PM: 8/11 cleared — improving shift-over-shift', action: 'Chase 3 recurring misses with PM supervisor tonight',      route: '/shift',     module: 'ShiftIQ'        },
-        { id: 'allergen', label: 'Allergen restart delay (AM)',     short: 'Allergen',    delta: +1.2, note: 'AM resolved cleanly; PM changeover was cleaner than yesterday', action: 'Log AM resolution as procedure template for PM',              route: '/shift',     module: 'ShiftIQ'        },
-        { id: 'scada',    label: 'SCADA gap (both shifts)',         short: 'SCADA gap',   delta: -0.6, note: 'Oven B sensor stale across full day — penalty compounding',  action: 'Escalate sensor restore to maintenance before tomorrow AM',   route: '/readiness', module: 'Data Quality' },
+        { id: 'staff',    label: 'Staff coverage (both shifts)',   short: 'Staffing',    delta: +2.1, note: 'Martinez coverage held AM and PM · no cert gaps throughout', action: 'Carry pre-assignment forward into tomorrow',                   route: '/shift',     module: 'Shift'        },
+        { id: 'check',    label: 'Checklist adherence rate',       short: 'Checklists',  delta: +1.6, note: 'AM: 9/11 cleared · PM: 8/11 cleared — improving shift-over-shift', action: 'Chase 3 recurring misses with PM supervisor tonight',      route: '/shift',     module: 'Shift'        },
+        { id: 'allergen', label: 'Allergen restart delay (AM)',     short: 'Allergen',    delta: +1.2, note: 'AM resolved cleanly; PM changeover was cleaner than yesterday', action: 'Log AM resolution as procedure template for PM',              route: '/shift',     module: 'Shift'        },
+        { id: 'scada',    label: 'SCADA gap (both shifts)',         short: 'SCADA gap',   delta: -0.6, note: 'Oven B sensor stale across full day — penalty compounding',  action: 'Escalate sensor restore to maintenance before tomorrow AM',   route: '/data', module: 'Data Quality' },
       ],
     },
     week: {
@@ -128,9 +128,9 @@ const ATTR = {
       narrative: 'crossed the 82% target for the first time this quarter',
       drivers: [
         { id: 'cert',     label: 'Cert gap closures',              short: 'Cert gaps',   delta: +4.2, note: '5 operators certified this week · L2 Sauce Dosing now fully staffed', action: 'Accelerate remaining 4 cert backlog cases into Q3 assessment window', route: '/operator',  module: 'My Station'  },
-        { id: 'allergen', label: 'Allergen program improvement',    short: 'Allergen',    delta: +2.8, note: 'Standardized checklist cut changeover time 22% week-over-week',     action: 'Extend standardized procedure to Lines 3 and 6 next week',         route: '/shift',     module: 'ShiftIQ'        },
-        { id: 'check',    label: 'Checklist adherence up 18%',     short: 'Checklists',  delta: +2.1, note: 'Automated reminders reduced missed startup items from 6 to 1',      action: 'Confirm reminder cadence carries into next week schedule',          route: '/shift',     module: 'ShiftIQ'        },
-        { id: 'scada',    label: 'SCADA gap (Oven B, ongoing)',     short: 'SCADA gap',   delta: -1.6, note: 'Sensor stale since Apr 9 · accuracy impact growing each week',      action: 'Restore Oven B — highest-leverage action going into week 3',       route: '/readiness', module: 'Data Quality' },
+        { id: 'allergen', label: 'Allergen program improvement',    short: 'Allergen',    delta: +2.8, note: 'Standardized checklist cut changeover time 22% week-over-week',     action: 'Extend standardized procedure to Lines 3 and 6 next week',         route: '/shift',     module: 'Shift'        },
+        { id: 'check',    label: 'Checklist adherence up 18%',     short: 'Checklists',  delta: +2.1, note: 'Automated reminders reduced missed startup items from 6 to 1',      action: 'Confirm reminder cadence carries into next week schedule',          route: '/shift',     module: 'Shift'        },
+        { id: 'scada',    label: 'SCADA gap (Oven B, ongoing)',     short: 'SCADA gap',   delta: -1.6, note: 'Sensor stale since Apr 9 · accuracy impact growing each week',      action: 'Restore Oven B — highest-leverage action going into week 3',       route: '/data', module: 'Data Quality' },
       ],
     },
   },
@@ -142,7 +142,7 @@ const ATTR = {
       drivers: [
         { id: 'crew',     label: 'Crew readiness',          short: 'Crew',      delta: +2.8, note: 'Full L2 coverage across all stations',               action: 'Maintain coverage levels — flag any cert gap immediately', route: '/operator',  module: 'My Station'  },
         { id: 'ccp',      label: 'CCP compliance held',     short: 'CCP hold',  delta: +1.4, note: 'All bake temps within window · no corrective logs',  action: 'Continue CCP-3 monitoring cadence each shift',            route: '/operator',  module: 'My Station'  },
-        { id: 'allergen', label: 'Allergen changeover lag', short: 'Allergen',  delta: -1.2, note: 'GF-Flatbread transition 18 min over target',         action: 'Add L2 support or extend changeover window in schedule',  route: '/shift',     module: 'ShiftIQ'        },
+        { id: 'allergen', label: 'Allergen changeover lag', short: 'Allergen',  delta: -1.2, note: 'GF-Flatbread transition 18 min over target',         action: 'Add L2 support or extend changeover window in schedule',  route: '/shift',     module: 'Shift'        },
       ],
     },
     day: {
@@ -151,7 +151,7 @@ const ATTR = {
       drivers: [
         { id: 'crew',     label: 'Crew coverage maintained',     short: 'Crew',      delta: +2.8, note: 'Full L2 held through AM and PM · no gap incidents',               action: 'Schedule coverage review before tomorrow start',                    route: '/operator',  module: 'My Station'  },
         { id: 'ccp',      label: 'CCP compliance held',          short: 'CCP hold',  delta: +1.5, note: 'All readings within window across both shifts',                   action: 'Continue CCP-3 monitoring cadence',                                route: '/operator',  module: 'My Station'  },
-        { id: 'allergen', label: 'Allergen lag (both shifts)',    short: 'Allergen',  delta: -2.0, note: 'Recurring GF-Flatbread delay hit AM and PM — pattern is clear',   action: 'Escalate changeover root cause — this is a recurring daily issue', route: '/shift',     module: 'ShiftIQ'        },
+        { id: 'allergen', label: 'Allergen lag (both shifts)',    short: 'Allergen',  delta: -2.0, note: 'Recurring GF-Flatbread delay hit AM and PM — pattern is clear',   action: 'Escalate changeover root cause — this is a recurring daily issue', route: '/shift',     module: 'Shift'        },
       ],
     },
     week: {
@@ -160,8 +160,8 @@ const ATTR = {
       drivers: [
         { id: 'crew',     label: 'L2 crew coverage improvement',       short: 'Crew',      delta: +3.8, note: 'Coverage at 94% this week vs 81% prior week',                        action: 'Fill remaining 2 L2 cert gaps before next week',                route: '/operator',  module: 'My Station'  },
         { id: 'ccp',      label: 'CCP protocol compliance',            short: 'CCP',       delta: +2.4, note: 'Zero corrective logs this week · oven temps consistent all 7 days',  action: 'Carry forward CCP logging discipline into next week',           route: '/operator',  module: 'My Station'  },
-        { id: 'supplier', label: 'Clean supplier inputs',              short: 'Supplier',  delta: +2.2, note: 'No ConAgra interruptions or lot holds this week',                    action: 'Monitor TS-9840 lot arriving Friday — flag if delayed',         route: '/supplier',   module: 'Suppliers'   },
-        { id: 'allergen', label: 'Allergen changeover lag (recurring)',short: 'Allergen',  delta: -1.4, note: 'Consistent 15-18 min over target on 4 of 7 days',                   action: 'Adopt Salina standardized procedure — template available now',  route: '/shift',     module: 'ShiftIQ'        },
+        { id: 'supplier', label: 'Clean supplier inputs',              short: 'Supplier',  delta: +2.2, note: 'No ConAgra interruptions or lot holds this week',                    action: 'Monitor TS-9840 lot arriving Friday — flag if delayed',         route: '/suppliers',   module: 'Suppliers'   },
+        { id: 'allergen', label: 'Allergen changeover lag (recurring)',short: 'Allergen',  delta: -1.4, note: 'Consistent 15-18 min over target on 4 of 7 days',                   action: 'Adopt Salina standardized procedure — template available now',  route: '/shift',     module: 'Shift'        },
       ],
     },
   },
@@ -171,9 +171,9 @@ const ATTR = {
       baseline: 80.0, actual: 84.0,
       narrative: 'reached a shift high — clean supplier inputs and full L2+ crew',
       drivers: [
-        { id: 'supplier', label: 'Clean supplier inputs',   short: 'Supplier',  delta: +2.7, note: 'No lot holds or trace gaps this shift',               action: 'Flag ConAgra contingency before next shared lot arrives',  route: '/supplier',   module: 'Suppliers'   },
+        { id: 'supplier', label: 'Clean supplier inputs',   short: 'Supplier',  delta: +2.7, note: 'No lot holds or trace gaps this shift',               action: 'Flag ConAgra contingency before next shared lot arrives',  route: '/suppliers',   module: 'Suppliers'   },
         { id: 'crew',     label: 'Full L2+ crew coverage',  short: 'Crew',      delta: +1.8, note: 'Nakamura team at full cert level across shift',       action: 'Document coverage pattern — share as Salina benchmark',   route: '/operator',  module: 'My Station'  },
-        { id: 'variance', label: 'Oven D1 temp variance',   short: 'Oven D1',   delta: -0.5, note: 'Slight undershoot at shift start · self-corrected',  action: 'Log in maintenance calendar for preventive inspection',    route: '/readiness', module: 'Data Quality' },
+        { id: 'variance', label: 'Oven D1 temp variance',   short: 'Oven D1',   delta: -0.5, note: 'Slight undershoot at shift start · self-corrected',  action: 'Log in maintenance calendar for preventive inspection',    route: '/data', module: 'Data Quality' },
       ],
     },
     day: {
@@ -181,8 +181,8 @@ const ATTR = {
       narrative: 'held above 83% through both shifts — D2 startup slower than D1',
       drivers: [
         { id: 'crew',     label: 'Nakamura team · full coverage',  short: 'Crew',       delta: +1.8, note: 'Full L2+ coverage held AM and PM · no substitutions needed',     action: 'Document crew model as replication template for Salina',    route: '/operator',  module: 'My Station'  },
-        { id: 'supplier', label: 'Clean supplier inputs',           short: 'Supplier',   delta: +1.4, note: 'No ConAgra lot holds — second clean day this week',               action: 'Flag incoming TS-9840 lot for trace verification on arrival', route: '/supplier',   module: 'Suppliers'   },
-        { id: 'variance', label: 'Line D2 startup delay',           short: 'D2 delay',   delta: -0.5, note: 'D2 came up 9 min late · compressed PM production window',        action: 'Add D2 startup checklist to PM shift briefing',             route: '/shift',     module: 'ShiftIQ'        },
+        { id: 'supplier', label: 'Clean supplier inputs',           short: 'Supplier',   delta: +1.4, note: 'No ConAgra lot holds — second clean day this week',               action: 'Flag incoming TS-9840 lot for trace verification on arrival', route: '/suppliers',   module: 'Suppliers'   },
+        { id: 'variance', label: 'Line D2 startup delay',           short: 'D2 delay',   delta: -0.5, note: 'D2 came up 9 min late · compressed PM production window',        action: 'Add D2 startup checklist to PM shift briefing',             route: '/shift',     module: 'Shift'        },
       ],
     },
     week: {
@@ -190,8 +190,8 @@ const ATTR = {
       narrative: 'exceeded the 86% target — highest-performing plant in the network this week',
       drivers: [
         { id: 'crew',     label: 'Crew consistency — Nakamura team',  short: 'Crew',      delta: +3.2, note: 'Full L2+ coverage 6 of 7 days · zero cert substitutions all week', action: 'Export crew model as network benchmark — Salina to adopt',  route: '/operator',  module: 'My Station'  },
-        { id: 'supplier', label: 'ConAgra lots — zero interruptions', short: 'Supplier',  delta: +2.5, note: 'No holds, no trace gaps, no delivery delays this week',            action: 'Monitor next lot arrival — maintain contingency flag',       route: '/supplier',   module: 'Suppliers'   },
-        { id: 'variance', label: 'Oven D1 variance resolved',         short: 'Oven D1',   delta: +0.8, note: 'Mid-week calibration eliminated the recurring temp undershoot',   action: 'Schedule preventive calibration every 2 weeks going forward', route: '/readiness', module: 'Data Quality' },
+        { id: 'supplier', label: 'ConAgra lots — zero interruptions', short: 'Supplier',  delta: +2.5, note: 'No holds, no trace gaps, no delivery delays this week',            action: 'Monitor next lot arrival — maintain contingency flag',       route: '/suppliers',   module: 'Suppliers'   },
+        { id: 'variance', label: 'Oven D1 variance resolved',         short: 'Oven D1',   delta: +0.8, note: 'Mid-week calibration eliminated the recurring temp undershoot',   action: 'Schedule preventive calibration every 2 weeks going forward', route: '/data', module: 'Data Quality' },
       ],
     },
   },
@@ -646,8 +646,8 @@ export default function Analytics() {
                     </div>
                     <div className="px-5 py-3 flex items-center justify-between">
                       <span className="font-body text-muted text-label">Confidence reflects how certain we are the action caused the outcome. Below 60% means the cause isn't clear.</span>
-                      <Link to="/outcomes" className="flex items-center gap-1 font-body text-muted text-label hover:text-ink transition-colors">
-                        <ArrowRight size={10} />View ImpactLoop
+                      <Link to="/performance" className="flex items-center gap-1 font-body text-muted text-label hover:text-ink transition-colors">
+                        <ArrowRight size={10} />View Performance
                       </Link>
                     </div>
                   </div>

@@ -3,8 +3,9 @@ import { Check, AlertTriangle, ArrowRight, History, AlertCircle, Eye, Send, Chec
 import { useNavigate, Link } from 'react-router-dom'
 import { supplierData, supplierAudits, empResultsHistory } from '../data'
 import { useAppState } from '../context/AppState'
-import { StatusPill, SectionHeader, Btn, ActionBanner, Spinner, AnimatedCheck, MetadataRow, ExpandableMetadata, SlidePanel, StatGrid, SectionLabel } from '../components/UI'
+import { StatusPill, SectionHeader, Btn, ActionBanner, Spinner, AnimatedCheck, MetadataRow, ExpandableMetadata, SlidePanel, StatGrid, SectionLabel, Tabs } from '../components/UI'
 import StatBar from '../components/StatBar.jsx'
+import ValueChain from './ValueChain'
 
 // ── ContactSupplierPanel ──────────────────────────────────────────────────────
 
@@ -278,9 +279,15 @@ function SupplierRow({ s, audit, isDanger, certGap, index, total }) {
 
 // ── Main screen ───────────────────────────────────────────────────────────────
 
+const SUPPLIER_TABS = [
+  { id: 'suppliers', label: 'Suppliers' },
+  { id: 'delivery',  label: 'Delivery'  },
+]
+
 export default function SupplierIQ() {
   const d = supplierData
   const { coaRequested, setCoaRequested, rfqSent, setRfqSent, readinessResolved, resolvedConflicts, closedCases } = useAppState()
+  const [supplierTab, setSupplierTab] = useState('suppliers')
   const [exportState, setExportState] = useState('idle')
   const [coaViewLot, setCoaViewLot] = useState(null)
   const [contactOpen, setContactOpen] = useState(false)
@@ -312,6 +319,9 @@ export default function SupplierIQ() {
     <LotTicketPanel lot={coaViewLot} onClose={() => setCoaViewLot(null)} coaRequested={coaRequested} setCoaRequested={setCoaRequested} />
     <ContactSupplierPanel open={contactOpen} onClose={() => setContactOpen(false)} />
     <div className="flex flex-col h-full overflow-hidden content-reveal">
+    <Tabs tabs={SUPPLIER_TABS} active={supplierTab} onChange={setSupplierTab} />
+    {supplierTab === 'delivery' && <div className="flex-1 overflow-hidden"><ValueChain /></div>}
+    {supplierTab === 'suppliers' && <>
 
       <div className="flex flex-1 min-h-0 overflow-hidden">
       <div className="flex-1 overflow-y-auto border-r border-rule">
@@ -351,7 +361,7 @@ export default function SupplierIQ() {
                       <div className="font-body font-medium text-danger text-label">FSMA 204 blocker</div>
                       <div className="font-body text-danger text-label mt-0.5 opacity-80">Naming conflict at CTE 2 prevents traceability submission</div>
                       <button type="button"
-                        onClick={() => navigate('/readiness', { state: { highlight: 'conflict-0' } })}
+                        onClick={() => navigate('/data', { state: { highlight: 'conflict-0' } })}
                         className="font-body text-danger text-label hover:underline mt-1 flex items-center gap-0.5">
                         Fix in Data Readiness <ArrowRight size={9} />
                       </button>
@@ -469,6 +479,7 @@ export default function SupplierIQ() {
       </div>
 
       </div>
+    </>}
     </div>
     </>
   )

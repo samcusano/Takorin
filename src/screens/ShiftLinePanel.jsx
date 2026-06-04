@@ -518,7 +518,7 @@ function SupervisorTeam({ taskAssignments, escalatedToDirector, setEscalatedToDi
 }
 
 // ── Main ──────────────────────────────────────────────────────────────────────
-export default function ShiftIQV2({ score = 78, lineLabel = 'Line 4 · AM Shift', supervisor = 'D. Kowalski', plant = 'Salina KS', isSupervisorView = false }) {
+export default function ShiftLinePanel({ score = 78, lineLabel = 'Line 4 · AM Shift', supervisor = 'D. Kowalski', plant = 'Salina KS', isSupervisorView = false }) {
   const { checklistSigned, taskAssignments, setTaskAssignments, logActivity,
     signOffRequests, setSignOffRequests, escalatedToDirector, setEscalatedToDirector,
     workerMode } = useAppState()
