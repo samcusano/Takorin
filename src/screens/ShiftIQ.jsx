@@ -780,6 +780,29 @@ function PrepareView({ forecast = [], onStartShift }) {
     </div>
    </div>
 
+   {/* ── Staffing gaps band — precision farming: show tomorrow's specific gaps ── */}
+   <div className="flex-shrink-0 bg-warn/[0.04] border-b border-warn/20 px-5 py-3">
+    <div className="flex items-center gap-3 flex-wrap">
+     <div className="flex items-center gap-1.5">
+      <AlertTriangle size={11} strokeWidth={2} className="text-warn flex-shrink-0" />
+      <span className="font-body font-medium text-warn text-label">
+        Tomorrow AM will have 3 staffing gaps — act today to resolve before shift starts
+      </span>
+     </div>
+     {[
+       { op: 'Lindqvist (L3)', reason: 'Cert expires tonight', fix: 'Renew or backfill' },
+       { op: 'Reyes (L1)', reason: 'Vacation 06/12 — 06/15', fix: 'Cross-train backup' },
+       { op: 'Martinez (L2)', reason: 'Medical leave pending', fix: 'Confirm return date' }
+     ].map((gap, i) => (
+       <button key={i} type="button"
+        className="flex items-center gap-2 px-3 py-1 border border-warn/30 font-body text-label text-warn hover:bg-warn/[0.06] transition-colors">
+        <span className="font-medium">{gap.op}</span>
+        <span className="text-muted opacity-70 text-xs">{gap.reason}</span>
+       </button>
+     ))}
+    </div>
+   </div>
+
    {/* Triage deck */}
    <div className="flex-1 overflow-y-auto">
 

@@ -241,6 +241,14 @@ function FindingCard({ f, index, onAct, onDelegate, onDismiss }) {
   const assignBtnRef = useRef(null)
   const dismissBtnRef = useRef(null)
 
+  // Precision farming: show trust tier based on historical acceptance rates
+  const typeKey = FINDING_TYPE_MAP[f.id]
+  const precedent = typeKey ? FINDING_PRECEDENTS[typeKey] : null
+  const acceptanceRate = precedent?.acceptanceRate ?? 0.5
+  const tierLabel = acceptanceRate >= 0.80 ? 'Act Now' : acceptanceRate >= 0.60 ? 'Watch' : 'Background'
+  const tierColor = acceptanceRate >= 0.80 ? 'text-danger' : acceptanceRate >= 0.60 ? 'text-warn' : 'text-muted'
+  const tierBg = acceptanceRate >= 0.80 ? 'bg-danger/10' : acceptanceRate >= 0.60 ? 'bg-warn/10' : 'bg-stone3'
+
   const leftCls = f.urgency === 'danger' ? 'border-l-danger' : 'border-l-warn'
 
   if (dismissed) return null
@@ -272,6 +280,15 @@ function FindingCard({ f, index, onAct, onDelegate, onDismiss }) {
       style={{ animationDelay: `${index * 90}ms`, opacity: acted ? 0.45 : 1, transition: `opacity var(--dur-standard) var(--ease-standard)` }}>
 
       <div className="px-4 pt-3.5 pb-2.5">
+        {/* Precision farming tier — show whether supervisors typically act on this finding type */}
+        <div className={`inline-flex items-center gap-1.5 px-2 py-1 rounded text-label font-medium mb-2 ${tierBg} ${tierColor}`}>
+          <span className="text-xs">{tierLabel}</span>
+          {precedent && (
+            <span className="text-xs opacity-75">
+              {Math.round(acceptanceRate * 100)}% act
+            </span>
+          )}
+        </div>
         <div className="flex items-start justify-between gap-3 mb-2">
           <div className="font-display font-semibold text-sub text-ink leading-snug">{f.title}</div>
           {f.recurring && (

@@ -319,6 +319,27 @@ export default function SupplierIQ() {
     <LotTicketPanel lot={coaViewLot} onClose={() => setCoaViewLot(null)} coaRequested={coaRequested} setCoaRequested={setCoaRequested} />
     <ContactSupplierPanel open={contactOpen} onClose={() => setContactOpen(false)} />
     <div className="flex flex-col h-full overflow-hidden content-reveal">
+    {/* ── Active lot decision band — precision farming: surface the smallest unit that needs a decision ── */}
+    {blockingLots.length > 0 && (
+      <div className="flex-shrink-0 bg-danger/[0.04] border-b border-danger/20 px-5 py-3">
+        <div className="flex items-center gap-3 flex-wrap">
+          <div className="flex items-center gap-1.5">
+            <AlertTriangle size={11} strokeWidth={2} className="text-danger flex-shrink-0" />
+            <span className="font-body font-medium text-danger text-label">
+              {blockingLots.length} lot{blockingLots.length !== 1 ? 's' : ''} require a decision before production
+            </span>
+          </div>
+          {blockingLots.map((lot, i) => (
+            <button key={i} type="button"
+              onClick={() => { setSupplierTab('suppliers'); setCoaViewLot(lot) }}
+              className="flex items-center gap-2 px-3 py-1 border border-danger/30 font-body text-label text-danger hover:bg-danger/[0.06] transition-colors">
+              <span className="font-medium">{lot.supplier?.split('·')[1]?.trim() ?? lot.ing}</span>
+              <span className="text-muted opacity-70">{lot.holdReason ?? 'COA missing'}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+    )}
     <Tabs tabs={SUPPLIER_TABS} active={supplierTab} onChange={setSupplierTab} />
     {supplierTab === 'delivery' && <div className="flex-1 overflow-hidden"><ValueChain /></div>}
     {supplierTab === 'suppliers' && <>

@@ -778,6 +778,8 @@ export default function CapaEngine() {
    ? `No cases overdue. ${awaitingCount} awaiting your sign-off — approve to advance the closure rate before inspection.`
    : 'No open overdue cases. All cases on track before the FDA inspection window.'
 
+ const overdueCases = visibleCases.filter(c => c.badge === 'Overdue')
+
  return (
  <div className="flex flex-col h-full overflow-hidden content-reveal">
 
@@ -792,6 +794,31 @@ export default function CapaEngine() {
    { label: 'Closed Q', value: String(closedCount) },
   ]}
  />
+
+ {/* ── Overdue decision band — precision farming: show which cases need immediate action ── */}
+ {overdueCases.length > 0 && (
+  <div className="flex-shrink-0 bg-danger/[0.04] border-b border-danger/20 px-5 py-3">
+   <div className="flex items-center gap-3 flex-wrap">
+    <div className="flex items-center gap-1.5">
+     <AlertTriangle size={11} strokeWidth={2} className="text-danger flex-shrink-0" />
+     <span className="font-body font-medium text-danger text-label">
+      {overdueCases.length} case{overdueCases.length !== 1 ? 's' : ''} overdue — resolve before FDA window closes
+     </span>
+    </div>
+    {overdueCases.slice(0, 3).map((c, i) => (
+     <button key={i} type="button"
+      onClick={() => { /* would select in queue */ }}
+      className="flex items-center gap-2 px-3 py-1 border border-danger/30 font-body text-label text-danger hover:bg-danger/[0.06] transition-colors">
+      <span className="font-medium">{c.capaId}</span>
+      <span className="text-muted opacity-70">{c.title.split('—')[0]?.trim()}</span>
+     </button>
+    ))}
+    {overdueCases.length > 3 && (
+     <span className="font-body text-label text-muted">+ {overdueCases.length - 3} more</span>
+    )}
+   </div>
+  </div>
+ )}
 
  <LayoutQueue
   visibleCases={visibleCases}

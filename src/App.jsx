@@ -25,6 +25,7 @@ const CAPAEngine            = lazy(() => import('./screens/CapaEngine'))
 const DataReadiness         = lazy(() => import('./screens/DataReadiness'))
 const OperatorView          = lazy(() => import('./screens/OperatorView'))
 const NotificationCenter    = lazy(() => import('./screens/NotificationCenter'))
+const DesignLabBrand        = lazy(() => import('./screens/DesignLabBrand'))
 const AgentControl          = lazy(() => import('./screens/AgentControl'))
 
 const BatchIntelligence     = lazy(() => import('./screens/BatchIntelligence'))
@@ -105,6 +106,7 @@ export default function App() {
   <Route path="/accountability" element={<Guard k="compliance"><ErrorBoundary><CompliancePolicy /></ErrorBoundary></Guard>} />
   <Route path="/knowledge"      element={<Guard k="knowledge"><ErrorBoundary><KnowledgeVault /></ErrorBoundary></Guard>} />
   <Route path="/plant-map"      element={<Guard k="hierarchy"><ErrorBoundary><ProcessHierarchy /></ErrorBoundary></Guard>} />
+  <Route path="/__design_lab"   element={<Suspense fallback={<ScreenLoader />}><DesignLabBrand /></Suspense>} />
   <Route path="/data"           element={<Guard k="readiness"><ErrorBoundary><DataReadiness /></ErrorBoundary></Guard>} />
   <Route path="/security"       element={<Guard k="security"><ErrorBoundary><SecurityIQ /></ErrorBoundary></Guard>} />
   <Route path="/delivery"       element={<Guard k="delivery"><ErrorBoundary><ValueChain /></ErrorBoundary></Guard>} />

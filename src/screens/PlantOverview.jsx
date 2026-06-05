@@ -484,11 +484,16 @@ export default function PlantOverview() {
   const worstLine    = rawLines.length ? rawLines.reduce((a, b) => effScore(a) > effScore(b) ? a : b) : null
   const worstArea    = worstLine ? (LINE_AREAS[worstLine.id]?.area ?? '') : ''
   const worstPend    = worstLine ? (lineMeta[worstLine.id]?.findings.filter(f => !shiftActed[f.id]).length ?? 0) : 0
+
+  // Precision farming: statement names WHERE risk is concentrated, not what the average is.
+  // Score stays as context (visible in SceneHeader metric) but is no longer the lead sentence.
+  const critShiftItems = SHIFT_QUEUE.filter(q => q.urgency === 'danger')
+  const warnShiftItems = SHIFT_QUEUE.filter(q => q.urgency === 'warn')
   const plantStatement = critCount > 0
-    ? `${worstArea} is driving this shift — ${worstLine?.name} at ${effScore(worstLine)}${worstPend > 0 ? ` with ${worstPend} open finding${worstPend !== 1 ? 's' : ''}` : ''}.`
+    ? `Risk concentrated in ${worstLine?.name} — ${critShiftItems.length} decision${critShiftItems.length !== 1 ? 's' : ''} require your attention before production starts.`
     : watchCount > 0
-    ? `${worstArea} is the area to watch — ${worstLine?.name} at ${effScore(worstLine)}. No immediate escalation required.`
-    : 'All lines running clean this shift. No open findings pending.'
+    ? `${worstLine?.name} is the area to watch this shift. No immediate decisions required — ${warnShiftItems.length} item${warnShiftItems.length !== 1 ? 's' : ''} trending.`
+    : 'All lines running clean. No concentrated risk — no decisions pending.'
 
   const switchMode = (m) => {
     setMode(prev => prev === m ? 'normal' : m)
@@ -511,19 +516,37 @@ export default function PlantOverview() {
         context={`${plantName} · April 16`}
         live
         timestamp="06:42"
-        metric={realAvg}
-        metricLabel="Plant avg risk"
+        metric={critCount > 0 ? critCount : watchCount > 0 ? watchCount : clearCount}
+        metricLabel={critCount > 0 ? `line${critCount !== 1 ? 's' : ''} at risk` : watchCount > 0 ? `line${watchCount !== 1 ? 's' : ''} on watch` : 'lines clear'}
+        metricColor={critCount > 0 ? 'var(--color-danger)' : watchCount > 0 ? 'var(--color-warn)' : 'var(--color-ok)'}
         tone={plantTone}
         statement={plantStatement}
         meta={[
-          ...(critCount > 0 ? [{ label: 'Risk', value: String(critCount), color: 'var(--color-danger)' }] : []),
-          ...(watchCount > 0 ? [{ label: 'Watch', value: String(watchCount), color: 'var(--color-warn)' }] : []),
+          { label: 'Avg score', value: String(realAvg), color: realAvg >= 75 ? 'var(--color-danger)' : realAvg >= 55 ? 'var(--color-warn)' : undefined },
           { label: 'Workers', value: String(totalWorkers) },
           { label: 'Lines', value: String(rawLines.length) },
-          { label: 'Findings', value: allFindings.length,   tone: allFindings.length > 0 ? 'warn' : 'ok', sub: 'pending', bg: '' },
+          { label: 'Findings', value: allFindings.length, tone: allFindings.length > 0 ? 'warn' : 'ok', sub: 'pending', bg: '' },
           { label: 'Briefing', value: pendingShiftCount, tone: critShiftCount > 0 && !allCritVisited ? 'danger' : 'warn', sub: `${critShiftCount} critical`, bg: '' },
         ]}
       />
+
+      {/* ── Concentration strip — where risk lives, not how much on average ── */}
+      {(critCount > 0 || watchCount > 0) && (
+        <div className="flex-shrink-0 flex items-center gap-4 px-5 py-2 border-b border-rule2 bg-stone2 overflow-x-auto">
+          <span className="font-body text-label text-muted flex-shrink-0">Risk location</span>
+          {SHIFT_QUEUE.filter((q, i, arr) => arr.findIndex(x => x.category === q.category) === i).slice(0, 4).map((q, i) => (
+            <div key={i} className="flex items-center gap-1.5 flex-shrink-0">
+              <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${q.urgency === 'danger' ? 'bg-danger' : q.urgency === 'warn' ? 'bg-warn' : 'bg-ok'}`} />
+              <span className={`font-body text-label ${q.urgency === 'danger' ? 'text-danger' : q.urgency === 'warn' ? 'text-warn' : 'text-muted'}`}>
+                {q.category}
+              </span>
+            </div>
+          ))}
+          <div className="ml-auto flex-shrink-0 font-body text-label text-muted">
+            Score {realAvg} avg · {critCount} at risk · {watchCount} watch · {clearCount} clear
+          </div>
+        </div>
+      )}
 
       {/* ── View switcher ────────────────────────────────────────────────── */}
       <div className="flex-shrink-0 border-b border-rule2 px-5">
