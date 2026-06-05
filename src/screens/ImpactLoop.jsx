@@ -2,6 +2,9 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { interventions, kpiTargets, platformBaseline } from '../data/interventions'
 import { goalsData } from '../data'
+import { ACCEPTANCE_RANKING } from '../data/findingPrecedents'
+import { useAppState } from '../context/AppState'
+import { ATTR, GRAINS, PLANTS_META, buildSteps, WaterfallChart } from './Analytics'
 import { AlertTriangle, CheckCircle2, ArrowRight, RotateCcw, AlertCircle, TrendingUp, TrendingDown, Zap, Clock, ChevronDown, ChevronRight, User } from 'lucide-react'
 import { StatusPill, SceneHeader, Tabs, Btn, AnimatedScore, StatGrid, EmptyState, FilterDropdown, SlidePanel } from '../components/UI'
 
@@ -406,27 +409,102 @@ function InterventionDetail({ entry }) {
 // ─── Benchmarks tab (formerly Analytics) ─────────────────────────────────────
 
 const ADOPTION_WORKFLOWS = [
-  { id: 'handoff',   label: 'Shift handoff',          role: 'Supervisors', target: 90, rate: 67,  trend: -3, warning: 'D. Kowalski · J. Torres — 0 of last 3 shifts completed. Incoming supervisors reconstructing context manually.' },
-  { id: 'checklist', label: 'Operator checklists',    role: 'Operators',   target: 95, rate: 81,  trend: +5, warning: null },
-  { id: 'decisions', label: 'Agent decision review',  role: 'Director',    target: 80, rate: 92,  trend: +2, warning: null },
-  { id: 'evidence',  label: 'CAPA evidence submission',role:'Supervisors',  target: 85, rate: 58,  trend: -6, warning: 'CAPA-2604-006 · CAPA-2604-011 blocked — evidence not filed.' },
+  { id: 'handoff',   label: 'Shift handoff',           role: 'Supervisors', target: 90, rate: 67, warning: 'D. Kowalski · J. Torres — 0 of last 3 shifts completed. Incoming supervisors reconstructing context manually.' },
+  { id: 'checklist', label: 'Operator checklists',     role: 'Operators',   target: 95, rate: 81, warning: null },
+  { id: 'decisions', label: 'Agent decision review',   role: 'Director',    target: 80, rate: 92, warning: null },
+  { id: 'evidence',  label: 'CAPA evidence submission', role: 'Supervisors', target: 85, rate: 58, warning: 'CAPA-2604-006 · CAPA-2604-011 blocked — evidence not filed.' },
 ]
 
 const TOP_QUARTILE = [
-  { area: 'OEE',          practice: 'Run AI checks before every shift — not just when something goes wrong',         lift: '+4.2pp avg OEE vs cohort median' },
-  { area: 'CAPA',         practice: 'Package evidence automatically when a CAPA opens — don\'t wait until closure',  lift: '38% faster closure vs cohort median' },
-  { area: 'Downtime',     practice: 'Schedule maintenance from sensor data, not from the calendar',                  lift: '23% fewer unplanned stops' },
-  { area: 'Traceability', practice: 'Check lot chain completeness as ingredients arrive — catch gaps at the door',   lift: '2.1h faster recall response window' },
+  { area: 'OEE',          practice: "Run AI checks before every shift — not just when something goes wrong",        lift: '+4.2pp avg OEE vs cohort median' },
+  { area: 'CAPA',         practice: "Package evidence automatically when a CAPA opens — don't wait until closure",  lift: '38% faster closure vs cohort median' },
+  { area: 'Downtime',     practice: 'Schedule maintenance from sensor data, not from the calendar',                 lift: '23% fewer unplanned stops' },
+  { area: 'Traceability', practice: 'Check lot chain completeness as ingredients arrive — catch gaps at the door',  lift: '2.1h faster recall response window' },
 ]
 
 function BenchmarksTab() {
+  const { currentPlant } = useAppState()
+  const [scopePlant, setScopePlant] = useState(currentPlant?.id === 'ks' ? 'ks' : currentPlant?.id === 'co' ? 'co' : 'sl')
+  const [timeGrain, setTimeGrain]   = useState('shift')
+
+  const plantMeta = ATTR[scopePlant] || ATTR.sl
+  const grainData = plantMeta[timeGrain] || plantMeta.shift
+  const attr      = { plant: plantMeta.plant, code: plantMeta.code, line: plantMeta.line, target: plantMeta.target, ...grainData }
+  const steps     = buildSteps(attr)
+  const totalDelta = +(attr.actual - attr.baseline).toFixed(1)
+  const atTarget   = attr.actual >= attr.target
+
   return (
     <div className="flex-1 overflow-y-auto">
-      <div className="max-w-[820px] px-6 py-6 space-y-8">
+      <div className="max-w-[860px] px-6 py-6 space-y-8">
 
-        {/* Goals */}
+        {/* OEE attribution waterfall */}
         <div>
-          <div className="font-body text-label font-semibold text-muted mb-4 tracking-wider">Q2 GOALS</div>
+          {/* Scope bar */}
+          <div className="flex items-center gap-3 mb-4">
+            <div className="font-body text-label font-semibold text-muted">OEE attribution</div>
+            <div className="flex items-center gap-1 ml-auto">
+              {PLANTS_META.map(pm => (
+                <button key={pm.id} type="button"
+                  onClick={() => setScopePlant(pm.id)}
+                  className={`px-3 py-1 font-body text-label transition-colors ${scopePlant === pm.id ? 'bg-signal text-stone font-semibold' : 'bg-stone2 text-muted hover:text-ink border border-rule2'}`}>
+                  {pm.label}
+                </button>
+              ))}
+            </div>
+            <div className="flex items-center gap-1">
+              {GRAINS.map(g => (
+                <button key={g.id} type="button"
+                  onClick={() => setTimeGrain(g.id)}
+                  className={`px-3 py-1 font-body text-label transition-colors ${timeGrain === g.id ? 'bg-signal text-stone font-semibold' : 'bg-stone2 text-muted hover:text-ink border border-rule2'}`}>
+                  {g.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Headline */}
+          <div className="flex items-baseline gap-3 mb-1">
+            <span className={`display-num text-score font-bold tabular-nums leading-none ${atTarget ? 'text-ok' : 'text-warn'}`}>
+              {attr.actual}%
+            </span>
+            <span className="font-body text-muted text-body">OEE · {attr.line} · {attr.plant}</span>
+            <span className={`font-body font-medium text-body ml-auto ${totalDelta >= 0 ? 'text-ok' : 'text-danger'}`}>
+              {totalDelta > 0 ? '+' : ''}{totalDelta}pp vs baseline
+            </span>
+          </div>
+          <p className="font-body text-muted text-label mb-4">{attr.narrative}</p>
+
+          {/* Chart */}
+          <div className="border border-rule2 bg-stone2 px-4 py-4">
+            <WaterfallChart attr={attr} />
+          </div>
+
+          {/* Driver breakdown */}
+          <div className="mt-3 space-y-1.5">
+            {steps.filter(s => s.type !== 'base' && s.type !== 'total').map(s => (
+              <div key={s.id} className="flex items-start gap-3 px-4 py-2.5 border border-rule2 bg-stone">
+                <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 mt-1.5 ${s.delta >= 0 ? 'bg-ok' : 'bg-danger'}`} />
+                <div className="flex-1 min-w-0">
+                  <div className="font-body font-medium text-ink text-body leading-snug">{s.label}</div>
+                  <div className="font-body text-label text-muted leading-snug">{s.note}</div>
+                </div>
+                <div className="flex-shrink-0 text-right">
+                  <div className={`font-body font-bold text-body tabular-nums ${s.delta >= 0 ? 'text-ok' : 'text-danger'}`}>
+                    {s.delta > 0 ? '+' : ''}{s.delta}pp
+                  </div>
+                  {s.action && (
+                    <div className="font-body text-label text-muted leading-snug mt-0.5 max-w-[220px] text-right">{s.action}</div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Q2 Goals */}
+        <div>
+          <div className="font-body text-label font-semibold text-muted mb-4">Q2 goals</div>
           <div className="space-y-3">
             {goalsData.map(g => {
               const onTrack = g.direction === 'increase' ? g.current >= g.target * 0.85 : g.current <= g.target * 1.15
@@ -457,7 +535,7 @@ function BenchmarksTab() {
 
         {/* Workflow adoption */}
         <div>
-          <div className="font-body text-label font-semibold text-muted mb-4 tracking-wider">WORKFLOW ADOPTION</div>
+          <div className="font-body text-label font-semibold text-muted mb-4">Workflow adoption</div>
           <div className="border border-rule2 divide-y divide-rule2">
             {ADOPTION_WORKFLOWS.map(w => {
               const atRisk = w.rate < w.target
@@ -477,9 +555,7 @@ function BenchmarksTab() {
                   <div className="h-1.5 bg-rule2 overflow-hidden">
                     <div className={`h-full ${atRisk ? 'bg-warn' : 'bg-ok'}`} style={{ width: `${pct}%` }} />
                   </div>
-                  {w.warning && (
-                    <p className="font-body text-label text-warn mt-1.5 leading-snug">{w.warning}</p>
-                  )}
+                  {w.warning && <p className="font-body text-label text-warn mt-1.5 leading-snug">{w.warning}</p>}
                 </div>
               )
             })}
@@ -488,7 +564,7 @@ function BenchmarksTab() {
 
         {/* Top quartile practices */}
         <div>
-          <div className="font-body text-label font-semibold text-muted mb-4 tracking-wider">TOP QUARTILE PRACTICES · SIMILAR PLANTS</div>
+          <div className="font-body text-label font-semibold text-muted mb-4">Top quartile practices · similar plants</div>
           <div className="space-y-2">
             {TOP_QUARTILE.map((t, i) => (
               <div key={i} className="flex items-start gap-4 px-5 py-4 border border-rule2">
@@ -716,10 +792,117 @@ const OUTCOME_MATCH = {
   unclear:  e => e.outcomeClassification === 'unclear',
 }
 
+// ─── Adoption tab — recommendation acceptance rates by finding type ───────────
+// Answers the director question: "Which recommendations do supervisors trust?"
+// Built from the finding precedent data. Updated as supervisors act on / dismiss findings.
+
+function AdoptionTab() {
+  const { findingActions } = useAppState()
+
+  // Overlay session actions on top of the historical baseline
+  const sessionActed    = Object.values(findingActions).filter(a => a.type === 'acted').length
+  const sessionDismissed = Object.values(findingActions).filter(a => a.type === 'dismissed').length
+
+  const wedge = ACCEPTANCE_RANKING[0] // Highest-trust category
+
+  return (
+    <div className="flex-1 overflow-y-auto">
+      <div className="max-w-[820px] px-6 py-6 space-y-8">
+
+        {/* Key insight — the wedge */}
+        <div className="px-5 py-4 bg-ok/[0.04] border-l-2 border-l-ok">
+          <div className="font-body font-medium text-ok text-body mb-1">Highest-trust category</div>
+          <p className="font-body text-label text-muted leading-relaxed">
+            <span className="font-medium text-ink">{wedge.label}</span> — acted on {Math.round(wedge.acceptanceRate * 100)}% of the time,
+            median {wedge.medianMins} min to action. This is the wedge: the decision domain where supervisors consistently
+            outperform their current process when using Takorin.
+          </p>
+        </div>
+
+        {/* Session signal */}
+        {(sessionActed + sessionDismissed) > 0 && (
+          <div className="flex items-center gap-6 px-5 py-3 bg-stone2 border border-rule2">
+            <div>
+              <div className="display-num text-sub font-bold tabular-nums text-ok leading-none">{sessionActed}</div>
+              <div className="font-body text-label text-muted mt-1">Acted on · this session</div>
+            </div>
+            <div>
+              <div className="display-num text-sub font-bold tabular-nums text-muted leading-none">{sessionDismissed}</div>
+              <div className="font-body text-label text-muted mt-1">Dismissed · this session</div>
+            </div>
+            <div className="ml-auto font-body text-label text-muted">
+              Live signal — updates as supervisors act on findings in Shift
+            </div>
+          </div>
+        )}
+
+        {/* Acceptance rate by category */}
+        <div>
+          <div className="font-body text-label font-semibold text-muted mb-4">Recommendation acceptance by category</div>
+          <div className="border border-rule2 divide-y divide-rule2">
+            {/* Header */}
+            <div className="grid grid-cols-[1fr_80px_80px_100px] gap-4 px-5 py-2 bg-stone3">
+              <span className="font-body text-label text-muted">Finding type</span>
+              <span className="font-body text-label text-muted text-right">Acted on</span>
+              <span className="font-body text-label text-muted text-right">Median time</span>
+              <span className="font-body text-label text-muted text-right">Outcome delta</span>
+            </div>
+            {ACCEPTANCE_RANKING.map(row => {
+              const pct   = Math.round(row.acceptanceRate * 100)
+              const color = pct >= 80 ? 'text-ok' : pct >= 60 ? 'text-warn' : 'text-danger'
+              const bar   = pct >= 80 ? 'bg-ok'   : pct >= 60 ? 'bg-warn'   : 'bg-danger'
+              return (
+                <div key={row.key} className="px-5 py-3.5">
+                  <div className="grid grid-cols-[1fr_80px_80px_100px] gap-4 items-center mb-2">
+                    <span className="font-body font-medium text-ink text-body">{row.label}</span>
+                    <span className={`font-body font-bold text-body tabular-nums text-right ${color}`}>{pct}%</span>
+                    <span className="font-body text-muted text-body tabular-nums text-right">{row.medianMins}m</span>
+                    <div className="text-right">
+                      <span className="font-body text-label tabular-nums text-ok">{row.actedDelta}pts</span>
+                      <span className="font-body text-label text-muted mx-1">vs</span>
+                      <span className="font-body text-label tabular-nums text-danger">+{Math.abs(row.ignoredDelta)}pts</span>
+                    </div>
+                  </div>
+                  {/* Acceptance bar */}
+                  <div className="flex items-center gap-3">
+                    <div className="flex-1 h-1 bg-rule2 overflow-hidden">
+                      <div className={`h-full ${bar} transition-[width]`} style={{ width: `${pct}%` }} />
+                    </div>
+                  </div>
+                  <p className="font-body text-label text-muted leading-snug mt-2">{row.insight}</p>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* Interpretation */}
+        <div>
+          <div className="font-body text-label font-semibold text-muted mb-4">What this means</div>
+          <div className="space-y-3">
+            {[
+              { label: 'Build trust here first', detail: 'Certification and allergen compliance findings have the highest acceptance rates (88–95%). These are the categories where supervisors already agree with the system. Start outcome measurement here — close the feedback loop on the decisions that are already working.', tone: 'ok' },
+              { label: 'Calibration work needed here', detail: 'Predictive maintenance recommendations are acted on only 24% of the time. Two false positives and one missed failure have shaped this pattern. Improving model calibration on maintenance signals is the highest-leverage intervention to close the trust gap.', tone: 'warn' },
+              { label: 'Process change needed here', detail: 'Scheduling (tomorrow gap) and equipment monitoring findings have 60-62% acceptance. These aren\'t trust failures — supervisors often defer these to end-of-shift. The intervention is workflow design: surface scheduling findings with a specific time constraint, not just a flag.', tone: 'signal' },
+            ].map(({ label, detail, tone }) => (
+              <div key={label} className={`px-4 py-3 border-l-2 border-l-${tone} bg-${tone}/[0.03]`}>
+                <div className={`font-body text-label font-semibold text-${tone} mb-1`}>{label}</div>
+                <p className="font-body text-label text-muted leading-snug">{detail}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+      </div>
+    </div>
+  )
+}
+
 const IMPACT_TABS = [
   { id: 'interventions', label: 'Interventions' },
   { id: 'roi',           label: 'Platform ROI'  },
   { id: 'benchmarks',    label: 'Benchmarks'    },
+  { id: 'adoption',      label: 'Adoption'      },
 ]
 
 export default function ImpactLoop() {
@@ -805,6 +988,7 @@ export default function ImpactLoop() {
 
       {tab === 'roi'        && <PlatformROI />}
       {tab === 'benchmarks' && <BenchmarksTab />}
+      {tab === 'adoption'   && <AdoptionTab />}
     </div>
   )
 }

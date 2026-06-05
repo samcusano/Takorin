@@ -1,11 +1,12 @@
 import { useState, useRef, useEffect } from 'react'
-import { Brain, Check, CheckCircle2, Users, TrendingUp, TrendingDown, Eye, RefreshCw, Cpu } from 'lucide-react'
+import { Brain, Check, CheckCircle2, Users, TrendingUp, TrendingDown, Eye, RefreshCw, Cpu, ChevronDown, ChevronRight } from 'lucide-react'
 import { Btn, AnimatedScore, SlidePanel, StatusPill } from '../components/UI'
 import { Link } from 'react-router-dom'
 import { useAppState } from '../context/AppState'
 import { crew, agentEvents } from '../data/shift'
 import { shiftData, robotFleetData } from '../data'
 import { driftSignals } from '../data/driftWatch'
+import { FINDING_TYPE_MAP, FINDING_PRECEDENTS } from '../data/findingPrecedents'
 
 const sColor = (s) => s >= 75 ? 'var(--color-danger)' : s >= 60 ? 'var(--color-warn)' : 'var(--color-ok)'
 const sLabel = (s) => s >= 75 ? 'At risk' : s >= 60 ? 'Watch' : 'Clear'
@@ -155,6 +156,73 @@ function DirectiveCard({ executed, onExecute }) {
   )
 }
 
+// ── Precedent card — "last 5 times this finding appeared" ─────────────────────
+// Shows historical acceptance rate and outcomes before the action buttons.
+// Builds trust in specific recommendation categories through track record.
+
+function PrecedentCard({ findingId }) {
+  const [open, setOpen] = useState(false)
+  const typeKey = FINDING_TYPE_MAP[findingId]
+  const p = typeKey ? FINDING_PRECEDENTS[typeKey] : null
+  if (!p) return null
+
+  const pct  = Math.round(p.acceptanceRate * 100)
+  const color = pct >= 80 ? 'text-ok' : pct >= 60 ? 'text-warn' : 'text-danger'
+  const bar   = pct >= 80 ? 'bg-ok'   : pct >= 60 ? 'bg-warn'   : 'bg-danger'
+
+  return (
+    <div className="border-t border-rule2 bg-stone">
+      <button type="button" onClick={() => setOpen(o => !o)}
+        className="flex items-center gap-3 w-full px-4 py-2 hover:bg-stone2 transition-colors text-left">
+        {/* Acceptance rate bar */}
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <div className="w-16 h-1 bg-rule2 overflow-hidden">
+            <div className={`h-full ${bar}`} style={{ width: `${pct}%` }} />
+          </div>
+          <span className={`font-body text-label font-semibold tabular-nums ${color}`}>{pct}%</span>
+        </div>
+        <span className="font-body text-label text-muted flex-1">acted on in last 5 shifts</span>
+        {/* Mini dot history */}
+        <div className="flex items-center gap-1 flex-shrink-0">
+          {p.instances.map((inst, i) => (
+            <div key={i} className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${inst.acted ? 'bg-ok' : 'bg-danger'}`} />
+          ))}
+        </div>
+        {open
+          ? <ChevronDown  size={10} strokeWidth={2} className="text-muted flex-shrink-0 ml-1" />
+          : <ChevronRight size={10} strokeWidth={2} className="text-muted flex-shrink-0 ml-1" />}
+      </button>
+
+      {open && (
+        <div className="px-4 pb-3 border-t border-rule2 bg-stone2 slide-in">
+          <div className="space-y-1.5 mt-2.5">
+            {p.instances.map((inst, i) => (
+              <div key={i} className="flex items-start gap-3">
+                <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 mt-1.5 ${inst.acted ? 'bg-ok' : 'bg-danger'}`} />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="font-body text-label text-muted flex-shrink-0">{inst.date}</span>
+                    <span className={`font-body text-label font-medium ${inst.acted ? 'text-ok' : 'text-danger'}`}>
+                      {inst.acted ? `Acted · ${inst.mins}m` : 'Ignored'}
+                    </span>
+                    <span className={`font-body text-label tabular-nums ml-auto flex-shrink-0 ${inst.scoreDelta < 0 ? 'text-ok' : 'text-danger'}`}>
+                      {inst.scoreDelta > 0 ? '+' : ''}{inst.scoreDelta} pts
+                    </span>
+                  </div>
+                  <div className="font-body text-label text-muted leading-snug">{inst.note}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="mt-3 pt-2.5 border-t border-rule2">
+            <p className="font-body text-label text-muted leading-snug">{p.insight}</p>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ── Finding card ──────────────────────────────────────────────────────────────
 const DISMISS_REASONS = [
   'Already handled by outgoing supervisor',
@@ -163,8 +231,10 @@ const DISMISS_REASONS = [
 ]
 
 function FindingCard({ f, index, onAct, onDelegate, onDismiss }) {
+  const { logFindingAction } = useAppState()
   const [dismissed, setDismissed] = useState(false)
   const [acted, setActed] = useState(false)
+  const [actedAt, setActedAt] = useState(null)
   const [delegatedTo, setDelegatedTo] = useState(null)
   const [assignOpen, setAssignOpen] = useState(false)
   const [dismissOpen, setDismissOpen] = useState(false)
@@ -176,11 +246,21 @@ function FindingCard({ f, index, onAct, onDelegate, onDismiss }) {
   if (dismissed) return null
 
   const handleDismiss = (reason) => {
+    logFindingAction(f.id, 'dismissed', reason)
     onDismiss?.(f.id, reason)
     setDismissed(true)
   }
 
+  const handleAct = () => {
+    const now = new Date()
+    logFindingAction(f.id, 'acted')
+    setActed(true)
+    setActedAt(now)
+    onAct?.(f.id)
+  }
+
   const handleDelegate = (op) => {
+    logFindingAction(f.id, 'delegated')
     setDelegatedTo(op)
     setAssignOpen(false)
     onDelegate?.(op, f.title)
@@ -207,10 +287,18 @@ function FindingCard({ f, index, onAct, onDelegate, onDismiss }) {
         <span className="font-body text-label text-muted">{f.evidence}</span>
       </div>
 
+      {/* Precedent card — shown before action buttons so supervisor sees track record first */}
+      <PrecedentCard findingId={f.id} />
+
       {acted ? (
         <div className="px-4 py-2.5 flex items-center gap-2">
           <Check size={11} className="text-ok" />
           <span className="font-body text-label text-ok">{f.consequence}</span>
+          {actedAt && (
+            <span className="font-body text-label text-muted ml-auto">
+              {actedAt.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+            </span>
+          )}
         </div>
       ) : delegatedTo ? (
         <div className="px-4 py-3 flex items-center gap-2">
@@ -219,7 +307,7 @@ function FindingCard({ f, index, onAct, onDelegate, onDismiss }) {
         </div>
       ) : (
         <div className="px-4 py-3 flex items-center gap-2">
-          <Btn variant="primary" onClick={() => { setActed(true); onAct?.(f.id) }}>{f.actions?.[0]}</Btn>
+          <Btn variant="primary" onClick={handleAct}>{f.actions?.[0]}</Btn>
           {f.actions?.[1] && (
             <span ref={dismissBtnRef} className="inline-flex">
               <Btn variant="secondary" onClick={() => setDismissOpen(p => !p)}>{f.actions[1]}</Btn>

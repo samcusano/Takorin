@@ -99,7 +99,7 @@ function BulletChart({ current, target, direction, unit }) {
 
 // ── Attribution data — keyed by plant → grain ─────────────────────────────────
 
-const ATTR = {
+export const ATTR = {
   sl: {
     plant: 'Salina', code: 'SL-04', line: 'Line 4', target: 82,
     shift: {
@@ -197,19 +197,19 @@ const ATTR = {
   },
 }
 
-const STRIP_BASE = [
+export const STRIP_BASE = [
   { id: 'sl', name: 'Salina',  code: 'SL-04', target: 82 },
   { id: 'ks', name: 'Wichita', code: 'KS-09', target: 75 },
   { id: 'co', name: 'Denver',  code: 'CO-07', target: 86 },
 ]
 
-const GRAINS = [
+export const GRAINS = [
   { id: 'shift', label: 'This Shift' },
   { id: 'day',   label: 'Today'      },
   { id: 'week',  label: 'This Week'  },
 ]
 
-const PLANTS_META = [
+export const PLANTS_META = [
   { id: 'sl', label: 'Salina'  },
   { id: 'ks', label: 'Wichita' },
   { id: 'co', label: 'Denver'  },
@@ -217,7 +217,7 @@ const PLANTS_META = [
 
 // ── Waterfall chart ───────────────────────────────────────────────────────────
 
-function buildSteps(attr) {
+export function buildSteps(attr) {
   const steps = [{ id: 'base', label: 'Baseline', short: 'Baseline', value: attr.baseline, type: 'base', delta: null }]
   let running = attr.baseline
   for (const d of attr.drivers) {
@@ -228,7 +228,7 @@ function buildSteps(attr) {
   return steps
 }
 
-function WaterfallChart({ attr }) {
+export function WaterfallChart({ attr }) {
   const steps = buildSteps(attr)
   const svgW = 700, svgH = 148
   const padL = 30, padR = 52, padT = 22, padB = 22

@@ -51,6 +51,15 @@ export function AppStateProvider({ children }) {
  const overrideAgentAction = (id, by) => setAgentActions(p => p.map(a => a.id === id ? {...a, status:'overridden', overriddenBy:by} : a))
 
  const [shiftActed, setShiftActed] = useState({})
+ // Finding action log — tracks acted-on and dismissed findings with timestamps
+ // { [findingId]: { type: 'acted'|'dismissed', at: ISO string, dismissReason?: string } }
+ const [findingActions, setFindingActions] = useState({})
+ const logFindingAction = (findingId, type, dismissReason) => {
+   setFindingActions(prev => ({
+     ...prev,
+     [findingId]: { type, at: new Date().toISOString(), dismissReason },
+   }))
+ }
  const [handoffSigned, setHandoffSigned] = useState(false)
  const [handoffNominated, setHandoffNominated] = useState({})
  const [coaRequested, setCoaRequested] = useState(false)
@@ -188,6 +197,7 @@ export function AppStateProvider({ children }) {
  quietPeriods, addQuietPeriod, clearQuietPeriod, activeQuietPeriod,
  systemConfidence,
  shiftActed, setShiftActed,
+ findingActions, logFindingAction,
  handoffSigned, setHandoffSigned,
  handoffNominated, setHandoffNominated,
  coaRequested, setCoaRequested,
