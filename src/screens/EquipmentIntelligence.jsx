@@ -810,30 +810,6 @@ export default function EquipmentIntelligence() {
       {equipTab === 'allocation' && <div className="flex-1 overflow-hidden"><ResourceAllocation /></div>}
       {equipTab === 'equipment'  && (
         <>
-        {/* ── Concentration band — precision farming: show which assets need immediate action ── */}
-        {warnings.length > 0 && (
-          <div className="flex-shrink-0 bg-warn/[0.04] border-b border-warn/20 px-5 py-3">
-            <div className="flex items-center gap-3 flex-wrap">
-              <div className="flex items-center gap-1.5">
-                <AlertTriangle size={11} strokeWidth={2} className="text-warn flex-shrink-0" />
-                <span className="font-body font-medium text-warn text-label">
-                  {warnings.length} asset{warnings.length !== 1 ? 's' : ''} flagged — maintenance decision needed
-                </span>
-              </div>
-              {warnings.slice(0, 3).map((eq, i) => (
-                <button key={i} type="button"
-                  onClick={() => setSelectedId(eq.id)}
-                  className="flex items-center gap-2 px-3 py-1 border border-warn/30 font-body text-label text-warn hover:bg-warn/[0.06] transition-colors">
-                  <span className="font-medium">{eq.id}</span>
-                  <span className="text-muted opacity-70">{eq.activeParam || 'Alert'}</span>
-                </button>
-              ))}
-              {warnings.length > 3 && (
-                <span className="font-body text-label text-muted">+ {warnings.length - 3} more</span>
-              )}
-            </div>
-          </div>
-        )}
         <div className="flex flex-1 overflow-hidden">
           {/* Left: equipment list */}
           <div className="w-[280px] flex-shrink-0 border-r border-rule2 flex flex-col bg-stone">

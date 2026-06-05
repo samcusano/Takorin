@@ -780,27 +780,77 @@ function PrepareView({ forecast = [], onStartShift }) {
     </div>
    </div>
 
-   {/* ── Staffing gaps band — precision farming: show tomorrow's specific gaps ── */}
-   <div className="flex-shrink-0 bg-warn/[0.04] border-b border-warn/20 px-5 py-3">
-    <div className="flex items-center gap-3 flex-wrap">
-     <div className="flex items-center gap-1.5">
-      <AlertTriangle size={11} strokeWidth={2} className="text-warn flex-shrink-0" />
-      <span className="font-body font-medium text-warn text-label">
-        Tomorrow AM will have 3 staffing gaps — act today to resolve before shift starts
-      </span>
+   {/* Scrollable content: staffing gaps + triage deck */}
+   <div className="flex-1 overflow-y-auto">
+
+   {/* ── PRECISION FARMING: Staffing concentration — show tomorrow's gaps as decisions ── */}
+   <div className="flex-shrink-0 border-b border-warn/20 px-5 py-4 bg-warn/[0.02]">
+    <div className="mb-3">
+     <div className="font-body font-medium text-warn text-sub mb-1">Tomorrow AM Staffing Gaps</div>
+     <div className="font-body text-body text-muted">
+      3 critical gaps will exist tomorrow at 06:00. Each requires an act-now decision today before shift ends.
      </div>
-     {[
-       { op: 'Lindqvist (L3)', reason: 'Cert expires tonight', fix: 'Renew or backfill' },
-       { op: 'Reyes (L1)', reason: 'Vacation 06/12 — 06/15', fix: 'Cross-train backup' },
-       { op: 'Martinez (L2)', reason: 'Medical leave pending', fix: 'Confirm return date' }
-     ].map((gap, i) => (
-       <button key={i} type="button"
-        className="flex items-center gap-2 px-3 py-1 border border-warn/30 font-body text-label text-warn hover:bg-warn/[0.06] transition-colors">
-        <span className="font-medium">{gap.op}</span>
-        <span className="text-muted opacity-70 text-xs">{gap.reason}</span>
-       </button>
-     ))}
     </div>
+    {/* Staffing gaps as precision-farming cards */}
+    {[
+     {
+      op: 'Lindqvist (L3)',
+      station: 'Sauce Dosing',
+      time: 'Tomorrow 06:00',
+      signal: 'L3 certification expires tonight 23:59. Sauce Dosing requires L3 for allergenic production.',
+      consequence: 'Without renewal or backfill: Tomorrow AM at 67% qualified ops (vs 85% normal). Risk score forecast 61 (Watch tier). Production delay likely.',
+      window: '7h 58m until shift end',
+      actions: ['Enroll renewal', 'Confirm backup']
+     },
+     {
+      op: 'Reyes (L1)',
+      station: 'Line 4 general',
+      time: 'Starting tomorrow 06/12',
+      signal: 'Vacation scheduled 06/12–06/15. Line 4 typically has 2–3 L1 slots. No cross-training coverage identified.',
+      consequence: 'If unfilled: Tomorrow + next 3 shifts short 1 L1. Cross-training backlog compounds. Scheduling pressure on AM/PM handoff.',
+      window: '7h 58m',
+      actions: ['Assign cross-train', 'Backfill schedule', 'Monitor']
+     },
+     {
+      op: 'Martinez (L2)',
+      station: 'Sauce Dosing',
+      time: 'Return date TBD',
+      signal: 'Medical leave request pending approval. Typical duration 5–7 days. Return date not yet confirmed.',
+      consequence: 'Status: Unknown. No action needed until return date is confirmed.',
+      window: 'Follow up today',
+      actions: ['Follow up']
+     }
+    ].map((gap, i) => (
+     <div key={i} className="mt-3 p-3 border border-rule2 bg-stone2">
+      <div className="flex items-start justify-between gap-3 mb-2">
+       <div>
+        <div className="font-body font-medium text-ink text-sub">{gap.op}</div>
+        <div className="font-body text-label text-muted">{gap.station} · {gap.time}</div>
+       </div>
+       <div className="flex-shrink-0 text-right">
+        <div className={`font-body font-bold text-sub ${i === 2 ? 'text-muted' : 'text-danger'}`}>{gap.window}</div>
+        <div className="font-body text-label text-muted">to act</div>
+       </div>
+      </div>
+      <div className="space-y-2 border-t border-rule2 pt-2 mt-2">
+       <div>
+        <div className="font-body text-label text-muted mb-0.5">Signal</div>
+        <div className="font-body text-label text-ink">{gap.signal}</div>
+       </div>
+       <div>
+        <div className="font-body text-label text-muted mb-0.5">If not resolved</div>
+        <div className="font-body text-label text-warn">{gap.consequence}</div>
+       </div>
+      </div>
+      <div className="flex items-center gap-2 mt-3 pt-2 border-t border-rule2">
+       {gap.actions.map((action, j) => (
+        <Btn key={j} variant={j === 0 ? 'primary' : 'secondary'} className="text-xs py-1 px-2 h-auto">
+         {action}
+        </Btn>
+       ))}
+      </div>
+     </div>
+    ))}
    </div>
 
    {/* Triage deck */}
@@ -915,6 +965,7 @@ function PrepareView({ forecast = [], onStartShift }) {
      </div>
     )}
 
+   </div>
    </div>
   </div>
  )
