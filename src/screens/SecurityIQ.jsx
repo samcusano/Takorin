@@ -1,492 +1,405 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
-import { securityPosture, hygieneChecks, modelRegistry, accessAuditLog, shadowAIEvents } from '../data/security'
+import { securityPosture } from '../data/security'
 import {
-  ShieldCheck, ShieldAlert, AlertTriangle, CheckCircle2, XCircle, AlertCircle,
-  Eye, Database, Clock, Activity, ChevronDown, ChevronRight, ExternalLink,
+  AlertTriangle, CheckCircle2, XCircle, AlertCircle,
+  ChevronRight, ChevronDown, Clock, User, Zap,
 } from 'lucide-react'
-import { SceneHeader, StatusPill, Btn, AnimatedScore, SectionHeader } from '../components/UI'
+import { SceneHeader, StatusPill, AnimatedScore, FilterDropdown } from '../components/UI'
 
-// ─── Shared helpers ───────────────────────────────────────────────────────────
+// ─── Finding data — exposure-first structure ──────────────────────────────────
 
-const STATUS_CFG = {
-  pass: { icon: CheckCircle2, color: 'text-ok',     dot: 'bg-ok',     border: 'border-l-ok',     label: 'Pass'    },
-  warn: { icon: AlertCircle,  color: 'text-warn',   dot: 'bg-warn',   border: 'border-l-warn',   label: 'Warning' },
-  fail: { icon: XCircle,      color: 'text-danger', dot: 'bg-danger', border: 'border-l-danger', label: 'Fail'    },
-}
-
-const SEVERITY_CFG = {
-  critical: { color: 'text-danger', pill: 'danger', label: 'Critical' },
-  high:     { color: 'text-danger', pill: 'danger', label: 'High'     },
-  medium:   { color: 'text-warn',   pill: 'warn',   label: 'Medium'   },
-  low:      { color: 'text-muted',  pill: 'muted',  label: 'Low'      },
-}
-
-const VALIDATION_CFG = {
-  current: { label: 'Current',           color: 'text-ok',   dot: 'bg-ok'   },
-  stale:   { label: 'Validation overdue', color: 'text-danger', dot: 'bg-danger' },
-  unknown: { label: 'Not validated',      color: 'text-warn', dot: 'bg-warn' },
-}
-
-// ─── Left rail: posture instrument ───────────────────────────────────────────
-
-function PostureInstrument({ posture }) {
-  const scoreColor = posture.score >= 80 ? 'text-ok' : posture.score >= 60 ? 'text-warn' : 'text-danger'
-  const statusLabel = posture.score >= 80 ? 'Secure' : posture.score >= 60 ? 'Partial' : 'At risk'
-  return (
-    <div className="px-5 pt-5 pb-4 border-b border-rule2">
-      <div className="mb-3">
-        <div className={`display-num text-score leading-none ${scoreColor}`}>
-          <AnimatedScore value={posture.score} effect="blur" />
-        </div>
-        <div className={`font-body font-medium text-label mt-1 ${scoreColor}`}>{statusLabel}</div>
-      </div>
-
-      {/* Category bars */}
-      <div className="space-y-2">
-        {posture.categoryScores.map(cat => {
-          const total = cat.pass + cat.warn + cat.fail
-          const passPct = (cat.pass / total) * 100
-          const warnPct = (cat.warn / total) * 100
-          const failPct = (cat.fail / total) * 100
-          return (
-            <div key={cat.id}>
-              <div className="flex items-center justify-between mb-0.5">
-                <span className="font-body text-label text-muted truncate">{cat.label}</span>
-                <span className="font-body text-label text-muted ml-2 flex-shrink-0 tabular-nums">
-                  {cat.pass}/{total}
-                </span>
-              </div>
-              <div className="h-1 bg-rule2 overflow-hidden flex gap-px">
-                {passPct > 0 && <div className="h-full bg-ok"     style={{ width: `${passPct}%` }} />}
-                {warnPct > 0 && <div className="h-full bg-warn"   style={{ width: `${warnPct}%` }} />}
-                {failPct > 0 && <div className="h-full bg-danger" style={{ width: `${failPct}%` }} />}
-              </div>
-            </div>
-          )
-        })}
-      </div>
-
-      <div className="flex items-center gap-3 mt-3">
-        {[['bg-ok','Pass'],['bg-warn','Warn'],['bg-danger','Fail']].map(([dot,lbl]) => (
-          <div key={lbl} className="flex items-center gap-1">
-            <div className={`w-1.5 h-1.5 rounded-full ${dot} flex-shrink-0`} />
-            <span className="font-body text-label text-muted">{lbl}</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
-
-// ─── Left rail: section nav ───────────────────────────────────────────────────
-
-const SECTIONS = [
-  { id: 'hygiene',  label: 'OT Hygiene',     icon: ShieldCheck },
-  { id: 'models',   label: 'Model Registry', icon: Database    },
-  { id: 'audit',    label: 'Access Audit',   icon: Eye         },
-  { id: 'shadow',   label: 'Shadow AI',      icon: ShieldAlert },
+const FINDINGS = [
+  {
+    id: 'f-governance',
+    label: 'AI governance policy missing',
+    severity: 'critical',
+    category: 'AI Governance',
+    auditExposure: 'High',
+    daysToClose: 3,
+    whyItExists: 'Takorin operates 7 autonomous agents across compliance, maintenance, supplier, and shift functions. No approved AI usage policy exists at this facility. One shadow AI investigation is unresolved. The platform is making compliance-level recommendations without documented governance controls.',
+    evidence: [
+      'No approved AI governance document found in facility records',
+      '7 AI agents operating autonomously — including Compliance Monitor, which auto-opens CAPAs',
+      '1 active shadow AI investigation (HMI-03) with unknown data exposure scope',
+      'No model approval registry in place — models deployed without formal authorization',
+      'No prohibited data categories defined — any plant data can currently be submitted to external AI tools',
+      'IBM 2025: 63% of companies lack AI governance policies. 97% of AI-related breaches involved missing access controls.',
+    ],
+    consequences: {
+      audit: 'If an FDA auditor requests evidence of AI controls today, this facility cannot demonstrate approved AI usage, access governance, or model oversight. This is a direct finding under 21 CFR Part 11 electronic records requirements.',
+      compliance: 'Agent-generated CAPAs and compliance records may be challenged if no governance framework backs the AI decisions that created them.',
+      operational: 'The active shadow AI incident (HMI-03) cannot be fully assessed without a baseline policy defining what constitutes an unauthorized action.',
+      cyber: 'Without a governance policy, employees have no guidance on which AI tools are permitted, what data may be submitted, or how to report a shadow AI incident — making recurrence likely.',
+      accountability: 'Director ratification of agent decisions creates personal accountability. Without a governance policy, there is no documented standard against which those decisions were made.',
+    },
+    remediation: [
+      { step: 'Assign policy owner', detail: 'Designate Plant Director and IT/OT Security as co-owners. Add to org chart.', effort: '30 min', owner: 'Plant Director' },
+      { step: 'List all authorized AI tools', detail: 'Document Takorin and any approved third-party AI tools. All others are prohibited by default.', effort: '1 hour', owner: 'IT/OT Security' },
+      { step: 'Define prohibited data categories', detail: 'Recipes, batch parameters, P&IDs, production schedules, sensor readings — prohibit submission to external AI tools.', effort: '2 hours', owner: 'Plant Director + QA' },
+      { step: 'Define model access and approval process', detail: 'Document who can deploy or approve AI models. Reference the model registry in Security.', effort: '1 hour', owner: 'IT/OT Security' },
+      { step: 'Publish and distribute policy', detail: 'Distribute to all supervisors and operators. Include in onboarding. Log distribution for audit trail.', effort: '1 hour', owner: 'HR + Plant Director' },
+    ],
+    totalEffort: '5–6 hours',
+    owner: 'Plant Director + IT/OT Security',
+    targetDate: '3 days — before FDA audit window',
+  },
+  {
+    id: 'f-shadow-hmi3',
+    label: 'Shadow AI investigation — HMI Station 3',
+    severity: 'high',
+    category: 'Shadow AI',
+    auditExposure: 'High',
+    daysToClose: 1,
+    whyItExists: 'HMI Station 3 (Line 4 packaging) made an outbound HTTPS connection to api.openai.com on May 14 at 11:32. No payload was captured — the content of what was sent is unknown. The station user denies initiating the connection.',
+    evidence: [
+      'Network log: 2026-05-14 11:32:07 — OT-HMI-03 to api.openai.com:443',
+      'No payload captured — TLS encryption prevented content inspection',
+      'Station user (Line 4 packaging operator) denies initiating the request',
+      'Investigation active: checking browser extensions and scheduled scripts on HMI-03',
+      'Station has not been isolated — production continues on that station',
+    ],
+    consequences: {
+      audit: 'If this represents unauthorized data submission to an external AI model, it is a data governance incident. Without a policy, the facility has no documented standard that was violated — which complicates any disciplinary or regulatory response.',
+      compliance: 'Data submitted to external AI models may be retained and used for model training. If production schedules, sensor data, or batch parameters were submitted, that data is now outside the facility control.',
+      operational: 'Production continues on HMI-03. If the connection was initiated by a script or extension, it may recur on every shift.',
+      cyber: 'An outbound connection from an OT node to an external API is the exact attack vector described in the OT cybersecurity framework. Whether initiated by a user or a compromised script, the risk profile is identical.',
+      accountability: 'Until the source is identified, the plant director cannot confirm whether this is a user behavior issue or a security compromise.',
+    },
+    remediation: [
+      { step: 'Isolate HMI-03 from internet pending investigation', detail: 'Block outbound access from OT-HMI-03 until investigation concludes. Coordinate with Line 4 supervisor.', effort: '15 min', owner: 'IT/OT Security' },
+      { step: 'Audit browser extensions and scheduled tasks on HMI-03', detail: 'Check for browser extensions, cron jobs, or scripts that could have triggered the connection. Review installation log.', effort: '2 hours', owner: 'IT Security' },
+      { step: 'Interview station user formally', detail: 'Conduct a documented interview. Review what tasks were being performed at 11:32 on May 14.', effort: '1 hour', owner: 'Plant Director + HR' },
+      { step: 'Determine data exposure scope', detail: 'If a script or extension initiated the connection, assess what data was accessible to it. Prepare a data exposure report.', effort: '2 hours', owner: 'IT Security' },
+    ],
+    totalEffort: '5 hours',
+    owner: 'IT/OT Security + Plant Director',
+    targetDate: '1 day — active investigation',
+  },
+  {
+    id: 'f-egress',
+    label: 'OT egress gap — Oven B SCADA unfiltered',
+    severity: 'high',
+    category: 'OT Hygiene',
+    auditExposure: 'High',
+    daysToClose: 7,
+    whyItExists: 'Oven B SCADA controller (OT-B-07) has unfiltered outbound internet access. The filtering rule was not re-applied after a network reconfiguration in March 2026. The gap has been open for 6 weeks.',
+    evidence: [
+      'OT-B-07 (Oven B SCADA) can reach external hosts without logging — confirmed in passive network scan',
+      'Egress filter rule was present before March 2026 network reconfiguration',
+      'Rule not re-applied after the change — oversight in the change management process',
+      'Maintenance ticket OT-2604-012 open since May 2, 2026 — patch not yet scheduled',
+      'No data transfer has been detected to date — but the gap is unmonitored by design',
+    ],
+    consequences: {
+      audit: 'ISA/IEC 62443 requires egress filtering on all OT nodes. This node is non-compliant. An audit would flag this as a control gap requiring written remediation.',
+      compliance: 'If an OT data breach occurs through this node, the lack of filtering eliminates the defense that outbound traffic was controlled.',
+      operational: 'Unmonitored egress means any malware or unauthorized script on OT-B-07 could exfiltrate production data without triggering an alert.',
+      cyber: 'This is the same vector that shadow AI incidents exploit — outbound connections from OT nodes to external services.',
+      accountability: null,
+    },
+    remediation: [
+      { step: 'Apply egress filter rule to OT-B-07', detail: 'Add the same egress filter rule removed in March. Configuration is documented in the March change log.', effort: '30 min', owner: 'IT/OT Security' },
+      { step: 'Confirm no data was exfiltrated', detail: 'Review outbound traffic logs from OT-B-07 for the 6-week gap period. Flag any anomalies.', effort: '1 hour', owner: 'IT Security' },
+      { step: 'Update change management checklist', detail: 'Add egress filter verification to the network reconfiguration checklist to prevent recurrence.', effort: '30 min', owner: 'IT/OT Security' },
+    ],
+    totalEffort: '2 hours',
+    owner: 'IT/OT Security',
+    targetDate: '7 days',
+  },
+  {
+    id: 'f-alerting',
+    label: 'No alerting on large OT data transfers',
+    severity: 'high',
+    category: 'OT Hygiene',
+    auditExposure: 'High',
+    daysToClose: 7,
+    whyItExists: 'The alert rule for outbound data transfers exceeding 50MB from the OT network was removed during the March 2026 firewall update. The May 10 shadow AI incident was detected manually during a routine review — not by automated alerting.',
+    evidence: [
+      'Alert rule confirmed removed in post-incident review of SEC-2605-002 (May 10 ChatGPT incident)',
+      'May 10 incident: operator submitted batch parameters to ChatGPT — detected by manual review, not alerting',
+      'No automated detection for data transfers above 10MB to non-approved destinations',
+      'Rule was standard practice before March 2026 firewall update',
+    ],
+    consequences: {
+      audit: 'Without transfer volume alerting, the facility cannot demonstrate active monitoring of OT data leaving the network — a gap under ISA/IEC 62443 monitoring requirements.',
+      compliance: null,
+      operational: 'The next shadow AI incident will not be detected until a manual review catches it — which may be days or weeks later.',
+      cyber: 'Automated detection is the only scalable defense against shadow AI at operator scale. Without it, policy alone is insufficient.',
+      accountability: null,
+    },
+    remediation: [
+      { step: 'Re-add egress volume alert rule', detail: 'Alert threshold: above 10MB to any non-approved destination triggers SOC notification. Reference the pre-March configuration.', effort: '1 hour', owner: 'IT Security' },
+      { step: 'Test the alert fires correctly', detail: 'Simulate a 15MB transfer to a non-approved endpoint and confirm the alert triggers.', effort: '30 min', owner: 'IT Security' },
+    ],
+    totalEffort: '1.5 hours',
+    owner: 'IT Security',
+    targetDate: '7 days',
+  },
+  {
+    id: 'f-model-stale',
+    label: 'Predictive maintenance model — 76 days past validation',
+    severity: 'high',
+    category: 'Models',
+    auditExposure: 'Medium',
+    daysToClose: 5,
+    whyItExists: 'The Predictive Maintenance model (v1.8.3) was last validated on March 1, 2026. It is now 76 days past its validation window. You recently ratified its recommendation to schedule an R-03 bearing inspection — a decision based on a 3-case precedent pool, 2 of which are from a different production line.',
+    evidence: [
+      'Model v1.8.3 — training cutoff January 20, 2026 — last validated March 1, 2026',
+      '76 days past the scheduled validation window with no revalidation scheduled',
+      'R-03 bearing recommendation issued based on a 3-case precedent pool',
+      '2 of 3 precedents are from Line 6, not Line 4 — cross-line inference carries uncertainty',
+      'Director ratified this recommendation at 13:23 today — it is now part of the compliance record',
+    ],
+    consequences: {
+      audit: 'If questioned, the ratified R-03 decision cannot be supported by a current validation record. A 76-day gap with no revalidation scheduled is a defensible weakness.',
+      compliance: 'Model-generated maintenance recommendations that lead to production decisions must be traceable to validated, current model versions.',
+      operational: 'If the recommendation is incorrect — because it was trained on stale or cross-line data — the bearing inspection tonight may miss a real fault or generate unnecessary downtime.',
+      cyber: null,
+      accountability: 'Director ratification of a Tier 3 recommendation creates personal accountability. Stale model validation weakens the defensibility of that decision.',
+    },
+    remediation: [
+      { step: 'Schedule model revalidation with Takorin ML', detail: 'Request a Line 4-specific validation run. Requires 24 hours of fresh telemetry data.', effort: '30 min to schedule', owner: 'Operations + Takorin ML' },
+      { step: 'Flag the R-03 decision in the audit record', detail: 'Add a note documenting that validation was pending at time of approval. This is the responsible disclosure.', effort: '15 min', owner: 'Plant Director' },
+      { step: 'Pause new high-stakes decisions until revalidated', detail: 'Routine monitoring continues. Escalate any new equipment recommendations to manual review until validation is complete.', effort: 'Ongoing', owner: 'Operations' },
+    ],
+    totalEffort: '1 hour + 24-hour validation window',
+    owner: 'Operations + Takorin ML',
+    targetDate: '5 days',
+  },
+  {
+    id: 'f-shared-accounts',
+    label: 'Shared service accounts still active',
+    severity: 'medium',
+    category: 'OT Hygiene',
+    auditExposure: 'Medium',
+    daysToClose: 14,
+    whyItExists: 'Two shared service accounts are in use: one for MES batch reporting, one for SCADA historian sync. These were flagged in the January 2026 risk assessment. Remediation has been deferred twice due to schedule conflicts. IT has a migration plan ready but it has not been scheduled.',
+    evidence: [
+      'Account audit: 2 shared service accounts active — svc_mes_batch and svc_scada_hist',
+      'Both accounts used for automated scheduled data sync with no individual attribution',
+      'Flagged in January 2026 risk assessment with a 30-day remediation target',
+      'Remediation deferred: February (resource conflict), April (production freeze)',
+      'IT has a migration plan ready and has confirmed no production impact',
+    ],
+    consequences: {
+      audit: 'Shared credentials are a standard finding in any OT or IT security audit. ISA/IEC 62443 requires individual accountability. If an incident occurs on a system accessed by shared accounts, attribution is impossible.',
+      compliance: null,
+      operational: 'No current operational impact. Risk is in accountability traceability and audit defensibility.',
+      cyber: 'Shared accounts reduce the effective security of credential rotation — if one system using the account is compromised, the credential is valid across all systems where it is used.',
+      accountability: 'If an incident involves MES or SCADA historian data, the shared account prevents identifying who or what performed the action.',
+    },
+    remediation: [
+      { step: 'Schedule migration with IT', detail: 'IT has the migration plan ready. Book a 4-hour maintenance window. No production impact expected.', effort: '4 hours (IT-led)', owner: 'IT Security' },
+      { step: 'Test automated sync after migration', detail: 'Verify MES batch reporting and SCADA historian sync function correctly with new individual service accounts.', effort: '1 hour', owner: 'IT + Operations' },
+    ],
+    totalEffort: '5 hours (IT-led)',
+    owner: 'IT Security',
+    targetDate: '14 days',
+  },
+  {
+    id: 'f-session-recording',
+    label: 'Contractor VPN — session recording not enabled',
+    severity: 'medium',
+    category: 'OT Hygiene',
+    auditExposure: 'Medium',
+    daysToClose: 14,
+    whyItExists: 'Session recording was not enabled for contractor VPN sessions. This was identified after SEC-2605-003, where contractor J. Barker accessed the MES maintenance schedule from a personal device over VPN. The session content was unrecorded, so the scope of access could not be confirmed.',
+    evidence: [
+      'SEC-2605-003 (May 3): contractor accessed MES maintenance schedule via personal device over VPN',
+      'Session recording was not active at the time of the incident',
+      'Contractor access policy updated May 3 — session recording requires a separate VPN gateway config change',
+      'IT approval for the config change is pending',
+    ],
+    consequences: {
+      audit: 'Contractor access without session recording cannot be audited. If a contractor misuses access, the incident cannot be reconstructed.',
+      compliance: null,
+      operational: null,
+      cyber: 'Contractor VPN is a common attack vector. Without session recording, a compromised contractor credential cannot be detected through behavioral analysis.',
+      accountability: 'If a future contractor incident occurs, the facility will again be unable to determine scope of access.',
+    },
+    remediation: [
+      { step: 'Approve VPN gateway session recording config change', detail: 'Config change is drafted and pending IT approval. Approve and deploy.', effort: '2 hours (IT-led)', owner: 'IT Security' },
+      { step: 'Verify session recording active for all contractor sessions', detail: 'Test with a contractor login and confirm session is captured.', effort: '30 min', owner: 'IT Security' },
+    ],
+    totalEffort: '2.5 hours (IT-led)',
+    owner: 'IT Security',
+    targetDate: '14 days',
+  },
 ]
 
-function SectionNav({ active, onChange, posture, modelRegistry, shadowAIEvents }) {
-  const staleModels = modelRegistry.filter(m => m.validationStatus === 'stale').length
-  const activeIncidents = shadowAIEvents.filter(e => e.status === 'investigating').length
-  const openFindings = hygieneChecks.filter(c => c.status === 'fail').length
+// ─── Shared config ────────────────────────────────────────────────────────────
 
-  const badges = {
-    hygiene: openFindings > 0 ? String(openFindings) : null,
-    models:  staleModels > 0  ? String(staleModels)  : null,
-    audit:   null,
-    shadow:  activeIncidents > 0 ? String(activeIncidents) : null,
-  }
+const SEV_ORDER  = { critical: 0, high: 1, medium: 2, low: 3 }
+const SORTED     = [...FINDINGS].sort((a, b) => (SEV_ORDER[a.severity] ?? 3) - (SEV_ORDER[b.severity] ?? 3))
+const SEV_TONE   = { critical: 'danger', high: 'danger', medium: 'warn', low: 'muted' }
+const SEV_BORDER = { critical: 'border-l-danger', high: 'border-l-danger', medium: 'border-l-warn', low: 'border-l-muted' }
 
+const CAT_OPTIONS = [
+  { value: 'all',           label: 'All categories' },
+  { value: 'AI Governance', label: 'AI Governance'  },
+  { value: 'OT Hygiene',    label: 'OT Hygiene'     },
+  { value: 'Models',        label: 'Models'          },
+  { value: 'Shadow AI',     label: 'Shadow AI'       },
+]
+
+const CONSEQUENCE_LABELS = {
+  audit:          'Audit exposure',
+  compliance:     'Compliance exposure',
+  operational:    'Operational exposure',
+  cyber:          'Cybersecurity exposure',
+  accountability: 'Accountability exposure',
+}
+
+// ─── Finding row ──────────────────────────────────────────────────────────────
+
+function FindingRow({ finding, selected, onClick }) {
+  const isSelected = selected?.id === finding.id
   return (
-    <nav className="py-2">
-      {SECTIONS.map(s => {
-        const Icon = s.icon
-        const isActive = active === s.id
-        const badge = badges[s.id]
-        return (
-          <button key={s.id} type="button" onClick={() => onChange(s.id)}
-            className={`flex items-center gap-3 w-full px-5 py-2.5 text-left transition-colors border-l-2 ${
-              isActive ? 'border-l-signal bg-signal/[0.04] text-white' : 'border-l-transparent text-muted hover:bg-stone2 hover:text-ink'
-            }`}>
-            <Icon size={13} strokeWidth={2} className="flex-shrink-0" />
-            <span className="font-body text-body flex-1">{s.label}</span>
-            {badge && (
-              <span className={`font-body text-label font-semibold px-1.5 py-px ${
-                s.id === 'shadow' ? 'bg-danger/15 text-danger' : 'bg-warn/15 text-warn'
-              }`}>{badge}</span>
-            )}
-          </button>
-        )
-      })}
-    </nav>
+    <button type="button" onClick={onClick}
+      className={`w-full text-left flex items-start gap-4 px-5 py-4 border-b border-rule2 border-l-[3px] ${SEV_BORDER[finding.severity]} transition-colors ${
+        isSelected ? 'bg-stone3' : 'hover:bg-stone2/50'
+      }`}>
+      <div className="flex-1 min-w-0">
+        <div className="font-body font-medium text-ink text-body leading-snug mb-1.5">{finding.label}</div>
+        <div className="flex items-center gap-2 flex-wrap">
+          <StatusPill tone={SEV_TONE[finding.severity]} className="capitalize">{finding.severity}</StatusPill>
+          <span className="font-body text-label text-muted">{finding.category}</span>
+          <span className="font-body text-label text-muted opacity-40">·</span>
+          <span className="font-body text-label text-muted">Audit: {finding.auditExposure}</span>
+        </div>
+      </div>
+      <div className="flex-shrink-0 text-right">
+        <div className={`font-body font-bold text-sub tabular-nums leading-none ${finding.daysToClose <= 3 ? 'text-danger' : finding.daysToClose <= 7 ? 'text-warn' : 'text-muted'}`}>
+          {finding.daysToClose}d
+        </div>
+        <div className="font-body text-label text-muted">to close</div>
+      </div>
+      <ChevronRight size={12} strokeWidth={2} className={`flex-shrink-0 mt-1 transition-transform ${isSelected ? 'rotate-90 text-signal' : 'text-muted'}`} />
+    </button>
   )
 }
 
-// ─── Workspace: OT Hygiene ────────────────────────────────────────────────────
+// ─── Drill-down panel ─────────────────────────────────────────────────────────
 
-const HYGIENE_CATEGORIES = ['Network & Identity', 'Assets & Hardening', 'Monitoring & Response', 'People & Process']
+function DrillDown({ finding }) {
+  const [remOpen, setRemOpen] = useState(false)
 
-function HygieneRow({ check }) {
-  const [open, setOpen] = useState(false)
-  const cfg = STATUS_CFG[check.status]
-  const Icon = cfg.icon
-  const sev = check.severity ? SEVERITY_CFG[check.severity] : null
-  return (
-    <div className={`border-b border-rule2 border-l-2 ${cfg.border} ${open ? 'bg-stone2' : ''}`}>
-      <button type="button" onClick={() => setOpen(o => !o)}
-        className="flex items-center gap-3 w-full px-4 py-3 text-left hover:bg-stone2 transition-colors">
-        <Icon size={12} strokeWidth={2} className={`flex-shrink-0 ${cfg.color}`} />
-        <span className={`font-body text-body flex-1 leading-snug text-left ${check.status === 'pass' ? 'text-muted' : 'text-ink'}`}>
-          {check.label}
-        </span>
-        {sev && <StatusPill tone={sev.pill} className="flex-shrink-0">{sev.label}</StatusPill>}
-        {open ? <ChevronDown size={10} className="text-muted flex-shrink-0" /> : <ChevronRight size={10} className="text-muted flex-shrink-0" />}
-      </button>
-      {open && (
-        <div className="px-4 pb-3 space-y-2 border-t border-rule2">
-          <p className="font-body text-label text-muted leading-relaxed pt-2">{check.detail}</p>
-          {check.finding && (
-            <div className={`px-3 py-2 border-l-2 ${cfg.border} bg-stone`}>
-              <div className="font-body text-label font-medium text-muted mb-0.5">Finding</div>
-              <p className="font-body text-label text-muted leading-snug">{check.finding}</p>
-            </div>
-          )}
-          {check.remediation && (
-            <div className="flex items-start gap-2">
-              <span className={`font-body text-label ${cfg.color} flex-shrink-0`}>→</span>
-              <p className="font-body text-label leading-snug" style={{ color: 'var(--color-ink)' }}>{check.remediation}</p>
-            </div>
-          )}
-        </div>
-      )}
+  if (!finding) return (
+    <div className="flex items-center justify-center h-full font-body text-muted text-label">
+      Select a finding
     </div>
   )
-}
 
-function HygieneWorkspace() {
-  const passing = hygieneChecks.filter(c => c.status === 'pass').length
-  const failing = hygieneChecks.filter(c => c.status === 'fail').length
-  const warning = hygieneChecks.filter(c => c.status === 'warn').length
+  const consequences = Object.entries(finding.consequences).filter(([, v]) => v)
+
   return (
-    <div className="flex-1 overflow-y-auto">
-      {/* Summary strip */}
-      <div className="flex items-center gap-6 px-6 py-3 border-b border-rule2 bg-stone2">
-        {[
-          [passing, 'text-ok',     'Passing'],
-          [warning, 'text-warn',   'Warning'],
-          [failing, 'text-danger', 'Failing'],
-        ].map(([n, cls, lbl]) => (
-          <div key={lbl} className="flex items-center gap-2">
-            <span className={`display-num text-sub font-bold tabular-nums ${cls}`}>{n}</span>
-            <span className="font-body text-label text-muted">{lbl}</span>
-          </div>
-        ))}
-        <span className="ml-auto font-body text-label text-muted">{hygieneChecks.length} checks total · ISA/IEC 62443</span>
+    <div className="flex flex-col h-full overflow-hidden">
+      {/* Header */}
+      <div className="flex-shrink-0 px-6 py-4 border-b border-rule2 bg-stone2">
+        <div className="flex items-center gap-2 mb-2 flex-wrap">
+          <StatusPill tone={SEV_TONE[finding.severity]} className="capitalize">{finding.severity}</StatusPill>
+          <span className="font-body text-label text-muted">Audit exposure: {finding.auditExposure}</span>
+          <span className="font-body text-label text-muted opacity-40">·</span>
+          <span className={`font-body text-label font-semibold ${finding.daysToClose <= 3 ? 'text-danger' : finding.daysToClose <= 7 ? 'text-warn' : 'text-muted'}`}>
+            {finding.daysToClose}d to close
+          </span>
+        </div>
+        <div className="font-display font-bold text-ink text-head leading-tight">{finding.label}</div>
       </div>
 
-      {/* Grouped checklist */}
-      {HYGIENE_CATEGORIES.map(category => {
-        const items = hygieneChecks.filter(c => c.category === category)
-        return (
-          <div key={category}>
-            <SectionHeader label={category} />
-            {items.map(c => <HygieneRow key={c.id} check={c} />)}
-          </div>
-        )
-      })}
-    </div>
-  )
-}
+      <div className="flex-1 overflow-y-auto">
+        <div className="max-w-[660px] px-6 py-6 space-y-8">
 
-// ─── Workspace: Model Registry ────────────────────────────────────────────────
+          {/* Why this exists */}
+          <section>
+            <div className="font-body text-label font-semibold text-muted mb-3">Why this exists</div>
+            <p className="font-body text-body text-ink leading-relaxed">{finding.whyItExists}</p>
+          </section>
 
-function ModelCard({ model }) {
-  const [open, setOpen] = useState(false)
-  const vcfg = VALIDATION_CFG[model.validationStatus] ?? VALIDATION_CFG.unknown
-  return (
-    <div className={`border-b border-rule2 border-l-2 ${model.validationStatus === 'stale' ? 'border-l-danger' : 'border-l-rule2'}`}>
-      <button type="button" onClick={() => setOpen(o => !o)}
-        className="flex items-center gap-4 w-full px-5 py-4 text-left hover:bg-stone2 transition-colors">
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-0.5">
-            <span className="font-body font-medium text-ink text-body">{model.name}</span>
-            {model.writeAccess && (
-              <span className="font-body text-label px-1.5 py-px bg-warn/10 text-warn">Write access</span>
-            )}
-          </div>
-          <div className="flex items-center gap-3">
-            <span className="font-body text-label text-muted">{model.agent}</span>
-            <span className="font-body text-label text-muted opacity-40">·</span>
-            <span className="font-body text-label text-muted">v{model.version}</span>
-          </div>
-        </div>
-        <div className="flex items-center gap-2 flex-shrink-0">
-          <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${vcfg.dot}`} />
-          <span className={`font-body text-label ${vcfg.color}`}>{vcfg.label}</span>
-          {model.staleDays && (
-            <span className="font-body text-label text-danger">· {model.staleDays}d overdue</span>
-          )}
-        </div>
-        {open ? <ChevronDown size={10} className="text-muted flex-shrink-0 ml-1" /> : <ChevronRight size={10} className="text-muted flex-shrink-0 ml-1" />}
-      </button>
-
-      {open && (
-        <div className="px-5 pb-4 border-t border-rule2 space-y-3 bg-stone2">
-          {model.finding && (
-            <div className="flex items-start gap-2 px-3 py-2 bg-danger/[0.04] border-l-2 border-l-danger mt-3">
-              <AlertTriangle size={11} strokeWidth={2} className="text-danger flex-shrink-0 mt-px" />
-              <p className="font-body text-danger text-label leading-snug">{model.finding}</p>
+          {/* Evidence */}
+          <section>
+            <div className="font-body text-label font-semibold text-muted mb-3">Evidence</div>
+            <div className="border border-rule2 divide-y divide-rule2">
+              {finding.evidence.map((e, i) => (
+                <div key={i} className="flex items-start gap-3 px-4 py-3">
+                  <div className="w-1.5 h-1.5 rounded-full bg-signal flex-shrink-0 mt-1.5" />
+                  <span className="font-body text-body text-muted leading-snug">{e}</span>
+                </div>
+              ))}
             </div>
-          )}
+          </section>
 
-          <div className="grid grid-cols-2 gap-4 pt-2">
-            {[
-              ['Provider', model.provider],
-              ['Version', `v${model.version}`],
-              ['Deployed', model.deployedDate],
-              ['Last validated', model.lastValidated],
-              ['Training cutoff', model.trainingCutoff],
-              ['Prompt version', `v${model.promptVersion}`],
-            ].map(([label, val]) => (
-              <div key={label}>
-                <div className="font-body text-label text-muted mb-0.5">{label}</div>
-                <div className="font-body text-label text-ink">{val}</div>
+          {/* What happens if ignored */}
+          <section>
+            <div className="font-body text-label font-semibold text-muted mb-3">What happens if ignored</div>
+            <div className="space-y-2">
+              {consequences.map(([key, val]) => (
+                <div key={key} className={`px-4 py-3 border-l-2 ${key === 'audit' ? 'border-l-danger bg-danger/[0.03]' : 'border-l-warn bg-warn/[0.02]'}`}>
+                  <div className={`font-body text-label font-semibold mb-1 ${key === 'audit' ? 'text-danger' : 'text-warn'}`}>
+                    {CONSEQUENCE_LABELS[key]}
+                  </div>
+                  <p className="font-body text-label text-muted leading-snug">{val}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* Recommended remediation — collapsed by default */}
+          <section>
+            <button type="button" onClick={() => setRemOpen(o => !o)}
+              className="flex items-center justify-between w-full text-left hover:opacity-80 transition-opacity">
+              <div className="font-body text-label font-semibold text-muted">Recommended remediation</div>
+              <div className="flex items-center gap-2">
+                <span className="font-body text-label text-muted">Est. {finding.totalEffort}</span>
+                <ChevronDown size={11} strokeWidth={2} className={`text-muted transition-transform ${remOpen ? 'rotate-180' : ''}`} />
               </div>
-            ))}
-          </div>
+            </button>
 
-          <div>
-            <div className="font-body text-label text-muted mb-1">Data access scope</div>
-            <div className="flex flex-wrap gap-1.5">
-              {model.dataScope.map(s => (
-                <span key={s} className="font-body text-label text-muted bg-stone border border-rule2 px-2 py-px">{s}</span>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <div className="font-body text-label text-muted mb-0.5">Write scope</div>
-            <div className="font-body text-label text-ink">{model.accessScope}</div>
-            {model.writeDetail && <div className="font-body text-label text-muted mt-0.5">{model.writeDetail}</div>}
-          </div>
-
-          <div>
-            <div className="font-body text-label text-muted mb-0.5">Confidence method</div>
-            <div className="font-body text-label text-muted leading-snug">{model.confidenceMethod}</div>
-          </div>
-        </div>
-      )}
-    </div>
-  )
-}
-
-function ModelRegistryWorkspace() {
-  const stale = modelRegistry.filter(m => m.validationStatus === 'stale').length
-  const withWrite = modelRegistry.filter(m => m.writeAccess).length
-  return (
-    <div className="flex-1 overflow-y-auto">
-      <div className="flex items-center gap-6 px-6 py-3 border-b border-rule2 bg-stone2">
-        <div className="flex items-center gap-2">
-          <span className="display-num text-sub font-bold tabular-nums text-ok">{modelRegistry.length - stale}</span>
-          <span className="font-body text-label text-muted">Current</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="display-num text-sub font-bold tabular-nums text-danger">{stale}</span>
-          <span className="font-body text-label text-muted">Stale</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="display-num text-sub font-bold tabular-nums text-warn">{withWrite}</span>
-          <span className="font-body text-label text-muted">Write access</span>
-        </div>
-        <span className="ml-auto font-body text-label text-muted">{modelRegistry.length} models deployed</span>
-      </div>
-      {modelRegistry.map(m => <ModelCard key={m.id} model={m} />)}
-    </div>
-  )
-}
-
-// ─── Workspace: Access Audit ──────────────────────────────────────────────────
-
-const ACTOR_TYPE_CFG = {
-  agent: { color: 'text-signal', dot: 'bg-signal' },
-  human: { color: 'text-ink',    dot: 'bg-muted'  },
-}
-
-const TIER_LABELS = { 0: 'T0 · Auto', 1: 'T1 · Notified', 2: 'T2 · Approved', 3: 'T3 · Ratified' }
-
-function AuditRow({ entry }) {
-  const [open, setOpen] = useState(false)
-  const actorCfg = ACTOR_TYPE_CFG[entry.actorType] ?? ACTOR_TYPE_CFG.human
-  return (
-    <div className="border-b border-rule2">
-      <button type="button" onClick={() => setOpen(o => !o)}
-        className="flex items-center gap-3 w-full px-5 py-3 text-left hover:bg-stone2 transition-colors">
-        <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${actorCfg.dot}`} />
-        <div className="flex-1 min-w-0">
-          <div className="font-body font-medium text-ink text-body leading-snug truncate">{entry.action}</div>
-          <div className="flex items-center gap-2 mt-0.5">
-            <span className={`font-body text-label ${actorCfg.color}`}>{entry.actor}</span>
-            {entry.tier !== null && entry.tier !== undefined && (
-              <>
-                <span className="font-body text-label text-muted opacity-40">·</span>
-                <span className="font-body text-label text-muted">{TIER_LABELS[entry.tier]}</span>
-              </>
+            {!remOpen && (
+              <button type="button" onClick={() => setRemOpen(true)}
+                className="mt-3 flex items-center gap-1.5 font-body text-label text-signal hover:text-ink transition-colors">
+                <Zap size={10} strokeWidth={2} />
+                Show {finding.remediation.length} sequential steps
+              </button>
             )}
-          </div>
-        </div>
-        <span className="font-body text-label text-muted flex-shrink-0">{entry.timestamp}</span>
-        {open ? <ChevronDown size={10} className="text-muted flex-shrink-0" /> : <ChevronRight size={10} className="text-muted flex-shrink-0" />}
-      </button>
-      {open && (
-        <div className="px-5 pb-3 border-t border-rule2 bg-stone2 space-y-2">
-          <div className="pt-2">
-            <div className="font-body text-label text-muted mb-1.5">Data accessed</div>
-            <div className="flex flex-wrap gap-1.5">
-              {entry.dataAccessed.map(s => (
-                <span key={s} className="font-body text-label text-muted bg-stone border border-rule2 px-2 py-px">{s}</span>
-              ))}
+
+            {remOpen && (
+              <div className="mt-3 space-y-2">
+                {finding.remediation.map((r, i) => (
+                  <div key={i} className="flex items-start gap-4 px-4 py-3 bg-stone2 border border-rule2">
+                    <span className="font-body text-label font-bold text-signal w-5 flex-shrink-0 tabular-nums mt-px">{i + 1}</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-body font-medium text-ink text-body mb-0.5">{r.step}</div>
+                      <div className="font-body text-label text-muted leading-snug mb-2">{r.detail}</div>
+                      <div className="flex items-center gap-4">
+                        <span className="font-body text-label text-muted flex items-center gap-1">
+                          <Clock size={9} strokeWidth={2} className="flex-shrink-0" />{r.effort}
+                        </span>
+                        <span className="font-body text-label text-muted flex items-center gap-1">
+                          <User size={9} strokeWidth={2} className="flex-shrink-0" />{r.owner}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+
+          {/* Owner + target date */}
+          <section className="grid grid-cols-2 gap-4 border-t border-rule2 pt-6">
+            <div>
+              <div className="font-body text-label font-semibold text-muted mb-2">Owner</div>
+              <div className="font-body text-body text-ink">{finding.owner}</div>
             </div>
-          </div>
-          <div>
-            <div className="font-body text-label text-muted mb-0.5">Authorization</div>
-            <div className={`font-body text-label ${entry.authorized ? 'text-ok' : 'text-danger'}`}>
-              {entry.authorized ? 'Authorized' : 'Unauthorized'} · {entry.outcome}
+            <div>
+              <div className="font-body text-label font-semibold text-muted mb-2">Target date</div>
+              <div className={`font-body text-body font-medium ${finding.daysToClose <= 3 ? 'text-danger' : finding.daysToClose <= 7 ? 'text-warn' : 'text-ink'}`}>
+                {finding.targetDate}
+              </div>
             </div>
-          </div>
-        </div>
-      )}
-    </div>
-  )
-}
+          </section>
 
-function AccessAuditWorkspace() {
-  const agentActions = accessAuditLog.filter(e => e.actorType === 'agent').length
-  const humanActions = accessAuditLog.filter(e => e.actorType === 'human').length
-  return (
-    <div className="flex-1 overflow-y-auto">
-      <div className="flex items-center gap-6 px-6 py-3 border-b border-rule2 bg-stone2">
-        <div className="flex items-center gap-2">
-          <div className="w-1.5 h-1.5 rounded-full bg-signal flex-shrink-0" />
-          <span className="display-num text-sub font-bold tabular-nums text-signal">{agentActions}</span>
-          <span className="font-body text-label text-muted">Agent actions</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-1.5 h-1.5 rounded-full bg-muted flex-shrink-0" />
-          <span className="display-num text-sub font-bold tabular-nums text-ink">{humanActions}</span>
-          <span className="font-body text-label text-muted">Human actions</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <CheckCircle2 size={11} strokeWidth={2} className="text-ok flex-shrink-0" />
-          <span className="font-body text-label text-muted">All authorized</span>
-        </div>
-        <span className="ml-auto font-body text-label text-muted">Last 7 days · {accessAuditLog.length} events</span>
-      </div>
-      {accessAuditLog.map(e => <AuditRow key={e.id} entry={e} />)}
-    </div>
-  )
-}
-
-// ─── Workspace: Shadow AI ─────────────────────────────────────────────────────
-
-const SHADOW_STATUS_CFG = {
-  investigating: { label: 'Investigating', tone: 'danger', dot: 'bg-danger animate-pulse' },
-  resolved:      { label: 'Resolved',      tone: 'muted',  dot: 'bg-ok'                  },
-}
-
-function ShadowEventCard({ event }) {
-  const [open, setOpen] = useState(false)
-  const scfg = SHADOW_STATUS_CFG[event.status] ?? SHADOW_STATUS_CFG.resolved
-  const sevcfg = SEVERITY_CFG[event.severity] ?? SEVERITY_CFG.low
-  const isOpen = event.status === 'investigating'
-  return (
-    <div className={`border-b border-rule2 border-l-2 ${isOpen ? 'border-l-danger' : 'border-l-rule2'}`}>
-      <button type="button" onClick={() => setOpen(o => !o)}
-        className={`flex items-start gap-3 w-full px-5 py-4 text-left hover:bg-stone2 transition-colors ${isOpen ? 'bg-danger/[0.02]' : ''}`}>
-        <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 mt-1.5 ${scfg.dot}`} />
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-0.5 flex-wrap">
-            <StatusPill tone={scfg.tone}>{scfg.label}</StatusPill>
-            <StatusPill tone={sevcfg.pill}>{sevcfg.label}</StatusPill>
-            <span className="font-body text-label text-muted ml-auto">{event.timestamp}</span>
-          </div>
-          <div className="font-body font-medium text-ink text-body leading-snug mt-1">{event.actor}</div>
-          <div className="font-body text-muted text-label mt-0.5 leading-snug line-clamp-2">{event.description}</div>
-        </div>
-        <div className="flex-shrink-0 ml-2">
-          {open ? <ChevronDown size={10} className="text-muted" /> : <ChevronRight size={10} className="text-muted" />}
-        </div>
-      </button>
-
-      {open && (
-        <div className="px-5 pb-4 border-t border-rule2 bg-stone2 space-y-3">
-          <div className="pt-2">
-            <div className="font-body text-label text-muted mb-0.5">What happened</div>
-            <p className="font-body text-label text-muted leading-relaxed">{event.description}</p>
-          </div>
-          <div>
-            <div className="font-body text-label text-muted mb-0.5">Data at risk</div>
-            <p className={`font-body text-label leading-snug ${isOpen ? 'text-danger' : 'text-muted'}`}>{event.dataAtRisk}</p>
-          </div>
-          <div>
-            <div className="font-body text-label text-muted mb-0.5">Remediation</div>
-            <p className="font-body text-label leading-snug" style={{ color: 'var(--color-ink)' }}>{event.remediation}</p>
-          </div>
-          <div className="flex items-center gap-3">
-            <span className="font-body text-label text-muted">Ticket: {event.ticket}</span>
-            <span className={`font-body text-label font-medium ${event.remediationStatus === 'closed' ? 'text-ok' : 'text-warn'}`}>
-              {event.remediationStatus === 'closed' ? 'Closed' : 'Open'}
-            </span>
-          </div>
-        </div>
-      )}
-    </div>
-  )
-}
-
-function ShadowAIWorkspace() {
-  const active   = shadowAIEvents.filter(e => e.status === 'investigating').length
-  const resolved = shadowAIEvents.filter(e => e.status === 'resolved').length
-  return (
-    <div className="flex-1 overflow-y-auto">
-      {/* What is shadow AI — director-level explanation */}
-      <div className="px-6 py-4 border-b border-rule2 bg-stone2">
-        <div className="font-body text-label font-semibold text-muted mb-1">What is shadow AI?</div>
-        <p className="font-body text-label text-muted leading-relaxed">
-          Unauthorized use of AI tools — ChatGPT, Midjourney, browser plugins — by employees for plant tasks without IT/OT approval.
-          IBM 2025: 20% of data breaches involved shadow AI. Data submitted to external tools may be stored, indexed, or used for model training.
-        </p>
-      </div>
-
-      {/* Summary strip */}
-      <div className="flex items-center gap-6 px-6 py-3 border-b border-rule2">
-        <div className="flex items-center gap-2">
-          <div className="w-1.5 h-1.5 rounded-full bg-danger animate-pulse flex-shrink-0" />
-          <span className="display-num text-sub font-bold tabular-nums text-danger">{active}</span>
-          <span className="font-body text-label text-muted">Active</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-1.5 h-1.5 rounded-full bg-ok flex-shrink-0" />
-          <span className="display-num text-sub font-bold tabular-nums text-ok">{resolved}</span>
-          <span className="font-body text-label text-muted">Resolved</span>
-        </div>
-      </div>
-
-      {shadowAIEvents.map(e => <ShadowEventCard key={e.id} event={e} />)}
-
-      {/* Policy gap callout */}
-      <div className="mx-5 my-4 px-4 py-3 border-l-2 border-l-danger bg-danger/[0.04]">
-        <div className="flex items-start gap-2">
-          <AlertTriangle size={11} strokeWidth={2} className="text-danger flex-shrink-0 mt-px" />
-          <div>
-            <div className="font-body text-label font-semibold text-danger mb-1">No AI governance policy in place</div>
-            <p className="font-body text-label text-muted leading-snug">
-              Employees have no documented guidance on which AI tools are permitted, what data can be submitted, or how to report a shadow AI incident.
-              This is the root cause of both detected events. See OT Hygiene check h19 for remediation steps.
-            </p>
-          </div>
         </div>
       </div>
     </div>
@@ -496,45 +409,61 @@ function ShadowAIWorkspace() {
 // ─── Root ─────────────────────────────────────────────────────────────────────
 
 export default function SecurityIQ() {
-  const [section, setSection] = useState('hygiene')
+  const [selected, setSelected] = useState(FINDINGS[0])
+  const [category, setCategory] = useState('all')
 
-  const staleModel = modelRegistry.find(m => m.validationStatus === 'stale')
-  const activeIncident = shadowAIEvents.find(e => e.status === 'investigating')
+  const filtered     = category === 'all' ? SORTED : SORTED.filter(f => f.category === category)
+  const criticalCount = FINDINGS.filter(f => f.severity === 'critical').length
+  const activeIncident = FINDINGS.find(f => f.id === 'f-shadow-hmi3')
+  const score        = securityPosture.score
+  const scoreColor   = score >= 80 ? 'var(--color-ok)' : score >= 60 ? 'var(--color-warn)' : 'var(--color-danger)'
 
-  const narrativeParts = [
-    `${securityPosture.openFindings} findings open`,
-    activeIncident ? 'Shadow AI investigation active' : null,
-    staleModel ? `${staleModel.name} validation overdue ${staleModel.staleDays} days` : null,
-  ].filter(Boolean)
+  const narrative = [
+    criticalCount > 0 ? `${criticalCount} critical finding — AI governance policy missing` : null,
+    activeIncident ? 'Shadow AI investigation active on HMI Station 3' : null,
+  ].filter(Boolean).join(' · ') || 'No critical findings'
 
   return (
     <div className="flex flex-col h-full overflow-hidden content-reveal">
       <SceneHeader
-        title="Security"
-        subtitle={`AI governance and OT access posture · Last assessed ${securityPosture.lastAssessed}`}
-        narrative={narrativeParts.join(' · ')}
-        tone="danger"
+        metric={score}
+        metricLabel="security posture"
+        metricColor={scoreColor}
+        statement={narrative}
+        tone={score >= 60 ? 'warn' : 'danger'}
+        meta={[
+          { label: 'Open findings', value: String(FINDINGS.length) },
+          { label: 'Critical',      value: String(criticalCount), color: criticalCount > 0 ? 'var(--color-danger)' : undefined },
+          { label: 'Last assessed', value: securityPosture.lastAssessed },
+        ]}
       />
 
       <div className="flex flex-1 min-h-0 overflow-hidden">
-        {/* Left rail */}
-        <aside className="flex flex-col border-r border-rule w-[264px] flex-shrink-0 overflow-y-auto bg-stone2">
-          <PostureInstrument posture={securityPosture} />
-          <SectionNav
-            active={section}
-            onChange={setSection}
-            posture={securityPosture}
-            modelRegistry={modelRegistry}
-            shadowAIEvents={shadowAIEvents}
-          />
-        </aside>
+        {/* Left: command surface */}
+        <div className="w-[360px] flex-shrink-0 border-r border-rule2 flex flex-col">
+          <div className="flex-shrink-0 flex items-center gap-2 px-5 py-2 border-b border-rule2 bg-stone">
+            <FilterDropdown
+              label="Category"
+              options={CAT_OPTIONS}
+              value={category}
+              onChange={setCategory}
+            />
+            <span className="ml-auto font-body text-label text-muted">
+              {filtered.length} finding{filtered.length !== 1 ? 's' : ''}
+            </span>
+          </div>
+          <div className="flex-1 overflow-y-auto">
+            {filtered.map(f => (
+              <FindingRow key={f.id} finding={f}
+                selected={selected}
+                onClick={() => setSelected(f)} />
+            ))}
+          </div>
+        </div>
 
-        {/* Right workspace */}
-        <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
-          {section === 'hygiene'  && <HygieneWorkspace />}
-          {section === 'models'   && <ModelRegistryWorkspace />}
-          {section === 'audit'    && <AccessAuditWorkspace />}
-          {section === 'shadow'   && <ShadowAIWorkspace />}
+        {/* Right: drill-down */}
+        <div className="flex-1 overflow-hidden bg-stone">
+          <DrillDown finding={selected} />
         </div>
       </div>
     </div>
