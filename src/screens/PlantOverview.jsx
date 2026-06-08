@@ -37,6 +37,7 @@ const SHIFT_QUEUE = [
     route: '/agents',
     routeLabel: 'Agents',
     lineId: 'l4',
+    domains: ['Agents', 'Suppliers', 'Shift'],
   },
   {
     urgency: 'danger',
@@ -48,6 +49,7 @@ const SHIFT_QUEUE = [
     route: '/suppliers',
     routeLabel: 'Suppliers',
     lineId: 'l4',
+    domains: ['Suppliers', 'Shift'],
   },
   {
     urgency: 'warn',
@@ -58,6 +60,7 @@ const SHIFT_QUEUE = [
     lot: 'L-0891',
     route: '/suppliers',
     routeLabel: 'Suppliers',
+    domains: ['Suppliers', 'Delivery'],
   },
   {
     urgency: 'warn',
@@ -68,6 +71,7 @@ const SHIFT_QUEUE = [
     lot: 'TS-8811',
     route: '/agents',
     routeLabel: 'Agents',
+    domains: ['Agents', 'Overview'],
   },
   {
     urgency: 'ok',
@@ -77,6 +81,7 @@ const SHIFT_QUEUE = [
     timeWindow: '06:00',
     route: '/suppliers',
     routeLabel: 'Suppliers',
+    domains: ['Suppliers'],
   },
   {
     urgency: 'ok',
@@ -87,6 +92,7 @@ const SHIFT_QUEUE = [
     lot: 'CO-5502',
     route: '/records',
     routeLabel: 'Record Vault',
+    domains: ['Accountability'],
   },
   {
     urgency: 'ok',
@@ -96,6 +102,7 @@ const SHIFT_QUEUE = [
     timeWindow: '06:45',
     route: '/records',
     routeLabel: 'Record Vault',
+    domains: ['Accountability'],
   },
 ]
 
@@ -477,6 +484,8 @@ export default function PlantOverview() {
   const activeFilters = [zoneFilter !== 'all', areaFilter !== 'all', findingsFilter !== 'all'].filter(Boolean).length
   const filteredCount = domainGroups.reduce((s, g) => s + g.lines.length, 0)
 
+  const blockingFindings  = allFindings.filter(f => f.urgency === 'danger').length
+  const watchFindings     = allFindings.filter(f => f.urgency === 'warn').length
   const critShiftCount  = SHIFT_QUEUE.filter(q => q.urgency === 'danger').length
   const allCritVisited  = critShiftCount > 0 && SHIFT_QUEUE.filter(q => q.urgency === 'danger').every(q => visitedQueue.has(q.action))
   const pendingShiftCount = SHIFT_QUEUE.filter(q => !visitedQueue.has(q.action)).length
@@ -606,8 +615,11 @@ export default function PlantOverview() {
             <div className="flex-shrink-0 flex items-center gap-3 px-5 py-1.5 border-b border-rule2 bg-stone2">
               <span className="font-body text-label text-muted">Floor</span>
               {allFindings.length > 0 && (
-                <span className="font-body text-label text-warn flex items-center gap-1">
-                  <AlertTriangle size={14} strokeWidth={2} />{allFindings.length} finding{allFindings.length !== 1 ? 's' : ''} pending
+                <span className="font-body text-label flex items-center gap-1.5">
+                  <AlertTriangle size={14} strokeWidth={2} className="text-warn" />
+                  {blockingFindings > 0 && <span className="text-danger font-medium">{blockingFindings} blocking</span>}
+                  {blockingFindings > 0 && watchFindings > 0 && <span className="text-muted">·</span>}
+                  {watchFindings > 0 && <span className="text-warn">{watchFindings} watch</span>}
                 </span>
               )}
               <div className="ml-auto">
@@ -1009,6 +1021,13 @@ export default function PlantOverview() {
                         <div className="font-body text-label text-muted">{item.category}</div>
                         <p className={`font-body font-medium text-body leading-snug ${visited ? 'text-muted' : 'text-ink'}`}>{item.action}</p>
                         <p className="font-body text-muted text-label leading-relaxed">{item.note}</p>
+                        {item.domains?.length > 1 && (
+                          <div className="flex items-center gap-1 pt-1 flex-wrap">
+                            {item.domains.map(d => (
+                              <span key={d} className="font-body text-label px-1.5 py-0.5 bg-stone3 border border-rule2 text-muted">{d}</span>
+                            ))}
+                          </div>
+                        )}
                         {floorLine && (
                           <div className="flex items-center gap-2 font-body text-label text-muted pt-0.5">
                             <span>{floorLine.name}</span>
@@ -1051,6 +1070,9 @@ export default function PlantOverview() {
                               <span className="font-body text-label px-1 bg-stone3 text-muted flex-shrink-0">{item.lot}</span>
                             )}
                             <span className="font-body text-label text-warn">{item.category}</span>
+                            {item.domains?.length > 1 && item.domains.map(d => (
+                              <span key={d} className="font-body text-label px-1 bg-stone3 border border-rule2 text-muted">{d}</span>
+                            ))}
                           </div>
                           <div className={`font-body text-body font-medium leading-snug ${visited ? 'text-muted' : 'text-ink'}`}>{item.action}</div>
                           <div className="font-body text-label text-muted leading-snug mt-0.5">{item.note}</div>

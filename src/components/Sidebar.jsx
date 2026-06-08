@@ -14,13 +14,24 @@ import {
 } from 'lucide-react'
 import { useAppState, PLANTS } from '../context/AppState'
 import { commandData, agentConfigData } from '../data'
+import { openCases } from '../data/capa'
+import { securityPosture } from '../data/security'
+import { shiftData } from '../data'
 import { PersonAvatar, StatusPill } from './UI'
 
-const modules = [
- { id:'shift',    label:'Shift',     path:'/shift',     icon:Activity,      badge:'3', badgeType:'alert' },
- { id:'suppliers',label:'Suppliers', path:'/suppliers', icon:Truck,         badge:'1', badgeType:'alert' },
- { id:'quality',  label:'Quality',   path:'/quality',   icon:Eye,           badge:'1', badgeType:'alert' },
- { id:'capa',     label:'CAPA',      path:'/capa',      icon:ClipboardCheck,badge:'2', badgeType:'alert' },
+// ── Computed badge values — derived from data + AppState ──────────────────────
+// CAPA badge: cases where the director must act (type 'cu' = critical/urgent)
+const CAPA_DIRECTOR_COUNT = openCases.filter(c => c.type === 'cu').length
+// Security badge: critical + high findings requiring remediation
+const SECURITY_BADGE = securityPosture.findingsBySeverity.critical + securityPosture.findingsBySeverity.high
+
+// Modules: shift/suppliers/quality badges are computed in Sidebar from AppState;
+// capa and security use data-derived constants above.
+const MODULE_DEFS = [
+ { id:'shift',    label:'Shift',     path:'/shift',     icon:Activity,      badgeType:'alert' },
+ { id:'suppliers',label:'Suppliers', path:'/suppliers', icon:Truck,         badgeType:'alert' },
+ { id:'quality',  label:'Quality',   path:'/quality',   icon:Eye,           badgeType:'alert' },
+ { id:'capa',     label:'CAPA',      path:'/capa',      icon:ClipboardCheck,badgeType:'alert' },
 ]
 
 function NavBadge({ badge, badgeType }) {
@@ -107,11 +118,10 @@ function SideItem({ to, icon: Icon, label, badge, badgeType, disabled, id, onDis
  )
 }
 
-function PlantItem({ collapsed }) {
- // Decision badge: 2 critical (T3 agent ratification + COA hold)
- const criticalCount = 2
+function PlantItem({ collapsed, activeSituationCount }) {
+ const criticalCount = activeSituationCount ?? 0
  if (collapsed) return (
-  <NavTooltip label={`Overview · ${criticalCount} critical`}>
+  <NavTooltip label={criticalCount > 0 ? `Overview · ${criticalCount} active` : 'Overview'}>
    <NavLink to="/overview"
     className={({ isActive }) =>
      `flex items-center justify-center h-10 w-full border-l-2 transition-colors duration-100 ` +
@@ -345,11 +355,41 @@ export default function Sidebar() {
  const userTriggerRef = useRef(null)
  const [platformExpanded, setPlatformExpanded] = useState(true)
  const [toast, setToast] = useState(null)
- const { blockingEvidenceUploaded, allergenOverride, checklistSigned, nearMisses, maintenanceTickets, viewingRole, setViewingRole, currentPlant, setCurrentPlant, workerMode, agentDecidedKeys, sidebarCollapsed, toggleSidebar, mobileNavOpen, setMobileNavOpen, notifOpen, setNotifOpen, theme, setTheme, isDemoMode } = useAppState() || {}
+ const {
+  blockingEvidenceUploaded, allergenOverride, checklistSigned, nearMisses, maintenanceTickets,
+  viewingRole, setViewingRole, currentPlant, setCurrentPlant, workerMode,
+  agentDecidedKeys, findingActions, closedCases,
+  sidebarCollapsed, toggleSidebar, mobileNavOpen, setMobileNavOpen, notifOpen, setNotifOpen,
+  theme, setTheme, isDemoMode,
+  activeSituations,
+ } = useAppState() || {}
  const collapsed = !!sidebarCollapsed
  const agentPendingCount = isDemoMode
   ? DEMO_AGENT_KEYS.filter(k => !agentDecidedKeys?.has(k)).length
   : Math.max(0, STATIC_AGENT_TOTAL - (agentDecidedKeys?.size ?? 0))
+
+ // ── Computed badge values ────────────────────────────────────────────────────
+ // Shift: unacted findings (acted = director clicked act/dismiss)
+ const shiftBadge = shiftData.findings.filter(f => !findingActions?.[f.id]).length || null
+ // Suppliers: agent pending count for supplier agent
+ const supplierAgentPending = agentDecidedKeys
+  ? Math.max(0, (agentConfigData.agents.find(a => a.id === 'supplier')?.pendingActions?.length ?? 0) -
+      [...agentDecidedKeys].filter(k => k.startsWith('supplier-')).length)
+  : 1
+ const supplierBadge = supplierAgentPending > 0 ? String(supplierAgentPending) : null
+ // Quality: hardcoded for now (1 open micro-hold action)
+ const qualityBadge = '1'
+ // CAPA: critical/urgent director-turn cases minus closed
+ const capaBadge = Math.max(0, CAPA_DIRECTOR_COUNT - (closedCases?.filter(id => openCases.find(c => c.id === id && c.type === 'cu')).length ?? 0)) || null
+ // Security: critical + high findings
+ const securityBadge = SECURITY_BADGE > 0 ? String(SECURITY_BADGE) : null
+
+ const modules = [
+  { id:'shift',    label:'Shift',     path:'/shift',     icon:Activity,      badge: shiftBadge    ? String(shiftBadge)    : null, badgeType:'alert' },
+  { id:'suppliers',label:'Suppliers', path:'/suppliers', icon:Truck,         badge: supplierBadge, badgeType:'alert' },
+  { id:'quality',  label:'Quality',   path:'/quality',   icon:Eye,           badge: qualityBadge,  badgeType:'alert' },
+  { id:'capa',     label:'CAPA',      path:'/capa',      icon:ClipboardCheck,badge: capaBadge      ? String(capaBadge)     : null, badgeType:'alert' },
+ ]
 
  const allergenSigned = checklistSigned?.['allergen'] || !!allergenOverride
  const complianceState = currentPlant?.id === 'ks' ? 'clear' : (!blockingEvidenceUploaded ? 'blocked' : !allergenSigned ? 'attention' : 'clear')
@@ -369,6 +409,7 @@ export default function Sidebar() {
  }
 
  return (
+ <>
  <aside
   className={`fixed inset-y-0 left-0 z-30 flex flex-col bg-sidebar border-r border-sidebar-border overflow-hidden transition-[transform,width] sm:translate-x-0 ${mobileNavOpen ? 'translate-x-0' : '-translate-x-full sm:translate-x-0'}`}
   style={{ width: collapsed ? 48 : 240, transitionDuration: 'var(--dur-quick)', transitionTimingFunction: 'var(--ease-spring)' }}
@@ -460,7 +501,7 @@ export default function Sidebar() {
  {/* ── Director: full intelligence graph ───────────────────────── */}
  {(viewingRole === 'director' || !viewingRole) && (
   <>
-   <PlantItem collapsed={collapsed} />
+   <PlantItem collapsed={collapsed} activeSituationCount={activeSituations?.length ?? 0} />
 
    {!collapsed && <div className="px-4 pt-4 pb-1 font-body text-label text-sidebar-ghost">Operations</div>}
    {modules.map(m => <SideItem key={m.id} to={m.path} id={m.id} {...m} collapsed={collapsed} />)}
@@ -481,7 +522,7 @@ export default function Sidebar() {
      <SideItem to="/accountability" id="compliance" icon={Scale}           label="Accountability" badge={null} collapsed={collapsed} />
      <SideItem to="/knowledge"  id="knowledge"  icon={BookOpen}        label="Knowledge"  badge={null} collapsed={collapsed} />
      <SideItem to="/data"  id="readiness"  icon={Gauge}           label="Data"       badge={null} collapsed={collapsed} />
-     <SideItem to="/security"   id="security"   icon={ShieldCheck}     label="Security"   badge="3"   badgeType="alert" collapsed={collapsed} />
+     <SideItem to="/security"   id="security"   icon={ShieldCheck}     label="Security"   badge={securityBadge} badgeType="alert" collapsed={collapsed} />
     </>
    )}
 
@@ -561,5 +602,7 @@ export default function Sidebar() {
  </div>
  )}
  </aside>
+
+ </>
  )
 }

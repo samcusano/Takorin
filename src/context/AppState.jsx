@@ -1,6 +1,39 @@
-import { createContext, useContext, useState, useEffect } from 'react'
+import { createContext, useContext, useState, useEffect, useMemo } from 'react'
 import { readinessData, systemConfidenceScore } from '../data'
 import { seedObservations } from '../data/observations'
+import { SITUATIONS } from '../data/situations'
+
+// ── sessionStorage helpers — survive page reload, not cross-tab ───────────────
+const SS_KEY = 'takorin-state-v1'
+
+function loadSession() {
+  try {
+    const raw = sessionStorage.getItem(SS_KEY)
+    if (!raw) return {}
+    const parsed = JSON.parse(raw)
+    // Sets are serialised as arrays
+    if (Array.isArray(parsed.agentDecidedKeys)) parsed.agentDecidedKeys = new Set(parsed.agentDecidedKeys)
+    if (Array.isArray(parsed.carryForwardAcknowledged)) parsed.carryForwardAcknowledged = new Set(parsed.carryForwardAcknowledged)
+    if (Array.isArray(parsed.commandAcknowledged)) parsed.commandAcknowledged = new Set(parsed.commandAcknowledged)
+    if (Array.isArray(parsed.acknowledgedDrifts)) parsed.acknowledgedDrifts = new Set(parsed.acknowledgedDrifts)
+    if (Array.isArray(parsed.resolvedConflicts)) parsed.resolvedConflicts = new Set(parsed.resolvedConflicts)
+    return parsed
+  } catch { return {} }
+}
+
+function saveSession(slice) {
+  try {
+    const serialisable = {
+      ...slice,
+      agentDecidedKeys: [...(slice.agentDecidedKeys ?? [])],
+      carryForwardAcknowledged: [...(slice.carryForwardAcknowledged ?? [])],
+      commandAcknowledged: [...(slice.commandAcknowledged ?? [])],
+      acknowledgedDrifts: [...(slice.acknowledgedDrifts ?? [])],
+      resolvedConflicts: [...(slice.resolvedConflicts ?? [])],
+    }
+    sessionStorage.setItem(SS_KEY, JSON.stringify(serialisable))
+  } catch { /* storage full or unavailable — ignore */ }
+}
 
 const Ctx = createContext(null)
 
@@ -18,19 +51,24 @@ export function AppStateProvider({ children }) {
   typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('demo') === 'true'
  )
 
+ // Load persisted session slice once — before any useState initialisers that use it.
+ const _session = useState(() => loadSession())[0]
+
  const [workerMode, setWorkerModeState] = useState('human')
 
  // Escalation state machine — tracks who has each finding
  // States: open → assigned → acknowledged → escalated → resolved
- const [escalationStates, setEscalationStates] = useState({
-  sf1: { state: 'assigned', owner: 'D. Kowalski', chain: [{ owner: 'D. Kowalski', at: '06:42', via: 'Shift auto-assign' }] },
-  sf2: { state: 'acknowledged', owner: 'D. Kowalski', chain: [{ owner: 'D. Kowalski', at: '06:48', via: 'Director action' }] },
-  sf3: { state: 'escalated', owner: 'J. Crocker', chain: [
-   { owner: 'D. Kowalski', at: '06:42', via: 'Shift auto-assign' },
-   { owner: 'J. Crocker', at: '09:15', via: 'No response — 2nd escalation' },
-  ]},
-  sf4: { state: 'open', owner: null, chain: [] },
- })
+ const [escalationStates, setEscalationStates] = useState(
+  _session.escalationStates ?? {
+   sf1: { state: 'assigned', owner: 'D. Kowalski', chain: [{ owner: 'D. Kowalski', at: '06:42', via: 'Shift auto-assign' }] },
+   sf2: { state: 'acknowledged', owner: 'D. Kowalski', chain: [{ owner: 'D. Kowalski', at: '06:48', via: 'Director action' }] },
+   sf3: { state: 'escalated', owner: 'J. Crocker', chain: [
+    { owner: 'D. Kowalski', at: '06:42', via: 'Shift auto-assign' },
+    { owner: 'J. Crocker', at: '09:15', via: 'No response — 2nd escalation' },
+   ]},
+   sf4: { state: 'open', owner: null, chain: [] },
+  }
+ )
  const updateEscalationState = (findingId, state, owner) => {
   setEscalationStates(prev => ({
    ...prev,
@@ -50,30 +88,30 @@ export function AppStateProvider({ children }) {
  const logAgentAction = (entry) => setAgentActions(p => [{ ...entry, id:`a${Date.now()}`, timestamp: new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'}) }, ...p])
  const overrideAgentAction = (id, by) => setAgentActions(p => p.map(a => a.id === id ? {...a, status:'overridden', overriddenBy:by} : a))
 
- const [shiftActed, setShiftActed] = useState({})
+ const [shiftActed, setShiftActed] = useState(_session.shiftActed ?? {})
  // Finding action log — tracks acted-on and dismissed findings with timestamps
  // { [findingId]: { type: 'acted'|'dismissed', at: ISO string, dismissReason?: string } }
- const [findingActions, setFindingActions] = useState({})
+ const [findingActions, setFindingActions] = useState(_session.findingActions ?? {})
  const logFindingAction = (findingId, type, dismissReason) => {
    setFindingActions(prev => ({
      ...prev,
      [findingId]: { type, at: new Date().toISOString(), dismissReason },
    }))
  }
- const [handoffSigned, setHandoffSigned] = useState(false)
- const [handoffNominated, setHandoffNominated] = useState({})
- const [coaRequested, setCoaRequested] = useState(false)
- const [closedCases, setClosedCases] = useState([])
- const [closureRecords, setClosureRecords] = useState({})
+ const [handoffSigned, setHandoffSigned] = useState(_session.handoffSigned ?? false)
+ const [handoffNominated, setHandoffNominated] = useState(_session.handoffNominated ?? {})
+ const [coaRequested, setCoaRequested] = useState(_session.coaRequested ?? false)
+ const [closedCases, setClosedCases] = useState(_session.closedCases ?? [])
+ const [closureRecords, setClosureRecords] = useState(_session.closureRecords ?? {})
  const [readinessScore, setReadinessScore] = useState(readinessData.score)
  const [readinessResolved, setReadinessResolved] = useState({})
- const [resolvedConflicts, setResolvedConflicts] = useState(new Set())
+ const [resolvedConflicts, setResolvedConflicts] = useState(_session.resolvedConflicts ?? new Set())
  const [trainingPlans, setTrainingPlans] = useState({})
- const [blockingEvidenceUploaded, setBlockingEvidenceUploaded] = useState(isDemoMode)
- const [rfqSent, setRfqSent] = useState(false)
- const [briefingAcknowledged, setBriefingAcknowledged] = useState(false)
- const [checklistSigned, setChecklistSigned] = useState({})
- const [allergenOverride, setAllergenOverride] = useState(null)
+ const [blockingEvidenceUploaded, setBlockingEvidenceUploaded] = useState(_session.blockingEvidenceUploaded ?? isDemoMode)
+ const [rfqSent, setRfqSent] = useState(_session.rfqSent ?? false)
+ const [briefingAcknowledged, setBriefingAcknowledged] = useState(_session.briefingAcknowledged ?? false)
+ const [checklistSigned, setChecklistSigned] = useState(_session.checklistSigned ?? {})
+ const [allergenOverride, setAllergenOverride] = useState(_session.allergenOverride ?? null)
  const [nearMisses, setNearMisses] = useState([])
  const [taskAssignments, setTaskAssignments] = useState({})
  const [trainingCompletions, setTrainingCompletions] = useState({})
@@ -83,10 +121,13 @@ export function AppStateProvider({ children }) {
  const [plantActions, setPlantActions] = useState({})
  const [sanitationEntries, setSanitationEntries] = useState([])
  const [operatorAcknowledgments, setOperatorAcknowledgments] = useState({})
- const [carryForwardAcknowledged, setCarryForwardAcknowledged] = useState(new Set())
- const [commandAcknowledged, setCommandAcknowledged] = useState(new Set())
+ const [carryForwardAcknowledged, setCarryForwardAcknowledged] = useState(_session.carryForwardAcknowledged ?? new Set())
+ const [commandAcknowledged, setCommandAcknowledged] = useState(_session.commandAcknowledged ?? new Set())
  const [pilotExpanded, setPilotExpanded] = useState(false)
- const [handoffAccepted, setHandoffAccepted] = useState(false)
+ const [handoffAccepted, setHandoffAccepted] = useState(_session.handoffAccepted ?? false)
+
+ // Situation thread panel — which situation drawer is currently open (director only)
+ const [openSituationId, setOpenSituationId] = useState(null)
  // Quiet period protocol — Compliance Monitor enters logging-only mode for specified line/window
  const [quietPeriods, setQuietPeriods] = useState([])
  const addQuietPeriod = ({ line, startTime, endTime, reason, setBy }) =>
@@ -159,7 +200,7 @@ export function AppStateProvider({ children }) {
   { id: 'sor-1', operator: 'C. Reyes', finding: 'Allergen changeover log', requestedAt: '07:12', station: 'Sauce Dosing L2' },
  ])
  const [escalatedToDirector, setEscalatedToDirector] = useState(false)
- const [agentDecidedKeys, setAgentDecidedKeys] = useState(new Set())
+ const [agentDecidedKeys, setAgentDecidedKeys] = useState(_session.agentDecidedKeys ?? new Set())
  const markAgentDecided = (key) => setAgentDecidedKeys(prev => new Set([...prev, key]))
  const acknowledgeCommand = (id) => setCommandAcknowledged(prev => new Set([...prev, id]))
  const [activityLog, setActivityLog] = useState([
@@ -183,8 +224,46 @@ export function AppStateProvider({ children }) {
   }, ...p])
 
  // Drift watch — acknowledged sub-threshold signals
- const [acknowledgedDrifts, setAcknowledgedDrifts] = useState(new Set())
+ const [acknowledgedDrifts, setAcknowledgedDrifts] = useState(_session.acknowledgedDrifts ?? new Set())
  const acknowledgeDrift = (id) => setAcknowledgedDrifts(p => new Set([...p, id]))
+
+ // ── sessionStorage persistence — survives page reload within the session ──────
+ useEffect(() => {
+  saveSession({
+   escalationStates,
+   shiftActed,
+   findingActions,
+   handoffSigned,
+   handoffNominated,
+   coaRequested,
+   closedCases,
+   closureRecords,
+   resolvedConflicts,
+   blockingEvidenceUploaded,
+   rfqSent,
+   briefingAcknowledged,
+   checklistSigned,
+   allergenOverride,
+   carryForwardAcknowledged,
+   commandAcknowledged,
+   handoffAccepted,
+   agentDecidedKeys,
+   acknowledgedDrifts,
+  })
+ }, [
+  escalationStates, shiftActed, findingActions, handoffSigned, handoffNominated,
+  coaRequested, closedCases, closureRecords, resolvedConflicts, blockingEvidenceUploaded,
+  rfqSent, briefingAcknowledged, checklistSigned, allergenOverride, carryForwardAcknowledged,
+  commandAcknowledged, handoffAccepted, agentDecidedKeys, acknowledgedDrifts,
+ ])
+
+ // ── Active situations — derive resolved state from AppState ───────────────────
+ const stateSnapshot = { agentDecidedKeys, findingActions, closedCases }
+ const activeSituations = useMemo(
+  () => SITUATIONS.filter(s => !s.resolvedWhen(stateSnapshot)),
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  [agentDecidedKeys, findingActions, closedCases]
+ )
 
  return (
  <Ctx.Provider value={{
@@ -238,6 +317,8 @@ export function AppStateProvider({ children }) {
  notifOpen, setNotifOpen,
  theme, setTheme,
  isDemoMode,
+ openSituationId, setOpenSituationId,
+ activeSituations,
  }}>
  {children}
  </Ctx.Provider>
