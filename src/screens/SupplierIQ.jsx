@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { Check, AlertTriangle, ArrowRight, History, AlertCircle, Eye, Send, CheckCircle2 } from 'lucide-react'
+import { Check, AlertTriangle, ArrowRight, History, AlertCircle, Eye, EyeOff, Send, CheckCircle2 } from 'lucide-react'
 import { useNavigate, Link } from 'react-router-dom'
-import { supplierData, supplierAudits, empResultsHistory } from '../data'
+import { supplierData, supplierAudits, empResultsHistory, supplyChainNetwork } from '../data'
 import { useAppState } from '../context/AppState'
 import { StatusPill, SectionHeader, Btn, ActionBanner, Spinner, AnimatedCheck, MetadataRow, ExpandableMetadata, SlidePanel, StatGrid, SectionLabel, Tabs } from '../components/UI'
 import StatBar from '../components/StatBar.jsx'
@@ -277,11 +277,80 @@ function SupplierRow({ s, audit, isDanger, certGap, index, total }) {
 }
 
 
+// ── SupplyChainMap — Tier 1/2/3 visibility into the TS-8811 disruption ────────
+const VISIBILITY_CFG = {
+  full:    { label: 'Full visibility',  tone: 'ok',     icon: Eye },
+  partial: { label: 'Partial visibility', tone: 'warn', icon: Eye },
+  none:    { label: 'Blind spot',       tone: 'danger', icon: EyeOff },
+}
+
+function SupplyChainMap({ onViewHold }) {
+  const net = supplyChainNetwork
+  return (
+    <div className="flex-1 overflow-y-auto px-6 py-5">
+      <div className="font-body text-label text-muted mb-1">
+        Supply chain visibility · Lot {net.focusLot}
+      </div>
+      <p className="font-display text-ink text-sub leading-relaxed mb-5 max-w-2xl">
+        Standard supplier scorecards stop at Tier 1. The root cause of the {net.focusLot} COA delay sits two tiers upstream.
+      </p>
+
+      <div className="flex items-stretch gap-3 overflow-x-auto pb-2">
+        {[...net.tiers].sort((a, b) => b.tier - a.tier).map((t, i, arr) => {
+          const vis = VISIBILITY_CFG[t.visibility]
+          const leftCls = t.status === 'danger' ? 'border-l-danger' : t.status === 'warn' ? 'border-l-warn' : 'border-l-rule'
+          return (
+            <div key={t.tier} className="flex items-stretch gap-3 flex-shrink-0">
+              <div className={`row-in w-[240px] bg-stone2 border border-rule border-l-[3px] ${leftCls} px-4 py-3.5`} style={{ animationDelay: `${i * 80}ms` }}>
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="font-body text-label text-muted">Tier {t.tier}</span>
+                  <StatusPill tone={vis.tone}>{vis.label}</StatusPill>
+                </div>
+                <div className="font-display font-semibold text-sub text-ink leading-snug mb-1">{t.name}</div>
+                <div className="font-body text-label text-muted mb-2">{t.role}</div>
+                <div className={`font-body text-label leading-relaxed ${t.status === 'danger' ? 'text-danger' : t.status === 'warn' ? 'text-warn' : 'text-muted'}`}>
+                  {t.note}
+                </div>
+              </div>
+              {i < arr.length - 1 && (
+                <div className="flex items-center flex-shrink-0">
+                  <ArrowRight size={14} strokeWidth={2} className="text-muted" />
+                </div>
+              )}
+            </div>
+          )
+        })}
+        <div className="flex items-center flex-shrink-0">
+          <ArrowRight size={14} strokeWidth={2} className="text-muted" />
+        </div>
+        <div className="row-in w-[200px] flex-shrink-0 bg-stone2 border border-rule border-l-[3px] border-l-signal px-4 py-3.5" style={{ animationDelay: `${net.tiers.length * 80}ms` }}>
+          <div className="font-body text-label text-muted mb-1.5">Your plant</div>
+          <div className="font-display font-semibold text-sub text-ink leading-snug mb-1">Salina · SL-04</div>
+          <div className="font-body text-label text-muted">Line 4 production held on Lot {net.focusLot}</div>
+        </div>
+      </div>
+
+      <div className="row-in mt-5 max-w-2xl bg-signal/[0.04] border border-signal/20 px-4 py-3.5 flex items-start gap-3">
+        <AlertCircle size={13} strokeWidth={2} className="text-signal flex-shrink-0 mt-0.5" />
+        <div className="flex-1">
+          <div className="font-body font-medium text-ink text-label leading-relaxed">{net.insight}</div>
+          <button type="button" onClick={onViewHold}
+            className="font-body text-signal text-label hover:underline mt-1.5 flex items-center gap-1">
+            View Lot {net.focusLot} hold details <ArrowRight size={9} />
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+
 // ── Main screen ───────────────────────────────────────────────────────────────
 
 const SUPPLIER_TABS = [
   { id: 'suppliers', label: 'Suppliers' },
   { id: 'delivery',  label: 'Delivery'  },
+  { id: 'network',   label: 'Supply map' },
 ]
 
 export default function SupplierIQ() {
@@ -342,6 +411,13 @@ export default function SupplierIQ() {
     )}
     <Tabs tabs={SUPPLIER_TABS} active={supplierTab} onChange={setSupplierTab} />
     {supplierTab === 'delivery' && <div className="flex-1 overflow-hidden"><ValueChain /></div>}
+    {supplierTab === 'network' && (
+      <SupplyChainMap onViewHold={() => {
+        setSupplierTab('suppliers')
+        const lot = d.lots.find(l => l.supplier?.includes(supplyChainNetwork.focusLot))
+        if (lot) setCoaViewLot(lot)
+      }} />
+    )}
     {supplierTab === 'suppliers' && <>
 
       <div className="flex flex-1 min-h-0 overflow-hidden">
@@ -362,7 +438,7 @@ export default function SupplierIQ() {
                 tone="danger"
                 title={`${lot.ing} — COA Missing`}
                 desc={`Production start held · ${lot.supplier} · Lot ${lot.delivery}`}
-                evidence={[`${lot.shelf}d shelf remaining`, lot.deliveryTime, lot.supply].filter(Boolean).join(' · ')}
+                evidence={[`${lot.shelf}d shelf remaining`, lot.deliveryTime, lot.chargebackExposure ? `$${(lot.chargebackExposure / 1000).toFixed(0)}K chargeback risk` : null].filter(Boolean).join(' · ')}
                 actions={coaRequested
                   ? <>
                       <span className="font-body text-ok text-label flex items-center gap-1"><Check size={11} strokeWidth={2} /> COA request sent</span>

@@ -367,6 +367,22 @@ export const platformBaseline = {
       sourceModule: 'Shift',
       sourceRoute: '/shift',
     },
+    {
+      id: 'detection-resolution',
+      label: 'Disruption detection-to-decision time',
+      unit: 'hrs avg',
+      unitLabel: 'flag to director decision',
+      before: 8.7,
+      after: 0.6,
+      delta: -8.1,
+      direction: 'improvement',
+      attribution: 0.65,
+      annualValue: 63000,
+      how: 'Agent-flagged disruptions (lot holds, sourcing delays, equipment anomalies) now reach a ratified director decision in ~38 minutes — the TS-8811 hold and R-03 bearing alert are documented examples. 8.1 hrs saved × ~12 multi-system disruptions/yr × $650/hr exposure (expedite and chargeback avoidance, not full production value).',
+      caveat: 'The 8.7-hour baseline is from a 2026 industry survey of 200 manufacturing COOs/CFOs, not a Salina-specific pre-deployment measurement — prior detection times here were not formally tracked.',
+      sourceModule: 'Agents',
+      sourceRoute: '/agents',
+    },
   ],
 
   costs: {
@@ -378,14 +394,14 @@ export const platformBaseline = {
   },
 
   summary: {
-    totalAnnualValue: 863280,
+    totalAnnualValue: 926280,
     year1Cost: 249000,
-    year1Net: 614280,
-    year1ROI: 247,
-    ongoingNet: 659280,
-    ongoingROI: 323,
-    avgAttribution: 0.75,
-    note: 'Based on 90-day pilot data. Attribution confidence averages 75% — improvements reflect a mix of Takorin interventions and broader operational changes. Full-year data will tighten these ranges.',
+    year1Net: 677280,
+    year1ROI: 272,
+    ongoingNet: 722280,
+    ongoingROI: 354,
+    avgAttribution: 0.73,
+    note: 'Based on 90-day pilot data. Attribution confidence averages 73% — improvements reflect a mix of Takorin interventions and broader operational changes. Full-year data will tighten these ranges.',
   },
 
   notYetCounted: [
@@ -402,4 +418,5 @@ export const kpiTargets = [
   { id: 'deviation-recurrence', label: 'Deviation recurrence rate', unit: '%', baseline: 34, target: '<20', direction: 'down' },
   { id: 'throughput', label: 'Line throughput', unit: '%', baseline: 91, target: '>95', direction: 'up' },
   { id: 'supply-continuity', label: 'Inventory buffer days', unit: 'days', baseline: 7, target: '>14', direction: 'up' },
+  { id: 'detection-resolution-time', label: 'Disruption detection-to-decision time', unit: 'hrs', baseline: 8.7, target: '<1', direction: 'down' },
 ]

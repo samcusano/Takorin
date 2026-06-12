@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import ProcessHierarchy from './ProcessHierarchy'
-import { shiftData, line6Data, wichitaData, denverData, facility } from '../data'
+import { shiftData, line6Data, wichitaData, denverData, facility, supplierData } from '../data'
 import { useAppState } from '../context/AppState'
 import { riskColorClass, riskLabel, riskBgColor } from '../lib/utils'
 import {
@@ -486,6 +486,7 @@ export default function PlantOverview() {
 
   const blockingFindings  = allFindings.filter(f => f.urgency === 'danger').length
   const watchFindings     = allFindings.filter(f => f.urgency === 'warn').length
+  const revenueAtRisk  = supplierData.lots.filter(l => l.urgent).reduce((s, l) => s + (l.chargebackExposure ?? 0), 0)
   const critShiftCount  = SHIFT_QUEUE.filter(q => q.urgency === 'danger').length
   const allCritVisited  = critShiftCount > 0 && SHIFT_QUEUE.filter(q => q.urgency === 'danger').every(q => visitedQueue.has(q.action))
   const pendingShiftCount = SHIFT_QUEUE.filter(q => !visitedQueue.has(q.action)).length
@@ -536,6 +537,7 @@ export default function PlantOverview() {
           { label: 'Lines', value: String(rawLines.length) },
           { label: 'Findings', value: allFindings.length, tone: allFindings.length > 0 ? 'warn' : 'ok', sub: 'pending', bg: '' },
           { label: 'Briefing', value: pendingShiftCount, tone: critShiftCount > 0 && !allCritVisited ? 'danger' : 'warn', sub: `${critShiftCount} critical`, bg: '' },
+          { label: 'At risk', value: `$${(revenueAtRisk / 1000).toFixed(1)}K`, color: revenueAtRisk > 0 ? 'var(--color-danger)' : undefined },
         ]}
       />
 
@@ -981,7 +983,7 @@ export default function PlantOverview() {
             {/* Rail header */}
             <div className="flex-shrink-0 px-4 py-3 border-b border-rule2 bg-stone2">
               <div className="flex items-center justify-between">
-                <div className="font-body font-medium text-ink text-label">Shift briefing</div>
+                <div className="font-body text-muted text-label">Shift briefing</div>
                 {allCritVisited
                   ? <span className="font-body text-ok text-label flex items-center gap-1"><CheckCircle size={10} strokeWidth={2} />Critical cleared</span>
                   : <span className="font-body text-danger text-label font-medium tabular-nums">{critShiftCount} critical</span>
@@ -1056,7 +1058,7 @@ export default function PlantOverview() {
               {SHIFT_QUEUE.filter(q => q.urgency === 'warn').length > 0 && (
                 <div className="mt-3 border-t border-rule2/50">
                   <div className="px-4 pt-2.5 pb-1">
-                    <span className="font-body text-label text-muted font-semibold tracking-wide">High priorities</span>
+                    <span className="font-body text-label text-muted tracking-wide">High priorities</span>
                   </div>
                   {SHIFT_QUEUE.filter(q => q.urgency === 'warn').map((item, i) => {
                     const visited = visitedQueue.has(item.action)

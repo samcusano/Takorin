@@ -4,6 +4,7 @@ import {
   ClipboardCheck, Shield, Database, ChevronDown, ChevronRight,
   Timer, CheckCircle, XCircle, Check, Flag, InspectionPanel, TrendingUp,
   Activity, Network, Settings, Eye, MessageSquare, Zap, RotateCcw,
+  Route, Package,
 } from 'lucide-react'
 import { Btn, SlidePanel, Tabs, StatusPill, Checkbox, AnimatedScore, EmptyState, SectionLabel, FilterDropdown, MultiFilterDropdown } from '../components/UI'
 import { agentConfigData, dataSourceHealth, networkData } from '../data'
@@ -14,7 +15,7 @@ import { useNavigate } from 'react-router-dom'
 
 const ICON_MAP = {
   Shield, AlertTriangle, Truck, Users, Wrench,
-  Handshake, Bell, ClipboardCheck, Database,
+  Handshake, Bell, ClipboardCheck, Database, Route, Package,
 }
 
 // ─── Priority enrichment ──────────────────────────────────────────────────────
@@ -28,6 +29,14 @@ const VERB_MAP = {
   'pa5':           'Draft PM handoff for M. Santos',
   'pa-capa-1':     'Send final reminder — Kowalski evidence overdue',
   'pa-dg-1':       'Flag HR data stale — 3 agents affected',
+  'pa-sc1':        'Reroute Lot CO-5502 via Midwest Freight',
+  'pa-ri1':        'Transfer 600kg tomato sauce — Wichita to Salina',
+}
+
+// What each pending action affects, shown in the rail's "What it affects" field.
+const BLAST_RADIUS_MAP = {
+  'pa-sc1': 'Line 6 — Canola Oil sourcing',
+  'pa-ri1': 'Cross-plant — Salina ↔ Wichita inventory',
 }
 
 // Dependency clustering: decisions sharing a subject get visually grouped.
@@ -54,6 +63,8 @@ const SHOW_EXPIRY = {
   'pa5':           true,
   'pa-capa-1':     true,
   'pa-dg-1':       false,
+  'pa-sc1':        true,
+  'pa-ri1':        true,
 }
 
 function enrich(pa, agent) {
@@ -73,7 +84,7 @@ function enrich(pa, agent) {
     consequence: 'medium',
     tier: pa.id === 'pa-dg-1' ? 1 : 2,
     expiresLabel: pa.id === 'pa5' ? 'Shift handoff due' : pa.id === 'pa-capa-1' ? '24h final deadline' : '14h window',
-    blastRadius: 'Line 4 — 1 unit affected',
+    blastRadius: BLAST_RADIUS_MAP[pa.id] ?? 'Line 4 — 1 unit affected',
     sortKey: 2,
   }
   return {
@@ -182,6 +193,8 @@ const PLANT_TRUST_SCORES = {
   'training':    { sl: 69, ks: 80, co: 85, se: 90, de: 94 },
   'capa':        { sl: 76, ks: 86, co: 87, se: 95, de: 98 },
   'sensor':      { sl: 63, ks: 88, co: 85, se: 93, de: 99 },
+  'supply-continuity': { sl: 75, ks: 84, co: 80, se: 89, de: 93 },
+  'replenishment':     { sl: 73, ks: 82, co: 79, se: 87, de: 92 },
 }
 
 // ─── Flag outcome modal ───────────────────────────────────────────────────────
@@ -1322,10 +1335,11 @@ function HistoryTab() {
   )
 }
 
-// In demo mode, show only the two decisions that best demonstrate the platform's PMF:
+// In demo mode, show the decisions that best demonstrate the platform's PMF across the autonomy spectrum:
 // pa3-emergency — AI auto-assigning a robot with a 15-min override window (highest urgency drama)
 // pa2           — lot hold recommendation with FSMA compliance consequence (Tier 3 ratification)
-const DEMO_DECISION_IDS = new Set(['pa3-emergency', 'pa2'])
+// pa-sc1        — reversible logistics reroute, Tier 2, no director ratification required
+const DEMO_DECISION_IDS = new Set(['pa3-emergency', 'pa2', 'pa-sc1'])
 
 const AGENT_TABS = [
   { id: 'decisions', label: 'Decisions' },
@@ -1443,50 +1457,13 @@ export default function AgentControl() {
 
   const staleSource = dataSourceHealth?.find(s => s.status === 'stale')
 
-  // Build grouped render list — groups appear at position of first member
-  const renderItems = []
-  const renderedGroups = new Set()
-  const groupsMap = {}
-  undecidedPending.forEach(pa => {
-    if (pa._meta.groupId) {
-      if (!groupsMap[pa._meta.groupId]) groupsMap[pa._meta.groupId] = []
-      groupsMap[pa._meta.groupId].push(pa)
-    }
-  })
-
-  // Include decided items inline too (faded)
-  const allItems = [...undecidedPending, ...pending.filter(p => p._decided)].filter(p => {
-    if (!p._decided) {
-      if (agentFilter !== 'all' && p._agentId !== agentFilter) return false
-      if (tierFilter !== 'all' && String(p._meta.tier) !== tierFilter) return false
-      if (consequenceFilter.length > 0 && !consequenceFilter.includes(p._meta.consequence)) return false
-    }
+  // Scope bar filters (Agent / Tier / Priority) — only applied to undecided items;
+  // decided items stay visible regardless so the audit trail isn't hidden by scoping.
+  const passesScopeFilter = (p) => {
+    if (agentFilter !== 'all' && p._agentId !== agentFilter) return false
+    if (tierFilter !== 'all' && String(p._meta.tier) !== tierFilter) return false
+    if (consequenceFilter.length > 0 && !consequenceFilter.includes(p._meta.consequence)) return false
     return true
-  })
-
-  allItems.forEach(pa => {
-    const agent = agents.find(a => a.id === pa._agentId)
-    if (!agent) return
-    const gid = pa._meta.groupId
-    if (gid && !renderedGroups.has(gid)) {
-      renderedGroups.add(gid)
-      const rows = (groupsMap[gid] ?? [pa]).map(gpa => ({
-        pa: gpa, agent: agents.find(a => a.id === gpa._agentId) ?? agent,
-      }))
-      renderItems.push({ type: 'group', gid, rows })
-    } else if (!gid) {
-      renderItems.push({ type: 'single', pa, agent })
-    }
-    // decided items that were in a group just show faded in the group
-  })
-
-  const commonRowProps = {
-    onInvestigate: (pa, agent) => setInvestigationDrawer({ pa, agent }),
-    onApprove: handleApprove,
-    onOverrideRequest: (pa, agent) => setOverrideModal({ pa, agent }),
-    selected: false,
-    onToggleSelect: toggleSelect,
-    navigate,
   }
 
   return (
@@ -1549,12 +1526,7 @@ export default function AgentControl() {
           onChange={setConsequenceFilter}
         />
         <div className="ml-auto font-body text-muted text-label">
-          {undecidedPending.filter(p => {
-            if (agentFilter !== 'all' && p._agentId !== agentFilter) return false
-            if (tierFilter !== 'all' && String(p._meta.tier) !== tierFilter) return false
-            if (consequenceFilter.length > 0 && !consequenceFilter.includes(p._meta.consequence)) return false
-            return true
-          }).length} decisions
+          {undecidedPending.filter(passesScopeFilter).length} decisions
         </div>
       </div>
 
@@ -1712,7 +1684,16 @@ export default function AgentControl() {
                   </div>
                 ) : (
                   <div>
-                    {[...undecidedPending.filter(p => p._meta.tier >= 2), ...pending.filter(p => p._decided && p._meta.tier >= 2)].map(pa => {
+                    {(() => {
+                      const visibleItems = [...undecidedPending.filter(p => p._meta.tier >= 2 && passesScopeFilter(p)), ...pending.filter(p => p._decided && p._meta.tier >= 2)]
+                      if (visibleItems.length === 0) {
+                        return (
+                          <div className="flex items-center gap-2 px-5 py-5">
+                            <span className="font-body text-muted text-body">No decisions match this scope</span>
+                          </div>
+                        )
+                      }
+                      return visibleItems.map(pa => {
                       const agent = agents.find(a => a.id === pa._agentId)
                       if (!agent) return null
                       const isFocused = splitFocused === pa._key && railMode === 'detail'
@@ -1754,7 +1735,8 @@ export default function AgentControl() {
                           </div>
                         </div>
                       )
-                    })}
+                    })
+                    })()}
                   </div>
                 )}
               </div>

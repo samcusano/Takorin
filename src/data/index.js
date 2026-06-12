@@ -445,7 +445,7 @@ export const supplierData = {
   ],
   lots: [
     { ing:'Wheat flour', supplier:'Sysco · WF-2204', po:'Apr 14', shelf:42, shelfTone:'ok', delivery:'Delivered', deliveryTime:'Apr 14 · 09:30', deliveryTone:'ok', coa:'Verified', coaTone:'ok' },
-    { ing:'Tomato sauce', supplier:'ConAgra · TS-8811', po:'Apr 14', shelf:9, shelfTone:'danger', useFirst:true, delivery:'Delayed 6 h', deliveryTime:'Expected 18:00 today', deliveryTone:'warn', coa:'COA Missing', coaTone:'danger', urgent:true },
+    { ing:'Tomato sauce', supplier:'ConAgra · TS-8811', po:'Apr 14', shelf:9, shelfTone:'danger', useFirst:true, delivery:'Delayed 6 h', deliveryTime:'Expected 18:00 today', deliveryTone:'warn', coa:'COA Missing', coaTone:'danger', urgent:true, inventoryValue:38400, chargebackExposure:18000, chargebackReason:'OTIF chargeback if Line 4 misses 08:00 ship window' },
     { ing:'Mozzarella', supplier:'Dairy Fresh · MC-3390', po:'Apr 15', shelf:38, shelfTone:'ok', delivery:'Delivered', deliveryTime:'Apr 15 · 11:15', deliveryTone:'ok', coa:'Verified', coaTone:'ok' },
     { ing:'Pepperoni', supplier:'Smithfield · PP-7714', po:'Apr 15', shelf:21, shelfTone:'ok', delivery:'Delivered', deliveryTime:'Apr 15 · 14:00', deliveryTone:'ok', coa:'Verified', coaTone:'ok' },
     { ing:'Canola oil', supplier:'ADM · CO-5502', po:'Apr 16', shelf:12, shelfTone:'warn', useFirst:true, delivery:'In transit', deliveryTime:'ETA 16:30 today', deliveryTone:'int', coa:'Pending', coaTone:'warn' },
@@ -469,6 +469,17 @@ export const supplierData = {
     { title:'ConAgra SQF renewal', sub:'Expires May 12 · auto-request sent', badge:'26d', badgeColor:'text-warn', tone:'warn' },
     { title:'Sanitation log · Line 4', sub:'Due today · QA tech assigned', badge:'Today', badgeColor:'text-ok', tone:'ok' },
   ],
+}
+
+// ── Sub-tier supply chain visibility — where TS-8811's COA delay actually originates ──
+export const supplyChainNetwork = {
+  focusLot: 'TS-8811',
+  tiers: [
+    { tier: 1, name: 'ConAgra Foods', role: 'Direct supplier · Tomato Sauce · Lot TS-8811', visibility: 'full', status: 'warn', note: '3rd COA delay in 18 months — standard scorecard visibility' },
+    { tier: 2, name: 'Pacific Valley Tomato Co.', role: "ConAgra's tomato paste processor · Central Valley, CA", visibility: 'partial', status: 'danger', note: 'Water allocation cut 30% — paste output down, COA delayed upstream' },
+    { tier: 3, name: 'Central Valley growing region', role: 'Raw tomato source · ~80% of West Coast paste supply', visibility: 'none', status: 'danger', note: 'Regional drought declared April 2026 — root cause of the Tier 2 capacity cut' },
+  ],
+  insight: 'The COA delay traces to a Tier 2 capacity disruption invisible in standard supplier scorecards. Only 12% of food manufacturers have visibility past Tier 1 (2026 industry survey).',
 }
 
 export const capaData = {
@@ -1433,6 +1444,102 @@ export const agentConfigData = {
               { label:'Manual cert check',       status:'eligible', note:'Can verify cert status directly as a fallback' },
             ],
             riskForecast: 'Continued staleness: Handoff Synthesis flags cert fields as unverified — supervisor must manually confirm before signing. Resource allocation proposals may reference outdated cert status.',
+          },
+        },
+      ],
+    },
+    {
+      id:'supply-continuity', name:'Supply Continuity', icon:'Route',
+      description:'Monitors raw material transit against shelf-life and rotation thresholds. When a shipment delay would push a lot below its rotation window, proposes a reroute via an alternate carrier.',
+      trustScore: 75, trustTrajectory: [62, 65, 67, 69, 71, 73, 74, 75],
+      isComplianceCategory: false,
+      confidenceMethodology: 'Projected shelf life at arrival (current shelf life minus revised transit time) vs. the 14-day rotation threshold, weighted by the alternate-carrier cost delta. A wider margin below threshold and a lower cost delta both raise confidence.',
+      enabled:true, confidenceThreshold:78,
+      actCount:{ week:3, month:12 },
+      lastFired:'06:20 today',
+      pendingActions:[
+        {
+          id:'pa-sc1',
+          action:'Reroute Lot CO-5502 via Midwest Freight — ADM rail delay would drop shelf life below rotation threshold',
+          target:'ADM · Canola Oil · Lot CO-5502 · 18d shelf remaining',
+          rationale:'Primary carrier (Union Pacific rail) reports a 3-day delay on the Decatur–Salina lane. At current transit time, CO-5502 would arrive with 9 days shelf life — below the 14-day rotation threshold and would force a use-first designation.',
+          reasoning:['ADM rail lane delay flagged by carrier EDI — adds 3 days to the standard 6-day transit', 'CO-5502 has 18 days shelf life remaining at time of flag', 'Alternate carrier (Midwest Freight, truck) adds $640 but holds transit at 2 days', 'Below the 14-day threshold, the lot would move to use-first rotation and limit Line 6 scheduling flexibility'],
+          cohort:'81% of plants in your cohort reroute when a known transit delay would drop shelf-life buffer below 14 days',
+          confidence:79,
+          triggerData:{
+            reading: '9d projected shelf life at arrival',
+            threshold: '14d rotation minimum',
+            carrier: 'Union Pacific rail — Decatur to Salina',
+            delay: '+3 days vs. standard 6-day transit',
+            alternate: 'Midwest Freight (truck) — 2-day transit, +$640',
+          },
+          impactPreview:[
+            'CO-5502 rerouted via Midwest Freight — arrives with 16 days shelf life instead of 9',
+            'Adds $640 freight cost vs. standard lane — well below the cost of a use-first markdown or expedited reorder',
+            'No production schedule change required',
+            'Reversible — standard lane resumes automatically once the ADM rail delay clears',
+          ],
+          evidence:{
+            summary: 'CO-5502 (Canola Oil, ADM) is in transit with 18 days shelf life remaining. A 3-day rail delay on the Decatur–Salina lane would drop projected shelf life at arrival to 9 days — below the 14-day rotation threshold. An alternate truck carrier holds transit at 2 days for a $640 premium.',
+            causalSignals:[
+              { signal:'Rail transit delay',              reading:'+3 days', threshold:'6-day standard transit',  status:'breach', stage:'correlated', note:'Union Pacific EDI — Decatur to Salina lane' },
+              { signal:'Projected shelf life at arrival', reading:'9 days',  threshold:'14-day rotation minimum', status:'breach', stage:'qualified',  note:'Below threshold — would force use-first designation' },
+              { signal:'Alternate carrier cost',          reading:'+$640',   threshold:'N/A',                     status:'ok',     stage:'qualified',  note:'Midwest Freight truck — 2-day transit, restores 16-day shelf life at arrival' },
+            ],
+            dependencies:[
+              { label:'Line 6 production schedule', status:'not-required', note:'No change — reroute is logistics-only' },
+              { label:'ADM rail lane',               status:'pending',     note:'Standard lane resumes automatically once the carrier delay clears' },
+              { label:'Use-first rotation list',     status:'not-required', note:'Avoided — CO-5502 stays off the use-first list if rerouted' },
+            ],
+            riskForecast: 'If not rerouted: CO-5502 arrives with 9 days shelf life, moves to use-first rotation, and limits Line 6 scheduling flexibility for the remainder of its shelf window.',
+          },
+        },
+      ],
+    },
+    {
+      id:'replenishment', name:'Replenishment & Inventory', icon:'Package',
+      description:'Rebalances safety stock across the network to protect plant-level service levels while reducing carrying cost of near-expiry or surplus inventory.',
+      trustScore: 73, trustTrajectory: [58, 62, 65, 67, 69, 71, 72, 73],
+      isComplianceCategory: false,
+      confidenceMethodology: 'Post-transfer buffer position at both plants relative to the 3–5 day target range, weighted by transit time and whether the transfer resolves the triggering shortfall without creating a new one elsewhere.',
+      enabled:true, confidenceThreshold:76,
+      actCount:{ week:2, month:9 },
+      lastFired:'06:15 today',
+      pendingActions:[
+        {
+          id:'pa-ri1',
+          action:'Transfer 600kg Tomato Sauce safety stock — Wichita (KS-07) to Salina (SL-04)',
+          target:'Tomato Sauce · Salina (SL-04) ↔ Wichita (KS-07)',
+          rationale:"Salina's tomato sauce safety stock fell to 1.8 days of coverage after Lot TS-8811 was placed on hold. Wichita carries 6.2 days — above its 4-day ceiling. An inter-plant transfer restores both plants to target range without a new purchase order.",
+          reasoning:['TS-8811 hold removed 2,400kg from Salina\'s available tomato sauce stock', 'Salina buffer dropped to 1.8 days — below the 3-day minimum', 'Wichita holds 6.2 days — above its 4-day ceiling, tying up working capital', 'Transfer restores Salina to 3.4 days and Wichita to 4.0 days — both within target range'],
+          cohort:'77% of plants in your cohort rebalance via inter-plant transfer before issuing a new PO when a sister plant carries surplus',
+          confidence:81,
+          triggerData:{
+            salinaBuffer: '1.8 days (below 3-day minimum)',
+            wichitaBuffer: '6.2 days (above 4-day ceiling)',
+            transferQty: '600kg',
+            transitTime: '~6h truck — Wichita to Salina',
+            trigger: 'TS-8811 hold removed 2,400kg from Salina available stock',
+          },
+          impactPreview:[
+            'Salina buffer restored to 3.4 days — above the 3-day minimum',
+            'Wichita surplus reduced to 4.0 days — within target range, lowers spoilage risk',
+            'No new purchase order — inter-plant transfer only, ~6h transit',
+            'Reversible — transfer can be recalled before pickup if the TS-8811 hold is lifted first',
+          ],
+          evidence:{
+            summary: "Salina's tomato sauce safety stock fell to 1.8 days of coverage after Lot TS-8811 was held — below the 3-day minimum. Wichita carries 6.2 days, above its 4-day ceiling. A 600kg inter-plant transfer (~6h transit) restores both plants to target range without a new purchase order.",
+            causalSignals:[
+              { signal:'Salina buffer',          reading:'1.8 days', threshold:'3-day minimum', status:'breach', stage:'correlated', note:'TS-8811 hold removed 2,400kg from available stock' },
+              { signal:'Wichita buffer',         reading:'6.2 days', threshold:'4-day ceiling',  status:'warn',   stage:'correlated', note:'Surplus above target — carrying cost and spoilage risk' },
+              { signal:'Transfer transit time',  reading:'~6h truck', threshold:'N/A',           status:'ok',     stage:'qualified',  note:'Same-day transfer — Wichita to Salina' },
+            ],
+            dependencies:[
+              { label:'TS-8811 hold resolution', status:'not-required', note:'Transfer addresses the buffer gap independent of the hold outcome' },
+              { label:'Wichita line schedule',    status:'not-required', note:'600kg is within Wichita\'s surplus — no impact to its production' },
+              { label:'New purchase order',       status:'not-required', note:'Avoided — transfer resolves the shortfall without new spend' },
+            ],
+            riskForecast: 'If not transferred: Salina buffer remains below the 3-day minimum — any further delay to the TS-8811 release would risk a Line 4 stockout. Wichita continues carrying surplus inventory above its target ceiling.',
           },
         },
       ],
