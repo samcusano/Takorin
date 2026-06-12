@@ -285,18 +285,6 @@ function LiveTab() {
     <div className="flex flex-1 min-h-0 overflow-hidden">
       {/* Left: line list + summary */}
       <div className="w-[300px] flex-shrink-0 border-r border-rule2 flex flex-col">
-        {/* Quick stats */}
-        <div className="flex-shrink-0 grid grid-cols-2 gap-px bg-rule2 border-b border-rule2">
-          {[
-            { label: 'Units inspected', val: totalInspected.toLocaleString(), color: 'text-ink' },
-            { label: 'Overall defect rate', val: `${overallRate}%`, color: parseFloat(overallRate) > 0.5 ? 'text-warn' : 'text-ok' },
-          ].map(({ label, val, color }) => (
-            <div key={label} className="bg-stone px-4 py-3">
-              <div className={`display-num text-sub font-bold tabular-nums leading-none ${color}`}>{val}</div>
-              <div className="font-body text-label text-muted mt-1">{label}</div>
-            </div>
-          ))}
-        </div>
         {/* Line cards */}
         <div className="flex-1 overflow-y-auto">
           {lineQuality.map(line => (
