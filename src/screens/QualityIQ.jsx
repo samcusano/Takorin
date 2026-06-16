@@ -90,10 +90,37 @@ function MonitorCard({ line, selected, onClick }) {
   )
 }
 
+// Mobile-only compact line picker — horizontal scrollable strip above the tabs
+function MobileLinePicker({ lines, selectedId, onSelect }) {
+  return (
+    <div className="md:hidden flex-shrink-0 overflow-x-auto border-b border-rule2 bg-stone2">
+      <div className="flex">
+        {lines.map(line => {
+          const dot = rateDot(line.defectRate, line.threshold)
+          const text = rateColor(line.defectRate, line.threshold)
+          const selected = line.id === selectedId
+          return (
+            <button key={line.id} type="button" onClick={() => onSelect(line.id)}
+              className={`flex-shrink-0 px-4 py-2.5 border-r border-rule2 border-b-2 text-left transition-colors ${
+                selected ? 'bg-stone3 border-b-signal' : 'border-b-transparent hover:bg-stone3/40'
+              }`}>
+              <div className="flex items-center gap-1.5 mb-0.5">
+                <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${dot}`} />
+                <span className="font-body font-semibold text-ink text-label whitespace-nowrap">{line.name}</span>
+              </div>
+              <div className={`display-num text-sub font-bold tabular-nums leading-none ${text}`}>{line.defectRate.toFixed(2)}%</div>
+            </button>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
 function MonitorRail({ selectedId, onSelect, lines }) {
   const totalNovel = novelEvents.filter(e => e.status === 'pending').length
   return (
-    <div className="w-[260px] flex-shrink-0 border-r border-rule2 flex flex-col overflow-y-auto bg-stone2">
+    <div className="hidden md:flex w-[260px] flex-shrink-0 border-r border-rule2 flex-col overflow-y-auto bg-stone2">
       {lines.map(line => (
         <MonitorCard key={line.id} line={line} selected={selectedId === line.id} onClick={() => onSelect(line.id)} />
       ))}
@@ -130,7 +157,7 @@ function intervention(line) {
   }
 }
 
-function TriageCard({ event }) {
+function NovelEventTriage({ event }) {
   return (
     <div className="border border-danger/30 bg-danger/[0.02] px-4 py-3">
       <div className="flex items-start justify-between gap-3 mb-1.5">
@@ -181,7 +208,7 @@ function LineOverview({ line }) {
 
       {pendingNovel.length > 0 && (
         <div className="px-5 py-3 space-y-2">
-          {pendingNovel.map(e => <TriageCard key={e.id} event={e} />)}
+          {pendingNovel.map(e => <NovelEventTriage key={e.id} event={e} />)}
         </div>
       )}
 
@@ -633,11 +660,13 @@ export default function QualityIQ() {
   const novelPending = novelEvents.filter(e => e.status === 'pending').length
 
   return (
-    <div className="flex h-full overflow-hidden font-body content-reveal">
+    <div className="flex flex-col md:flex-row h-full overflow-hidden font-body content-reveal">
       <MonitorRail selectedId={selectedId} lines={sortedLines}
         onSelect={(id) => { setSelectedId(id); setView('overview') }} />
 
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
+        <MobileLinePicker lines={sortedLines} selectedId={selectedId}
+          onSelect={(id) => { setSelectedId(id); setView('overview') }} />
         <Tabs
           tabs={[
             { id: 'overview', label: 'Overview' },
@@ -647,7 +676,7 @@ export default function QualityIQ() {
           ]}
           active={view}
           onChange={setView}
-          className="px-6 bg-stone2/40 flex-shrink-0"
+          className="px-3 md:px-6 bg-stone2/40 flex-shrink-0 overflow-x-auto"
         />
 
         {view === 'overview' && <LineOverview line={selectedLine} />}

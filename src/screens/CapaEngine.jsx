@@ -163,19 +163,6 @@ const BLOCKING_ITEM = {
  before: 'Pack Line QA pre-check logs completed without exception for 6 consecutive months · Last documented compliance gap: June 2025 · Zero open QA evidence items as of April 12',
 }
 
-function CollapsibleSection({ label, isOpen, onToggle, children }) {
- return (
- <div className="border-b border-rule2 last:border-b-0">
- <button type="button" onClick={onToggle}
- className="w-full flex items-center justify-between px-4 py-2.5 hover:bg-stone2 transition-colors">
- <span className="font-body text-muted text-label">{label}</span>
- <span className={`text-muted text-label transition-transform ${isOpen ? 'rotate-180' : ''}`}>▾</span>
- </button>
- {isOpen && <div className="border-t border-rule2 bg-stone">{children}</div>}
- </div>
- )
-}
-
 function PriorityQueueRow({ c, isSelected, onSelect, isEscalated, isResolved, index = 0 }) {
  const score = c.priorityScore || 0
  const rowBg = isSelected ? 'bg-signal/[0.04]'

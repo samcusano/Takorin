@@ -3,7 +3,7 @@ import { Flag, ShieldCheck, Check, Lock, AlertTriangle, Activity, CheckCircle2, 
 import { operatorContextData, fatigueData } from '../data'
 import { integrationSummary, connectors } from '../data/integrations'
 import { useAppState } from '../context/AppState'
-import { SectionHeader, StatusPill, PersonAvatar, Btn, Modal, Tabs, AnimatedScore } from '../components/UI'
+import { SectionHeader, StatusPill, PersonAvatar, Btn, Modal, AnimatedScore, ExpandableSection } from '../components/UI'
 import { OBSERVATION_CATEGORIES, OBSERVATION_STATIONS } from '../data/observations'
 
 // ── Static operator data ──────────────────────────────────────────────────────
@@ -87,7 +87,7 @@ const CERT_NEXT_STEPS = {
 
 // ── Directive Card — supervisor-pushed messages, highest priority surface ──────
 
-function DirectiveCard({ directive, onAcknowledge }) {
+function SupervisorMessageCard({ directive, onAcknowledge }) {
  const [exiting, setExiting] = useState(false)
  const isWarn = directive.urgency === 'warn'
  const isDanger = directive.urgency === 'danger'
@@ -111,13 +111,13 @@ function DirectiveCard({ directive, onAcknowledge }) {
       <span className={`font-body text-label font-medium ${accentText}`}>From {directive.from}</span>
       <span className="font-body text-muted text-label">· {directive.role} · sent {directive.sentAt}</span>
      </div>
-     <p className="font-display text-ink text-sub leading-snug font-medium">{directive.message}</p>
+     <p className="font-display text-ink text-body leading-snug font-medium">{directive.message}</p>
      {directive.deadline && (
       <div className={`font-body text-label mt-1 ${accentText}`}>Prepare by {directive.deadline}</div>
      )}
     </div>
     <button type="button" onClick={handleAck}
-     className="flex items-center gap-1.5 font-body text-label text-muted hover:text-ink transition-colors flex-shrink-0 px-2 py-1 border border-rule2 hover:border-muted"
+     className="flex items-center gap-1.5 font-body text-label text-muted hover:text-ink transition-colors flex-shrink-0 px-3 py-2 border border-rule2 hover:border-muted focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-signal"
      aria-label="Acknowledge directive">
      <Check size={10} strokeWidth={2.5} />
      <span>Got it</span>
@@ -133,13 +133,9 @@ function StationBriefing({ operator }) {
  const briefing = STATION_BRIEFING[operator]
  if (!briefing) return null
  return (
-  <div className="border-b border-rule2">
-   <div className="px-5 py-2 bg-stone2 border-b border-rule2 flex items-center gap-1.5">
-    <span className="font-body text-muted text-label">Since your last shift</span>
-   </div>
+  <ExpandableSection title="Since your last shift">
    {briefing.carryForward.map((item, i) => {
     const dotClass = item.type === 'danger' ? 'bg-danger' : item.type === 'warn' ? 'bg-warn' : 'bg-ok'
-    const noteClass = item.type === 'danger' ? 'text-danger' : item.type === 'warn' ? 'text-warn' : 'text-muted'
     return (
      <div key={i} className="flex items-start gap-3 px-5 py-3 border-b border-rule2 last:border-b-0">
       <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 mt-1.5 ${dotClass}`} />
@@ -150,7 +146,7 @@ function StationBriefing({ operator }) {
      </div>
     )
    })}
-  </div>
+  </ExpandableSection>
  )
 }
 
@@ -191,10 +187,7 @@ function MyProgress({ operator, op }) {
  const steps = CERT_NEXT_STEPS[operator] || []
  const certC = op.certPct >= 80 ? 'var(--color-ok)' : op.certPct >= 50 ? 'var(--color-warn)' : 'var(--color-muted)'
  return (
-  <div className="border-t border-rule2">
-   <div className="px-5 py-2 bg-stone2 border-b border-rule2">
-    <span className="font-body text-muted text-label">My progress</span>
-   </div>
+  <>
    <div className="px-5 py-4 border-b border-rule2">
     <div className="flex items-end justify-between mb-2">
      <div className="font-body text-muted text-label">{op.certLabel}</div>
@@ -229,7 +222,7 @@ function MyProgress({ operator, op }) {
      </div>
     )
    })()}
-  </div>
+  </>
  )
 }
 
@@ -239,7 +232,7 @@ function KnowledgeCapturePrompt({ source, operator, onDismiss, onSubmit }) {
  const [body, setBody] = useState('')
  const [submitted, setSubmitted] = useState(false)
  if (submitted) return (
-  <div className="mx-5 mb-4 px-4 py-3 bg-ok/[0.04] border-l-2 border-l-ok slide-in">
+  <div className="mx-5 mt-3 mb-4 px-4 py-3 bg-ok/[0.04] border-l-2 border-l-ok slide-in">
    <div className="flex items-center gap-1.5">
     <CheckCircle2 size={11} strokeWidth={2} className="text-ok flex-shrink-0" />
     <span className="font-body text-ok text-label">Submitted for supervisor review — thank you.</span>
@@ -247,7 +240,7 @@ function KnowledgeCapturePrompt({ source, operator, onDismiss, onSubmit }) {
   </div>
  )
  return (
-  <div className="mx-5 mb-4 border border-rule2 bg-stone2 slide-in">
+  <div className="mx-5 mt-3 mb-4 border border-rule2 bg-stone2 slide-in">
    <div className="flex items-center justify-between px-4 py-2.5 border-b border-rule2">
     <div className="flex items-center gap-1.5">
      <BookOpen size={10} strokeWidth={2} className="text-signal flex-shrink-0" />
@@ -317,7 +310,8 @@ function DataCommitmentOverlay({ onAcknowledge }) {
 }
 
 // ── Layer 1: Operational State Header ────────────────────────────────────────
-// The anchor. Tells the operator what mode they are in, not who they are.
+// Renders only when there is no directive to merge with — Standard Operation
+// and any future mode without a primary directive.
 
 function OperationalStateHeader({ ctx }) {
  if (!ctx || ctx.mode === 'STANDARD_OPERATION') {
@@ -327,7 +321,7 @@ function OperationalStateHeader({ ctx }) {
      <CheckCircle2 size={12} strokeWidth={2} className="text-ok flex-shrink-0" />
      <div className="font-body text-ok text-label font-medium">Standard Operation</div>
     </div>
-    <div className="font-display font-bold text-ink text-head leading-none mb-1">{ctx?.station} · {ctx?.condition}</div>
+    <div className="font-display font-bold text-ink text-sub leading-snug mb-0.5">{ctx?.station} · {ctx?.condition}</div>
     <div className="font-body text-muted text-label">{ctx?.conditionDetail}</div>
    </div>
   )
@@ -342,7 +336,7 @@ function OperationalStateHeader({ ctx }) {
     <Icon size={12} strokeWidth={2} className={`flex-shrink-0 ${textClass}`} />
     <div className={`font-body text-label font-medium ${textClass}`}>{ctx.modeLabel}</div>
    </div>
-   <div className="font-display font-bold text-ink text-head leading-none mb-1">
+   <div className="font-display font-bold text-ink text-sub leading-snug mb-0.5">
     {ctx.station} · {ctx.condition}
    </div>
    <div className="font-body text-muted text-label">{ctx.conditionDetail}</div>
@@ -350,28 +344,38 @@ function OperationalStateHeader({ ctx }) {
  )
 }
 
-// ── Primary Directive ─────────────────────────────────────────────────────────
-// Singular operational directive. First-class object, not an alert.
+// ── Unified Operational Header ────────────────────────────────────────────────
+// When a primary directive exists, collapses the state header and directive
+// into one surface. Mode badge + station become a small muted row; the
+// directive is the dominant text. Left accent runs the full unit height.
 
-function PrimaryDirective({ ctx }) {
+function UnifiedOperationalHeader({ ctx }) {
  if (!ctx) return null
  const isDanger = ctx.mode === 'ELEVATED_RISK_COVERAGE'
- const borderClass = isDanger ? 'border-l-danger' : 'border-l-warn'
- const dotClass    = isDanger ? 'bg-danger beat' : 'bg-warn'
- const badgeClass  = isDanger ? 'bg-danger/[0.08] text-danger' : 'bg-warn/[0.08] text-warn'
+ const Icon      = isDanger ? AlertTriangle : Activity
+ const textClass = isDanger ? 'text-danger' : 'text-warn'
+ const dotClass  = isDanger ? 'bg-danger beat' : 'bg-warn'
+ const accentClass = isDanger
+  ? 'border-l-danger bg-danger/[0.02]'
+  : 'border-l-warn bg-warn/[0.02]'
  return (
-  <div className={`flex-shrink-0 px-5 py-3.5 border-b border-rule2 border-l-2 ${borderClass}`}>
-   <div className="flex items-start justify-between gap-3">
-    <div className="flex items-start gap-2.5 flex-1 min-w-0">
-     <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 mt-1.5 ${dotClass}`} />
-     <div>
-      <div className="font-body font-medium text-ink text-sub leading-snug">{ctx.directive}</div>
+  <div className={`flex-shrink-0 px-5 py-4 border-b border-rule2 border-l-[3px] ${accentClass}`}>
+   <div className="flex items-center gap-2 mb-3">
+    <Icon size={11} strokeWidth={2} className={`flex-shrink-0 ${textClass}`} />
+    <span className={`font-body text-label font-medium ${textClass}`}>{ctx.modeLabel}</span>
+    <span className="font-body text-muted text-label">· {ctx.station}</span>
+   </div>
+   <div className="flex items-start gap-2.5">
+    <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 mt-1.5 ${dotClass}`} />
+    <div className="flex-1 min-w-0">
+     <div className="font-display font-bold text-ink text-sub leading-snug">{ctx.directive}</div>
+     <div className="flex items-center gap-3 mt-1">
+      <span className={`font-body font-medium text-body ${textClass}`}>Before {ctx.directiveDeadline}</span>
       {ctx.guidanceLevel === 'high' && (
-       <div className="font-body text-muted text-label mt-0.5">Ask your supervisor if unsure about any step</div>
+       <span className="font-body text-muted text-label">· Ask supervisor if unsure</span>
       )}
      </div>
     </div>
-    <span className={`font-body text-label px-1.5 py-0.5 flex-shrink-0 whitespace-nowrap ${badgeClass}`}>Before {ctx.directiveDeadline}</span>
    </div>
   </div>
  )
@@ -424,9 +428,12 @@ function ProceduralSurface({ ctx, completions, onComplete, onRequestSignOff }) {
        type="button"
        disabled={!enabled}
        onClick={() => enabled && onComplete(step.id)}
-       className={`w-5 h-5 rounded-full flex-shrink-0 flex items-center justify-center mt-0.5 transition-colors ${
-        done    ? 'bg-ok' :
-        enabled ? 'border-2 border-warn hover:border-ok hover:bg-ok/10 cursor-pointer' :
+       aria-label={`${done ? 'Completed' : enabled ? 'Mark complete' : 'Locked'}: step ${i + 1}, ${step.label}`}
+       className={`relative w-5 h-5 rounded-full flex-shrink-0 flex items-center justify-center mt-0.5 transition-colors touch-manipulation
+        after:absolute after:content-[''] after:-inset-[12px]
+        focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-signal/70 ${
+        done    ? 'bg-muted' :
+        enabled ? 'border-2 border-stone4 bg-stone hover:bg-stone3 cursor-pointer' :
                   'border-2 border-rule2'
        }`}
       >
@@ -449,7 +456,7 @@ function ProceduralSurface({ ctx, completions, onComplete, onRequestSignOff }) {
     <div className="px-5 py-4 bg-ok/[0.04] border-b border-ok/20">
      <div className="flex items-center gap-2 mb-1.5">
       <CheckCircle2 size={13} strokeWidth={2} className="text-ok flex-shrink-0" />
-      <span className="font-body font-medium text-ok text-sub">Verification complete</span>
+      <span className="font-body font-medium text-ok text-body">Verification complete</span>
      </div>
      <div className="font-body text-ok/80 text-label mb-3">All steps verified · Await supervisor sign-off before restarting the line</div>
      <Btn variant="secondary" onClick={onRequestSignOff}>Request supervisor sign-off</Btn>
@@ -545,8 +552,6 @@ function MonitoringSurface({ ctx, entries, onLog }) {
     </div>
    </div>
 
-   {/* Floor observation log */}
-   <ObservationLogger />
   </div>
  )
 }
@@ -593,10 +598,13 @@ function ObservationLogger() {
       ))}
      </div>
      {/* Station */}
-     <select value={station} onChange={e => setStation(e.target.value)}
-      className="w-full font-body text-label text-ink bg-stone border border-rule2 px-2 py-1.5 focus:border-signal focus:outline-none appearance-none">
-      {OBSERVATION_STATIONS.map(s => <option key={s} value={s}>{s}</option>)}
-     </select>
+     <div className="relative">
+      <select value={station} onChange={e => setStation(e.target.value)}
+       className="w-full font-body text-label text-ink bg-stone border border-rule2 px-2 py-1.5 pr-7 focus:border-signal focus:outline-none appearance-none">
+       {OBSERVATION_STATIONS.map(s => <option key={s} value={s}>{s}</option>)}
+      </select>
+      <ChevronDown size={11} className="absolute right-2 top-1/2 -translate-y-1/2 text-muted pointer-events-none" />
+     </div>
      {/* Note */}
      <textarea value={note} onChange={e => setNote(e.target.value)}
       rows={3} placeholder="What did you see?"
@@ -639,7 +647,7 @@ function TaskSection({ selected, station, tasks, linkedTasks, flags, nearMisses,
  const pendingCount = allTasks.filter(t => !t.done).length
  return (
   <>
-   <SectionHeader label="Today's tasks" title={`${station || selected.split(' ')[1] || selected} · April 16`}
+   <SectionHeader label="Today's tasks" title={`${station || selected.split(' ')[1] || selected} · AM shift`}
     badge={allTasks.length > 0 ? <StatusPill tone={pendingCount > 0 ? 'warn' : 'ok'}>{pendingCount} pending</StatusPill> : null} />
    {allTasks.length === 0 ? (
     <div className="px-5 py-4 font-body text-muted text-body">No tasks yet — tasks assigned by your supervisor appear here.</div>
@@ -648,8 +656,11 @@ function TaskSection({ selected, station, tasks, linkedTasks, flags, nearMisses,
      <button type="button"
       disabled={t.done || !t.interventionId}
       onClick={() => t.interventionId && !t.done && onLinkedTaskConfirm(t)}
-      className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 transition-colors ${
-       t.done ? 'bg-ok cursor-default' : t.interventionId ? 'border-2 border-signal hover:bg-signal/10 cursor-pointer' : 'border-2 border-rule2 cursor-default'
+      aria-label={`${t.done ? 'Completed' : 'Confirm complete'}: ${t.label}`}
+      className={`relative w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 transition-colors touch-manipulation
+       after:absolute after:content-[''] after:-inset-[12px]
+       focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-signal/70 ${
+       t.done ? 'bg-muted cursor-default' : t.interventionId ? 'border-2 border-signal hover:bg-signal/10 cursor-pointer' : 'border-2 border-rule2 cursor-default'
       }`}>
       {t.done && <Check size={11} strokeWidth={2.5} className="text-stone" />}
      </button>
@@ -670,7 +681,7 @@ function TaskSection({ selected, station, tasks, linkedTasks, flags, nearMisses,
     </div>
    ))}
    <div className="px-5 py-3 border-t border-rule2 font-body text-muted text-label">
-    Can't complete a safety check? Use the Flag button and give a reason — your supervisor will be notified.
+    Can't complete a safety check? Tap "I need my supervisor" below — they'll be notified immediately.
    </div>
 
    {flags.length > 0 && (
@@ -845,13 +856,43 @@ const HOLD_DIRECTIVE = {
  deadline: '08:00 · Hold remains until COA received',
 }
 
+// ── Hold Takeover — full-screen gate; operator cannot access anything until acknowledged ──
+
+function HoldTakeover({ directive, operator, station, onAcknowledge }) {
+ return (
+  <div className="flex-1 flex flex-col bg-danger-dim overflow-hidden slide-in">
+   <div className="flex-shrink-0 px-5 py-3 border-b border-danger/20">
+    <div className="font-body text-muted text-label">{operator} · {station}</div>
+   </div>
+   <div className="flex-1 flex flex-col justify-start pt-10 px-5">
+    <div className="flex items-center gap-2 mb-4">
+     <div className="w-2.5 h-2.5 rounded-full bg-danger beat" />
+     <span className="font-body text-danger text-body font-medium">Compliance Hold Active</span>
+    </div>
+    <div className="font-display font-bold text-ink text-sub leading-relaxed mb-2">{directive.message}</div>
+    <div className="font-body text-ink2 text-body mb-8">
+     From {directive.from} · {directive.role} · Sent {directive.sentAt} · Hold active until COA received
+    </div>
+    <button type="button"
+     onClick={() => onAcknowledge(directive.id)}
+     className="w-full py-4 bg-danger text-stone font-display font-bold text-body flex items-center justify-center gap-2 hover:bg-danger/90 active:bg-danger/80 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-stone/40">
+     <Check size={16} />I acknowledge — I will not use Lot TS-8811
+    </button>
+   </div>
+   <div className="flex-shrink-0 px-5 py-3 border-t border-danger/15">
+    <div className="font-body text-muted text-label text-center">All production blocked until hold is cleared</div>
+   </div>
+  </div>
+ )
+}
+
 // ── Startup checklist — station-specific, interactive ─────────────────────────
 
 const STARTUP_CHECKLIST = {
  'C. Reyes': [
   { id: 'cl-cr-1', label: 'Allergen changeover log signed',                   preset: true,  note: 'Signed · 05:45' },
   { id: 'cl-cr-2', label: 'CCP-1 Hold Point temperature verified',             preset: true,  note: 'Verified · 06:18 · 188°F · Kowalski' },
-  { id: 'cl-cr-3', label: 'Confirm Lot TS-8811 not present at Sauce Dosing',  urgent: true,  note: 'Compliance hold — do not use' },
+  { id: 'cl-cr-3', label: 'Confirm Lot TS-8811 not present at Sauce Dosing',  urgent: true,  note: 'Compliance hold — do not use', procedureScope: true },
   { id: 'cl-cr-4', label: 'Sauce Dosing valve positions checked' },
   { id: 'cl-cr-5', label: 'PPE inspection — gloves, hairnet, apron' },
   { id: 'cl-cr-6', label: 'Log CCP-1 reading before 07:30',                   urgent: true },
@@ -870,10 +911,15 @@ const STARTUP_CHECKLIST = {
  ],
 }
 
-function StartupChecklist({ selected, completions, onComplete }) {
- const items = STARTUP_CHECKLIST[selected] || []
- const doneCount = items.filter(i => i.preset || completions.includes(i.id)).length
- const allDone = doneCount === items.length
+function StartupChecklist({ selected, completions, onComplete, hideProcedureScope = false }) {
+ const allItems = STARTUP_CHECKLIST[selected] || []
+ const visibleItems = hideProcedureScope
+  ? allItems.map(i => i.procedureScope ? { ...i, _lockedByProcedure: true } : i)
+  : allItems
+ const items = visibleItems
+ const doneCount = allItems.filter(i => i.preset || completions.includes(i.id)).length
+ const totalCount = allItems.length
+ const allDone = doneCount === totalCount
 
  return (
   <div className="border-b border-rule2">
@@ -884,13 +930,26 @@ function StartupChecklist({ selected, completions, onComplete }) {
     </div>
     <div className="flex items-center gap-1.5">
      <span className={`font-body text-label tabular-nums ${allDone ? 'text-ok' : 'text-warn'}`}>
-      {doneCount}/{items.length}
+      {doneCount}/{totalCount}
      </span>
      {allDone && <CheckCircle2 size={10} strokeWidth={2} className="text-ok" />}
     </div>
    </div>
    {items.map(item => {
     const isDone = item.preset || completions.includes(item.id)
+    if (item._lockedByProcedure) {
+     return (
+      <div key={item.id} className="flex items-start gap-3 px-5 py-2.5 border-b border-rule2 last:border-b-0 opacity-50">
+       <div className="w-5 h-5 rounded-full bg-muted flex items-center justify-center flex-shrink-0 mt-0.5">
+        <Check size={11} strokeWidth={2.5} className="text-stone" />
+       </div>
+       <div className="flex-1 min-w-0">
+        <div className="font-body text-body leading-snug line-through text-muted">{item.label}</div>
+        <div className="font-body text-muted text-label mt-0.5">Covered by verification sequence</div>
+       </div>
+      </div>
+     )
+    }
     return (
      <div key={item.id}
       className={`flex items-start gap-3 px-5 py-2.5 border-b border-rule2 last:border-b-0 ${
@@ -899,12 +958,15 @@ function StartupChecklist({ selected, completions, onComplete }) {
       <button type="button"
        disabled={isDone}
        onClick={() => !isDone && onComplete(item.id)}
-       className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 mt-0.5 transition-colors ${
-        isDone
-         ? 'bg-ok border-ok cursor-default'
+       aria-label={`${isDone ? 'Completed' : 'Mark complete'}: ${item.label}`}
+       className={`relative w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-0.5 transition-colors touch-manipulation
+        after:absolute after:content-[''] after:-inset-[12px]
+        focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-signal/70
+        ${isDone
+         ? 'bg-muted border-muted cursor-default'
          : item.urgent
          ? 'border-danger hover:bg-danger/10 cursor-pointer'
-         : 'border-rule2 hover:border-signal cursor-pointer'
+         : 'border-rule2 hover:border-stone4 cursor-pointer'
        }`}>
        {isDone && <Check size={11} strokeWidth={2.5} className="text-stone" />}
       </button>
@@ -943,7 +1005,6 @@ export default function OperatorView({ role }) {
   operatorAcknowledgments, setOperatorAcknowledgments, logActivity,
  } = useAppState()
 
- const [opTab, setOpTab] = useState('today')
  const [showCapture, setShowCapture] = useState(false)
  const [captureSource, setCaptureSource] = useState('')
  const [checklistCompletions, setChecklistCompletions] = useState({})
@@ -1017,6 +1078,10 @@ export default function OperatorView({ role }) {
   })
  }
 
+ const myFatigue = fatigueData.operators.find(o =>
+  o.name.includes(selected.split('.')[1]?.trim()) || selected.includes(o.name.split('.')[0])
+ )
+
  return (
   <>
   {/* DataCommitmentOverlay — only for real operator sessions, not director simulation */}
@@ -1067,37 +1132,49 @@ export default function OperatorView({ role }) {
     </div>
    )}
 
-   {/* ── Supervisor directives — highest priority push surface ── */}
-   {selected === 'C. Reyes' && !acknowledgedDirectives.has(HOLD_DIRECTIVE.id) && (
-    <DirectiveCard
+   {/* ── State machine: hold gate OR work mode ───────────────── */}
+   {selected === 'C. Reyes' && !acknowledgedDirectives.has(HOLD_DIRECTIVE.id) ? (
+    <HoldTakeover
      directive={HOLD_DIRECTIVE}
+     operator={selected}
+     station={ctx?.station || op?.station}
      onAcknowledge={(id) => {
       setAcknowledgedDirectives(prev => new Set([...prev, id]))
       logActivity({ actor: selected, action: 'Compliance hold acknowledged: Lot TS-8811', item: 'Hold', type: 'compliance' })
      }}
     />
-   )}
+   ) : (
+   <>
+   {/* Other supervisor directives (non-hold) */}
    {(ctx?.directives ?? [])
     .filter(d => !acknowledgedDirectives.has(d.id))
     .map(d => (
-     <DirectiveCard key={d.id} directive={d} onAcknowledge={(id) => {
+     <SupervisorMessageCard key={d.id} directive={d} onAcknowledge={(id) => {
       setAcknowledgedDirectives(prev => new Set([...prev, id]))
       logActivity({ actor: selected, action: `Acknowledged supervisor directive: "${d.message.slice(0, 60)}"`, item: 'Directive', type: 'intervention' })
      }} />
     ))
    }
 
-   {/* ── Operational State Header ─────────────────────────────── */}
-   <OperationalStateHeader ctx={ctx} />
+   {/* ── Header: unified when directive present, standalone otherwise ── */}
+   {ctx?.directive
+    ? <UnifiedOperationalHeader ctx={ctx} />
+    : <OperationalStateHeader ctx={ctx} />
+   }
 
-   {/* ── Primary Directive ────────────────────────────────────── */}
-   <PrimaryDirective ctx={ctx} />
+   {/* ── Single linear scroll ─────────────────────────────────── */}
+   <div className="flex-1 overflow-y-auto page-rise slide-in">
 
-   {/* ── Station Briefing — carry-forward from prior shift ────── */}
-   <StationBriefing operator={selected} />
+    <StartupChecklist
+     selected={selected}
+     completions={checklistCompletions[selected] || []}
+     onComplete={handleChecklistComplete}
+     hideProcedureScope={ctx?.dominantSurface === 'procedural'}
+    />
 
-   {/* ── Main content ─────────────────────────────────────────── */}
-   <div className="flex-1 overflow-y-auto page-rise">
+    <StationBriefing operator={selected} />
+
+    <TroubleshootingHint operator={selected} />
 
     {/* Dominant surface */}
     {ctx?.dominantSurface === 'procedural' && (
@@ -1116,69 +1193,40 @@ export default function OperatorView({ role }) {
      />
     )}
 
-    <Tabs
-     tabs={[
-      { id: 'today',      label: 'Today',      badge: tasks.filter(t => !t.done).length + linkedTasks.filter(t => !t.done).length },
-      { id: 'progress',   label: 'Progress',   badge: 0 },
-      { id: 'schedule',   label: 'Schedule',   badge: 0 },
-      { id: 'transition', label: 'Transition', badge: 0 },
-     ]}
-     active={opTab}
-     onChange={setOpTab}
-     className="flex-shrink-0 bg-stone2 sticky top-0 z-10"
+    <TaskSection
+     selected={selected}
+     station={ctx?.station || op?.station}
+     tasks={tasks}
+     linkedTasks={linkedTasks}
+     flags={flags}
+     nearMisses={nms}
+     onLinkedTaskConfirm={(task) => {
+      handleLinkedTaskConfirm(task)
+      triggerCapture(`Confirmed intervention: ${task.label}`)
+     }}
     />
 
-    {/* Today — tasks + troubleshooting */}
-    {opTab === 'today' && (
-     <>
-      <StartupChecklist
-       selected={selected}
-       completions={checklistCompletions[selected] || []}
-       onComplete={handleChecklistComplete}
-      />
-      <TroubleshootingHint operator={selected} />
-      <TaskSection
-       selected={selected}
-       station={ctx?.station || op?.station}
-       tasks={tasks}
-       linkedTasks={linkedTasks}
-       flags={flags}
-       nearMisses={nms}
-       onLinkedTaskConfirm={(task) => {
-        handleLinkedTaskConfirm(task)
-        triggerCapture(`Confirmed intervention: ${task.label}`)
-       }}
-      />
-      {showCapture && (
-       <div className="px-5 pt-3 pb-4">
-        <KnowledgeCapturePrompt
-         source={captureSource}
-         operator={selected}
-         onDismiss={() => setShowCapture(false)}
-         onSubmit={(body) => {
-          logActivity({ actor: selected, action: `Knowledge submitted: ${captureSource}`, item: 'Knowledge Vault', type: 'knowledge' })
-         }}
-        />
-       </div>
-      )}
-     </>
+    {showCapture && (
+     <KnowledgeCapturePrompt
+      source={captureSource}
+      operator={selected}
+      onDismiss={() => setShowCapture(false)}
+      onSubmit={(body) => {
+       logActivity({ actor: selected, action: `Knowledge submitted: ${captureSource}`, item: 'Knowledge Vault', type: 'knowledge' })
+      }}
+     />
     )}
 
-    {/* Progress — cert level + next steps */}
-    {opTab === 'progress' && <MyProgress operator={selected} op={op} />}
+    <div className="border-t border-rule2">
+     <ObservationLogger />
+    </div>
 
-    {/* Transition — automation readiness */}
-    {opTab === 'transition' && <TransitionTab selected={selected} isDirector={!isOperatorRole} />}
+    <ExpandableSection title="My progress">
+     <MyProgress operator={selected} op={op} />
+    </ExpandableSection>
 
-    {/* Schedule — fatigue + hours */}
-    {opTab === 'schedule' && (() => {
-     const myFatigue = fatigueData.operators.find(o =>
-      o.name.includes(selected.split('.')[1]?.trim()) || selected.includes(o.name.split('.')[0])
-     )
-     if (!myFatigue) return (
-      <div className="px-5 py-6 font-body text-muted text-body">No scheduling data available.</div>
-     )
-     return (
+    <ExpandableSection title="Schedule & hours">
+     {myFatigue ? (
       <div className="px-5 py-4">
        <p className="font-body text-muted text-label mb-3">Shift scheduling only — not your performance review.</p>
        <div className="grid grid-cols-3 gap-2 mb-3">
@@ -1195,9 +1243,18 @@ export default function OperatorView({ role }) {
        </div>
        {myFatigue.note && <p className="font-body text-warn text-label">{myFatigue.note}</p>}
       </div>
-     )
-    })()}
+     ) : (
+      <div className="px-5 py-6 font-body text-muted text-body">No scheduling data available.</div>
+     )}
+    </ExpandableSection>
+
+    <ExpandableSection title="Automation transition readiness">
+     <TransitionTab selected={selected} isDirector={!isOperatorRole} />
+    </ExpandableSection>
+
    </div>
+   </>
+   )}
 
    {/* FAB */}
    <button type="button"
@@ -1207,8 +1264,8 @@ export default function OperatorView({ role }) {
       logActivity({ actor: selected, action: 'Requested supervisor assistance', item: ctx?.station || 'Station', type: 'escalation' })
      }
     }}
-    className={`fixed bottom-6 right-6 z-20 flex items-center gap-2 px-4 py-2.5 min-h-[40px] font-body text-body font-medium transition-colors duration-100 shadow-raise ${
-     supervisorCalled ? 'bg-ok text-stone' : 'bg-danger text-stone hover:bg-danger/90'
+    className={`fixed bottom-6 right-6 z-20 flex items-center gap-2 px-4 py-3 font-body text-body font-medium transition-colors duration-100 shadow-raise focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-stone/40 ${
+     supervisorCalled ? 'bg-ok text-stone' : 'bg-danger text-stone hover:bg-danger/90 active:bg-danger/80'
     }`}
     aria-label="Request supervisor assistance"
    >

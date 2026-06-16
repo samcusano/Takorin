@@ -1,7 +1,7 @@
 // Shared primitive components — V2 precision + narrative fusion palette
 import { useRef, useEffect, useMemo, useId, useState, useCallback } from 'react'
 import NumberFlow from '@number-flow/react'
-import { X, ArrowRight, ChevronRight, ChevronDown, Check, Brain, InspectionPanel } from 'lucide-react'
+import { X, ArrowRight, ChevronRight, ChevronDown, ChevronUp, Check, Brain, AlertTriangle, InspectionPanel } from 'lucide-react'
 import BoringAvatar from 'boring-avatars'
 import { useFocusTrap, useExitAnimation } from '../lib/utils'
 import { toneStyle } from '../lib/styles'
@@ -265,6 +265,44 @@ export function ActionBanner({ tone = 'warn', headline, body, children, footer }
  </div>
  {footer && <div className="px-4 pb-3">{footer}</div>}
  </div>
+ )
+}
+
+// ── TriageCard — urgency/resolved action card used in shift briefing and triage queues ───────
+// urgency: 'critical' | 'warn'. resolved: shows strikethrough + check state.
+export function TriageCard({ urgency, resolved, resolvedLabel, header, children, footer }) {
+ if (resolved) {
+  return (
+   <div className="flex items-center gap-3 px-5 py-3 border-b border-rule2/60 opacity-50">
+    <div className="w-4 h-4 rounded-full bg-ok flex items-center justify-center flex-shrink-0">
+     <Check size={9} strokeWidth={2.5} className="text-stone" />
+    </div>
+    <span className="font-body text-muted text-label line-through flex-1">{header}</span>
+    {resolvedLabel && <span className="font-body text-ok text-label">{resolvedLabel}</span>}
+   </div>
+  )
+ }
+ const accentBar    = urgency === 'critical' ? 'bg-danger' : 'bg-warn'
+ const urgencyTone  = urgency === 'critical' ? 'danger'   : 'warn'
+ const urgencyLabel = urgency === 'critical' ? 'Critical'  : 'Warning'
+ return (
+  <div className="px-5 py-3 border-b border-rule2">
+   <article className="bg-stone border border-rule overflow-hidden">
+    <div className={`h-[3px] w-full ${accentBar}`} />
+    <div className="flex items-center px-4 pt-3 pb-1.5">
+     <StatusPill tone={urgencyTone}>{urgencyLabel}</StatusPill>
+    </div>
+    <div className="px-4 pb-3 space-y-1.5">
+     <p className="font-body text-ink font-medium text-sub leading-snug">{header}</p>
+     {children}
+    </div>
+    {footer && (
+     <div className="flex gap-2 px-4 pb-3 pt-2 border-t border-rule2/60">
+      {footer}
+     </div>
+    )}
+   </article>
+  </div>
  )
 }
 
@@ -981,6 +1019,77 @@ export function ExpandableSection({ title, children, defaultOpen = false }) {
     />
    </button>
    {open && <div>{children}</div>}
+  </div>
+ )
+}
+
+// ── ScoreExplainer — risk-score factor breakdown, used in shift and line panels ──────────────
+// factors: [{ label, contribution, tone, state, confidence?, source?, tip? }] — confidence: 'high'|'medium'|'low'
+// collapsible: true shows accordion toggle (pass open+onToggle); false always expands inline.
+// adjustment: optional { from, to, note } renders a warning footer when model accuracy is reduced.
+const CONF_DOT   = { high: 'bg-ok',   medium: 'bg-warn', low: 'bg-muted' }
+const CONF_LABEL = { high: 'High confidence', medium: 'Medium confidence', low: 'Low confidence' }
+export function ScoreExplainer({ score, factors = [], collapsible = true, open = false, onToggle, adjustment }) {
+ const baseScore = score - factors.reduce((s, f) => s + f.contribution, 0)
+ const body = (
+  <div>
+   <div className="px-4 py-2 border-b border-rule2 bg-stone">
+    <div className="flex items-baseline gap-2">
+     <span className="display-num text-label text-muted w-8 text-right flex-shrink-0">{baseScore}</span>
+     <span className="font-body text-muted text-label flex-1">Base risk · no shift conditions</span>
+    </div>
+   </div>
+   {factors.map((f, i) => {
+    const conf      = f.confidence?.toLowerCase()
+    const toneText  = f.tone === 'danger' ? 'text-danger' : f.tone === 'warn' ? 'text-warn' : 'text-ok'
+    const toneBg    = f.tone === 'danger' ? 'bg-danger/[0.03]' : f.tone === 'warn' ? 'bg-warn/[0.02]' : ''
+    return (
+     <div key={i} className={`px-4 py-2.5 border-b border-rule2 last:border-b-0 ${toneBg}`} title={f.tip || undefined}>
+      <div className="flex items-start gap-2">
+       <span className={`display-num text-body font-bold w-8 text-right flex-shrink-0 leading-none pt-px ${f.contribution > 0 ? toneText : 'text-muted'}`}>
+        {f.contribution > 0 ? `+${f.contribution}` : '—'}
+       </span>
+       <div className="flex-1 min-w-0">
+        <div className={`font-body font-medium text-label leading-snug ${f.contribution > 0 ? (f.tone === 'danger' ? 'text-danger' : 'text-ink') : 'text-muted'}`}>
+         {f.label}
+        </div>
+        <div className="font-body text-muted text-label mt-0.5 leading-snug">{f.state}</div>
+        {conf && (
+         <div className="flex items-center gap-1 mt-1">
+          <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${CONF_DOT[conf] ?? 'bg-muted'}`} />
+          <span className="font-body text-muted text-label">{CONF_LABEL[conf] ?? conf} · {f.source}</span>
+         </div>
+        )}
+       </div>
+      </div>
+     </div>
+    )
+   })}
+   {adjustment && (
+    <div className="px-4 py-2.5 bg-warn/[0.04] border-t-2 border-t-warn/20">
+     <div className="flex items-start gap-2">
+      <AlertTriangle size={11} strokeWidth={2} className="text-warn flex-shrink-0 mt-px" />
+      <div>
+       <div className="font-body font-medium text-ink text-label">Score adjusted {adjustment.from} → {adjustment.to}</div>
+       <div className="font-body text-muted text-label mt-0.5 leading-snug">{adjustment.note}</div>
+      </div>
+     </div>
+    </div>
+   )}
+  </div>
+ )
+ if (!collapsible) return <div className="border-t border-rule2">{body}</div>
+ return (
+  <div className="border-t border-rule2">
+   <button type="button" onClick={onToggle}
+    className="w-full flex items-center justify-between px-4 py-2.5 bg-stone2 hover:bg-stone3 transition-colors">
+    <div className="flex items-center gap-2">
+     <Brain size={11} strokeWidth={2} className="text-muted" />
+     <span className="font-body text-muted text-label">Why {score}?</span>
+    </div>
+    {open ? <ChevronUp size={11} className="text-muted" /> : <ChevronDown size={11} className="text-muted" />}
+   </button>
+   {open && <div className="slide-in">{body}</div>}
   </div>
  )
 }

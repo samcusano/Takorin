@@ -37,6 +37,7 @@ const EquipmentIntelligence = lazy(() => import('./screens/EquipmentIntelligence
 const ImpactLoop            = lazy(() => import('./screens/ImpactLoop'))
 const SecurityIQ            = lazy(() => import('./screens/SecurityIQ'))
 const QualityIQ             = lazy(() => import('./screens/QualityIQ'))
+const OpLab                 = lazy(() => import('./screens/__OpLab'))
 function ScreenLoader() {
  return <div className="flex-1 flex items-center justify-center font-body text-muted text-label">Loading…</div>
 }
@@ -107,6 +108,7 @@ export default function App() {
   <Route path="/knowledge"      element={<Guard k="knowledge"><ErrorBoundary><KnowledgeVault /></ErrorBoundary></Guard>} />
   <Route path="/plant-map"      element={<Guard k="hierarchy"><ErrorBoundary><ProcessHierarchy /></ErrorBoundary></Guard>} />
   <Route path="/__design_lab"   element={<Suspense fallback={<ScreenLoader />}><DesignLabBrand /></Suspense>} />
+  <Route path="/__op_lab"       element={<Suspense fallback={<ScreenLoader />}><OpLab /></Suspense>} />
   <Route path="/data"           element={<Guard k="readiness"><ErrorBoundary><DataReadiness /></ErrorBoundary></Guard>} />
   <Route path="/security"       element={<Guard k="security"><ErrorBoundary><SecurityIQ /></ErrorBoundary></Guard>} />
   <Route path="/delivery"       element={<Guard k="delivery"><ErrorBoundary><ValueChain /></ErrorBoundary></Guard>} />

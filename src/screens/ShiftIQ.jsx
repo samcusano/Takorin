@@ -8,7 +8,7 @@ import {
  StatusPill, SectionHeader, Tabs,
  Btn, ConsequenceNotice, PageHead, ActionBanner,
  PersonAvatar, Modal, WaveformSparkline, AnimatedCheck, Spinner,
- VaulDrawer, HoldButton, EmptyState
+ VaulDrawer, HoldButton, EmptyState, TriageCard, ScoreExplainer,
 } from '../components/UI'
 import { Flag, ChevronRight, ChevronDown, AlertTriangle, Check, X, TrendingDown, RotateCcw, Wrench, Package, HelpCircle, ListChecks, Brain, Shield, RefreshCw, ChevronUp, BarChart2, ArrowRight, Moon, Activity, CheckCircle2 } from 'lucide-react'
 import { useAppState } from '../context/AppState'
@@ -66,7 +66,13 @@ function AgentTimeline({ timeline, sparkline, score }) {
    Rising · 06:12–06:42
   </div>
  </div>
- <ScoreExplainer score={score} open={explainerOpen} onToggle={() => setExplainerOpen(o => !o)} />
+ <ScoreExplainer
+  score={score}
+  factors={SCORE_FACTORS}
+  open={explainerOpen}
+  onToggle={() => setExplainerOpen(o => !o)}
+  adjustment={{ from: score + 3, to: score, note: 'Oven B sensor data stale — model accuracy reduced. Restore sensor feed to recover full signal.' }}
+ />
  {/* Timeline rows */}
  {timeline.map((row, i) => (
  <div key={i} className="flex gap-2.5 px-4 py-3 border-b border-rule2 last:border-b-0">
@@ -97,79 +103,7 @@ const SCORE_FACTORS = [
  { label: 'SCADA — Oven B', contribution: 0, tone: 'warn', state: 'Sensor stale · model accuracy reduced', confidence: 'low', source: 'Last reading 2h 14m ago', tip: 'SCADA (Supervisory Control and Data Acquisition) — the sensor network feeding live oven readings. Stale data reduces model accuracy.' },
 ]
 
-const CONF_DOT = { high: 'bg-ok', medium: 'bg-warn', low: 'bg-muted' }
-const CONF_LABEL = { high: 'High confidence', medium: 'Medium confidence', low: 'Low confidence' }
 
-function ScoreExplainer({ score, open, onToggle }) {
- const baseScore = score - SCORE_FACTORS.reduce((sum, f) => sum + f.contribution, 0)
- const adjustedFrom = SCORE_FACTORS.reduce((sum, f) => sum + f.contribution, 0) + baseScore + 3
- return (
-  <div className="border-t border-rule2">
-   <button
-    type="button"
-    onClick={onToggle}
-    className="w-full flex items-center justify-between px-4 py-2.5 bg-stone2 hover:bg-stone3 transition-colors group"
-   >
-    <div className="flex items-center gap-2">
-     <Brain size={11} strokeWidth={2} className="text-muted" />
-     <span className="font-body text-muted text-label">Why {score}?</span>
-    </div>
-    {open
-     ? <ChevronUp size={11} className="text-muted" />
-     : <ChevronDown size={11} className="text-muted" />}
-   </button>
-
-   {open && (
-    <div className="slide-in">
-     {/* Base + factor rows */}
-     <div className="px-4 py-2 border-b border-rule2 bg-stone">
-      <div className="flex items-baseline gap-2">
-       <span className="display-num text-label text-muted w-8 text-right flex-shrink-0">{baseScore}</span>
-       <span className="font-body text-muted text-label flex-1">Base risk · no shift conditions</span>
-      </div>
-     </div>
-     {SCORE_FACTORS.map((f, i) => {
-      const toneText = f.tone === 'danger' ? 'text-danger' : f.tone === 'warn' ? 'text-warn' : 'text-ok'
-      const toneBg   = f.tone === 'danger' ? 'bg-danger/[0.03]' : f.tone === 'warn' ? 'bg-warn/[0.02]' : ''
-      return (
-       <div key={i} className={`px-4 py-2.5 border-b border-rule2 last:border-b-0 ${toneBg}`} title={f.tip || undefined}>
-        <div className="flex items-start gap-2">
-         <span className={`display-num text-body font-bold w-8 text-right flex-shrink-0 leading-none pt-px ${
-          f.contribution > 0 ? toneText : 'text-muted'
-         }`}>
-          {f.contribution > 0 ? `+${f.contribution}` : '—'}
-         </span>
-         <div className="flex-1 min-w-0">
-          <div className={`font-body font-medium text-label leading-snug ${f.contribution > 0 ? (f.tone === 'danger' ? 'text-danger' : 'text-ink') : 'text-muted'}`}>
-           {f.label}
-          </div>
-          <div className="font-body text-muted text-label mt-0.5 leading-snug">{f.state}</div>
-          <div className="flex items-center gap-1 mt-1">
-           <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${CONF_DOT[f.confidence]}`} />
-           <span className="font-body text-muted text-label">{CONF_LABEL[f.confidence]} · {f.source}</span>
-          </div>
-         </div>
-        </div>
-       </div>
-      )
-     })}
-     {/* Confidence adjustment note */}
-     <div className="px-4 py-2.5 bg-warn/[0.04] border-t-2 border-t-warn/20">
-      <div className="flex items-start gap-2">
-       <AlertTriangle size={11} strokeWidth={2} className="text-warn flex-shrink-0 mt-px" />
-       <div>
-        <div className="font-body font-medium text-ink text-label">Score adjusted {adjustedFrom} → {score}</div>
-        <div className="font-body text-muted text-label mt-0.5 leading-snug">
-         Oven B sensor data stale — model accuracy reduced. Restore sensor feed to recover full signal.
-        </div>
-       </div>
-      </div>
-     </div>
-    </div>
-   )}
-  </div>
- )
-}
 
 function SignalCard({ sig }) {
  const stale = sig.tone === 'danger'
@@ -704,42 +638,6 @@ const DEMAND_SIGNAL = {
  recommendation: 'Reduce Line 4 to 85% capacity or reallocate 1 operator to Line 3 packaging backlog',
  confidence: 81,
  source: 'Distribution forecast · 3-day rolling avg · updated 05:30',
-}
-
-function TriageCard({ urgency, resolved, resolvedLabel, header, children, footer }) {
- if (resolved) {
-  return (
-   <div className="flex items-center gap-3 px-5 py-3 border-b border-rule2/60 opacity-50">
-    <div className="w-4 h-4 rounded-full bg-ok flex items-center justify-center flex-shrink-0">
-     <Check size={9} strokeWidth={2.5} className="text-stone" />
-    </div>
-    <span className="font-body text-muted text-label line-through flex-1">{header}</span>
-    {resolvedLabel && <span className="font-body text-ok text-label">{resolvedLabel}</span>}
-   </div>
-  )
- }
- const accentBar = urgency === 'critical' ? 'bg-danger' : 'bg-warn'
- const urgencyTone = urgency === 'critical' ? 'danger' : 'warn'
- const urgencyLabel = urgency === 'critical' ? 'Critical' : 'Warning'
- return (
-  <div className="px-5 py-3 border-b border-rule2">
-   <article className="bg-stone border border-rule overflow-hidden">
-    <div className={`h-[3px] w-full ${accentBar}`} />
-    <div className="flex items-center px-4 pt-3 pb-1.5">
-     <StatusPill tone={urgencyTone}>{urgencyLabel}</StatusPill>
-    </div>
-    <div className="px-4 pb-3 space-y-1.5">
-     <p className="font-body text-ink font-medium text-sub leading-snug">{header}</p>
-     {children}
-    </div>
-    {footer && (
-     <div className="flex gap-2 px-4 pb-3 pt-2 border-t border-rule2/60">
-      {footer}
-     </div>
-    )}
-   </article>
-  </div>
- )
 }
 
 function PrepareView({ forecast = [], onStartShift }) {

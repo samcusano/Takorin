@@ -59,7 +59,7 @@ function ConfidenceChart({ trajectory, forecast }) {
 
 // ─── Batch list ───────────────────────────────────────────────────────────────
 
-function LotCard({ batch: b, selected, onClick }) {
+function BatchListCard({ batch: b, selected, onClick }) {
   const conf = b.confidence?.current ?? null
   const confColor = conf >= 85 ? 'text-ok' : conf >= 70 ? 'text-warn' : 'text-danger'
   const pctDone = Math.round((b.daysElapsed / b.totalDays) * 100)
@@ -498,7 +498,7 @@ export default function BatchIntelligence() {
         <div className="w-[280px] flex-shrink-0 border-r border-rule2 flex flex-col bg-stone">
           <div className="flex-1 overflow-y-auto divide-y divide-rule2">
             {batches.map(b => (
-              <LotCard key={b.id} batch={b}
+              <BatchListCard key={b.id} batch={b}
                 selected={selectedId === b.id}
                 onClick={() => handleSelectBatch(b.id)} />
             ))}

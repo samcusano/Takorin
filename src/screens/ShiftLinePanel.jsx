@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { Brain, Check, CheckCircle2, Users, TrendingUp, TrendingDown, Eye, RefreshCw, Cpu, ChevronDown, ChevronRight } from 'lucide-react'
-import { Btn, AnimatedScore, SlidePanel, StatusPill } from '../components/UI'
+import { Btn, AnimatedScore, SlidePanel, StatusPill, ScoreExplainer } from '../components/UI'
 import { Link } from 'react-router-dom'
 import { useAppState } from '../context/AppState'
 import { crew, agentEvents } from '../data/shift'
@@ -18,12 +18,12 @@ const atmoGradient = (s) => s >= 75
 
 // ── Score factors ──────────────────────────────────────────────────────────────
 const SCORE_FACTORS = [
-  { label: 'Staffing cert mismatch',  contribution: 18, tone: 'danger', state: 'Reyes (L1) — Sauce Dosing requires L2', confidence: 'HIGH',   source: 'Cert records · direct' },
-  { label: 'Allergen changeover log', contribution: 13, tone: 'danger', state: 'Unsigned — production start blocked',   confidence: 'HIGH',   source: 'Checklist system · direct' },
-  { label: 'Startup checklists',      contribution:  9, tone: 'warn',   state: '7 of 13 signed · 4 overdue',           confidence: 'HIGH',   source: 'Checklist system · direct' },
-  { label: 'Sensor A-7 variance',     contribution:  6, tone: 'warn',   state: 'Micro-variance 4/5 · bearing suspect',  confidence: 'MEDIUM', source: 'SCADA · 3-hr rolling' },
-  { label: 'CCP-1 & CCP-3',          contribution:  0, tone: 'ok',     state: 'Both within limits',                   confidence: 'HIGH',   source: 'Sensor verified · direct' },
-  { label: 'SCADA · Oven B',          contribution:  0, tone: 'warn',   state: 'Stale — model accuracy reduced',       confidence: 'LOW',    source: 'Last reading 2h 14m ago' },
+  { label: 'Staffing cert mismatch',  contribution: 18, tone: 'danger', state: 'Reyes (L1) — Sauce Dosing requires L2', confidence: 'high',   source: 'Cert records · direct' },
+  { label: 'Allergen changeover log', contribution: 13, tone: 'danger', state: 'Unsigned — production start blocked',   confidence: 'high',   source: 'Checklist system · direct' },
+  { label: 'Startup checklists',      contribution:  9, tone: 'warn',   state: '7 of 13 signed · 4 overdue',           confidence: 'high',   source: 'Checklist system · direct' },
+  { label: 'Sensor A-7 variance',     contribution:  6, tone: 'warn',   state: 'Micro-variance 4/5 · bearing suspect',  confidence: 'medium', source: 'SCADA · 3-hr rolling' },
+  { label: 'CCP-1 & CCP-3',          contribution:  0, tone: 'ok',     state: 'Both within limits',                   confidence: 'high',   source: 'Sensor verified · direct' },
+  { label: 'SCADA · Oven B',          contribution:  0, tone: 'warn',   state: 'Stale — model accuracy reduced',       confidence: 'low',    source: 'Last reading 2h 14m ago' },
 ]
 
 // ── Animations ─────────────────────────────────────────────────────────────────
@@ -96,7 +96,7 @@ const DIRECTOR_HOLD = {
 const BRIEF_CREW = ['C. Reyes', 'P. Okonkwo', 'F. Adeyemi']
 
 // ── Directive card — ratified agent decision requiring floor execution ─────────
-function DirectiveCard({ executed, onExecute }) {
+function DirectorHoldCard({ executed, onExecute }) {
   const confirmBtnRef = useRef(null)
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [selected, setSelected] = useState(new Set(BRIEF_CREW))
@@ -420,38 +420,6 @@ function TimelineEntry({ ev, index, total }) {
   )
 }
 
-// ── Score explainer ────────────────────────────────────────────────────────────
-function ScoreExplainer({ score }) {
-  const baseScore = score - SCORE_FACTORS.reduce((s, f) => s + f.contribution, 0)
-  return (
-    <div>
-      <div className="flex items-baseline gap-2.5 px-5 py-2 border-b border-rule2">
-        <span className="font-body text-body text-muted min-w-[28px] text-right">{baseScore}</span>
-        <span className="font-body text-label text-muted">Base · no shift conditions</span>
-      </div>
-      {SCORE_FACTORS.map((f, i) => {
-        const valColor  = f.tone === 'danger' ? 'var(--color-danger)' : f.tone === 'warn' ? 'var(--color-warn)' : 'var(--color-muted)'
-        const confColor = f.confidence === 'HIGH' ? 'var(--color-ok)' : f.confidence === 'MEDIUM' ? 'var(--color-warn)' : 'var(--color-muted)'
-        return (
-          <div key={i} className={`flex items-start gap-2.5 px-5 py-[9px] ${i < SCORE_FACTORS.length - 1 ? 'border-b border-rule2' : ''} ${f.tone === 'danger' ? 'bg-danger/[0.024]' : ''}`}>
-            <span className="font-body font-bold text-body min-w-[28px] text-right flex-shrink-0" style={{ color: f.contribution > 0 ? valColor : 'var(--color-muted)' }}>
-              {f.contribution > 0 ? `+${f.contribution}` : '—'}
-            </span>
-            <div className="flex-1">
-              <div className="font-body font-medium text-label mb-0.5" style={{ color: f.contribution > 0 ? 'var(--color-ink)' : 'var(--color-muted)' }}>{f.label}</div>
-              <div className="font-body text-label text-muted">{f.state}</div>
-              <div className="flex items-center gap-1.5 mt-1">
-                <div style={{ width: 5, height: 5, borderRadius: '50%', background: confColor, flexShrink: 0 }} />
-                <span className="font-body text-label text-muted">{f.confidence} · {f.source}</span>
-              </div>
-            </div>
-          </div>
-        )
-      })}
-    </div>
-  )
-}
-
 // ── Trend Watch ───────────────────────────────────────────────────────────────
 function TrendWatch() {
   const { acknowledgedDrifts, acknowledgeDrift } = useAppState()
@@ -665,7 +633,7 @@ export default function ShiftLinePanel({ score = 78, lineLabel = 'Line 4 · AM S
                 <button type="button" onClick={() => setScoreOverlayOpen(false)}
                   className="font-body text-muted text-label hover:text-ink transition-colors bg-transparent border-none cursor-pointer px-1.5 py-0.5">✕</button>
               </div>
-              <ScoreExplainer score={score} />
+              <ScoreExplainer score={score} factors={SCORE_FACTORS} collapsible={false} />
             </div>
           </div>
         </>
@@ -782,7 +750,7 @@ export default function ShiftLinePanel({ score = 78, lineLabel = 'Line 4 · AM S
                   )
                 })()}
                 <div className="font-body text-label text-muted mb-3">Intelligence · {richFindings.length} findings</div>
-                <DirectiveCard
+                <DirectorHoldCard
                   executed={directiveExecuted}
                   onExecute={(selected) => {
                     setDirectiveExecuted(true)

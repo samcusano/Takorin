@@ -42,7 +42,7 @@ function postureBg(p)    { return p >= 80 ? 'bg-ok'   : p >= 50 ? 'bg-warn'   : 
 
 // ─── Lot list card ────────────────────────────────────────────────────────────
 
-function LotCard({ lot, selected, onClick }) {
+function LotTraceCard({ lot, selected, onClick }) {
   const cfg = LOT_STATUS[lot.status] ?? LOT_STATUS.watch
   return (
     <button type="button" onClick={onClick}
@@ -428,7 +428,7 @@ export default function RecordVault() {
       <div className="w-[280px] flex-shrink-0 border-r border-rule2 flex flex-col bg-stone">
         <div className="flex-1 overflow-y-auto">
           {traceLots.map(lot => (
-            <LotCard key={lot.id} lot={lot}
+            <LotTraceCard key={lot.id} lot={lot}
               selected={selectedId === lot.id}
               onClick={() => setSelectedId(lot.id)} />
           ))}

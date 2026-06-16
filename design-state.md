@@ -35,6 +35,15 @@ _Designpowers shared context — updated by agents throughout the pipeline_
 | `/command` as dedicated screen (new default home) | Director lands here first; other screens are drill-down destinations | User direction |
 | Queue clears on acknowledgement | Clean sense of resolution; no need for audit trail in MVP | User direction |
 
+## Design Debt — OperatorView (2026-06-16)
+
+| Item | Affects | Severity | Why deferred |
+|------|---------|----------|--------------|
+| MonitoringSurface CCP log requires 3 taps — brief specifies 2 | C. Reyes (CCP_MONITORING mode) | Minor | Requires numeric keypad overlay — scope beyond current polish pass |
+| TroubleshootingHint expanded by default | P. Okonkwo, C. Reyes on anomaly shifts | Minor | Design decision — operator needs this visible on mismatch shifts; revisit when field-testing confirms fatigue |
+| ObservationLogger hardcodes `operator: 'C. Reyes'` and shift ID `'am-0522'` | P. Okonkwo, F. Adeyemi observation attribution | Note | Data layer issue — requires threading selected operator through component or pulling from context |
+| No taste profile exists for Takorin | All craft critique | Note | Run `design-taste` to establish aesthetic contract before next review cycle |
+
 ## Open Questions
 - How many items should the Command Surface show? (3? 5? Unlimited with scroll?) — to be determined by design-lead
 - 9px ghost text: 61 remaining instances across 9 screens still below WCAG AA contrast. Systematic pass pending (NotificationCenter operationally critical instances fixed). Design debt.
