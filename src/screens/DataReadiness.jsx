@@ -318,7 +318,7 @@ function QueueIssueRow({ item, resolved, selected, onSelect }) {
         </div>
         {!isResolved && (
           <span className={`display-num text-label font-bold tabular-nums flex-shrink-0 ${
-            item.permanent ? 'text-muted/50' : 'text-ok'
+            item.permanent ? 'text-muted' : 'text-ok'
           }`}>
             +{item.points}
           </span>

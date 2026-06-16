@@ -24,7 +24,7 @@ _Designpowers shared context — updated by agents throughout the pipeline_
 | content-writer | ✅ complete | Consequence message timing, 'Watch only' CTA, dismissed copy, 'Confirm reviewed' on override, 'Open case file', OperatorView empty state |
 | design-builder | ✅ complete | All 5 design debt items resolved |
 | accessibility-reviewer | ✅ complete | 2 critical + 2 major found, all fixed |
-| design-critic | ✅ complete | Revise verdict, 1 major craft fix applied |
+| design-critic | ✅ complete (×2) | Pass 2: Proceed verdict. 3 pre-publish fixes: ghost text (61 instances), WaveformSparkline data points, ObservationLogger attribution |
 | heuristic-evaluator | ✅ complete | 3 critical + 2 major + 2 minor. All criticals fixed. 1 major noted as design debt. |
 
 ## Decisions Log
@@ -34,6 +34,14 @@ _Designpowers shared context — updated by agents throughout the pipeline_
 | Work within existing design system | design.md is the source of truth; no palette substitutions | Constraint |
 | `/command` as dedicated screen (new default home) | Director lands here first; other screens are drill-down destinations | User direction |
 | Queue clears on acknowledgement | Clean sense of resolution; no need for audit trail in MVP | User direction |
+
+## Design Critic Pass 2 — Pre-Publish Fixes (2026-06-16) ✅ RESOLVED
+
+| Fix | Location | Resolution |
+|-----|----------|------------|
+| Ghost text — opacity-reduced muted text at 12px | 7 screens (AgentControl, CapaEngine, DataReadiness, PlantOverview, ProcessHierarchy, QualityIQ, ShiftIQ) | Stripped /40–/70 opacity modifiers from all readable text; decorative separators left as-is |
+| WaveformSparkline — 6 data points reads as bar chart | src/data/index.js | Expanded all 4 sparkline arrays from 6 → 14 data points |
+| ObservationLogger hardcodes `operator: 'C. Reyes'` | OperatorView | Threaded `operator={selected}` prop from parent; filter now scoped to selected operator |
 
 ## Design Debt — OperatorView (2026-06-16)
 
@@ -46,8 +54,8 @@ _Designpowers shared context — updated by agents throughout the pipeline_
 
 ## Open Questions
 - How many items should the Command Surface show? (3? 5? Unlimited with scroll?) — to be determined by design-lead
-- 9px ghost text: 61 remaining instances across 9 screens still below WCAG AA contrast. Systematic pass pending (NotificationCenter operationally critical instances fixed). Design debt.
-- WaveformSparkline: 6 data points reads as bar chart, not waveform. Needs 12–16 points to achieve waveform visual vocabulary.
+- Ghost text contrast: resolved 2026-06-16 — opacity-reduced muted text removed across 7 screens. Design debt.
+- WaveformSparkline: resolved 2026-06-16 — expanded to 14 points across all 4 datasets.
 
 ## Resolved Questions
 | Question | Answer | Source |

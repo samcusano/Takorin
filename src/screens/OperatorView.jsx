@@ -557,7 +557,7 @@ function MonitoringSurface({ ctx, entries, onLog }) {
 }
 
 // ── Observation Logger — quick-capture floor observations ──────────────────────
-function ObservationLogger() {
+function ObservationLogger({ operator }) {
  const { logObservation, fieldObservations } = useAppState()
  const [open, setOpen] = useState(false)
  const [station, setStation] = useState(OBSERVATION_STATIONS[0])
@@ -565,11 +565,11 @@ function ObservationLogger() {
  const [note, setNote] = useState('')
  const [justLogged, setJustLogged] = useState(false)
 
- const shiftObs = fieldObservations.filter(o => o.shiftId === 'am-0522')
+ const shiftObs = fieldObservations.filter(o => o.shiftId === 'am-0522' && o.operator === operator)
 
  function handleSubmit() {
   if (!note.trim()) return
-  logObservation({ station, category, note: note.trim(), operator: 'C. Reyes' })
+  logObservation({ station, category, note: note.trim(), operator })
   setNote('')
   setOpen(false)
   setJustLogged(true)
@@ -1218,7 +1218,7 @@ export default function OperatorView({ role }) {
     )}
 
     <div className="border-t border-rule2">
-     <ObservationLogger />
+     <ObservationLogger operator={selected} />
     </div>
 
     <ExpandableSection title="My progress">

@@ -584,7 +584,7 @@ function LineDropdown({ lines, activeLine, onSelect, triggerRef, onClose }) {
    <div className="w-[260px] bg-sidebar border border-sidebar-border rounded-2xl shadow-raise overflow-hidden">
     <div className="plant-drop-in-content">
      <div className="px-4 py-2.5 border-b border-sidebar-border">
-      <p className="font-body text-sidebar-ghost/40 text-label">Select line</p>
+      <p className="font-body text-sidebar-ghost text-label">Select line</p>
      </div>
      {lines.map(line => {
       const sc = riskColorClass(line.score)
@@ -600,7 +600,7 @@ function LineDropdown({ lines, activeLine, onSelect, triggerRef, onClose }) {
        >
         <div className="text-left">
          <div className={`font-body text-body font-medium transition-colors ${isActive ? 'text-stone' : 'text-sidebar-ghost group-hover:text-stone/80'}`}>{line.name}</div>
-         <div className="font-body text-sidebar-ghost/50 text-label mt-0.5">
+         <div className="font-body text-sidebar-ghost text-label mt-0.5">
           {hasPilotData ? `${line.supervisor} shift` : 'Not in pilot'}
          </div>
         </div>
@@ -611,7 +611,7 @@ function LineDropdown({ lines, activeLine, onSelect, triggerRef, onClose }) {
            <span className={`display-num text-title ${sc}`} aria-label={`Risk score ${line.score}`}>{line.score}</span>
           </>
          ) : (
-          <span className="font-body text-sidebar-ghost/40 text-label">No data</span>
+          <span className="font-body text-sidebar-ghost text-label">No data</span>
          )}
          {isActive && <div className="w-1.5 h-1.5 rounded-full bg-signal flex-shrink-0" />}
         </div>
@@ -1083,8 +1083,8 @@ export default function ShiftIQ() {
          }`}>
           {seg.label}
          </div>
-         <div className="font-body text-label text-muted/70 leading-none">{seg.time}</div>
-         <div className={`font-body text-label leading-snug text-center mt-0.5 ${isActive || isDimActive ? 'text-muted' : 'text-muted/50'}`}>
+         <div className="font-body text-label text-muted leading-none">{seg.time}</div>
+         <div className="font-body text-label leading-snug text-center mt-0.5 text-muted">
           {seg.status}
          </div>
          {(isActive || isDimActive) && (

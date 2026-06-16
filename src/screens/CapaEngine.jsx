@@ -210,7 +210,7 @@ function PriorityQueueRow({ c, isSelected, onSelect, isEscalated, isResolved, in
  </div>
  {score > 0 && !isResolved && !isEscalated && (
   <div className={`display-num text-head font-bold flex-shrink-0 tabular-nums leading-none mt-0.5 ${
-   score >= 80 ? 'text-danger' : score >= 55 ? 'text-warn' : 'text-muted/60'
+   score >= 80 ? 'text-danger' : score >= 55 ? 'text-warn' : 'text-muted'
   }`}>
    <AnimatedScore value={score} />
   </div>

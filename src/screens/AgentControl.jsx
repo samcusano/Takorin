@@ -476,7 +476,7 @@ function LedgerRow({ pa, agent, onInvestigate, onApprove, onOverrideRequest, sel
                   <span className="font-body text-muted text-label">I have read the AI rationale</span>
                 </label>
               </div>
-              <p className="font-body text-muted/50 text-label leading-snug">
+              <p className="font-body text-muted text-label leading-snug">
                 Approving records your ratification and timestamp. Accountability for this decision remains with you as director.
               </p>
             </div>
@@ -1659,7 +1659,7 @@ export default function AgentControl() {
                 <div className="w-1.5 h-1.5 rounded-full bg-danger flex-shrink-0 mt-1.5" />
                 <div className="flex-1 min-w-0">
                   <span className="font-body text-danger text-label font-medium">Lot {exp.lotId} — cross-plant hold required</span>
-                  <span className="font-body text-muted/70 text-label ml-2">{exp.ingredient} · {exp.supplier} · {exp.note}</span>
+                  <span className="font-body text-muted text-label ml-2">{exp.ingredient} · {exp.supplier} · {exp.note}</span>
                 </div>
                 <div className="flex items-center gap-1.5 flex-shrink-0">
                   <span className="font-body text-muted text-label">Also at:</span>
@@ -1940,7 +1940,7 @@ export default function AgentControl() {
                   <span className="font-body text-muted text-label">Green floor: {currentPlant?.confidenceGreen ?? 70}%</span>
                   <span className="font-body text-muted text-label">Red ceiling: {currentPlant?.confidenceRed ?? 50}%</span>
                 </div>
-                <div className="font-body text-muted/60 text-label mt-1">Shift config cannot exceed these bounds</div>
+                <div className="font-body text-muted text-label mt-1">Shift config cannot exceed these bounds</div>
               </div>
             </div>
           </div>

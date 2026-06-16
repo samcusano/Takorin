@@ -267,7 +267,7 @@ function LineOverview({ line }) {
               </Link>
             </div>
             <p className="font-body text-label text-muted leading-snug mb-1">{line.equipmentSignal.signal}</p>
-            <span className="font-body text-label text-muted/70">Detected {line.equipmentSignal.detectedAgo}</span>
+            <span className="font-body text-label text-muted">Detected {line.equipmentSignal.detectedAgo}</span>
           </div>
         )}
         {line.ccpStatus && (
@@ -426,7 +426,7 @@ function AccuracyView({ highlightSku }) {
                   <div className="absolute top-1/2 w-3 h-3 rounded-full bg-warn border-2 border-stone2 -translate-x-1/2 -translate-y-1/2" style={{ left: `${humanPct}%` }} />
                   <div className="absolute top-1/2 w-3 h-3 rounded-full bg-ok border-2 border-stone2 -translate-x-1/2 -translate-y-1/2" style={{ left: `${aiPct}%` }} />
                 </div>
-                <div className="flex justify-between font-body text-label text-muted/50 mt-1.5 mb-5">
+                <div className="flex justify-between font-body text-label text-muted mt-1.5 mb-5">
                   <span>{scaleMin}%</span>
                   <span>{scaleMax}%</span>
                 </div>

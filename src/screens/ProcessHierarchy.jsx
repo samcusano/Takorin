@@ -463,7 +463,7 @@ function ReasoningPanel({ zone, building }) {
               <div className="h-1 bg-rule2 w-[120px]">
                 <div className={`h-full transition-[width] ${confBg}`} style={{ width: `${r.confidence}%` }} />
               </div>
-              <div className="font-body text-muted/50 text-label mt-0.5">{r.confidenceModel}</div>
+              <div className="font-body text-muted text-label mt-0.5">{r.confidenceModel}</div>
             </div>
           )}
         </div>
@@ -509,7 +509,7 @@ function ReasoningPanel({ zone, building }) {
                   <div className="w-1.5 h-1.5 rounded-full border border-muted/30 flex-shrink-0 mt-1" />
                   <div className="flex-1 min-w-0">
                     <div className="font-body text-muted text-label leading-snug">{s.label}</div>
-                    <div className="font-body text-muted/50 text-label leading-snug mt-0.5">{s.reason}</div>
+                    <div className="font-body text-muted text-label leading-snug mt-0.5">{s.reason}</div>
                   </div>
                 </div>
               ))}
@@ -620,7 +620,7 @@ function StateFieldView({ site, variant, onVariantChange }) {
               <div className="flex items-center gap-2 mb-3">
                 <div className={`w-px h-4 ${scoreBg(b.score)}`} />
                 <span className="font-body text-muted text-label">{b.name}</span>
-                <span className="font-body text-muted/50 text-label">— {b.label}</span>
+                <span className="font-body text-muted text-label">— {b.label}</span>
                 <span className={`font-body font-medium text-label ml-auto ${scoreColor(b.score)}`}>{b.score}</span>
               </div>
 

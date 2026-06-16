@@ -338,7 +338,7 @@ function DigitalMaturityMap({ plantId }) {
                     return (
                       <div key={j} className="flex-1 flex flex-col items-center gap-1">
                         <div className={`w-full h-[4px] ${active ? 'bg-signal' : filled ? 'bg-ok/60' : 'bg-rule2'}`} />
-                        <span className={`font-body text-label leading-none ${active ? 'text-signal font-medium' : filled ? 'text-ok' : 'text-muted/40'}`}>
+                        <span className={`font-body text-label leading-none ${active ? 'text-signal font-medium' : filled ? 'text-ok' : 'text-muted'}`}>
                           {stage}
                         </span>
                       </div>

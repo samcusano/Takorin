@@ -83,7 +83,7 @@ export const shiftData = {
     { time:'06:30', level:'warn', event:'Score 71. Checklists at T+30 — 4 overdue. Staffing 72%. Machine readiness 94%.', delta:'+5', deltaColor:'text-warn' },
     { time:'06:12', level:'normal', event:'Score 54. Shift started. Checklists 4 of 11 cleared. Normal early-shift state.' },
   ],
-  sparkline: [22,30,34,42,50,56],
+  sparkline: [18,20,23,26,28,30,32,35,38,42,47,50,53,56],
   signals: [
     { name:'Oven B · SCADA', sub:'3 days stale', score:31, status:'Stale', tone:'danger' },
     { name:'MES · Schedule', sub:'12 min ago', score:94, status:'Healthy', tone:'ok' },
@@ -142,7 +142,7 @@ export const line6Data = {
     { name:'J. Patel', role:'Operator · L2', dots:[1,1,0,0,0] },
     { name:'T. Osei', role:'Operator · L1', dots:[1,0,0,0,0] },
   ],
-  sparkline: [38, 40, 41, 40, 43, 42],
+  sparkline: [36, 37, 39, 40, 39, 41, 40, 40, 41, 43, 42, 41, 42, 42],
   signals: [
     { name:'Oven A · SCADA', sub:'1 min ago', score:97, status:'Healthy', tone:'ok' },
     { name:'MES · Schedule', sub:'8 min ago', score:94, status:'Healthy', tone:'ok' },
@@ -209,7 +209,7 @@ export const wichitaData = {
     { time:'06:30', level:'normal', event:'Score 63. Shift start normal. Checklists 9 of 11. Certified staffing 84%. Belt variance within spec.' },
     { time:'06:12', level:'normal', event:'Score 58. Line start-up complete. All pre-conditions met.' },
   ],
-  sparkline: [38, 44, 55, 63, 68, 71],
+  sparkline: [35, 37, 40, 43, 47, 51, 55, 58, 61, 64, 66, 68, 70, 71],
   signals: [
     { name:'Oven C · SCADA',  sub:'2 min ago',    score:91,  status:'Healthy',    tone:'ok'   },
     { name:'MES · Schedule',  sub:'15 min ago',   score:88,  status:'Healthy',    tone:'ok'   },
@@ -268,7 +268,7 @@ export const denverData = {
     { time:'06:30', level:'ok',     event:'Score 84. Checklists 11 of 11 cleared. Staffing 91%. Machine readiness 98%.', delta:'0', deltaColor:'text-ok' },
     { time:'06:12', level:'normal', event:'Score 84. Shift started normally. All pre-conditions met. Denver pilot — week 3.' },
   ],
-  sparkline: [82, 83, 84, 84, 83, 84],
+  sparkline: [81, 82, 83, 84, 83, 83, 84, 84, 83, 84, 84, 83, 84, 84],
   signals: [
     { name:'Oven E · SCADA', sub:'1 min ago',   score:98,  status:'Healthy',  tone:'ok' },
     { name:'MES · Schedule', sub:'10 min ago',  score:95,  status:'Healthy',  tone:'ok' },
