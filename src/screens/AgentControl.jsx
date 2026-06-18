@@ -12,6 +12,7 @@ import { executionLog, executionSummary, autonomyTiers, rollbackLog } from '../d
 import { agentPrompts } from '../data/prompts'
 import { useAppState } from '../context/AppState'
 import { useNavigate } from 'react-router-dom'
+import PolicyBuilderTab from './PolicyBuilder'
 
 const ICON_MAP = {
   Shield, AlertTriangle, Truck, Users, Wrench,
@@ -1343,6 +1344,7 @@ const DEMO_DECISION_IDS = new Set(['pa3-emergency', 'pa2', 'pa-sc1'])
 
 const AGENT_TABS = [
   { id: 'decisions', label: 'Decisions' },
+  { id: 'policies',  label: 'Policies' },
   { id: 'history',   label: 'History'   },
 ]
 
@@ -1472,6 +1474,8 @@ export default function AgentControl() {
       <Tabs tabs={AGENT_TABS} active={agentTab} onChange={setAgentTab} />
 
       {agentTab === 'history' && <HistoryTab />}
+
+      {agentTab === 'policies' && <PolicyBuilderTab />}
 
       {agentTab === 'decisions' && <>
 

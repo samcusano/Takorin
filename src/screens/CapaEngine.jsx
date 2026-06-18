@@ -228,6 +228,18 @@ function PriorityQueueRow({ c, isSelected, onSelect, isEscalated, isResolved, in
  )
 }
 
+// Drafts a closure narrative from evidence already on the case — director reviews/edits before holding to close.
+function buildClosureNarrative(c) {
+ const regs = (c.regulatory || []).join(', ')
+ const latestEvidence = c.activity?.[0]?.text
+ return [
+  c.description,
+  c.rootCause ? `Root cause: ${c.rootCause}.` : null,
+  latestEvidence,
+  regs ? `This corrective action satisfies ${regs} documentation requirements for ${c.capaId}.` : null,
+ ].filter(Boolean).join(' ')
+}
+
 function ClosureRecord({ record }) {
  return (
  <div className="px-4 py-5 border-b border-rule2 bg-ok/[0.04] slide-in">
@@ -447,7 +459,13 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
    <div className="font-body text-ink2 text-label px-3 py-2 bg-stone">{c.rootCause}</div>
   </div>
   <div>
-   <div className="font-body text-muted text-label mb-1">Corrective measure <span className="text-danger">*</span></div>
+   <div className="flex items-center justify-between mb-1">
+    <span className="font-body text-muted text-label">Corrective measure <span className="text-danger">*</span></span>
+    <button type="button" onClick={() => setCorrectiveMeasure(buildClosureNarrative(c))}
+     className="flex items-center gap-1 font-body text-label text-signal hover:text-ink transition-colors">
+     <Brain size={10} strokeWidth={2} />Draft narrative
+    </button>
+   </div>
    <textarea
     value={correctiveMeasure}
     onChange={e => setCorrectiveMeasure(e.target.value)}

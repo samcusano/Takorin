@@ -6,7 +6,7 @@ import { useAppState } from '../context/AppState'
 import { riskColorClass, riskLabel, riskBgColor } from '../lib/utils'
 import {
   AlertTriangle, CheckCircle, Brain, Clock, Users, Bot, User,
-  Activity, CircleDot, ChevronDown, ChevronUp, ArrowRight, ExternalLink, X, Download,
+  Activity, CircleDot, ChevronDown, ChevronUp, ArrowRight, ExternalLink, X, Download, Layers,
 } from 'lucide-react'
 import { interventionSummary, interventions } from '../data/interventions'
 import { FilterDropdown, SlidePanel, Btn, SegmentedControl, Checkbox, AnimatedScore, Tabs, SceneHeader, StatusPill } from '../components/UI'
@@ -23,6 +23,37 @@ const LINE_BEFORE = {
   w3: 'PM crew — lighter volume than AM · Typically 5–8 pts lower risk than AM baseline',
   d1: 'Denver pilot week 3 · Model confidence growing with each shift · No open findings in 11 shifts',
   d2: 'Best-performing line across all three plants · T. Reeves crew at 94% certified for 6 weeks',
+}
+
+// ─── Order-mix volatility — SKU count + order-size trend, distinct from throughput ──
+// "Velocity is adaptability, not just speed" — a line can be at 80% OEE and still be
+// absorbing a volatile order mix that the risk score alone doesn't surface.
+const ORDER_MIX_BY_LINE = {
+  l4: { skuCount: 14, skuTrend: '+4 vs 30d avg', orderSizeTrend: '−18%', pattern: 'high-mix' },
+  l6: { skuCount: 6,  skuTrend: 'stable',        orderSizeTrend: '+3%',  pattern: 'stable' },
+  l3: { skuCount: 5,  skuTrend: 'stable',        orderSizeTrend: 'flat', pattern: 'stable' },
+  l2: { skuCount: 4,  skuTrend: '−1 vs 30d avg', orderSizeTrend: '+6%',  pattern: 'consolidating' },
+  w1: { skuCount: 11, skuTrend: '+3 vs 30d avg', orderSizeTrend: '−12%', pattern: 'high-mix' },
+  w2: { skuCount: 5,  skuTrend: 'stable',        orderSizeTrend: 'flat', pattern: 'stable' },
+  w3: { skuCount: 7,  skuTrend: '+2 vs 30d avg', orderSizeTrend: '−6%',  pattern: 'high-mix' },
+  d1: { skuCount: 6,  skuTrend: 'stable',        orderSizeTrend: '+2%',  pattern: 'stable' },
+  d2: { skuCount: 4,  skuTrend: '−1 vs 30d avg', orderSizeTrend: '+8%',  pattern: 'consolidating' },
+}
+
+const MIX_PATTERN_LABEL = { 'high-mix': 'High mix', stable: 'Stable mix', consolidating: 'Consolidating' }
+const MIX_PATTERN_COLOR = { 'high-mix': 'text-warn', stable: 'text-muted', consolidating: 'text-ok' }
+
+function MixBadge({ lineId }) {
+  const mix = ORDER_MIX_BY_LINE[lineId]
+  if (!mix) return null
+  const color = MIX_PATTERN_COLOR[mix.pattern] ?? 'text-muted'
+  return (
+    <div className={`flex items-center gap-1 flex-shrink-0 w-16 ${color}`}
+      title={`${mix.skuCount} active SKUs this shift (${mix.skuTrend}) · avg order size ${mix.orderSizeTrend} vs baseline — ${MIX_PATTERN_LABEL[mix.pattern]?.toLowerCase()} pattern`}>
+      <Layers size={11} strokeWidth={2} className="flex-shrink-0" />
+      <span className="font-body text-label tabular-nums">{mix.skuCount} SKU</span>
+    </div>
+  )
 }
 
 // ─── Shift briefing queue — ranked items from this shift's priority feed ──────
@@ -725,7 +756,7 @@ export default function PlantOverview() {
                           }`}>
                             {delta === 0 ? 'Equal score' : `${delta > 0 ? '+' : ''}${delta} vs ${other.name}`}
                           </div>
-                          <div className="grid grid-cols-3 gap-3 mb-3">
+                          <div className="grid grid-cols-4 gap-3 mb-3">
                             <div>
                               <div className="font-body text-muted text-label mb-0.5">Findings</div>
                               <div className={`font-display font-bold text-head leading-none ${
@@ -741,6 +772,12 @@ export default function PlantOverview() {
                             <div>
                               <div className="font-body text-muted text-label mb-0.5">Workers</div>
                               <div className="font-display font-bold text-head leading-none text-ink">{meta?.workerCount ?? '—'}</div>
+                            </div>
+                            <div>
+                              <div className="font-body text-muted text-label mb-0.5">SKU mix</div>
+                              <div className={`font-display font-bold text-head leading-none ${MIX_PATTERN_COLOR[ORDER_MIX_BY_LINE[line.id]?.pattern] ?? 'text-ink'}`}>
+                                {ORDER_MIX_BY_LINE[line.id]?.skuCount ?? '—'}
+                              </div>
                             </div>
                           </div>
                           <div className="h-[3px] bg-rule2 overflow-hidden">
@@ -840,6 +877,8 @@ export default function PlantOverview() {
                                       <ActorBadge mode={workerMode} />
                                     </div>
                                   </div>
+
+                                  <MixBadge lineId={line.id} />
 
                                   <div className="flex-1 relative h-[6px] overflow-hidden">
                                     <div className="absolute inset-0 flex">

@@ -8,8 +8,9 @@ import { knowledgeEntries, recipeEntries, processMemory } from '../data/knowledg
 import {
   Database, FlaskConical, Forward,
   Truck, ClipboardCheck, RotateCcw, TrendingDown, Shield, Zap, Waves, Share2, Check,
+  Search, Brain, Video, Mic, FileText, Plus, ArrowRight,
 } from 'lucide-react'
-import { StatusPill, SlidePanel, StatGrid, EmptyState, Btn } from '../components/UI'
+import { StatusPill, SlidePanel, StatGrid, EmptyState, Btn, SegmentedControl } from '../components/UI'
 
 // ── Operational Memory Domains ───────────────────────────────────────────────
 
@@ -160,7 +161,12 @@ function EntryDetail({ entry, isPromoted, onPromote }) {
             <div className="font-display font-bold text-ink text-head leading-snug">{entry.title}</div>
           </div>
           <div className="text-right flex-shrink-0">
-            {entry.evidenceBase?.batchCount != null ? (
+            {entry._captured ? (
+              <>
+                <div className="display-num text-head font-bold tabular-nums leading-none text-signal">NEW</div>
+                <div className="font-body text-muted text-label">awaiting validation</div>
+              </>
+            ) : entry.evidenceBase?.batchCount != null ? (
               <>
                 <div className={`display-num text-head font-bold tabular-nums leading-none ${confColor}`}>{entry.evidenceBase.batchCount}</div>
                 <div className="font-body text-muted text-label">applications</div>
@@ -321,6 +327,219 @@ function EntryDetail({ entry, isPromoted, onPromote }) {
   )
 }
 
+// ── Ask the vault — retrieval over the existing tagged index, not a chat model ──
+// Scores entries by keyword overlap against title/body/tags, returns the closest
+// matches with a citation back to the source entry — same "show your source"
+// pattern used for agent decisions elsewhere in the app.
+
+function scoreEntry(entry, tokens) {
+  const haystack = `${entry.title} ${entry.body} ${(entry.tags ?? []).join(' ')}`.toLowerCase()
+  return tokens.reduce((s, t) => s + (haystack.includes(t) ? 1 : 0), 0)
+}
+
+function matchStrength(score, tokenCount) {
+  const pct = tokenCount > 0 ? score / tokenCount : 0
+  if (pct >= 0.6) return { label: 'High match', tone: 'ok' }
+  if (pct >= 0.3) return { label: 'Partial match', tone: 'warn' }
+  return { label: 'Weak match', tone: 'muted' }
+}
+
+function VaultQuery({ entries, onOpenEntry, onLogCapture, onAdd }) {
+  const [query, setQuery] = useState('')
+  const [results, setResults] = useState(null) // null = not searched yet
+
+  const runSearch = () => {
+    const tokens = query.toLowerCase().split(/\W+/).filter(t => t.length > 2)
+    if (tokens.length === 0) { setResults([]); return }
+    const scored = entries
+      .map(e => ({ entry: e, score: scoreEntry(e, tokens), tokenCount: tokens.length }))
+      .filter(r => r.score > 0)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 4)
+    setResults(scored)
+  }
+
+  const top = results?.[0]
+  const rest = results?.slice(1) ?? []
+
+  return (
+    <div className="flex-shrink-0 border-b border-rule2 bg-stone2">
+      <div className="px-5 py-3 flex items-center gap-2">
+        <div className="flex-1 flex items-center gap-2 bg-stone border border-rule2 px-3 py-2 focus-within:border-signal/50 transition-colors">
+          <Search size={12} strokeWidth={2} className="text-muted flex-shrink-0" />
+          <input
+            type="text"
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Enter') runSearch() }}
+            placeholder='Ask any questions – e.g. "Line 3 bagging line throwing a weight-check fault on startup"'
+            aria-label="Ask the vault"
+            className="flex-1 font-body text-body text-ink bg-transparent outline-none placeholder:text-muted"
+          />
+          <Btn variant="secondary" onClick={runSearch} disabled={!query.trim()}>Ask</Btn>
+        </div>
+        <Btn variant="secondary" icon={Plus} onClick={onAdd} className="flex-shrink-0">Add</Btn>
+      </div>
+
+      {results !== null && (
+        <div className="px-5 pb-4">
+          {results.length === 0 ? (
+            <div className="flex items-center justify-between gap-4 px-4 py-3 bg-stone border border-rule2">
+              <div>
+                <div className="font-body font-medium text-ink text-body">No captured knowledge matches this yet</div>
+                <div className="font-body text-muted text-label mt-0.5">This is a gap in what's been captured — log it so the next person who hits it gets an answer.</div>
+              </div>
+              <Btn variant="secondary" icon={Plus} onClick={() => onLogCapture(query)} className="flex-shrink-0">
+                Log as capture
+              </Btn>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {/* Synthesized answer from the closest match */}
+              {(() => {
+                const ms = matchStrength(top.score, top.tokenCount)
+                const firstSentences = top.entry.body?.split(/(?<=[.!?])\s/).slice(0, 2).join(' ')
+                return (
+                  <div className="border border-rule2 border-l-2 border-l-signal bg-stone">
+                    <div className="flex items-center gap-2 px-4 py-2 border-b border-rule2 bg-stone3">
+                      <Brain size={11} strokeWidth={2} className="text-signal flex-shrink-0" />
+                      <span className="font-body text-muted text-label">Closest match</span>
+                      <StatusPill tone={ms.tone}>{ms.label}</StatusPill>
+                    </div>
+                    <div className="px-4 py-3">
+                      <div className="font-body font-medium text-ink text-body mb-1.5">{top.entry.title}</div>
+                      <p className="font-body text-muted text-body leading-relaxed mb-2.5">{firstSentences}</p>
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="font-body text-muted text-label">
+                          Cited from {top.entry.author?.name ?? 'Unknown'}
+                          {top.entry.evidenceBase?.successRate ? ` · ${top.entry.evidenceBase.successRate} success across ${top.entry.evidenceBase.batchCount} applications` : ''}
+                        </span>
+                        <button type="button" onClick={() => onOpenEntry(top.entry)}
+                          className="flex items-center gap-1 font-body text-label text-signal hover:text-ink transition-colors flex-shrink-0">
+                          View full entry <ArrowRight size={11} strokeWidth={2} />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )
+              })()}
+              {/* Other matches */}
+              {rest.length > 0 && (
+                <div className="border border-rule2 divide-y divide-rule2">
+                  {rest.map(r => (
+                    <button key={r.entry.id} type="button" onClick={() => onOpenEntry(r.entry)}
+                      className="w-full flex items-center justify-between gap-3 px-4 py-2.5 text-left hover:bg-stone2 transition-colors">
+                      <span className="font-body text-ink text-label">{r.entry.title}</span>
+                      <span className="font-body text-muted text-label flex-shrink-0">{r.entry.author?.name}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ── Capture session — multimodal intake for knowledge that would otherwise leave ──
+// with a retiring operator: a video/audio narration tagged to equipment + fault +
+// memory type, indexed into the same domain/recall-mode taxonomy as everything else.
+
+const CAPTURE_TYPES = [
+  { value: 'video', label: 'Video',  icon: Video },
+  { value: 'audio', label: 'Audio',  icon: Mic   },
+  { value: 'text',  label: 'Text',   icon: FileText },
+]
+
+function CaptureSessionForm({ initialFault = '', onSave, onCancel }) {
+  const [equipment, setEquipment] = useState('')
+  const [fault, setFault] = useState(initialFault)
+  const [domainId, setDomainId] = useState(DOMAINS[0].id)
+  const [memoryType, setMemoryType] = useState(MEMORY_TYPES[0].id)
+  const [captureType, setCaptureType] = useState('video')
+  const [notes, setNotes] = useState('')
+  const [capturedFrom, setCapturedFrom] = useState('')
+
+  const canSave = fault.trim() && notes.trim()
+  const fieldCls = 'w-full font-body text-body text-ink bg-stone2 border border-rule2 px-3 py-2 placeholder:text-muted/60 focus:border-signal focus:outline-none'
+
+  const handleSave = () => {
+    const today = new Date().toISOString().slice(0, 10)
+    onSave({
+      id: `kv-cap-${Date.now()}`,
+      title: fault.trim(),
+      type: 'operator-capture',
+      author: { name: capturedFrom.trim() || 'Floor operator', title: 'Capture session' },
+      createdAt: today,
+      updatedAt: today,
+      version: 1,
+      confidence: null,
+      activeBatches: [],
+      body: notes.trim(),
+      codedRule: null,
+      evidenceBase: null,
+      processMemoryIds: [],
+      tags: [equipment.trim(), captureType + '-capture'].filter(Boolean),
+      institutionalRisk: 'LOW — newly captured, pending validation',
+      _domain: domainId,
+      _memoryType: memoryType,
+      _recallMode: 'event',
+      _captured: true,
+    })
+  }
+
+  return (
+    <div className="space-y-4">
+      <p className="font-body text-muted text-body leading-relaxed">
+        Tag a narrated walkthrough — what a retiring operator sees, hears, or knows to check — so it's searchable
+        the next time someone hits the same fault. The transcript stands in for the recording.
+      </p>
+      <div>
+        <label className="font-body text-muted text-label block mb-1">Capture type</label>
+        <SegmentedControl options={CAPTURE_TYPES} value={captureType} onChange={setCaptureType} />
+      </div>
+      <div>
+        <label className="font-body text-muted text-label block mb-1">Equipment / line</label>
+        <input value={equipment} onChange={e => setEquipment(e.target.value)} placeholder="e.g. Line 3 bagging line" className={fieldCls} />
+      </div>
+      <div>
+        <label className="font-body text-muted text-label block mb-1">Fault / symptom <span className="text-danger">*</span></label>
+        <input value={fault} onChange={e => setFault(e.target.value)} placeholder="e.g. Weight-check fault on startup" className={fieldCls} />
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className="font-body text-muted text-label block mb-1">Domain</label>
+          <select value={domainId} onChange={e => setDomainId(e.target.value)} className={fieldCls}>
+            {DOMAINS.map(d => <option key={d.id} value={d.id}>{d.label}</option>)}
+          </select>
+        </div>
+        <div>
+          <label className="font-body text-muted text-label block mb-1">Memory type</label>
+          <select value={memoryType} onChange={e => setMemoryType(e.target.value)} className={fieldCls}>
+            {MEMORY_TYPES.map(m => <option key={m.id} value={m.id}>{m.label}</option>)}
+          </select>
+        </div>
+      </div>
+      <div>
+        <label className="font-body text-muted text-label block mb-1">Transcript / notes <span className="text-danger">*</span></label>
+        <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={4}
+          placeholder="What do you check first? What does it sound or look like when it's about to fail? What did you do about it?"
+          className={`${fieldCls} resize-none`} />
+      </div>
+      <div>
+        <label className="font-body text-muted text-label block mb-1">Captured from</label>
+        <input value={capturedFrom} onChange={e => setCapturedFrom(e.target.value)} placeholder="e.g. M. Santos" className={fieldCls} />
+      </div>
+      <div className="flex gap-2">
+        <Btn variant="primary" disabled={!canSave} onClick={handleSave}>Save to vault</Btn>
+        <Btn variant="secondary" onClick={onCancel}>Cancel</Btn>
+      </div>
+    </div>
+  )
+}
+
 // ── Knowledge Vault — Variant C: Active-first ────────────────────────────────
 // Active entries surface in a persistent band across all domains.
 // Domain sidebar navigates the full library below.
@@ -331,22 +550,39 @@ function OperationalMemoryVault() {
   const [showMemory, setShowMemory]     = useState(false)
   const [slideEntry, setSlideEntry]     = useState(null)
   const [promotedEntries, setPromotedEntries] = useState(new Set())
+  const [capturedEntries, setCapturedEntries] = useState([])
+  const [capturing, setCapturing]       = useState(null) // null | { initialFault }
 
+  const allEntries = [...ENRICHED, ...capturedEntries]
   const domain = DOMAINS.find(d => d.id === activeDomain)
 
-  const activeEntries = ENRICHED.filter(e => e.activeBatches?.length > 0)
+  const activeEntries = allEntries.filter(e => e.activeBatches?.length > 0)
   const libraryEntries = activeDomain === 'all'
-    ? ENRICHED
-    : ENRICHED.filter(e => e._domain === activeDomain)
+    ? allEntries
+    : allEntries.filter(e => e._domain === activeDomain)
 
   const domainCounts = DOMAINS.map(d => ({
     id: d.id,
-    count: ENRICHED.filter(e => e._domain === d.id).length,
-    activeCount: ENRICHED.filter(e => e._domain === d.id && e.activeBatches?.length > 0).length,
+    count: allEntries.filter(e => e._domain === d.id).length,
+    activeCount: allEntries.filter(e => e._domain === d.id && e.activeBatches?.length > 0).length,
   }))
+
+  const handleSaveCapture = (entry) => {
+    setCapturedEntries(p => [entry, ...p])
+    setCapturing(null)
+    setSlideEntry(entry)
+  }
 
   return (
     <div className="flex flex-col h-full overflow-hidden content-reveal">
+
+      {/* ── Ask the vault — retrieval over the existing index, source cited ───── */}
+      <VaultQuery
+        entries={allEntries}
+        onOpenEntry={(entry) => setSlideEntry(entry)}
+        onLogCapture={(query) => setCapturing({ initialFault: query })}
+        onAdd={() => setCapturing({ initialFault: '' })}
+      />
 
       {/* ── Horizontal domain chips ───────────────────────────── */}
       <div className="flex-shrink-0 flex items-center gap-1.5 px-4 py-2 border-b border-rule2 bg-stone overflow-x-auto">
@@ -359,7 +595,7 @@ function OperationalMemoryVault() {
               ? 'border-signal bg-signal/10 text-signal'
               : 'border-rule2 text-muted hover:text-ink hover:border-rule'
           }`}>
-          All · {ENRICHED.length}
+          All · {allEntries.length}
         </button>
 
         {DOMAINS.map(d => {
@@ -578,6 +814,17 @@ function OperationalMemoryVault() {
           />
         </SlidePanel>
       )}
+      {capturing && (
+        <SlidePanel title="Capture session" subtitle="Multimodal intake" icon={Video}
+          onClose={() => setCapturing(null)} maxWidth="480px">
+          <CaptureSessionForm
+            initialFault={capturing.initialFault}
+            onSave={handleSaveCapture}
+            onCancel={() => setCapturing(null)}
+          />
+        </SlidePanel>
+      )}
+
       {slideEntry?._pm && (
         <SlidePanel title={slideEntry.batchId} subtitle={`${slideEntry.sku} · ${slideEntry.grade}`}
           onClose={() => setSlideEntry(null)} maxWidth="480px">
