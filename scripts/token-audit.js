@@ -50,6 +50,7 @@ const COLOR_MAP = {
   '#3A9E6F': '--color-ok',
   '#C98E2A': '--color-warn',
   '#D4913A': '--color-warn',
+  '#EA5455': '--color-danger',
   '#DE6C4E': '--color-danger',
   '#E55':    '--color-danger',
   '#EE5555': '--color-danger',
@@ -179,6 +180,7 @@ const IGNORE_PATHS = [
   'src/tokens.css',      // source of truth — raw values are expected
   'src/lib/tokens.js',   // JS mirror of color tokens — raw values are expected
   'src/data',            // data constants — colors here drive chart components
+  'src/screens/DesignLabBrand.jsx', // palette-exploration sandbox — raw hex IS the content (exploring colors not yet in the token layer)
 ]
 
 function shouldIgnore(filePath) {

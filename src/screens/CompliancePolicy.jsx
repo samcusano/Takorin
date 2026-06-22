@@ -94,7 +94,7 @@ function PolicySectionHeader({ label, count }) {
 function FrameworkRow({ f, index = 0 }) {
   const border = STATUS_BORDER[f.status] ?? 'border-l-rule2'
   return (
-    <div className={`flex items-start gap-3 px-5 py-3 border-b border-rule2 last:border-0 border-l-2 row-in ${border} ${f.status === 'inactive' ? 'opacity-40' : ''}`}
+    <div className={`flex items-start gap-3 px-5 py-3 border-b border-rule2 last:border-0 border-l-[3px] row-in ${border} ${f.status === 'inactive' ? 'opacity-40' : ''}`}
       style={{ animationDelay: `${index * 50}ms` }}>
       <div className="flex-1 min-w-0">
         <div className="flex items-baseline gap-2 flex-wrap mb-0.5">
@@ -112,7 +112,7 @@ function FrameworkRow({ f, index = 0 }) {
 
 function EvidenceRow({ e, index = 0 }) {
   return (
-    <div className={`flex items-start gap-3 px-5 py-2.5 border-b border-rule2 last:border-0 row-in ${e.required ? 'border-l-2 border-l-ok' : ''}`}
+    <div className={`flex items-start gap-3 px-5 py-2.5 border-b border-rule2 last:border-0 row-in ${e.required ? 'border-l-[3px] border-l-ok' : ''}`}
       style={{ animationDelay: `${index * 50}ms` }}>
       <div className="flex-1 min-w-0">
         <div className="font-body font-medium text-ink text-body leading-snug">{e.domain}</div>

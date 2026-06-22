@@ -281,7 +281,7 @@ function EntryDetail({ entry, isPromoted, onPromote }) {
           </div>
         )}
         {entry.institutionalRisk && (
-          <div className={`px-4 py-3 border-l-2 ${
+          <div className={`px-4 py-3 border-l-[3px] ${
             entry.institutionalRisk.startsWith('HIGH')   ? 'border-l-danger bg-danger/[0.04]' :
             entry.institutionalRisk.startsWith('MEDIUM') ? 'border-l-warn bg-warn/[0.03]'     :
             'border-l-muted bg-stone2'
@@ -400,7 +400,7 @@ function VaultQuery({ entries, onOpenEntry, onLogCapture, onAdd }) {
                 const ms = matchStrength(top.score, top.tokenCount)
                 const firstSentences = top.entry.body?.split(/(?<=[.!?])\s/).slice(0, 2).join(' ')
                 return (
-                  <div className="border border-rule2 border-l-2 border-l-signal bg-stone">
+                  <div className="border border-rule2 border-l-[3px] border-l-signal bg-stone">
                     <div className="flex items-center gap-2 px-4 py-2 border-b border-rule2 bg-stone3">
                       <Brain size={11} strokeWidth={2} className="text-signal flex-shrink-0" />
                       <span className="font-body text-muted text-label">Closest match</span>

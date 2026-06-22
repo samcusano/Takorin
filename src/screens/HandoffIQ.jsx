@@ -489,7 +489,7 @@ function MachineStateHandoff() {
               const borderCls = item.urgency === 'danger' ? 'border-l-danger bg-danger/[0.02]' : item.urgency === 'warn' ? 'border-l-warn bg-warn/[0.015]' : 'border-l-rule2'
               const labelTone = item.urgency === 'danger' ? 'text-danger' : item.urgency === 'warn' ? 'text-ink' : 'text-muted'
               return (
-                <div key={i} className={`flex items-center gap-4 px-5 py-3.5 border-b border-rule2 border-l-2 ${borderCls}`}>
+                <div key={i} className={`flex items-center gap-4 px-5 py-3.5 border-b border-rule2 border-l-[3px] ${borderCls}`}>
                   <span className="font-body text-label w-10 flex-shrink-0 tabular-nums text-muted">{item.unit}</span>
                   <span className={`font-body font-medium text-body flex-1 ${labelTone}`}>{item.item}</span>
                   <StatusPill tone={item.urgency === 'danger' ? 'danger' : item.urgency === 'warn' ? 'warn' : 'muted'}>

@@ -755,7 +755,7 @@ export function CarryForwardItem({ item, acknowledged, onAcknowledge, onView }) 
    tabIndex={isClickable ? 0 : undefined}
    onClick={isClickable ? onView : undefined}
    onKeyDown={isClickable ? (e) => { if (e.key === 'Enter' || e.key === ' ') onView() } : undefined}
-   className={`relative overflow-hidden border-l-2 ${borderColor} border-b border-rule2 px-4 py-3 flex items-center gap-3 ${
+   className={`relative overflow-hidden border-l-[3px] ${borderColor} border-b border-rule2 px-4 py-3 flex items-center gap-3 ${
     item.resolvedInShift ? 'bg-ok/[0.03]' : acknowledged ? 'bg-ok/[0.03]' : 'bg-stone'
    } ${isClickable ? 'cursor-pointer hover:bg-stone2 transition-colors' : ''}`}>
    {acknowledged && !item.resolvedInShift && <span className="flash-success" aria-hidden="true" />}
@@ -1238,7 +1238,7 @@ export function AccentRow({ tone = 'muted', bg = false, className = '', children
   muted:  '',
  }[tone] || '' : ''
  return (
-  <div className={`border-l-2 ${border} border-b border-rule2 ${fill} ${className}`}>
+  <div className={`border-l-[3px] ${border} border-b border-rule2 ${fill} ${className}`}>
    {children}
   </div>
  )

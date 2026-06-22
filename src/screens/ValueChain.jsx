@@ -105,7 +105,7 @@ function OrderOverlayDetail({ order, onClose }) {
   const isLate   = !order.onTrack && order.status !== 'shipped'
   const leadOver = order.leadTimeDays != null && order.leadTimeDays > order.leadTimeTarget
   return (
-    <div className="bg-stone2 border-l-2 border-l-signal border-b border-r border-rule2 slide-in">
+    <div className="bg-stone2 border-l-[3px] border-l-signal border-b border-r border-rule2 slide-in">
       <div className="flex items-center justify-between px-5 py-3 border-b border-rule2">
         <div className="flex items-center gap-3">
           <span className="font-body font-medium text-ink text-body">{order.id}</span>

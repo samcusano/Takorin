@@ -114,7 +114,7 @@ function ElevatedHeader() {
 
 function DirectiveBar({ compact = false }) {
   return (
-    <div className={`flex-shrink-0 border-b border-rule2 border-l-2 border-l-danger ${compact ? 'px-4 py-2.5' : 'px-5 py-3.5'}`}>
+    <div className={`flex-shrink-0 border-b border-rule2 border-l-[3px] border-l-danger ${compact ? 'px-4 py-2.5' : 'px-5 py-3.5'}`}>
       <div className="flex items-start gap-2.5">
         <div className="w-1.5 h-1.5 rounded-full bg-danger beat flex-shrink-0 mt-1.5" />
         <div className="flex-1 min-w-0">
@@ -267,7 +267,7 @@ function VariantB() {
         {tab === 'briefing' && (
           <>
             <BriefingList />
-            <div className="border-t border-rule2 px-5 py-4 border-l-2 border-l-signal bg-signal/[0.02]">
+            <div className="border-t border-rule2 px-5 py-4 border-l-[3px] border-l-signal bg-signal/[0.02]">
               <div className="flex items-center gap-2 mb-2">
                 <BookOpen size={10} strokeWidth={2} className="text-signal flex-shrink-0" />
                 <span className="font-body font-medium text-ink text-body">Covering above cert level</span>
@@ -391,7 +391,7 @@ function VariantC() {
 
         <div className="px-5 py-4 border-b border-rule2">
           <div className="font-display font-bold text-ink text-sub leading-snug mb-1">{F.station}</div>
-          <div className="font-display text-ink text-body leading-snug mb-2 pl-3 border-l-2 border-l-danger">{F.directive}</div>
+          <div className="font-display text-ink text-body leading-snug mb-2 pl-3 border-l-[3px] border-l-danger">{F.directive}</div>
           <div className="font-body text-danger text-label font-medium">Before {F.deadline}</div>
         </div>
 

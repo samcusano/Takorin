@@ -80,7 +80,7 @@ function ImpactPreview({ task, onConfirm, onCancel }) {
           </div>
 
           {newPrimary.certGap && (
-            <div className="px-3 py-2 bg-warn/[0.08] border-l-2 border-l-warn">
+            <div className="px-3 py-2 bg-warn/[0.08] border-l-[3px] border-l-warn">
               <p className="font-body text-label text-warn font-medium">Cert gap will raise shift risk score</p>
               <p className="font-body text-label text-muted mt-0.5">
                 Consider assigning a certified backup before confirming.

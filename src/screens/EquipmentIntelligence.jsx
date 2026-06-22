@@ -465,7 +465,7 @@ function CalibrationPanel({ cal }) {
 
           {/* Suggestion */}
           {cal.suggestion && (
-            <div className="mx-5 mb-4 mt-1 px-4 py-3 border-l-2 border-l-signal bg-signal/[0.04]">
+            <div className="mx-5 mb-4 mt-1 px-4 py-3 border-l-[3px] border-l-signal bg-signal/[0.04]">
               <div className="flex items-center justify-between mb-1.5">
                 <span className="font-body text-label font-semibold text-ink">Suggested threshold adjustment</span>
                 <span className="font-body text-label font-bold text-signal tabular-nums">{cal.suggestion.confidence}%</span>

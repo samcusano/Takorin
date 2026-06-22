@@ -334,7 +334,7 @@ function DrillDown({ finding }) {
             <div className="font-body text-label font-semibold text-muted mb-3">What happens if ignored</div>
             <div className="space-y-2">
               {consequences.map(([key, val]) => (
-                <div key={key} className={`px-4 py-3 border-l-2 ${key === 'audit' ? 'border-l-danger bg-danger/[0.03]' : 'border-l-warn bg-warn/[0.02]'}`}>
+                <div key={key} className={`px-4 py-3 border-l-[3px] ${key === 'audit' ? 'border-l-danger bg-danger/[0.03]' : 'border-l-warn bg-warn/[0.02]'}`}>
                   <div className={`font-body text-label font-semibold mb-1 ${key === 'audit' ? 'text-danger' : 'text-warn'}`}>
                     {CONSEQUENCE_LABELS[key]}
                   </div>

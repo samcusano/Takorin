@@ -319,7 +319,7 @@ function CausalPanel({ zone, building }) {
         </div>
       </div>
       {zone.alert && (
-        <div className="flex items-start gap-2 px-3 py-2.5 bg-warn/[0.06] border-l-2 border-l-warn">
+        <div className="flex items-start gap-2 px-3 py-2.5 bg-warn/[0.06] border-l-[3px] border-l-warn">
           <AlertTriangle size={10} className="text-warn flex-shrink-0 mt-0.5" strokeWidth={2} />
           <span className="font-body text-warn text-label leading-snug">{zone.alert.msg}</span>
         </div>

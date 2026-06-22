@@ -3,6 +3,11 @@ import { ArrowRight, Brain } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useAppState } from '../context/AppState'
 import { VaulDrawer, StatusPill, Tabs } from '../components/UI'
+import {
+  NOTIFICATION_TYPES as TYPE,
+  NOTIFICATION_EXCLUDE_TYPES as EXCLUDE_TYPES,
+  notificationActivity as sampleActivity,
+} from '../data/notifications'
 
 const INTELLIGENCE_SIGNALS = [
   { confidence: 87, label: 'Line 4 intervention window closing', detail: 'Staffing mismatch + allergen log unresolved · 27 min remaining in window', route: '/shift', routeLabel: 'Shift', tone: 'danger' },
@@ -10,114 +15,12 @@ const INTELLIGENCE_SIGNALS = [
   { confidence: 74, label: 'FDA inspection in 18 days — 3 evidence gaps remain', detail: 'CAPA-2604-001 and -006 blocking audit export · FSMA 204 traceability incomplete', route: '/capa', routeLabel: 'CAPA', tone: 'warn' },
 ]
 
-// Type → visual style mapping
-const TYPE = {
-  safety:       { label: 'Safety',       tone: 'danger', bar: 'border-l-danger', row: 'bg-danger/[0.03]' },
-  near_miss:    { label: 'Near miss',    tone: 'warn',   bar: 'border-l-warn',   row: 'bg-warn/[0.02]' },
-  override:     { label: 'Override',     tone: 'danger', bar: 'border-l-danger', row: 'bg-danger/[0.03]' },
-  escalation:   { label: 'Escalation',  tone: 'danger', bar: 'border-l-danger', row: '' },
-  compliance:   { label: 'Compliance',  tone: 'warn',   bar: 'border-l-warn',   row: '' },
-  capa:         { label: 'CAPA',        tone: 'warn',   bar: 'border-l-warn',   row: '' },
-  evidence:     { label: 'Evidence',    tone: 'ok',     bar: 'border-l-ok',     row: '' },
-  acknowledged: { label: 'Acknowledged', tone: 'ok',    bar: 'border-l-ok',     row: '' },
-  acknowledgment: { label: 'Acknowledged', tone: 'ok',  bar: 'border-l-ok',     row: '' },
-  handoff:      { label: 'Handoff',     tone: 'ok',     bar: 'border-l-ok',     row: '' },
-  intervention: { label: 'Action',      tone: 'signal',  bar: 'border-l-signal',  row: '' },
-}
-
 const FILTER = {
   All:        () => true,
   Safety:     e => ['safety','near_miss','override','escalation'].includes(e.type),
   Compliance: e => ['compliance','capa','evidence'].includes(e.type),
   People:     e => ['acknowledged','acknowledgment','handoff'].includes(e.type),
 }
-
-// Log types that are the director's own actions or system noise — exclude from feed
-const EXCLUDE_TYPES = new Set(['intervention', 'system'])
-
-const sampleActivity = [
-  {
-    id: 'notif-agent-hold',
-    type: 'escalation',
-    time: '06:22',
-    title: 'Agent decision — Tier 3 ratification required · Lot TS-8811',
-    body: 'Supplier Intelligence Agent recommends holding Lot TS-8811. COA not received 4h before production start. Director sign-off required before 08:00.',
-    link: '/agents',
-    linkLabel: 'Open Agents',
-  },
-  {
-    id: 'notif-network',
-    type: 'compliance',
-    time: '06:02',
-    title: 'Network advisory — TX-11 also holding Lot TS-8811',
-    body: 'Cross-plant exposure: SL-04 and TX-11 both hold TS-8811. Holds not yet coordinated. Uncoordinated release creates partial recall exposure.',
-    link: '/agents',
-    linkLabel: 'Open Agents',
-  },
-  {
-    id: 'notif-coa-request',
-    type: 'intervention',
-    time: '05:47',
-    title: 'COA request sent to ConAgra — Lot TS-8811',
-    body: 'Automated COA request dispatched. Production scheduled for 08:00 today. Hold remains active until COA is received and verified.',
-    link: '/suppliers',
-    linkLabel: 'Open Suppliers',
-  },
-  {
-    id: 'notif-l0891-delay',
-    type: 'escalation',
-    time: '05:33',
-    title: 'Delivery delay — Lot L-0891 · Pepperoni · +6h',
-    body: 'Expected arrival delayed 6 hours. COA not yet received. Pre-production hold active per FSMA 204. Supplier Intelligence Agent has escalated.',
-    link: '/suppliers',
-    linkLabel: 'Open Suppliers',
-  },
-  {
-    id: 'notif-fsma-posture',
-    type: 'compliance',
-    time: '06:45',
-    title: 'FSMA 204 posture assessed — 62% · 2 lots not submittable',
-    body: 'Daily traceability assessment complete. TS-8811 and L-0891 are not submittable. CO-5502 and WF-2203 are FDA-submittable.',
-    link: '/records',
-    linkLabel: 'Open Record Vault',
-  },
-  {
-    id: 'notif-wf-transform',
-    type: 'evidence',
-    time: '04:15',
-    title: 'Transformation CTE complete — Lot WF-2203 · Wheat Flour',
-    body: 'Output lots PROD-L4-2604-009 and PROD-L3-2604-003 created. 1,400 kg remaining in inventory. FSMA 204 chain intact.',
-    link: '/records',
-    linkLabel: 'Open Record Vault',
-  },
-  {
-    id: 'notif-handoff',
-    type: 'handoff',
-    time: '03:52',
-    title: 'Shift handoff complete — D. Kowalski to AM crew',
-    body: 'Handoff report signed. Open items: TS-8811 hold, Sensor A-7 variance pattern, staffing gap on Line 4 AM. All items documented.',
-    link: '/shift',
-    linkLabel: 'Open Shift',
-  },
-  {
-    id: 'sample-ack',
-    type: 'acknowledged',
-    time: '06:10',
-    title: 'C. Reyes acknowledged safety briefing',
-    body: 'Operator confirmed Sauce Dosing allergen and CCP requirements before shift start.',
-    link: '/shift',
-    linkLabel: 'Open Shift',
-  },
-  {
-    id: 'sample-near-miss',
-    type: 'near_miss',
-    time: '05:51',
-    title: 'Near-miss reported at Pack Line',
-    body: 'Floor spill near condiment station identified and secured by crew. Corrective action logged.',
-    link: '/shift',
-    linkLabel: 'Review Shift',
-  },
-]
 
 // Map border-l-* to bg-* for the top accent bar
 function barFill(barCls) {
@@ -273,7 +176,7 @@ export default function NotificationCenter({ onClose }) {
      <div className="px-3 py-3 space-y-2.5">
       {INTELLIGENCE_SIGNALS.map((sig, i) => (
        <div key={i}
-        className={`bg-stone border border-rule overflow-hidden ${sig.tone === 'danger' ? 'border-l-2 border-l-danger' : 'border-l-2 border-l-warn'}`}>
+        className={`bg-stone border border-rule overflow-hidden ${sig.tone === 'danger' ? 'border-l-[3px] border-l-danger' : 'border-l-[3px] border-l-warn'}`}>
         {/* Body: confidence + label + detail */}
         <div className="px-4 py-3 flex items-start gap-3">
          <div className={`font-display font-bold text-title leading-none tabular-nums flex-shrink-0 pt-0.5 ${

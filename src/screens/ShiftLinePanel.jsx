@@ -249,7 +249,6 @@ function FindingCard({ f, index, onAct, onDelegate, onDismiss }) {
   const tierColor = acceptanceRate >= 0.80 ? 'text-danger' : acceptanceRate >= 0.60 ? 'text-warn' : 'text-muted'
   const tierBg = acceptanceRate >= 0.80 ? 'bg-danger/10' : acceptanceRate >= 0.60 ? 'bg-warn/10' : 'bg-stone3'
 
-  const leftCls = f.urgency === 'danger' ? 'border-l-danger' : 'border-l-warn'
 
   if (dismissed) return null
 
@@ -276,7 +275,7 @@ function FindingCard({ f, index, onAct, onDelegate, onDismiss }) {
 
   return (
     <div
-      className={`v2-row-in bg-stone2 border border-rule border-l-[3px] ${leftCls} mb-2.5`}
+      className={`v2-row-in bg-stone2 border border-rule mb-2.5`}
       style={{ animationDelay: `${index * 90}ms`, opacity: acted ? 0.45 : 1, transition: `opacity var(--dur-standard) var(--ease-standard)` }}>
 
       <div className="px-4 pt-3.5 pb-2.5">

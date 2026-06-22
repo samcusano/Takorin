@@ -766,7 +766,7 @@ export default function Analytics() {
                           </Link>
                         </div>
                         {w.warning && (
-                          <div className="mt-3 px-3 py-2 bg-warn/[0.04] border-l-2 border-l-warn/40">
+                          <div className="mt-3 px-3 py-2 bg-warn/[0.04] border-l-[3px] border-l-warn/40">
                             <div className="flex items-start gap-1.5">
                               <AlertTriangle size={9} className="text-warn flex-shrink-0 mt-0.5" strokeWidth={2} />
                               <span className="font-body text-warn text-label leading-snug">{w.warning}</span>

@@ -160,7 +160,7 @@ function SituationPanelInner({ situation, onClose }) {
 
           {/* Resolved state */}
           {isResolved && (
-            <div className="mx-5 mb-4 px-4 py-3 border border-ok/30 bg-ok/[0.04] border-l-2 border-l-ok">
+            <div className="mx-5 mb-4 px-4 py-3 border border-ok/30 bg-ok/[0.04] border-l-[3px] border-l-ok">
               <div className="flex items-center gap-2">
                 <CheckCircle2 size={13} strokeWidth={2} className="text-ok flex-shrink-0" />
                 <span className="font-body text-ok text-label font-medium">

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
-import { useFocusTrap } from '../lib/utils'
+import { useFocusTrap, worstTone } from '../lib/utils'
 import { NavLink, useNavigate } from 'react-router-dom'
 import {
  Activity, Truck, ClipboardCheck,
@@ -16,6 +16,8 @@ import { useAppState, PLANTS } from '../context/AppState'
 import { commandData, agentConfigData } from '../data'
 import { openCases } from '../data/capa'
 import { securityPosture } from '../data/security'
+import { notificationSummary } from '../data/notifications'
+import { lineQuality } from '../data/qualityiq'
 import { shiftData } from '../data'
 import { PersonAvatar, StatusPill } from './UI'
 
@@ -25,21 +27,15 @@ const CAPA_DIRECTOR_COUNT = openCases.filter(c => c.type === 'cu').length
 // Security badge: critical + high findings requiring remediation
 const SECURITY_BADGE = securityPosture.findingsBySeverity.critical + securityPosture.findingsBySeverity.high
 
-// Modules: shift/suppliers/quality badges are computed in Sidebar from AppState;
-// capa and security use data-derived constants above.
-const MODULE_DEFS = [
- { id:'shift',    label:'Shift',     path:'/shift',     icon:Activity,      badgeType:'alert' },
- { id:'suppliers',label:'Suppliers', path:'/suppliers', icon:Truck,         badgeType:'alert' },
- { id:'quality',  label:'Quality',   path:'/quality',   icon:Eye,           badgeType:'alert' },
- { id:'capa',     label:'CAPA',      path:'/capa',      icon:ClipboardCheck,badgeType:'alert' },
-]
-
-function NavBadge({ badge, badgeType }) {
+// Nav badge — severity-toned to match the in-screen StatusPill vocabulary
+// (danger = red, warn = gold), so the sidebar reflects warning vs danger the
+// same way screens do. Defaults to warn ("needs attention").
+function NavBadge({ badge, badgeType, tone = 'warn' }) {
  if (!badge) return null
  if (badgeType === 'live') return (
  <span className="ml-auto w-1.5 h-1.5 rounded-full bg-ok beat" />
  )
- return <StatusPill tone="alert" dot={false} className="ml-auto">{badge}</StatusPill>
+ return <StatusPill tone={tone} dot={false} className="ml-auto">{badge}</StatusPill>
 }
 
 // Tooltip shown to the right of an icon when the sidebar is collapsed.
@@ -70,7 +66,7 @@ function NavTooltip({ label, children }) {
  )
 }
 
-function SideItem({ to, icon: Icon, label, badge, badgeType, disabled, id, onDisabledClick, collapsed }) {
+function SideItem({ to, icon: Icon, label, badge, badgeType, tone, disabled, id, onDisabledClick, collapsed }) {
  if (disabled) {
   if (collapsed) return (
    <NavTooltip label={`${label} — not available`}>
@@ -92,7 +88,7 @@ function SideItem({ to, icon: Icon, label, badge, badgeType, disabled, id, onDis
   <NavTooltip label={label}>
    <NavLink to={to}
     className={({ isActive }) =>
-     `flex items-center justify-center h-10 w-full transition-colors duration-100 border-l-2 ` +
+     `flex items-center justify-center h-10 w-full transition-colors duration-100 border-l-[3px] ` +
      (isActive ? `border-signal bg-signal/10 text-white` : `border-transparent text-white/50 hover:bg-sidebar-2 hover:text-white`)
     }>
     {() => <Icon size={15} strokeWidth={2} />}
@@ -103,7 +99,7 @@ function SideItem({ to, icon: Icon, label, badge, badgeType, disabled, id, onDis
  <NavLink
  to={to}
  className={({ isActive }) =>
- `flex items-center gap-3 px-4 py-2.5 text-sm transition-colors duration-100 border-l-2 ` +
+ `flex items-center gap-3 px-4 py-2.5 text-sm transition-colors duration-100 border-l-[3px] ` +
  (isActive
  ? `border-signal bg-signal/10 text-white font-medium`
  : `border-transparent text-white/50 hover:bg-sidebar-2 hover:text-white`)
@@ -112,19 +108,19 @@ function SideItem({ to, icon: Icon, label, badge, badgeType, disabled, id, onDis
  {({ isActive }) => (<>
  <Icon size={15} strokeWidth={2} className="flex-shrink-0" />
  <span className="font-body text-sub">{label}</span>
- <NavBadge badge={badge} badgeType={badgeType} />
+ <NavBadge badge={badge} badgeType={badgeType} tone={tone} />
  </>)}
  </NavLink>
  )
 }
 
-function PlantItem({ collapsed, activeSituationCount }) {
+function PlantItem({ collapsed, activeSituationCount, tone = 'danger' }) {
  const criticalCount = activeSituationCount ?? 0
  if (collapsed) return (
   <NavTooltip label={criticalCount > 0 ? `Overview · ${criticalCount} active` : 'Overview'}>
    <NavLink to="/overview"
     className={({ isActive }) =>
-     `flex items-center justify-center h-10 w-full border-l-2 transition-colors duration-100 ` +
+     `flex items-center justify-center h-10 w-full border-l-[3px] transition-colors duration-100 ` +
      (isActive ? `border-signal bg-signal/10 text-white` : `border-transparent text-white/50 hover:bg-sidebar-2 hover:text-white`)
     }>
     {() => <LayoutGrid size={15} strokeWidth={2} />}
@@ -135,7 +131,7 @@ function PlantItem({ collapsed, activeSituationCount }) {
   <NavLink
    to="/overview"
    className={({ isActive }) =>
-    `flex items-center gap-3 px-4 py-2.5 transition-colors duration-100 border-l-2 ` +
+    `flex items-center gap-3 px-4 py-2.5 transition-colors duration-100 border-l-[3px] ` +
     (isActive
      ? `border-signal bg-signal/10 text-white font-medium`
      : `border-transparent text-white/50 hover:bg-sidebar-2 hover:text-white`)
@@ -144,9 +140,7 @@ function PlantItem({ collapsed, activeSituationCount }) {
    {() => (<>
     <LayoutGrid size={15} strokeWidth={2} className="flex-shrink-0" />
     <span className="font-body text-sub">Overview</span>
-    <span className="ml-auto text-label font-semibold px-1.5 py-0.5 bg-danger text-white">
-     {criticalCount}
-    </span>
+    <NavBadge badge={criticalCount > 0 ? String(criticalCount) : null} tone={tone} />
    </>)}
   </NavLink>
  )
@@ -324,12 +318,12 @@ function UserDropdown({ triggerRef, onClose, viewingRole, setViewingRole }) {
 const STATIC_AGENT_TOTAL = agentConfigData.agents.reduce((n, a) => n + (a.pendingActions?.length ?? 0), 0)
 const DEMO_AGENT_KEYS = ['resource-0', 'supplier-0'] // pa3-emergency and pa2 in demo mode
 
-function AgentItem({ count, collapsed }) {
+function AgentItem({ count, collapsed, tone = 'warn' }) {
  if (collapsed) return (
   <NavTooltip label={`Agents${count > 0 ? ` (${count})` : ''}`}>
    <NavLink to="/agents"
     className={({ isActive }) =>
-     `flex items-center justify-center h-10 w-full border-l-2 transition-colors ` +
+     `flex items-center justify-center h-10 w-full border-l-[3px] transition-colors ` +
      (isActive ? `border-l-danger bg-sidebar2 text-white` : `border-l-transparent text-white/50 hover:bg-sidebar2 hover:text-white`)
     }>
     {() => <Cpu size={15} strokeWidth={2} />}
@@ -339,11 +333,11 @@ function AgentItem({ count, collapsed }) {
  return (
   <NavLink to="/agents"
    className={({ isActive }) =>
-    `flex items-center gap-3 px-4 py-2.5 w-full text-left transition-colors hover:bg-sidebar2 border-l-2 ${isActive ? 'bg-sidebar2 border-l-danger text-white' : 'border-l-transparent text-white/50 hover:text-white'}`
+    `flex items-center gap-3 px-4 py-2.5 w-full text-left transition-colors hover:bg-sidebar2 border-l-[3px] ${isActive ? 'bg-sidebar2 border-l-danger text-white' : 'border-l-transparent text-white/50 hover:text-white'}`
    }>
    <Cpu size={15} strokeWidth={2} className="flex-shrink-0" />
    <span className="font-body text-sub">Agents</span>
-   {count > 0 && <StatusPill tone="alert" dot={false} className="ml-auto">{count}</StatusPill>}
+   {count > 0 && <StatusPill tone={tone} dot={false} className="ml-auto">{count}</StatusPill>}
   </NavLink>
  )
 }
@@ -368,27 +362,50 @@ export default function Sidebar() {
   ? DEMO_AGENT_KEYS.filter(k => !agentDecidedKeys?.has(k)).length
   : Math.max(0, STATIC_AGENT_TOTAL - (agentDecidedKeys?.size ?? 0))
 
- // ── Computed badge values ────────────────────────────────────────────────────
- // Shift: unacted findings (acted = director clicked act/dismiss)
- const shiftBadge = shiftData.findings.filter(f => !findingActions?.[f.id]).length || null
- // Suppliers: agent pending count for supplier agent
+ // ── Computed badge values + severity ─────────────────────────────────────────
+ // UNIFIED RULE: a badge's tone = the worst open item in that module.
+ // danger = at least one critical/blocking item · warn = needs attention, none
+ // critical. Wherever the data carries a severity field we compute it; where it
+ // doesn't, the comment says why the fixed tone is the honest level.
+ //
+ // Shift: from each unacted finding's `urgency` (matches in-screen Act Now/Watch).
+ const unactedFindings = shiftData.findings.filter(f => !findingActions?.[f.id])
+ const shiftBadge = unactedFindings.length || null
+ const shiftTone = worstTone(unactedFindings.map(f => f.urgency)) ?? 'warn'
+ // Undecided pending actions for an agent → their severities (decided key = `${agentId}-${index}`).
+ const undecidedSeverities = (agent) =>
+  (agent?.pendingActions ?? [])
+   .filter((_, i) => !agentDecidedKeys?.has(`${agent.id}-${i}`))
+   .map(a => a.severity)
+ // Suppliers: tone = worst severity among the supplier agent's undecided actions.
+ const supplierAgent = agentConfigData.agents.find(a => a.id === 'supplier')
  const supplierAgentPending = agentDecidedKeys
-  ? Math.max(0, (agentConfigData.agents.find(a => a.id === 'supplier')?.pendingActions?.length ?? 0) -
+  ? Math.max(0, (supplierAgent?.pendingActions?.length ?? 0) -
       [...agentDecidedKeys].filter(k => k.startsWith('supplier-')).length)
   : 1
  const supplierBadge = supplierAgentPending > 0 ? String(supplierAgentPending) : null
- // Quality: hardcoded for now (1 open micro-hold action)
- const qualityBadge = '1'
- // CAPA: critical/urgent director-turn cases minus closed
+ const supplierTone = worstTone(undecidedSeverities(supplierAgent)) ?? 'warn'
+ // Agents: tone = worst severity across all agents' undecided actions.
+ const agentTone = worstTone(agentConfigData.agents.flatMap(undecidedSeverities)) ?? 'warn'
+ // Quality: open line-quality items (status alert→danger, watch→warn). Count + tone from data.
+ const qualityStatusTone = { alert: 'danger', watch: 'warn' }
+ const qualityOpen = lineQuality.filter(l => qualityStatusTone[l.status])
+ const qualityBadge = qualityOpen.length ? String(qualityOpen.length) : null
+ const qualityTone = worstTone(qualityOpen.map(l => qualityStatusTone[l.status])) ?? 'warn'
+ // CAPA: the count IS critical/urgent (type 'cu') director-turn cases minus
+ // closed — so whenever it shows, it is danger by definition.
  const capaBadge = Math.max(0, CAPA_DIRECTOR_COUNT - (closedCases?.filter(id => openCases.find(c => c.id === id && c.type === 'cu')).length ?? 0)) || null
- // Security: critical + high findings
+ // Security: danger if any *critical* finding, else warn (high only).
  const securityBadge = SECURITY_BADGE > 0 ? String(SECURITY_BADGE) : null
+ const securityTone = securityPosture.findingsBySeverity.critical > 0 ? 'danger' : 'warn'
+ // Overview: worst urgency among the active (unresolved) situations.
+ const overviewTone = worstTone(activeSituations?.map(s => s.urgency) ?? []) ?? 'danger'
 
  const modules = [
-  { id:'shift',    label:'Shift',     path:'/shift',     icon:Activity,      badge: shiftBadge    ? String(shiftBadge)    : null, badgeType:'alert' },
-  { id:'suppliers',label:'Suppliers', path:'/suppliers', icon:Truck,         badge: supplierBadge, badgeType:'alert' },
-  { id:'quality',  label:'Quality',   path:'/quality',   icon:Eye,           badge: qualityBadge,  badgeType:'alert' },
-  { id:'capa',     label:'CAPA',      path:'/capa',      icon:ClipboardCheck,badge: capaBadge      ? String(capaBadge)     : null, badgeType:'alert' },
+  { id:'shift',    label:'Shift',     path:'/shift',     icon:Activity,      badge: shiftBadge    ? String(shiftBadge)    : null, tone: shiftTone },
+  { id:'suppliers',label:'Suppliers', path:'/suppliers', icon:Truck,         badge: supplierBadge, tone: supplierTone },
+  { id:'quality',  label:'Quality',   path:'/quality',   icon:Eye,           badge: qualityBadge,  tone: qualityTone },
+  { id:'capa',     label:'CAPA',      path:'/capa',      icon:ClipboardCheck,badge: capaBadge      ? String(capaBadge)     : null, tone:'danger' },
  ]
 
  const allergenSigned = checklistSigned?.['allergen'] || !!allergenOverride
@@ -490,9 +507,9 @@ export default function Sidebar() {
  {viewingRole === 'supervisor' && (
   <>
    {!collapsed && <div className="px-4 pt-4 pb-1 font-body text-label text-sidebar-ghost">Operational</div>}
-   <SideItem to="/shift"   id="shift"   icon={Activity}      label="Shift"    badge="3" badgeType="alert" collapsed={collapsed} />
-   <SideItem to="/quality" id="quality" icon={Eye}           label="Quality"  badge="1" badgeType="alert" collapsed={collapsed} />
-   <AgentItem count={agentPendingCount} collapsed={collapsed} />
+   <SideItem to="/shift"   id="shift"   icon={Activity}      label="Shift"    badge="3" tone={shiftTone} collapsed={collapsed} />
+   <SideItem to="/quality" id="quality" icon={Eye}           label="Quality"  badge={qualityBadge} tone={qualityTone} collapsed={collapsed} />
+   <AgentItem count={agentPendingCount} collapsed={collapsed} tone={agentTone} />
    {!collapsed && <div className="px-4 pt-4 pb-1 font-body text-label text-sidebar-ghost">Causality</div>}
    <SideItem to="/performance" id="outcomes" icon={CircleDot} label="Performance" badge={null} collapsed={collapsed} />
   </>
@@ -501,11 +518,11 @@ export default function Sidebar() {
  {/* ── Director: full intelligence graph ───────────────────────── */}
  {(viewingRole === 'director' || !viewingRole) && (
   <>
-   <PlantItem collapsed={collapsed} activeSituationCount={activeSituations?.length ?? 0} />
+   <PlantItem collapsed={collapsed} activeSituationCount={activeSituations?.length ?? 0} tone={overviewTone} />
 
    {!collapsed && <div className="px-4 pt-4 pb-1 font-body text-label text-sidebar-ghost">Operations</div>}
    {modules.map(m => <SideItem key={m.id} to={m.path} id={m.id} {...m} collapsed={collapsed} />)}
-   <AgentItem count={agentPendingCount} collapsed={collapsed} />
+   <AgentItem count={agentPendingCount} collapsed={collapsed} tone={agentTone} />
    <SideItem to="/performance" id="outcomes" icon={CircleDot} label="Performance" badge={null} collapsed={collapsed} />
 
    {!collapsed && (
@@ -522,7 +539,7 @@ export default function Sidebar() {
      <SideItem to="/accountability" id="compliance" icon={Scale}           label="Accountability" badge={null} collapsed={collapsed} />
      <SideItem to="/knowledge"  id="knowledge"  icon={BookOpen}        label="Knowledge"  badge={null} collapsed={collapsed} />
      <SideItem to="/data"  id="readiness"  icon={Gauge}           label="Data"       badge={null} collapsed={collapsed} />
-     <SideItem to="/security"   id="security"   icon={ShieldCheck}     label="Security"   badge={securityBadge} badgeType="alert" collapsed={collapsed} />
+     <SideItem to="/security"   id="security"   icon={ShieldCheck}     label="Security"   badge={securityBadge} tone={securityTone} collapsed={collapsed} />
     </>
    )}
 
@@ -578,9 +595,11 @@ export default function Sidebar() {
     className="relative w-8 h-8 flex items-center justify-center text-white/40 hover:text-white/70 transition-colors flex-shrink-0"
     aria-label="Notifications">
     <Bell size={18} strokeWidth={2} />
-    <span className="absolute top-0 right-0 w-3.5 h-3.5 rounded-full bg-danger flex items-center justify-center">
-     <span className="font-body text-[8px] font-bold text-white leading-none">4</span>
-    </span>
+    {notificationSummary.count > 0 && (
+     <span className="absolute -top-1 -right-1">
+      <StatusPill tone={notificationSummary.tone} dot={false}>{notificationSummary.count}</StatusPill>
+     </span>
+    )}
    </button>
   </div>
  </button>}

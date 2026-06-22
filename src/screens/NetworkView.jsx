@@ -86,7 +86,7 @@ function ExposureOverlay({ triggerRef, active, actions, onAction, onBulkAction, 
      const action     = actions[e.lotId]
      return (
       <div key={e.lotId} className="px-4 py-3 first:pt-4">
-       <div className={`border border-rule2 border-l-2 ${
+       <div className={`border border-rule2 border-l-[3px] ${
         action ? 'border-l-ok opacity-60' : isCross ? 'border-l-danger' : 'border-l-warn'
        }`}>
         {/* Card header */}

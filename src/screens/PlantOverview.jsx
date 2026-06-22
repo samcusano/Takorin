@@ -1199,7 +1199,7 @@ export default function PlantOverview() {
           {selectedFinding.evidence && (
             <div>
               <div className="font-body text-label text-muted mb-1.5">Evidence</div>
-              <div className="font-body text-label text-muted bg-stone2 px-3 py-2.5 border-l-2 border-l-rule">{selectedFinding.evidence}</div>
+              <div className="font-body text-label text-muted bg-stone2 px-3 py-2.5 border-l-[3px] border-l-rule">{selectedFinding.evidence}</div>
             </div>
           )}
           <div>

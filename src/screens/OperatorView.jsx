@@ -158,7 +158,7 @@ function TroubleshootingHint({ operator }) {
  if (!briefing?.troubleshooting) return null
  const { title, hint, precedent } = briefing.troubleshooting
  return (
-  <div className="border-b border-rule2 border-l-2 border-l-signal bg-signal/[0.02]">
+  <div className="border-b border-rule2 border-l-[3px] border-l-signal bg-signal/[0.02]">
    <button type="button" onClick={() => setExpanded(e => !e)}
     className="w-full flex items-center justify-between px-5 py-3 text-left">
     <div className="flex items-center gap-2">
@@ -232,7 +232,7 @@ function KnowledgeCapturePrompt({ source, operator, onDismiss, onSubmit }) {
  const [body, setBody] = useState('')
  const [submitted, setSubmitted] = useState(false)
  if (submitted) return (
-  <div className="mx-5 mt-3 mb-4 px-4 py-3 bg-ok/[0.04] border-l-2 border-l-ok slide-in">
+  <div className="mx-5 mt-3 mb-4 px-4 py-3 bg-ok/[0.04] border-l-[3px] border-l-ok slide-in">
    <div className="flex items-center gap-1.5">
     <CheckCircle2 size={11} strokeWidth={2} className="text-ok flex-shrink-0" />
     <span className="font-body text-ok text-label">Submitted for supervisor review — thank you.</span>

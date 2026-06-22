@@ -43,12 +43,12 @@
   --prim-ink-sidebar-rgb: 106 136 168;   /* #6A88A8 sidebar ghost text */
 
   /* Status — semantic signal colors (teal · gold · crimson — not traffic lights) */
-  --prim-ok-rgb:          40 191 176;    /* #28BFB0 vivid teal — nominal/clear */
-  --prim-ok-dim-rgb:       8  48  44;    /* #08302C ok tinted background */
+  --prim-ok-rgb:          75 156 228;    /* #4B9CE4 steel blue — branded success = accent */
+  --prim-ok-dim-rgb:      13  30  56;    /* #0D1E38 ok tinted background */
   --prim-warn-rgb:       212 144  42;    /* #D4902A deep amber-gold — watch/caution */
   --prim-warn-dim-rgb:    44  32   8;    /* #2C2008 warn tinted background */
-  --prim-danger-rgb:     220  92  66;    /* #DC5C42 bold rust-ember — at-risk/fail */
-  --prim-danger-dim-rgb:  44  14   8;    /* #2C0E08 danger tinted background */
+  --prim-danger-rgb:     234  84  85;    /* #EA5455 clean refined red — at-risk/fail */
+  --prim-danger-dim-rgb:  44  14  14;    /* #2C0E0E danger tinted background */
 
   /* Accent — interactive and narrative */
   --prim-signal-rgb:      75 156 228;    /* #4B9CE4 steel blue — primary interactive */
@@ -62,11 +62,11 @@
   --prim-stream-rgb:      59 191 218;    /* #3BBFDA cyan — live data stream indicator */
 
   /* Light theme overrides for status / accent colors */
-  --prim-ok-light-rgb:    23 112 104;    /* #177068 deep teal */
-  --prim-ok-dim-light-rgb: 200 237 234;  /* #C8EDEA teal tint */
+  --prim-ok-light-rgb:    32  88 168;    /* #2058A8 deep steel blue — branded success (light) */
+  --prim-ok-dim-light-rgb: 220 232 250;  /* #DCE8FA steel tint */
   --prim-warn-light-rgb:  138  92  20;   /* #8A5C14 deep amber-gold */
   --prim-warn-dim-light-rgb: 250 238 198; /* #FAEEC6 gold tint */
-  --prim-danger-light-rgb: 164  48  28;  /* #A4301C bold rust — light theme */
+  --prim-danger-light-rgb: 196  46  51;  /* #C42E33 clean red — light theme */
   --prim-danger-dim-light-rgb: 252 226 220; /* #FCE2DC rust tint */
   --prim-signal-light-light-rgb: 32  88 168; /* #2058A8 */
   --prim-signal-dim-light-rgb: 220 232 250;  /* #DCE8FA */
@@ -166,12 +166,12 @@
   --color-muted-rgb:         var(--prim-ink-subtle-rgb,     122 142 168);
   --color-rule-rgb:          var(--prim-graphite-400-rgb,    38  48  66);
   --color-rule2-rgb:         var(--prim-graphite-650-rgb,    26  35  53);
-  --color-ok-rgb:            var(--prim-ok-rgb,              95 168 119);
-  --color-ok-dim-rgb:        var(--prim-ok-dim-rgb,          13  37  24);
+  --color-ok-rgb:            var(--prim-ok-rgb,              75 156 228);
+  --color-ok-dim-rgb:        var(--prim-ok-dim-rgb,          13  30  56);
   --color-warn-rgb:          var(--prim-warn-rgb,           201 142  42);
   --color-warn-dim-rgb:      var(--prim-warn-dim-rgb,        42  30   8);
-  --color-danger-rgb:        var(--prim-danger-rgb,         222 108  78);
-  --color-danger-dim-rgb:    var(--prim-danger-dim-rgb,      42  16  10);
+  --color-danger-rgb:        var(--prim-danger-rgb,         234  84  85);
+  --color-danger-dim-rgb:    var(--prim-danger-dim-rgb,      44  14  14);
   --color-signal-rgb:        var(--prim-signal-rgb,          75 156 228);
   --color-signal-dim-rgb:    var(--prim-signal-dim-rgb,      13  30  56);
   --color-signal-dark-rgb:   var(--prim-signal-dark-rgb,     42 106 173);
@@ -278,7 +278,7 @@
   --shadow-raise:     0 4px 20px rgba(0,0,0,0.45);  /* floating elements */
   --shadow-overlay:   0 2px 12px rgba(0,0,0,0.40);  /* overlay details, dropdowns */
   --shadow-modal:     0 16px 48px rgba(0,0,0,0.50); /* full modal */
-  --shadow-card-alert: 0 1px 5px rgba(220,92,66,0.20); /* alert state card */
+  --shadow-card-alert: 0 1px 5px rgba(234,84,85,0.20); /* alert state card — new danger red */
 
   /* ── Motion / transition ─────────────────────────────────────────────── */
   --dur-press:     var(--prim-dur-press,       80ms);   /* card active press */
@@ -319,11 +319,11 @@
   --color-muted-rgb:         120 112  98;
   --color-rule-rgb:          206 200 188;
   --color-rule2-rgb:         228 225 218;
-  --color-ok-rgb:    var(--prim-ok-light-rgb,          30 100  56);
-  --color-ok-dim-rgb: var(--prim-ok-dim-light-rgb,    220 240 228);
+  --color-ok-rgb:    var(--prim-ok-light-rgb,          32  88 168);
+  --color-ok-dim-rgb: var(--prim-ok-dim-light-rgb,    220 232 250);
   --color-warn-rgb:  var(--prim-warn-light-rgb,        140  92  10);
   --color-warn-dim-rgb: var(--prim-warn-dim-light-rgb, 252 242 218);
-  --color-danger-rgb: var(--prim-danger-light-rgb,     168  44  28);
+  --color-danger-rgb: var(--prim-danger-light-rgb,     196  46  51);
   --color-danger-dim-rgb: var(--prim-danger-dim-light-rgb, 252 228 224);
   --color-signal-rgb: var(--prim-signal-light-light-rgb, 32  88 168);
   --color-signal-dim-rgb: var(--prim-signal-dim-light-rgb, 220 232 250);
@@ -352,11 +352,11 @@
     --color-muted-rgb:         120 112  98;
     --color-rule-rgb:          206 200 188;
     --color-rule2-rgb:         228 225 218;
-    --color-ok-rgb:             30 100  56;
-    --color-ok-dim-rgb:        220 240 228;
+    --color-ok-rgb:             32  88 168;
+    --color-ok-dim-rgb:        220 232 250;
     --color-warn-rgb:          140  92  10;
     --color-warn-dim-rgb:      252 242 218;
-    --color-danger-rgb:        168  44  28;
+    --color-danger-rgb:        196  46  51;
     --color-danger-dim-rgb:    252 228 224;
     --color-signal-rgb:         32  88 168;
     --color-signal-dim-rgb:    220 232 250;

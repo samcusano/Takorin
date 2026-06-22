@@ -78,12 +78,17 @@ export default {
         'standard': 'cubic-bezier(0.25, 0.1, 0.25, 1)',
       },
       borderRadius: {
-        'btn': '2px',
+        // Wired to the token scale so Tailwind classes match tokens.css exactly:
+        // 2px control / 6px card / 10px surface.
+        'btn': 'var(--radius-btn)',
+        'sm':  'var(--radius-sm)',
+        'md':  'var(--radius-md)',
+        'lg':  'var(--radius-lg)',
       },
       boxShadow: {
         'raise':      'var(--shadow-raise)',
         'card':       'var(--shadow-card)',
-        'card-alert': '0 1px 5px rgba(222,108,78,0.20)',
+        'card-alert': 'var(--shadow-card-alert)',
       },
       zIndex: {
         modal: '60',

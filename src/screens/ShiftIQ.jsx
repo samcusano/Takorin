@@ -191,7 +191,7 @@ function OperatorPanel({ name, onClose, onSelectOperator }) {
  {safety && (
  <div className="border-b border-rule2">
  <SectionHeader label="Safety context · today" />
- <div className="px-4 py-3 border-l-2 border-l-warn bg-warn/[0.02]">
+ <div className="px-4 py-3 border-l-[3px] border-l-warn bg-warn/[0.02]">
  <div className="font-body text-ink-2 text-body leading-relaxed">{safety}</div>
  </div>
  </div>
@@ -581,7 +581,7 @@ function LineDropdown({ lines, activeLine, onSelect, triggerRef, onClose }) {
 
  return (
   <div ref={dropRef} className="fixed z-40 plant-drop-in" style={{ top: pos.top, left: pos.left }}>
-   <div className="w-[260px] bg-sidebar border border-sidebar-border rounded-2xl shadow-raise overflow-hidden">
+   <div className="w-[260px] bg-sidebar border border-sidebar-border rounded-lg shadow-raise overflow-hidden">
     <div className="plant-drop-in-content">
      <div className="px-4 py-2.5 border-b border-sidebar-border">
       <p className="font-body text-sidebar-ghost text-label">Select line</p>
@@ -811,7 +811,7 @@ function PrepareView({ forecast = [], onStartShift }) {
        {actionRows.map((row, i) => {
         const done = !!confirmed[i]
         return (
-         <div key={i} className={`border-l-2 ${row.urgent ? 'border-l-danger' : 'border-l-rule2'} border-t border-rule2/50 px-4 py-3 flex items-center gap-3 ${done ? 'opacity-50' : ''}`}>
+         <div key={i} className={`border-l-[3px] ${row.urgent ? 'border-l-danger' : 'border-l-rule2'} border-t border-rule2/50 px-4 py-3 flex items-center gap-3 ${done ? 'opacity-50' : ''}`}>
           <div className="flex-1 min-w-0">
            <div className={`font-body font-medium text-body leading-snug ${done ? 'line-through text-muted' : row.urgent ? 'text-danger' : 'text-ink'}`}>
             {row.action}

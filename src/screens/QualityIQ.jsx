@@ -40,7 +40,7 @@ function Narrative({ tone = 'muted', children }) {
   const border = { ok: 'border-l-ok', warn: 'border-l-warn', danger: 'border-l-danger', muted: 'border-l-rule2' }[tone]
   const bg = { ok: 'bg-ok/[0.03]', warn: 'bg-warn/[0.03]', danger: 'bg-danger/[0.02]', muted: '' }[tone]
   return (
-    <div className={`px-5 py-3 border-l-2 ${border} ${bg}`}>
+    <div className={`px-5 py-3 border-l-[3px] ${border} ${bg}`}>
       <p className="font-display text-ink text-body leading-relaxed">{children}</p>
     </div>
   )
@@ -258,7 +258,7 @@ function LineOverview({ line }) {
           )
         })()}
         {line.equipmentSignal && (
-          <div className="mt-3 px-3 py-2 border-l-2 border-l-warn bg-warn/[0.03]">
+          <div className="mt-3 px-3 py-2 border-l-[3px] border-l-warn bg-warn/[0.03]">
             <div className="flex items-center gap-2 mb-1">
               <Brain size={11} strokeWidth={2} className="text-warn flex-shrink-0" />
               <span className="font-body font-medium text-ink text-label">{line.equipmentSignal.unit}</span>
@@ -467,7 +467,7 @@ function AccuracyView({ highlightSku }) {
                 const tone = s.accuracy >= 99 ? 'text-ok' : s.accuracy >= 98 ? 'text-signal' : 'text-warn'
                 const barTone = s.accuracy >= 99 ? 'bg-ok' : s.accuracy >= 98 ? 'bg-signal' : 'bg-warn'
                 return (
-                  <div key={s.sku} className={`px-3 py-2.5 ${isSelected ? 'bg-signal-dim border-l-2 border-l-signal' : ''}`}>
+                  <div key={s.sku} className={`px-3 py-2.5 ${isSelected ? 'bg-signal-dim border-l-[3px] border-l-signal' : ''}`}>
                     <div className="flex items-center justify-between gap-3 mb-1.5">
                       <span className="font-body font-medium text-ink text-body flex items-center gap-2">
                         {s.sku}
@@ -553,7 +553,7 @@ function AccuracyView({ highlightSku }) {
 function NovelEventCard({ event }) {
   const isPending = event.status === 'pending'
   return (
-    <div className={`border-b border-rule2 border-l-2 ${isPending ? 'border-l-danger' : 'border-l-ok'}`}>
+    <div className={`border-b border-rule2 border-l-[3px] ${isPending ? 'border-l-danger' : 'border-l-ok'}`}>
       <div className={`px-5 py-4 ${isPending ? 'bg-danger/[0.02]' : ''}`}>
         <div className="flex items-start justify-between gap-4 mb-2">
           <div>
@@ -599,7 +599,7 @@ function NovelEventCard({ event }) {
           )}
 
           {!isPending && (
-            <div className="mt-2 px-4 py-3 bg-ok/[0.04] border-l-2 border-l-ok space-y-1">
+            <div className="mt-2 px-4 py-3 bg-ok/[0.04] border-l-[3px] border-l-ok space-y-1">
               <div className="font-body text-label font-medium text-ok">Reviewed · {event.reviewedAt}</div>
               <p className="font-body text-label text-muted leading-snug">{event.disposition}</p>
               {event.groundTruthNote && (

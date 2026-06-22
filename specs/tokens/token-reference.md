@@ -23,9 +23,9 @@ fill: rgb(var(--color-ok-rgb) / 0.04);
 | `--color-muted-rgb` | `122 142 168` | Labels, metadata |
 | `--color-rule-rgb` | `38 48 66` | Strong borders |
 | `--color-rule2-rgb` | `26 35 53` | Soft borders |
-| `--color-ok-rgb` | `95 168 119` | Healthy / pass |
+| `--color-ok-rgb` | `75 156 228` | Healthy / pass (branded success = accent #4B9CE4) |
 | `--color-warn-rgb` | `201 142 42` | Caution |
-| `--color-danger-rgb` | `222 108 78` | Critical / fail |
+| `--color-danger-rgb` | `234 84 85` | Critical / fail (clean red #EA5455) |
 | `--color-signal-rgb` | `75 156 228` | Interactive |
 | `--color-context-rgb` | `196 132 78` | Narrative clay |
 | `--color-deep-rgb` | `124 134 232` | AI / predictive |
@@ -46,9 +46,9 @@ Use directly in `color:`, `background:`, `stroke:`, `fill:` properties.
 | `--color-muted` | `#7A8EA8` | Labels, metadata |
 | `--color-rule` | `#263042` | Hard borders |
 | `--color-rule-2` | `#1A2335` | Soft borders |
-| `--color-ok` | `#5FA877` | OK status |
+| `--color-ok` | `#4B9CE4` | OK status (= accent) |
 | `--color-warn` | `#C98E2A` | Warn status |
-| `--color-danger` | `#DE6C4E` | Danger status |
+| `--color-danger` | `#EA5455` | Danger status |
 | `--color-signal` | `#4B9CE4` | Interactive / link |
 | `--color-signal-dark` | `#2A6AAD` | Signal hover/pressed |
 | `--color-signal-light` | `#7BBDEE` | Sparklines, data traces |

@@ -25,7 +25,9 @@ const CAPAEngine            = lazy(() => import('./screens/CapaEngine'))
 const DataReadiness         = lazy(() => import('./screens/DataReadiness'))
 const OperatorView          = lazy(() => import('./screens/OperatorView'))
 const NotificationCenter    = lazy(() => import('./screens/NotificationCenter'))
-const DesignLabBrand        = lazy(() => import('./screens/DesignLabBrand'))
+// Dev-only: the ternary puts the dynamic import in a dead branch in production
+// builds, so the DesignLabBrand chunk is dropped entirely (not just unrouted).
+const DesignLabBrand        = import.meta.env.DEV ? lazy(() => import('./screens/DesignLabBrand')) : null
 const AgentControl          = lazy(() => import('./screens/AgentControl'))
 
 const BatchIntelligence     = lazy(() => import('./screens/BatchIntelligence'))
@@ -53,6 +55,9 @@ export default function App() {
  const { viewingRole, setViewingRole, sidebarCollapsed, mobileNavOpen, setMobileNavOpen, notifOpen, setNotifOpen } = useAppState()
  const location = useLocation()
  const roleInfo = viewingRole ? ROLE_LABELS[viewingRole] : null
+ // The design lab is a dev-only, focused design-tool surface — hide the main app
+ // nav there. Gated to import.meta.env.DEV so it's stripped from production builds.
+ const isDesignLab = import.meta.env.DEV && location.pathname.startsWith('/__design_lab')
 
  return (
  <div className="flex h-screen bg-stone overflow-hidden">
@@ -70,11 +75,12 @@ export default function App() {
    aria-hidden="true"
   />
  )}
- <Sidebar />
+ {!isDesignLab && <Sidebar />}
  <main
-  className="sidebar-offset flex-1 flex flex-col overflow-hidden"
+  className={`${isDesignLab ? '' : 'sidebar-offset'} flex-1 flex flex-col overflow-hidden`}
   style={{ '--sidebar-width': sidebarCollapsed ? '48px' : '240px' }}>
- {/* Mobile topbar — hamburger + brand, hidden on sm+ */}
+ {/* Mobile topbar — hamburger + brand, hidden on sm+ and in the design lab */}
+ {!isDesignLab && (
  <div className="sm:hidden flex-shrink-0 flex items-center h-12 px-4 bg-stone2 border-b border-rule2">
   <button
    type="button"
@@ -88,7 +94,8 @@ export default function App() {
   </div>
   <div className="w-9" />
  </div>
- <TrustStrip />
+ )}
+ {!isDesignLab && <TrustStrip />}
  <Suspense fallback={<ScreenLoader />}>
  <Routes>
   {/* ── Canonical routes ─────────────────────────────────────────── */}
@@ -107,7 +114,7 @@ export default function App() {
   <Route path="/accountability" element={<Guard k="compliance"><ErrorBoundary><CompliancePolicy /></ErrorBoundary></Guard>} />
   <Route path="/knowledge"      element={<Guard k="knowledge"><ErrorBoundary><KnowledgeVault /></ErrorBoundary></Guard>} />
   <Route path="/plant-map"      element={<Guard k="hierarchy"><ErrorBoundary><ProcessHierarchy /></ErrorBoundary></Guard>} />
-  <Route path="/__design_lab"   element={<Suspense fallback={<ScreenLoader />}><DesignLabBrand /></Suspense>} />
+  {import.meta.env.DEV && <Route path="/__design_lab"   element={<Suspense fallback={<ScreenLoader />}><DesignLabBrand /></Suspense>} />}
   <Route path="/__op_lab"       element={<Suspense fallback={<ScreenLoader />}><OpLab /></Suspense>} />
   <Route path="/data"           element={<Guard k="readiness"><ErrorBoundary><DataReadiness /></ErrorBoundary></Guard>} />
   <Route path="/security"       element={<Guard k="security"><ErrorBoundary><SecurityIQ /></ErrorBoundary></Guard>} />

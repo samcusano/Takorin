@@ -190,7 +190,7 @@ function InterventionDetail({ entry }) {
             <p className="font-body text-ink text-body leading-relaxed mb-3">{entry.outcomeNotes}</p>
           )}
           {oc.desc && !entry.outcomeNotes && (
-            <div className="font-body text-muted text-label mb-3 pl-3 border-l-2 border-signal/40 leading-snug">{oc.desc}</div>
+            <div className="font-body text-muted text-label mb-3 pl-3 border-l-[3px] border-signal/40 leading-snug">{oc.desc}</div>
           )}
 
           {/* Meta: when · decision · reviewer · review time */}
@@ -665,7 +665,7 @@ function PlatformROI() {
       <div className="max-w-[820px] px-6 py-6 space-y-8">
 
         {/* Attribution notice */}
-        <div className="flex items-start gap-3 px-4 py-3 bg-stone2 border-l-2 border-l-muted">
+        <div className="flex items-start gap-3 px-4 py-3 bg-stone2 border-l-[3px] border-l-muted">
           <AlertTriangle size={11} strokeWidth={2} className="text-muted flex-shrink-0 mt-px" />
           <p className="font-body text-label text-muted leading-relaxed">{b.attributionNote}</p>
         </div>
@@ -810,7 +810,7 @@ function AdoptionTab() {
       <div className="max-w-[820px] px-6 py-6 space-y-8">
 
         {/* Key insight — the wedge */}
-        <div className="px-5 py-4 bg-ok/[0.04] border-l-2 border-l-ok">
+        <div className="px-5 py-4 bg-ok/[0.04] border-l-[3px] border-l-ok">
           <div className="font-body font-medium text-ok text-body mb-1">Highest-trust category</div>
           <p className="font-body text-label text-muted leading-relaxed">
             <span className="font-medium text-ink">{wedge.label}</span> — acted on {Math.round(wedge.acceptanceRate * 100)}% of the time,
@@ -885,7 +885,7 @@ function AdoptionTab() {
               { label: 'Calibration work needed here', detail: 'Predictive maintenance recommendations are acted on only 24% of the time. Two false positives and one missed failure have shaped this pattern. Improving model calibration on maintenance signals is the highest-leverage intervention to close the trust gap.', tone: 'warn' },
               { label: 'Process change needed here', detail: 'Scheduling (tomorrow gap) and equipment monitoring findings have 60-62% acceptance. These aren\'t trust failures — supervisors often defer these to end-of-shift. The intervention is workflow design: surface scheduling findings with a specific time constraint, not just a flag.', tone: 'signal' },
             ].map(({ label, detail, tone }) => (
-              <div key={label} className={`px-4 py-3 border-l-2 border-l-${tone} bg-${tone}/[0.03]`}>
+              <div key={label} className={`px-4 py-3 border-l-[3px] border-l-${tone} bg-${tone}/[0.03]`}>
                 <div className={`font-body text-label font-semibold text-${tone} mb-1`}>{label}</div>
                 <p className="font-body text-label text-muted leading-snug">{detail}</p>
               </div>

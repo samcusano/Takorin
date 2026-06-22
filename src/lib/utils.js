@@ -53,3 +53,12 @@ export function useFocusTrap(containerRef, isActive = true) {
     return () => document.removeEventListener('keydown', onKey)
   }, [isActive, containerRef])
 }
+
+// Worst-severity tone from a list of tones — drives consistent badge severity
+// across nav and screens. danger > warn > ok; null if none present.
+export function worstTone(tones) {
+  if (tones.some(t => t === 'danger' || t === 'critical')) return 'danger'
+  if (tones.some(t => t === 'warn')) return 'warn'
+  if (tones.some(t => t === 'ok')) return 'ok'
+  return null
+}

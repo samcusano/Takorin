@@ -34,7 +34,7 @@ function ConnectorCard({ c, selected, onClick }) {
   const cfg = STATUS_CFG[c.status] ?? STATUS_CFG.available
   return (
     <button type="button" onClick={onClick}
-      className={`w-full text-left p-3 transition-colors ${selected ? 'bg-stone2 border-l-2 border-l-signal' : 'hover:bg-stone2/50 border-l-2 border-l-transparent'}`}>
+      className={`w-full text-left p-3 transition-colors ${selected ? 'bg-stone2 border-l-[3px] border-l-signal' : 'hover:bg-stone2/50 border-l-[3px] border-l-transparent'}`}>
       <div className="flex items-start justify-between gap-2 mb-1.5">
         <div className="flex items-center gap-1.5 min-w-0">
           <div className="relative flex h-1.5 w-1.5 flex-shrink-0 mt-0.5">
@@ -95,7 +95,7 @@ function ConnectorRowDetail({ c }) {
             ))}
           </div>
           {c.note && (
-            <div className="flex items-start gap-1.5 px-2.5 py-2 bg-warn/[0.04] border-l-2 border-l-warn">
+            <div className="flex items-start gap-1.5 px-2.5 py-2 bg-warn/[0.04] border-l-[3px] border-l-warn">
               <AlertTriangle size={9} className="text-warn flex-shrink-0 mt-0.5" strokeWidth={2} />
               <p className="font-body text-warn text-label leading-snug m-0">{c.note}</p>
             </div>
@@ -124,7 +124,7 @@ function ConflictsPanel({ resolved, onResolve }) {
   return (
     <div className="flex-1 overflow-y-auto page-rise">
       {unresolved.map(sc => (
-        <div key={sc.id} className="border-b border-rule2 border-l-2 border-l-warn">
+        <div key={sc.id} className="border-b border-rule2 border-l-[3px] border-l-warn">
           <div className="px-4 py-3 space-y-2.5">
             {/* Header */}
             <div className="flex items-start justify-between gap-3">
@@ -148,7 +148,7 @@ function ConflictsPanel({ resolved, onResolve }) {
             </div>
 
             {/* Impact */}
-            <div className="px-3 py-2 bg-warn/[0.04] border-l-2 border-l-warn/30">
+            <div className="px-3 py-2 bg-warn/[0.04] border-l-[3px] border-l-warn/30">
               <div className="font-body text-muted text-label mb-0.5">Impact</div>
               <div className="font-body text-ink text-label leading-snug">{sc.impact}</div>
             </div>
@@ -175,7 +175,7 @@ function ConflictsPanel({ resolved, onResolve }) {
             <span className="font-body text-muted text-label">Resolved this session</span>
           </div>
           {resolvedList.map(sc => (
-            <div key={sc.id} className="border-b border-rule2 border-l-2 border-l-ok/40 opacity-50 cursor-default">
+            <div key={sc.id} className="border-b border-rule2 border-l-[3px] border-l-ok/40 opacity-50 cursor-default">
               <div className="px-4 py-3 flex items-center justify-between gap-3">
                 <div>
                   <div className="font-body font-medium text-ink text-label">{sc.field}</div>
@@ -268,7 +268,7 @@ function AIReadinessTab() {
         <span className="font-body text-ink text-label font-medium">Gaps to resolve · {AI_GAPS.length}</span>
       </div>
       {AI_GAPS.map(gap => (
-        <div key={gap.id} className={`border-b border-rule2 border-l-2 ${gap.severity === 'high' ? 'border-l-danger' : 'border-l-warn'}`}>
+        <div key={gap.id} className={`border-b border-rule2 border-l-[3px] ${gap.severity === 'high' ? 'border-l-danger' : 'border-l-warn'}`}>
           <div className="px-4 py-3 space-y-2">
             <div className="flex items-start justify-between gap-3">
               <div>
@@ -282,7 +282,7 @@ function AIReadinessTab() {
                 <span key={a} className="font-body text-label px-1.5 py-0.5 bg-stone3 text-muted">{a}</span>
               ))}
             </div>
-            <div className={`px-3 py-2 border-l-2 ${gap.severity === 'high' ? 'bg-danger/[0.04] border-l-danger/30' : 'bg-warn/[0.04] border-l-warn/30'}`}>
+            <div className={`px-3 py-2 border-l-[3px] ${gap.severity === 'high' ? 'bg-danger/[0.04] border-l-danger/30' : 'bg-warn/[0.04] border-l-warn/30'}`}>
               <div className="font-body text-muted text-label mb-0.5">Impact</div>
               <div className="font-body text-ink text-body leading-snug">{gap.impact}</div>
             </div>
@@ -476,7 +476,7 @@ export default function IntegrationHub({ embedded = false }) {
                   {/* Overlay — card-width, anchored below the clicked card */}
                   {selectedConnector && overlayTop !== null && overlayCol !== null && (
                     <div
-                      className="absolute z-10 slide-in border-l-2 border-l-signal border-b border-r border-rule2"
+                      className="absolute z-10 slide-in border-l-[3px] border-l-signal border-b border-r border-rule2"
                       style={{
                         top: overlayTop,
                         left: overlayCol === 0 ? 0 : 'calc(50% + 1px)',

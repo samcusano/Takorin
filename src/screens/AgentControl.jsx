@@ -99,8 +99,8 @@ function enrich(pa, agent) {
 const CONSEQUENCE_CFG = {
   critical: { label: 'Critical', color: 'text-danger', bg: 'bg-danger/[0.04]', border: 'border-l-danger', borderW: 'border-l-[5px]' },
   high:     { label: 'High',     color: 'text-warn',   bg: 'bg-warn/[0.03]',   border: 'border-l-warn',   borderW: 'border-l-4'     },
-  medium:   { label: 'Medium',   color: 'text-muted',  bg: '',                  border: 'border-l-rule2',  borderW: 'border-l-2'     },
-  low:      { label: 'Low',      color: 'text-muted',  bg: '',                  border: 'border-l-rule2',  borderW: 'border-l-2'     },
+  medium:   { label: 'Medium',   color: 'text-muted',  bg: '',                  border: 'border-l-rule2',  borderW: 'border-l-[3px]'     },
+  low:      { label: 'Low',      color: 'text-muted',  bg: '',                  border: 'border-l-rule2',  borderW: 'border-l-[3px]'     },
 }
 
 // ─── Override rationale modal ─────────────────────────────────────────────────
@@ -167,7 +167,7 @@ function DisableModal({ agent, onConfirm, onCancel }) {
             <p className="font-body text-muted text-label">No regulatory obligations attached — safe to disable.</p>
           )}
           {agent.isComplianceCategory && (
-            <div className="px-3 py-2 bg-danger/[0.04] border-l-2 border-l-danger">
+            <div className="px-3 py-2 bg-danger/[0.04] border-l-[3px] border-l-danger">
               <p className="font-body text-danger text-label font-medium">Manual review required until re-enabled.</p>
             </div>
           )}
@@ -1594,7 +1594,7 @@ export default function AgentControl() {
         {(() => {
           const undecided = tier3Items.filter(p => !p._decided).length
           return (
-            <div className={`flex items-center gap-2.5 px-4 py-2.5 flex-1 border-l-2 ${undecided > 0 ? 'bg-danger/[0.05] border-l-danger' : 'border-l-transparent'}`}>
+            <div className={`flex items-center gap-2.5 px-4 py-2.5 flex-1 border-l-[3px] ${undecided > 0 ? 'bg-danger/[0.05] border-l-danger' : 'border-l-transparent'}`}>
               <div className={`w-2 h-2 rounded-full flex-shrink-0 ${undecided > 0 ? 'bg-danger animate-pulse' : 'bg-muted'}`} />
               <div>
                 <div className="font-body text-muted text-label">Tier 3</div>

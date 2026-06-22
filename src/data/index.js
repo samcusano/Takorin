@@ -1065,7 +1065,7 @@ export const agentConfigData = {
       lastFired:'06:36 today',
       pendingActions:[
         {
-          id:'pa1',
+          id:'pa1', severity:'warn',
           action:'Open CAPA for R-03 vibration anomaly',
           target:'Sensor A-7 equivalent — R-03 bearing',
           rationale:'Vibration trending 3.4 (threshold 4.0) — pattern match to prior bearing failure',
@@ -1128,7 +1128,7 @@ export const agentConfigData = {
       lastFired:'05:45 today',
       pendingActions:[
         {
-          id:'pa2',
+          id:'pa2', severity:'danger',
           action:'Recommend hold on Lot L-0891',
           target:'ConAgra · Pepperoni · Lot L-0891',
           rationale:'COA not received — 4h before scheduled production use',
@@ -1180,7 +1180,7 @@ export const agentConfigData = {
       lastFired:'06:10 today',
       pendingActions:[
         {
-          id:'pa3-emergency',
+          id:'pa3-emergency', severity:'danger',
           action:'Emergency auto-assign: R-09 covers Oven Station B — Lindqvist absent, T-28 min',
           target:'Line 4 AM · Oven Station B · Today',
           rationale:'Lindqvist (L3 Oven) called out at 05:22 with no backup. R-09 (Allergen Bot) is certified for oven-adjacent operations. Critical safety coverage gap. Shift starts in 28 min.',
@@ -1218,7 +1218,7 @@ export const agentConfigData = {
           },
         },
         {
-          id:'pa3',
+          id:'pa3', severity:'warn',
           action:'Pre-allocate R-06 (Dosing Unit A) as Sauce Dosing fallback for tomorrow AM',
           target:'Line 4 AM — 2026-05-16',
           rationale:'Martinez flagged for overtime risk — pre-allocating robot fallback if absent',
@@ -1257,7 +1257,7 @@ export const agentConfigData = {
       lastFired:'06:05 today',
       pendingActions:[
         {
-          id:'pa4',
+          id:'pa4', severity:'warn',
           action:'Schedule bearing inspection for R-03 before next shift',
           target:'R-03 Seal Press A — next maintenance window: tonight 22:00-23:30',
           rationale:'Vibration at 3.4 — pattern matches R-08 failure sequence 72h before fault',
@@ -1311,7 +1311,7 @@ export const agentConfigData = {
       lastFired:'13:15 today',
       pendingActions:[
         {
-          id:'pa5',
+          id:'pa5', severity:'warn',
           action:'Draft PM handoff — 4 carry-forward items synthesized',
           target:'Line 4 PM handoff · Supervisor M. Santos',
           rationale:'Synthesized open CAPA-2604-001, Sensor A-7, Lindqvist cert gap, and R-03 bearing alert from live shift data',

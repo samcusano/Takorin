@@ -303,7 +303,7 @@ function QueueIssueRow({ item, resolved, selected, onSelect }) {
     : 'border-l-rule2'
   return (
     <button type="button" onClick={() => onSelect(item.id)}
-      className={`w-full text-left px-4 py-3 border-b border-rule2 border-l-2 transition-colors ${borderColor} ${
+      className={`w-full text-left px-4 py-3 border-b border-rule2 border-l-[3px] transition-colors ${borderColor} ${
         isSelected ? 'bg-signal/[0.06]' : isResolved ? 'opacity-40' : 'hover:bg-stone2'
       }`}>
       <div className="flex items-start justify-between gap-2">
@@ -355,7 +355,7 @@ function ResolutionQueue({ selected, onSelect, resolved }) {
         {advisoryOpen ? <ChevronUp size={10} className="text-muted" /> : <ChevronDown size={10} className="text-muted" />}
       </button>
       {advisoryOpen && ADVISORY_ITEMS.map(a => (
-        <div key={a.key} className="px-4 py-2.5 border-b border-rule2 border-l-2 border-l-rule2">
+        <div key={a.key} className="px-4 py-2.5 border-b border-rule2 border-l-[3px] border-l-rule2">
           <div className="font-body text-muted text-label">{a.label}</div>
           <div className="font-body text-muted text-label mt-0.5">{a.detail}</div>
         </div>
@@ -474,7 +474,7 @@ function WorkspacePanel({ item, isCluster, resolved, onResolve, onResolveCluster
 
         {/* 3.5 Director stakes — what this costs today, not what's broken technically */}
         {item.directorStake && !isResolved && (
-          <div className="flex items-start gap-3 mb-5 px-4 py-3 bg-danger/[0.04] border-l-2 border-l-danger">
+          <div className="flex items-start gap-3 mb-5 px-4 py-3 bg-danger/[0.04] border-l-[3px] border-l-danger">
             <AlertTriangle size={12} strokeWidth={2} className="text-danger flex-shrink-0 mt-px" />
             <span className="font-body text-danger text-body leading-snug">{item.directorStake}</span>
           </div>
