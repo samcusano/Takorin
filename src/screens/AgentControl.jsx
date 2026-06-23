@@ -97,10 +97,10 @@ function enrich(pa, agent) {
 }
 
 const CONSEQUENCE_CFG = {
-  critical: { label: 'Critical', color: 'text-danger', bg: 'bg-danger/[0.04]', border: 'border-l-danger', borderW: 'border-l-[5px]' },
-  high:     { label: 'High',     color: 'text-warn',   bg: 'bg-warn/[0.03]',   border: 'border-l-warn',   borderW: 'border-l-4'     },
-  medium:   { label: 'Medium',   color: 'text-muted',  bg: '',                  border: 'border-l-rule2',  borderW: 'border-l-[3px]'     },
-  low:      { label: 'Low',      color: 'text-muted',  bg: '',                  border: 'border-l-rule2',  borderW: 'border-l-[3px]'     },
+  critical: { label: 'Critical', color: 'text-danger', bg: 'bg-danger/[0.04]' },
+  high:     { label: 'High',     color: 'text-warn',   bg: 'bg-warn/[0.03]'   },
+  medium:   { label: 'Medium',   color: 'text-muted',  bg: ''                 },
+  low:      { label: 'Low',      color: 'text-muted',  bg: ''                 },
 }
 
 // ─── Override rationale modal ─────────────────────────────────────────────────
@@ -338,7 +338,7 @@ function LedgerRow({ pa, agent, onInvestigate, onApprove, onOverrideRequest, sel
 
   if (pa._decided) {
     return (
-      <div className={`flex items-center gap-3 px-4 py-2.5 border-b border-rule2 last:border-0 ${inGroup ? '' : `${cfg.borderW} ${cfg.border}`}`}>
+      <div className="flex items-center gap-3 px-4 py-2.5 border-b border-rule2 last:border-0">
         <div className="w-3.5 flex-shrink-0" />
         <div className={`h-1.5 w-1.5 rounded-full flex-shrink-0 ${pa._decided === 'approved' ? 'bg-ok' : 'bg-muted'}`} />
         <span className="font-body text-muted text-label flex-1 truncate opacity-50">{meta.verbFirst}</span>
@@ -358,7 +358,7 @@ function LedgerRow({ pa, agent, onInvestigate, onApprove, onOverrideRequest, sel
   }
 
   return (
-    <div className={`border-b border-rule2 last:border-0 ${open ? cfg.bg : ''} ${inGroup ? '' : `border-l ${cfg.borderW} ${cfg.border}`}`}>
+    <div className={`border-b border-rule2 last:border-0 ${open ? cfg.bg : ''}`}>
       {/* Main row */}
       <div className="flex items-center gap-2.5 px-4 py-2.5 hover:bg-stone2 transition-colors">
         {/* Row checkbox */}

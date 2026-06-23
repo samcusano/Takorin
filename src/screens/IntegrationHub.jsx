@@ -124,12 +124,15 @@ function ConflictsPanel({ resolved, onResolve }) {
   return (
     <div className="flex-1 overflow-y-auto page-rise">
       {unresolved.map(sc => (
-        <div key={sc.id} className="border-b border-rule2 border-l-[3px] border-l-warn">
+        <div key={sc.id} className="border-b border-rule2">
           <div className="px-4 py-3 space-y-2.5">
             {/* Header */}
             <div className="flex items-start justify-between gap-3">
               <div>
-                <div className="font-body font-medium text-ink text-sub leading-snug mb-0.5">{sc.field}</div>
+                <div className="flex items-center gap-2 mb-0.5">
+                  <StatusPill tone="warn">Unresolved</StatusPill>
+                  <span className="font-body font-medium text-ink text-sub leading-snug">{sc.field}</span>
+                </div>
                 <div className="font-body text-muted text-label">{sc.sources.join(' · ')}</div>
               </div>
               {sc.autoEligible && (
@@ -175,7 +178,7 @@ function ConflictsPanel({ resolved, onResolve }) {
             <span className="font-body text-muted text-label">Resolved this session</span>
           </div>
           {resolvedList.map(sc => (
-            <div key={sc.id} className="border-b border-rule2 border-l-[3px] border-l-ok/40 opacity-50 cursor-default">
+            <div key={sc.id} className="border-b border-rule2 opacity-50 cursor-default">
               <div className="px-4 py-3 flex items-center justify-between gap-3">
                 <div>
                   <div className="font-body font-medium text-ink text-label">{sc.field}</div>
@@ -268,7 +271,7 @@ function AIReadinessTab() {
         <span className="font-body text-ink text-label font-medium">Gaps to resolve · {AI_GAPS.length}</span>
       </div>
       {AI_GAPS.map(gap => (
-        <div key={gap.id} className={`border-b border-rule2 border-l-[3px] ${gap.severity === 'high' ? 'border-l-danger' : 'border-l-warn'}`}>
+        <div key={gap.id} className="border-b border-rule2">
           <div className="px-4 py-3 space-y-2">
             <div className="flex items-start justify-between gap-3">
               <div>

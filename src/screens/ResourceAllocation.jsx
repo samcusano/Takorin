@@ -264,6 +264,7 @@ export default function ResourceAllocation() {
             {safetyZones.map(zone => <SafetyZoneRow key={zone.id} zone={zone} />)}
             <ActionBanner
               tone="warn"
+              label="Caution"
               headline="R-03 Seal Press Zone — heightened caution in effect"
               body="Vibration anomaly on R-03. Apply extra caution in Zone sz2. Human entry requires L3 escort and E-stop verification before entry."
             />

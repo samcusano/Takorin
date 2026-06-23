@@ -19,9 +19,9 @@ const AUDIT_CHECKS = [
 ]
 
 const RESULT_CFG = {
-  pass:      { label: 'Pass',    icon: CheckCircle2, color: 'text-ok',    bg: 'bg-ok/[0.03]',     border: 'border-l-ok'     },
-  fail:      { label: 'Fail',    icon: XCircle,      color: 'text-danger', bg: 'bg-danger/[0.03]', border: 'border-l-danger' },
-  'at-risk': { label: 'At risk', icon: AlertCircle,  color: 'text-warn',  bg: 'bg-warn/[0.02]',   border: 'border-l-warn'   },
+  pass:      { label: 'Pass',    icon: CheckCircle2, color: 'text-ok',    bg: 'bg-ok/[0.03]'     },
+  fail:      { label: 'Fail',    icon: XCircle,      color: 'text-danger', bg: 'bg-danger/[0.03]' },
+  'at-risk': { label: 'At risk', icon: AlertCircle,  color: 'text-warn',  bg: 'bg-warn/[0.02]'   },
 }
 
 function AuditSimPanel({ onClose }) {
@@ -52,7 +52,7 @@ function AuditSimPanel({ onClose }) {
           const cfg = RESULT_CFG[check.result]
           const Icon = cfg.icon
           return (
-            <div key={i} className={`border-l-[3px] ${cfg.border} ${cfg.bg} border border-rule2/60`}>
+            <div key={i} className={`${cfg.bg} border border-rule2/60`}>
               <div className="flex items-start gap-3 px-4 py-3">
                 <Icon size={13} strokeWidth={2} className={`flex-shrink-0 mt-0.5 ${cfg.color}`} aria-hidden="true" />
                 <div className="flex-1 min-w-0">
@@ -79,7 +79,6 @@ function AuditSimPanel({ onClose }) {
 const STATUS_LABEL  = { active: 'Active', inactive: 'Inactive', monitoring: 'Monitoring' }
 const STATUS_COLOR  = { active: 'text-ok', inactive: 'text-muted', monitoring: 'text-signal' }
 const STATUS_DOT    = { active: 'bg-ok',   inactive: 'bg-rule2',   monitoring: 'bg-signal'  }
-const STATUS_BORDER = { active: 'border-l-ok', inactive: 'border-l-rule2', monitoring: 'border-l-signal' }
 
 function PolicySectionHeader({ label, count }) {
   return (
@@ -92,9 +91,8 @@ function PolicySectionHeader({ label, count }) {
 }
 
 function FrameworkRow({ f, index = 0 }) {
-  const border = STATUS_BORDER[f.status] ?? 'border-l-rule2'
   return (
-    <div className={`flex items-start gap-3 px-5 py-3 border-b border-rule2 last:border-0 border-l-[3px] row-in ${border} ${f.status === 'inactive' ? 'opacity-40' : ''}`}
+    <div className={`flex items-start gap-3 px-5 py-3 border-b border-rule2 last:border-0 row-in ${f.status === 'inactive' ? 'opacity-40' : ''}`}
       style={{ animationDelay: `${index * 50}ms` }}>
       <div className="flex-1 min-w-0">
         <div className="flex items-baseline gap-2 flex-wrap mb-0.5">
@@ -112,7 +110,7 @@ function FrameworkRow({ f, index = 0 }) {
 
 function EvidenceRow({ e, index = 0 }) {
   return (
-    <div className={`flex items-start gap-3 px-5 py-2.5 border-b border-rule2 last:border-0 row-in ${e.required ? 'border-l-[3px] border-l-ok' : ''}`}
+    <div className="flex items-start gap-3 px-5 py-2.5 border-b border-rule2 last:border-0 row-in"
       style={{ animationDelay: `${index * 50}ms` }}>
       <div className="flex-1 min-w-0">
         <div className="font-body font-medium text-ink text-body leading-snug">{e.domain}</div>
@@ -376,15 +374,14 @@ export default function CompliancePolicy() {
         <div className="flex-1 overflow-y-auto page-wipe">
           {compliancePolicies.map(p => {
             const isSelected = selectedId === p.id
-            const borderColor = STATUS_BORDER[p.status] ?? 'border-l-rule2'
             const dotColor    = STATUS_DOT[p.status]    ?? 'bg-rule2'
             const statusColor = STATUS_COLOR[p.status]  ?? 'text-muted'
             return (
               <button key={p.id} type="button" onClick={() => setSelectedId(p.id)}
-                className={`w-full text-left px-4 py-4 border-b border-rule2 transition-colors border-l-[3px] ${
+                className={`w-full text-left px-4 py-4 border-b border-rule2 transition-colors ${
                   isSelected
-                    ? `${borderColor} bg-stone2`
-                    : `border-l-transparent hover:bg-stone2/50 ${p.status === 'inactive' ? 'opacity-60' : ''}`
+                    ? 'bg-stone2'
+                    : `hover:bg-stone2/50 ${p.status === 'inactive' ? 'opacity-60' : ''}`
                 }`}>
                 <div className="flex items-center gap-1.5 mb-1.5">
                   <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${dotColor}`} />

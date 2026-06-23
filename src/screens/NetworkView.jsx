@@ -86,13 +86,14 @@ function ExposureOverlay({ triggerRef, active, actions, onAction, onBulkAction, 
      const action     = actions[e.lotId]
      return (
       <div key={e.lotId} className="px-4 py-3 first:pt-4">
-       <div className={`border border-rule2 border-l-[3px] ${
-        action ? 'border-l-ok opacity-60' : isCross ? 'border-l-danger' : 'border-l-warn'
-       }`}>
+       <div className={`border border-rule2 ${action ? 'opacity-60' : ''}`}>
         {/* Card header */}
-        <div className="flex items-baseline justify-between px-4 pt-3 pb-1.5">
-         <span className="font-body font-semibold text-ink text-sub">{e.supplier}</span>
-         <span className="font-body text-muted text-label">Lot {e.lotId}</span>
+        <div className="flex items-center justify-between gap-2 px-4 pt-3 pb-1.5">
+         <div className="flex items-center gap-2 min-w-0">
+          <StatusPill tone={action ? 'ok' : isCross ? 'danger' : 'warn'}>{action ? 'Resolved' : isCross ? 'Cross-plant' : 'Exposure'}</StatusPill>
+          <span className="font-body font-semibold text-ink text-sub truncate">{e.supplier}</span>
+         </div>
+         <span className="font-body text-muted text-label flex-shrink-0">Lot {e.lotId}</span>
         </div>
         {/* Ingredient + units */}
         <div className="px-4 pb-2">
@@ -229,13 +230,12 @@ function SupplierRegistry({ rows }) {
    <div className="p-4 grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))' }}>
     {rows.map(s => {
      const hasExposure = s.activeExposureCount > 0
-     const borderCls = hasExposure ? 'border-l-danger' : s.tone === 'warn' ? 'border-l-warn' : 'border-l-ok'
      const bgCls     = hasExposure ? 'bg-danger/[0.025]' : ''
      const riskTxt   = s.networkRisk < 40 ? 'text-danger' : s.networkRisk < 65 ? 'text-warn' : 'text-ok'
      const trendTxt  = hasExposure || s.tone === 'danger' ? 'text-danger' : s.tone === 'warn' ? 'text-warn' : 'text-muted'
      const trendLabel = s.trend === 'down' ? 'Declining' : s.trend === 'up' ? 'Improving' : 'Stable'
      return (
-      <div key={s.name} className={`border border-rule2 border-l-4 ${borderCls} ${bgCls} p-4`}>
+      <div key={s.name} className={`border border-rule2 ${bgCls} p-4`}>
        {/* Top row — name + dot */}
        <div className="flex items-start justify-between gap-2 mb-2.5">
         <div className="min-w-0">

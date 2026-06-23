@@ -6,10 +6,10 @@ import { SlidePanel, StatusPill, SceneHeader, SectionHeader, Btn, FilterDropdown
 const TIER_ICONS = { observe: Eye, recommend: MessageSquare, execute: Zap, govern: Shield }
 
 const OUTCOME_CFG = {
-  success:   { label: 'Success',     tone: 'ok',     borderCls: 'border-l-ok' },
-  escalated: { label: 'Escalated',   tone: 'warn',   borderCls: 'border-l-warn' },
-  pending:   { label: 'Pending',     tone: 'signal', borderCls: 'border-l-signal' },
-  rollback:  { label: 'Rolled back', tone: 'muted',  borderCls: 'border-l-muted' },
+  success:   { label: 'Success',     tone: 'ok'     },
+  escalated: { label: 'Escalated',   tone: 'warn'   },
+  pending:   { label: 'Pending',     tone: 'signal' },
+  rollback:  { label: 'Rolled back', tone: 'muted'  },
 }
 
 const OUTCOME_OPTIONS = [
@@ -25,7 +25,7 @@ function LogRow({ entry, selected, onClick }) {
   const TierIcon = TIER_ICONS[entry.tier]
   return (
     <button type="button" onClick={onClick}
-      className={`w-full text-left px-4 py-3 border-b border-rule2 border-l-4 ${out.borderCls} transition-colors ${
+      className={`w-full text-left px-4 py-3 border-b border-rule2 transition-colors ${
         selected ? 'bg-stone2' : 'hover:bg-stone2/50'
       }`}>
       <StatusPill tone={out.tone} className="mb-1.5">{out.label}</StatusPill>

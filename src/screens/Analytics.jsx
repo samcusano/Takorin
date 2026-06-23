@@ -428,7 +428,7 @@ export default function Analytics() {
         />
         <div className="ml-auto flex items-center gap-3">
           <button type="button" onClick={handleExport} disabled={exportState === 'loading'}
-            className="flex items-center gap-1.5 font-body text-label text-muted px-3 py-1.5 hover:border-ink/30 hover:text-muted transition-colors disabled:opacity-50">
+            className="flex items-center gap-1.5 font-body text-label text-muted border border-rule2 px-3 py-1.5 hover:border-ink/30 hover:text-ink transition-colors disabled:opacity-50">
             {exportState === 'done'
               ? <><Check size={11} strokeWidth={2} className="text-ok" />Exported</>
               : <><Download size={11} strokeWidth={2} />{exportState === 'loading' ? 'Preparing…' : 'Export'}</>}
@@ -517,7 +517,7 @@ export default function Analytics() {
             <div className="grid grid-cols-2 gap-4">
               {attr.drivers.map(d => (
                 <Link key={d.id} to={d.route}
-                  className={`block bg-stone border border-rule2 border-l-[3px] hover:bg-stone2 transition-colors ${d.delta >= 0 ? 'border-l-ok' : 'border-l-danger'}`}>
+                  className="block bg-stone border border-rule2 hover:bg-stone2 transition-colors">
                   {/* Zone 1 — identity: module + what happened */}
                   <div className="px-4 pt-4 pb-0">
                     <div className="font-body text-label text-muted mb-1.5">{d.module}</div>
@@ -664,9 +664,8 @@ export default function Analytics() {
                   { label: 'Closure rate', val: '78%',        bar: 0.78,                                    tone: 'warn',   sub: '71st pct. · unlocks at 82%' },
                 ].map(({ label, val, bar, tone, sub }) => {
                   const c = tone === 'ok' ? 'var(--color-ok)' : tone === 'warn' ? 'var(--color-warn)' : 'var(--color-danger)'
-                  const borderL = tone === 'danger' ? 'border-l-danger' : tone === 'warn' ? 'border-l-warn' : 'border-l-ok'
                   return (
-                    <div key={label} className={`bg-stone border border-rule2 border-l-[3px] ${borderL}`}>
+                    <div key={label} className="bg-stone border border-rule2">
                       <div className="px-4 pt-4 pb-0">
                         <div className="font-body font-bold text-body text-ink">{label}</div>
                       </div>
@@ -735,10 +734,9 @@ export default function Analytics() {
                 {ADOPTION_WORKFLOWS.map(w => {
                   const atRisk = w.rate < w.target
                   const c = atRisk ? (w.rate < w.target * 0.8 ? 'var(--color-danger)' : 'var(--color-warn)') : 'var(--color-ok)'
-                  const borderL = atRisk ? (w.rate < w.target * 0.8 ? 'border-l-danger' : 'border-l-warn') : 'border-l-ok'
                   const gap = w.target - w.rate
                   return (
-                    <div key={w.id} className={`bg-stone border border-rule2 border-l-[3px] ${borderL}`}>
+                    <div key={w.id} className="bg-stone border border-rule2">
                       <div className="px-4 pt-4 pb-0">
                         <div className="font-body font-bold text-body text-ink leading-snug">{w.label}</div>
                         <div className="font-body text-muted text-label mt-1">{w.role}</div>
@@ -793,9 +791,8 @@ export default function Analytics() {
                 ].map(plant => {
                   const c = plant.readiness >= 85 ? 'var(--color-ok)' : plant.readiness >= 70 ? 'var(--color-warn)' : 'var(--color-danger)'
                   const ac = plant.adoption >= 85 ? 'var(--color-ok)' : plant.adoption >= 70 ? 'var(--color-warn)' : 'var(--color-danger)'
-                  const borderL = plant.status === 'at-risk' ? 'border-l-danger' : 'border-l-ok'
                   return (
-                    <div key={plant.id} className={`bg-stone border border-rule2 border-l-[3px] ${borderL}`}>
+                    <div key={plant.id} className="bg-stone border border-rule2">
                       <div className="px-4 pt-4 pb-0">
                         <div className={`font-body font-bold text-body leading-snug ${plant.active ? 'text-ink' : 'text-muted'}`}>{plant.name}</div>
                         <div className="font-body text-muted text-label mt-1">{plant.code}{plant.active ? ' · active' : ''}</div>
@@ -849,9 +846,8 @@ export default function Analytics() {
               <div className="grid grid-cols-3 gap-4 p-5">
                 {benchmarks.map((b, i) => {
                   const c = b.deltaDir === 'up' ? 'var(--color-ok)' : 'var(--color-warn)'
-                  const borderL = b.deltaDir === 'down' ? 'border-l-warn' : 'border-l-ok'
                   return (
-                    <div key={i} className={`bg-stone border border-rule2 border-l-[3px] ${borderL}`}>
+                    <div key={i} className="bg-stone border border-rule2">
                       <div className="px-4 pt-4 pb-0">
                         <div className="font-body font-bold text-body text-ink leading-snug">{b.metric}</div>
                       </div>
@@ -884,7 +880,7 @@ export default function Analytics() {
                 <div className="grid grid-cols-2 gap-4 p-5">
                   {TOP_QUARTILE.map((p, i) => (
                     <Link key={i} to={p.route}
-                      className="block bg-stone border border-rule2 border-l-[3px] border-l-ok hover:bg-stone2 transition-colors">
+                      className="block bg-stone border border-rule2 hover:bg-stone2 transition-colors">
                       {/* Zone 1 — area + practice */}
                       <div className="px-4 pt-4 pb-0">
                         <div className="font-body text-label text-muted mb-1.5">{p.area}</div>
@@ -918,9 +914,8 @@ export default function Analytics() {
                 { label: 'Predictive delivery risk alerts',note: '"ConAgra delays at KS-02 → Line 4 scrap spikes within 48h"',   plants: '3 needed',      conf: 0,   status: 'Locked', tone: 'muted',locked: true  },
               ].map((s, i) => {
                 const c = s.tone === 'ok' ? 'var(--color-ok)' : s.tone === 'warn' ? 'var(--color-warn)' : 'var(--color-muted)'
-                const borderL = s.locked ? 'border-l-rule2' : s.tone === 'warn' ? 'border-l-warn' : 'border-l-ok'
                 return (
-                  <div key={i} className={`bg-stone border border-rule2 border-l-[3px] ${borderL} ${s.locked ? 'opacity-40' : ''}`}>
+                  <div key={i} className={`bg-stone border border-rule2 ${s.locked ? 'opacity-40' : ''}`}>
                     <div className="px-4 pt-4 pb-0">
                       <div className="flex items-center gap-1.5">
                         {s.locked && <Lock size={9} strokeWidth={2} className="text-muted flex-shrink-0" />}

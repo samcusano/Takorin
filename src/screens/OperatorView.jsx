@@ -91,7 +91,7 @@ function SupervisorMessageCard({ directive, onAcknowledge }) {
  const [exiting, setExiting] = useState(false)
  const isWarn = directive.urgency === 'warn'
  const isDanger = directive.urgency === 'danger'
- const accentClass = isDanger ? 'border-l-danger bg-danger/[0.03]' : 'border-l-warn bg-warn/[0.03]'
+ const accentClass = isDanger ? 'bg-danger/[0.03]' : 'bg-warn/[0.03]'
  const accentText  = isDanger ? 'text-danger' : 'text-warn'
  const dotClass    = isDanger ? 'bg-danger beat' : 'bg-warn'
 
@@ -101,12 +101,12 @@ function SupervisorMessageCard({ directive, onAcknowledge }) {
  }
 
  return (
-  <div className={`flex-shrink-0 border-b-2 border-l-[3px] transition-opacity ${accentClass} ${exiting ? 'opacity-0 transition-opacity duration-300' : ''}`}
-    style={{ borderBottomColor: isDanger ? 'var(--color-danger)' : 'var(--color-warn)' }}>
+  <div className={`flex-shrink-0 border-b border-rule2 transition-opacity ${accentClass} ${exiting ? 'opacity-0 transition-opacity duration-300' : ''}`}>
    <div className="flex items-start gap-3 px-5 py-4">
     <div className={`w-2 h-2 rounded-full flex-shrink-0 mt-1 ${dotClass}`} />
     <div className="flex-1 min-w-0">
      <div className="flex items-center gap-2 mb-1">
+      <StatusPill tone={isDanger ? 'danger' : 'warn'}>{isDanger ? 'Urgent' : 'Heads-up'}</StatusPill>
       <MessageSquare size={10} strokeWidth={2} className={accentText} aria-hidden="true" />
       <span className={`font-body text-label font-medium ${accentText}`}>From {directive.from}</span>
       <span className="font-body text-muted text-label">· {directive.role} · sent {directive.sentAt}</span>
@@ -356,10 +356,10 @@ function UnifiedOperationalHeader({ ctx }) {
  const textClass = isDanger ? 'text-danger' : 'text-warn'
  const dotClass  = isDanger ? 'bg-danger beat' : 'bg-warn'
  const accentClass = isDanger
-  ? 'border-l-danger bg-danger/[0.02]'
-  : 'border-l-warn bg-warn/[0.02]'
+  ? 'bg-danger/[0.02]'
+  : 'bg-warn/[0.02]'
  return (
-  <div className={`flex-shrink-0 px-5 py-4 border-b border-rule2 border-l-[3px] ${accentClass}`}>
+  <div className={`flex-shrink-0 px-5 py-4 border-b border-rule2 ${accentClass}`}>
    <div className="flex items-center gap-2 mb-3">
     <Icon size={11} strokeWidth={2} className={`flex-shrink-0 ${textClass}`} />
     <span className={`font-body text-label font-medium ${textClass}`}>{ctx.modeLabel}</span>
@@ -747,7 +747,6 @@ const TRANSITION_DATA = {
 function TransitionTab({ selected, isDirector }) {
  const t = TRANSITION_DATA[selected] || {}
  const readinessTone = t.readiness >= 70 ? 'text-ok' : t.readiness >= 40 ? 'text-warn' : 'text-danger'
- const readinessBorder = t.readiness >= 70 ? 'border-l-ok' : t.readiness >= 40 ? 'border-l-warn' : 'border-l-danger'
 
  if (isDirector) {
   const all = OPERATORS.map(o => ({ ...o, t: TRANSITION_DATA[o.name] || {} }))
@@ -772,10 +771,9 @@ function TransitionTab({ selected, isDirector }) {
     {all.map(o => {
      const ot  = o.t
      const rt  = ot.readiness >= 70 ? 'text-ok' : ot.readiness >= 40 ? 'text-warn' : 'text-danger'
-     const bl  = ot.readiness >= 70 ? 'border-l-ok' : ot.readiness >= 40 ? 'border-l-warn' : 'border-l-danger'
      const isSel = o.name === selected
      return (
-      <div key={o.name} className={`border-b border-rule2 border-l-[3px] ${bl} px-5 py-4 ${isSel ? 'bg-stone2' : ''}`}>
+      <div key={o.name} className={`border-b border-rule2 px-5 py-4 ${isSel ? 'bg-stone2' : ''}`}>
        <div className="flex items-start justify-between mb-2">
         <div>
          <span className="font-body font-medium text-ink text-body">{o.name}</span>
@@ -825,7 +823,7 @@ function TransitionTab({ selected, isDirector }) {
     <div className={`display-num text-score font-bold leading-none tabular-nums mb-1 ${readinessTone}`}>{t.readiness}%</div>
     <div className={`font-body text-label ${readinessTone}`}>{t.readinessLabel}</div>
    </div>
-   <div className={`border-l-[3px] ${readinessBorder} pl-4 space-y-3`}>
+   <div className="border-l border-rule2 pl-4 space-y-3">
     {[
      { label: 'Robot readiness cert', value: t.hybridCertified ? 'Complete' : 'Not yet — ' + (t.certGap || 'in progress'), ok: t.hybridCertified },
      { label: 'Safety zone protocol', value: t.robotSafetyZone ? 'Signed' : 'Not signed', ok: t.robotSafetyZone },
@@ -864,20 +862,22 @@ function HoldTakeover({ directive, operator, station, onAcknowledge }) {
    <div className="flex-shrink-0 px-5 py-3 border-b border-danger/20">
     <div className="font-body text-muted text-label">{operator} · {station}</div>
    </div>
-   <div className="flex-1 flex flex-col justify-start pt-10 px-5">
-    <div className="flex items-center gap-2 mb-4">
-     <div className="w-2.5 h-2.5 rounded-full bg-danger beat" />
-     <span className="font-body text-danger text-body font-medium">Compliance Hold Active</span>
+   <div className="flex-1 flex flex-col justify-center px-5">
+    <div className="w-full max-w-2xl mx-auto">
+     <div className="flex items-center gap-2 mb-4">
+      <div className="w-2.5 h-2.5 rounded-full bg-danger beat" />
+      <span className="font-body text-danger text-body font-medium">Compliance Hold Active</span>
+     </div>
+     <div className="font-display font-bold text-ink text-head leading-snug mb-2">{directive.message}</div>
+     <div className="font-body text-ink2 text-body mb-8">
+      From {directive.from} · {directive.role} · Sent {directive.sentAt} · Hold active until COA received
+     </div>
+     <button type="button"
+      onClick={() => onAcknowledge(directive.id)}
+      className="w-full py-4 bg-danger text-stone font-display font-bold text-body flex items-center justify-center gap-2 hover:bg-danger/90 active:bg-danger/80 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-stone/40">
+      <Check size={16} />I acknowledge — I will not use Lot TS-8811
+     </button>
     </div>
-    <div className="font-display font-bold text-ink text-sub leading-relaxed mb-2">{directive.message}</div>
-    <div className="font-body text-ink2 text-body mb-8">
-     From {directive.from} · {directive.role} · Sent {directive.sentAt} · Hold active until COA received
-    </div>
-    <button type="button"
-     onClick={() => onAcknowledge(directive.id)}
-     className="w-full py-4 bg-danger text-stone font-display font-bold text-body flex items-center justify-center gap-2 hover:bg-danger/90 active:bg-danger/80 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-stone/40">
-     <Check size={16} />I acknowledge — I will not use Lot TS-8811
-    </button>
    </div>
    <div className="flex-shrink-0 px-5 py-3 border-t border-danger/15">
     <div className="font-body text-muted text-label text-center">All production blocked until hold is cleared</div>

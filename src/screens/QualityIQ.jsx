@@ -553,7 +553,7 @@ function AccuracyView({ highlightSku }) {
 function NovelEventCard({ event }) {
   const isPending = event.status === 'pending'
   return (
-    <div className={`border-b border-rule2 border-l-[3px] ${isPending ? 'border-l-danger' : 'border-l-ok'}`}>
+    <div className="border-b border-rule2">
       <div className={`px-5 py-4 ${isPending ? 'bg-danger/[0.02]' : ''}`}>
         <div className="flex items-start justify-between gap-4 mb-2">
           <div>

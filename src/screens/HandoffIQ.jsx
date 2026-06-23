@@ -297,10 +297,11 @@ function LayoutGrid({ d, currentPlant, carryForwardItems, acknowledgedCount, car
               <div key={item.id} role="button" tabIndex={0}
                 onClick={() => setViewingItem(item)}
                 onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setViewingItem(item) }}}
-                className={`flex items-start gap-4 px-5 py-3.5 border-b border-rule2 last:border-0 border-l-[3px] transition-colors cursor-pointer
-                  ${acked ? 'opacity-50 border-l-ok hover:opacity-60' : isCrit ? 'border-l-danger hover:bg-stone2/50' : 'border-l-warn hover:bg-stone2/50'}`}>
+                className={`flex items-start gap-4 px-5 py-3.5 border-b border-rule2 last:border-0 transition-colors cursor-pointer
+                  ${acked ? 'opacity-50 hover:opacity-60' : 'hover:bg-stone2/50'}`}>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+                    {!acked && <StatusPill tone={isCrit ? 'danger' : 'warn'}>{isCrit ? 'Critical' : 'Watch'}</StatusPill>}
                     <span className="font-body font-medium text-body text-ink leading-snug">{item.title}</span>
                     {item.resolvedInShift && <StatusPill tone="ok">Resolved this shift</StatusPill>}
                   </div>
@@ -327,12 +328,14 @@ function LayoutGrid({ d, currentPlant, carryForwardItems, acknowledgedCount, car
         <BriefSection label="To-dos">
           {REQUIRED_ACTIONS.map((a, i) => (
             <div key={i}
-              className={`flex items-start gap-4 px-5 py-3.5 border-b border-rule2 last:border-0 border-l-[3px]
-                ${a.urgency === 'danger' ? 'border-l-danger' : 'border-l-warn'}`}>
+              className="flex items-start gap-4 px-5 py-3.5 border-b border-rule2 last:border-0">
               <span className={`display-num text-head font-bold tabular-nums leading-none flex-shrink-0 w-5 mt-0.5
                 ${a.urgency === 'danger' ? 'text-danger' : 'text-warn'}`}>{i + 1}</span>
               <div className="flex-1 min-w-0">
-                <div className="font-body font-medium text-body text-ink leading-snug">{a.action}</div>
+                <div className="flex items-center gap-2 mb-0.5">
+                  <StatusPill tone={a.urgency === 'danger' ? 'danger' : 'warn'}>{a.urgency === 'danger' ? 'Critical' : 'Watch'}</StatusPill>
+                  <span className="font-body font-medium text-body text-ink leading-snug">{a.action}</span>
+                </div>
                 <div className="font-body text-label text-muted mt-0.5 leading-snug">{a.context}</div>
               </div>
               <span className="font-body text-label text-muted flex-shrink-0">{a.owner}</span>
@@ -344,10 +347,12 @@ function LayoutGrid({ d, currentPlant, carryForwardItems, acknowledgedCount, car
         <BriefSection label="What to watch for">
           {WATCH_ITEMS.map((w, i) => (
             <div key={i}
-              className={`px-5 py-3.5 border-b border-rule2 last:border-0 border-l-[3px]
-                ${w.tone === 'danger' ? 'border-l-danger bg-danger/[0.02]' : 'border-l-warn'}`}>
-              <div className={`font-body font-medium text-body leading-snug mb-0.5
-                ${w.tone === 'danger' ? 'text-danger' : 'text-ink'}`}>{w.risk}</div>
+              className={`px-5 py-3.5 border-b border-rule2 last:border-0
+                ${w.tone === 'danger' ? 'bg-danger/[0.02]' : ''}`}>
+              <div className="flex items-center gap-2 mb-0.5">
+                <StatusPill tone={w.tone === 'danger' ? 'danger' : 'warn'}>{w.tone === 'danger' ? 'Critical' : 'Watch'}</StatusPill>
+                <span className={`font-body font-medium text-body leading-snug ${w.tone === 'danger' ? 'text-danger' : 'text-ink'}`}>{w.risk}</span>
+              </div>
               <div className="font-body text-label text-muted leading-snug">{w.context}</div>
             </div>
           ))}
@@ -362,7 +367,7 @@ function LayoutGrid({ d, currentPlant, carryForwardItems, acknowledgedCount, car
           return (
             <BriefSection label="Fleet at handoff" meta={`${units.filter(u => u.status === 'online').length}/${units.length} online`}>
               {activeFaults.map((f, i) => (
-                <div key={i} className={`flex items-start gap-3 px-5 py-3 border-b border-rule2 last:border-0 border-l-[3px] ${f.severity === 'danger' ? 'border-l-danger' : 'border-l-warn'}`}>
+                <div key={i} className="flex items-start gap-3 px-5 py-3 border-b border-rule2 last:border-0">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-0.5">
                       <span className={`font-body text-label font-medium ${f.severity === 'danger' ? 'text-danger' : 'text-warn'}`}>{f.unit}</span>
@@ -472,10 +477,13 @@ function MachineStateHandoff() {
             {faults.length > 0 && (
               <div className="border-b border-rule2">
                 {faults.map((f, i) => (
-                  <div key={i} className={`flex items-start gap-4 px-5 py-3.5 border-b border-rule2 last:border-0 border-l-4 ${f.severity === 'danger' ? 'border-l-danger bg-danger/[0.03]' : 'border-l-warn bg-warn/[0.02]'}`}>
+                  <div key={i} className={`flex items-start gap-4 px-5 py-3.5 border-b border-rule2 last:border-0 ${f.severity === 'danger' ? 'bg-danger/[0.03]' : 'bg-warn/[0.02]'}`}>
                     <AlertTriangle size={13} className={`mt-0.5 flex-shrink-0 ${f.severity === 'danger' ? 'text-danger' : 'text-warn'}`} strokeWidth={2} />
                     <div className="flex-1">
-                      <div className={`font-body font-medium text-body ${f.severity === 'danger' ? 'text-danger' : 'text-ink'}`}>{f.unit} — {f.fault}</div>
+                      <div className="flex items-center gap-2">
+                        <StatusPill tone={f.severity === 'danger' ? 'danger' : 'warn'}>{f.severity === 'danger' ? 'Active fault' : 'Monitoring'}</StatusPill>
+                        <span className={`font-body font-medium text-body ${f.severity === 'danger' ? 'text-danger' : 'text-ink'}`}>{f.unit} — {f.fault}</span>
+                      </div>
                       {f.techAssigned && <div className="font-body text-muted text-label mt-0.5">Tech: {f.techAssigned}{f.eta ? ` · ETA ${f.eta}` : ''}</div>}
                     </div>
                   </div>
@@ -486,10 +494,10 @@ function MachineStateHandoff() {
               <span className="font-body text-muted text-label">Maintenance carry-forward</span>
             </div>
             {BACKLOG.map((item, i) => {
-              const borderCls = item.urgency === 'danger' ? 'border-l-danger bg-danger/[0.02]' : item.urgency === 'warn' ? 'border-l-warn bg-warn/[0.015]' : 'border-l-rule2'
+              const borderCls = item.urgency === 'danger' ? 'bg-danger/[0.02]' : item.urgency === 'warn' ? 'bg-warn/[0.015]' : ''
               const labelTone = item.urgency === 'danger' ? 'text-danger' : item.urgency === 'warn' ? 'text-ink' : 'text-muted'
               return (
-                <div key={i} className={`flex items-center gap-4 px-5 py-3.5 border-b border-rule2 border-l-[3px] ${borderCls}`}>
+                <div key={i} className={`flex items-center gap-4 px-5 py-3.5 border-b border-rule2 ${borderCls}`}>
                   <span className="font-body text-label w-10 flex-shrink-0 tabular-nums text-muted">{item.unit}</span>
                   <span className={`font-body font-medium text-body flex-1 ${labelTone}`}>{item.item}</span>
                   <StatusPill tone={item.urgency === 'danger' ? 'danger' : item.urgency === 'warn' ? 'warn' : 'muted'}>

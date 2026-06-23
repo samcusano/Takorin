@@ -9,11 +9,11 @@ import { AlertTriangle, CheckCircle2, ArrowRight, RotateCcw, AlertCircle, Trendi
 import { StatusPill, SceneHeader, Tabs, Btn, AnimatedScore, StatGrid, EmptyState, FilterDropdown, SlidePanel } from '../components/UI'
 
 const OUTCOME_CFG = {
-  positive: { label: 'Positive',     tone: 'ok',     border: 'border-l-ok',     accent: 'bg-ok'     },
-  negative: { label: 'Negative',     tone: 'danger', border: 'border-l-danger', accent: 'bg-danger' },
-  unclear:  { label: 'Inconclusive', tone: 'signal', border: 'border-l-signal', accent: 'bg-signal',
+  positive: { label: 'Positive',     tone: 'ok',     accent: 'bg-ok'     },
+  negative: { label: 'Negative',     tone: 'danger', accent: 'bg-danger' },
+  unclear:  { label: 'Inconclusive', tone: 'signal', accent: 'bg-signal',
               desc: "Effect couldn't be isolated — multiple concurrent changes affected this outcome simultaneously." },
-  harmful:  { label: 'Harmful',      tone: 'danger', border: 'border-l-danger', accent: 'bg-danger' },
+  harmful:  { label: 'Harmful',      tone: 'danger', accent: 'bg-danger' },
 }
 
 const DECISION_CFG = {
@@ -43,7 +43,7 @@ function InterventionCard({ entry, onClick }) {
 
   return (
     <button type="button" onClick={onClick}
-      className={`w-full text-left bg-stone2 border border-rule overflow-hidden border-l-[3px] ${oc.border} hover:bg-stone3 transition-colors group`}>
+      className="w-full text-left bg-stone2 border border-rule overflow-hidden hover:bg-stone3 transition-colors group">
 
       {/* Header: outcome + time */}
       <div className="flex items-center gap-2 px-4 pt-3 pb-1.5">

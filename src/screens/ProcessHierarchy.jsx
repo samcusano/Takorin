@@ -346,7 +346,7 @@ function CausalPanel({ zone, building }) {
                 </div>
                 <div className="space-y-1.5">
                   {causal.upstream.map((u, i) => (
-                    <div key={i} className={`flex items-start gap-3 px-3 py-2.5 border border-l-4 ${u.tone === 'warn' ? 'border-l-warn bg-warn/[0.03]' : u.tone === 'danger' ? 'border-danger/30 border-l-danger bg-danger/[0.03]' : 'border-rule2 border-l-ok'}`}>
+                    <div key={i} className={`flex items-start gap-3 px-3 py-2.5 border border-rule2 ${u.tone === 'warn' ? 'bg-warn/[0.03]' : u.tone === 'danger' ? 'bg-danger/[0.03]' : ''}`}>
                       <div className="flex-1 min-w-0">
                         <div className="font-body font-medium text-ink text-label leading-snug">{u.label}</div>
                         <div className="font-body text-muted text-label leading-snug mt-0.5">{u.detail}</div>
@@ -371,7 +371,7 @@ function CausalPanel({ zone, building }) {
                 </div>
                 <div className="space-y-1.5">
                   {causal.downstream.map((d, i) => (
-                    <div key={i} className={`flex items-start gap-3 px-3 py-2.5 border border-l-4 ${d.risk === 'high' ? 'border-danger/20 border-l-danger bg-danger/[0.02]' : d.risk === 'medium' ? 'border-warn/20 border-l-warn' : 'border-rule2 border-l-ok/40'}`}>
+                    <div key={i} className={`flex items-start gap-3 px-3 py-2.5 border border-rule2 ${d.risk === 'high' ? 'bg-danger/[0.02]' : d.risk === 'medium' ? 'bg-warn/[0.02]' : ''}`}>
                       <div className="flex-1 min-w-0">
                         <div className="font-body font-medium text-ink text-label leading-snug">{d.label}</div>
                         <div className="font-body text-muted text-label leading-snug mt-0.5">{d.detail}</div>

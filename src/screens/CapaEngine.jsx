@@ -15,7 +15,6 @@ function shiftRelativeDue(due) {
  return due
 }
 
-const CASE_BORDERS = { cu: 'border-l-danger', cw: 'border-l-warn', co: 'border-l-ok', ca: 'border-l-warn' }
 const BADGE_BG = { 'text-danger': 'bg-danger/[0.04]', 'text-warn': 'bg-warn/10', 'text-ok': 'bg-ok/10' }
 
 // ── Case detail slide-over panel ─────────────────────────────────────────────
@@ -373,6 +372,7 @@ function PriorityInlinePanel({ c, blockingEvidenceUploaded, setBlockingEvidenceU
  {c.directorTurn && !isClosed && !actionTaken && (
   <ActionBanner
    tone={c.ownershipState === 'awaiting-director' ? 'ok' : 'warn'}
+   label={c.ownershipState === 'awaiting-director' ? 'Your turn' : 'Action needed'}
    headline={c.handoffNote}
    body={`Current owner: ${c.currentOwner} · State: ${c.ownershipState?.replace(/-/g, ' ')}`}
   />
@@ -693,7 +693,7 @@ function LayoutQueue({ visibleCases, blockingEvidenceUploaded, setBlockingEviden
     className="flex-1 font-body text-label text-ink bg-transparent outline-none placeholder:text-muted"
    />
    {searchQuery && (
-    <button type="button" onClick={() => setSearchQuery('')} aria-label="Clear search" className="text-muted hover:text-muted transition-colors">
+    <button type="button" onClick={() => setSearchQuery('')} aria-label="Clear search" className="text-muted hover:text-ink transition-colors">
      <X size={10} strokeWidth={2} />
     </button>
    )}

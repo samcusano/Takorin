@@ -260,10 +260,10 @@ function QueueClusterRow({ cluster, resolved, selected, onSelect }) {
   const isSelected  = selected === cluster.id
   return (
     <button type="button" onClick={() => onSelect(cluster.id)}
-      className={`w-full text-left px-4 py-3.5 border-b border-rule2 border-l-[3px] transition-colors ${
-        isSelected        ? 'border-l-signal bg-signal/[0.06]'
-        : allResolved     ? 'border-l-ok opacity-40'
-        : 'border-l-warn bg-warn/[0.02] hover:bg-stone2'
+      className={`w-full text-left px-4 py-3.5 border-b border-rule2 transition-colors ${
+        isSelected        ? 'bg-signal/[0.06]'
+        : allResolved     ? 'opacity-40'
+        : 'bg-warn/[0.02] hover:bg-stone2'
       }`}>
       {/* Cluster badge */}
       <div className="flex items-center gap-1.5 mb-1.5">
@@ -296,18 +296,14 @@ function QueueClusterRow({ cluster, resolved, selected, onSelect }) {
 function QueueIssueRow({ item, resolved, selected, onSelect }) {
   const isResolved = !item.permanent && resolved[item.key]
   const isSelected = selected === item.id
-  const borderColor = isSelected   ? 'border-l-signal'
-    : isResolved   ? 'border-l-ok'
-    : item.severity === 'high' ? 'border-l-danger'
-    : item.permanent ? 'border-l-warn'
-    : 'border-l-rule2'
   return (
     <button type="button" onClick={() => onSelect(item.id)}
-      className={`w-full text-left px-4 py-3 border-b border-rule2 border-l-[3px] transition-colors ${borderColor} ${
+      className={`w-full text-left px-4 py-3 border-b border-rule2 transition-colors ${
         isSelected ? 'bg-signal/[0.06]' : isResolved ? 'opacity-40' : 'hover:bg-stone2'
       }`}>
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
+          {item.severity === 'high' && !isResolved && <div className="mb-1"><StatusPill tone="danger">Critical</StatusPill></div>}
           <div className={`font-body font-medium text-body leading-snug ${isResolved ? 'text-muted line-through' : 'text-ink'}`}>
             {item.label}
           </div>

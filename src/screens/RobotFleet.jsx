@@ -178,11 +178,11 @@ const EXTENDED = {
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function healthState(unit, ext) {
-  if (unit.status === 'fault')       return { key: 'fault',    label: 'Intervention required', color: 'text-danger', bg: 'bg-danger/[0.05]', border: 'border-l-danger', dot: 'bg-danger', pulse: false }
-  if (unit.status === 'maintenance') return { key: 'pm',       label: 'In PM',                 color: 'text-muted',  bg: 'bg-stone2',        border: 'border-l-rule2',  dot: 'bg-rule2',  pulse: false }
+  if (unit.status === 'fault')       return { key: 'fault',    label: 'Intervention required', color: 'text-danger', bg: 'bg-danger/[0.05]', dot: 'bg-danger', pulse: false }
+  if (unit.status === 'maintenance') return { key: 'pm',       label: 'In PM',                 color: 'text-muted',  bg: 'bg-stone2',        dot: 'bg-rule2',  pulse: false }
   const conf = ext?.autonomyConfidence ?? 100
-  if (unit.alert?.type === 'warn' || conf < 85) return { key: 'degraded', label: 'Degraded', color: 'text-warn', bg: 'bg-warn/[0.05]', border: 'border-l-warn', dot: 'bg-warn', pulse: false }
-  return { key: 'stable', label: 'Stable', color: 'text-ok', bg: '', border: 'border-l-ok', dot: 'bg-ok', pulse: true }
+  if (unit.alert?.type === 'warn' || conf < 85) return { key: 'degraded', label: 'Degraded', color: 'text-warn', bg: 'bg-warn/[0.05]', dot: 'bg-warn', pulse: false }
+  return { key: 'stable', label: 'Stable', color: 'text-ok', bg: '', dot: 'bg-ok', pulse: true }
 }
 
 const AUTONOMY_LABEL = { full: 'Full Auto', assisted: 'Assisted', manual: 'Manual takeover' }

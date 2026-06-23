@@ -59,7 +59,7 @@ function NotifItem({ item, read, onRead, onNavigate }) {
           ) : <span />}
           {!isRead && (
             <button type="button" onClick={() => onRead(item.id)}
-              className="font-body text-muted text-label hover:text-muted transition-colors"
+              className="font-body text-muted text-label hover:text-ink transition-colors"
               aria-label="Mark as read">
               Mark read
             </button>
@@ -176,13 +176,14 @@ export default function NotificationCenter({ onClose }) {
      <div className="px-3 py-3 space-y-2.5">
       {INTELLIGENCE_SIGNALS.map((sig, i) => (
        <div key={i}
-        className={`bg-stone border border-rule overflow-hidden ${sig.tone === 'danger' ? 'border-l-[3px] border-l-danger' : 'border-l-[3px] border-l-warn'}`}>
+        className="bg-stone border border-rule overflow-hidden">
         {/* Body: confidence + label + detail */}
         <div className="px-4 py-3 flex items-start gap-3">
          <div className={`font-display font-bold text-title leading-none tabular-nums flex-shrink-0 pt-0.5 ${
           sig.confidence >= 85 ? 'text-danger' : sig.confidence >= 75 ? 'text-warn' : 'text-muted'
          }`}>{sig.confidence}%</div>
          <div className="flex-1 min-w-0">
+          <div className="mb-1"><StatusPill tone={sig.tone === 'danger' ? 'danger' : 'warn'}>{sig.tone === 'danger' ? 'Critical' : 'Watch'}</StatusPill></div>
           <div className="font-body font-medium text-ink text-body leading-snug">{sig.label}</div>
           <div className="font-body text-muted text-label leading-snug mt-0.5">{sig.detail}</div>
          </div>

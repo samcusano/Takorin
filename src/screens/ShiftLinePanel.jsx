@@ -109,9 +109,10 @@ function DirectorHoldCard({ executed, onExecute }) {
   }
 
   return (
-    <div className={`v2-row-in bg-stone2 border border-rule border-l-[3px] mb-2.5 transition-opacity ${executed ? 'border-l-ok opacity-50' : 'border-l-danger'}`}>
+    <div className={`v2-row-in bg-stone2 border border-rule mb-2.5 transition-opacity ${executed ? 'opacity-50' : ''}`}>
       <div className="px-4 pt-3.5 pb-2.5">
         <div className="flex items-center gap-1.5 mb-1.5 flex-wrap">
+          <StatusPill tone={executed ? 'ok' : 'danger'}>{executed ? 'Executed' : 'Hold active'}</StatusPill>
           <span className="font-body text-muted text-label">{DIRECTOR_HOLD.director} · Plant Director · {DIRECTOR_HOLD.ratifiedAt}</span>
           <span className="font-body text-muted text-label opacity-40">·</span>
           <span className="font-body text-muted text-label">{DIRECTOR_HOLD.agent}</span>
@@ -354,7 +355,7 @@ function FindingCard({ f, index, onAct, onDelegate, onDismiss }) {
               <div className="px-4 py-2">
                 {(f.delegateTo || []).map(op => (
                   <button key={op} type="button" onClick={() => handleDelegate(op)}
-                    className="flex items-center w-full py-2 font-body text-label text-ink hover:text-muted transition-colors">
+                    className="flex items-center w-full -mx-4 px-4 py-2 font-body text-label text-ink hover:bg-stone2 transition-colors">
                     {op}
                   </button>
                 ))}
@@ -485,7 +486,7 @@ function SupervisorQueue({ findings, signOffRequests, setSignOffRequests, logAct
       <div className="px-6 pt-5">
         <div className="font-body text-label text-muted mb-3">Act now · {actNow.length} item{actNow.length !== 1 ? 's' : ''}</div>
         {actNow.map((f, i) => (
-          <div key={f.id} className="v2-row-in bg-stone2 border border-rule border-l-[3px] border-l-danger mb-2 px-4 py-3.5"
+          <div key={f.id} className="v2-row-in bg-stone2 border border-rule mb-2 px-4 py-3.5"
             style={{ animationDelay: `${i * 50}ms` }}>
             <div className="flex items-center gap-2 mb-1.5">
               <span className="font-body text-label px-1.5 py-0.5 text-danger bg-danger/[0.078] border border-danger/20">Blocking</span>
@@ -503,10 +504,13 @@ function SupervisorQueue({ findings, signOffRequests, setSignOffRequests, logAct
           <div className="mt-4">
             <div className="font-body text-label text-muted mb-3">Watch · {watchItems.length} items</div>
             {watchItems.map((f, i) => (
-              <div key={f.id} className="v2-row-in flex items-start gap-3 bg-stone2 border border-rule border-l-[3px] border-l-warn mb-1.5 px-4 py-3"
+              <div key={f.id} className="v2-row-in flex items-start gap-3 bg-stone2 border border-rule mb-1.5 px-4 py-3"
                 style={{ animationDelay: `${(actNow.length + i) * 50}ms` }}>
                 <div className="flex-1">
-                  <div className="font-body text-label text-muted mb-[3px]">{f.source}</div>
+                  <div className="flex items-center gap-1.5 mb-[3px]">
+                    <StatusPill tone="warn">Watch</StatusPill>
+                    <span className="font-body text-label text-muted">{f.source}</span>
+                  </div>
                   <div className="font-body font-medium text-label text-ink">{f.title}</div>
                 </div>
               </div>
@@ -520,8 +524,9 @@ function SupervisorQueue({ findings, signOffRequests, setSignOffRequests, logAct
         {signOffRequests.length === 0 ? (
           <p className="font-body text-label text-muted">No pending sign-offs — operators are good to go.</p>
         ) : signOffRequests.map((req, i) => (
-          <div key={req.id} className="v2-row-in bg-stone2 border border-rule border-l-[3px] border-l-ok mb-2 px-4 py-3.5"
+          <div key={req.id} className="v2-row-in bg-stone2 border border-rule mb-2 px-4 py-3.5"
             style={{ animationDelay: `${i * 50}ms` }}>
+            <div className="mb-1.5"><StatusPill tone="ok">Sign-off ready</StatusPill></div>
             <div className="font-body font-medium text-body text-ink mb-1">{req.operator}</div>
             <div className="font-body text-label text-muted mb-3">{req.finding} · {req.station} · {req.requestedAt}</div>
             <div className="flex items-center gap-2">
@@ -732,7 +737,7 @@ export default function ShiftLinePanel({ score = 78, lineLabel = 'Line 4 · AM S
                         <span className="font-body text-label text-muted">Fleet alerts · {faulted.length}</span>
                       </div>
                       {faulted.map((u, i) => (
-                        <div key={u.id} className={`v2-row-in bg-stone2 border border-rule border-l-[3px] mb-2 px-4 py-3 ${u.status === 'fault' ? 'border-l-danger' : 'border-l-warn'}`}
+                        <div key={u.id} className="v2-row-in bg-stone2 border border-rule mb-2 px-4 py-3"
                           style={{ animationDelay: `${i * 60}ms` }}>
                           <div className="flex items-center gap-2 mb-1.5">
                             <span className={`font-body text-label px-1.5 py-0.5 border ${u.status === 'fault' ? 'text-danger bg-danger/[0.08] border-danger/20' : 'text-warn bg-warn/[0.08] border-warn/20'}`}>

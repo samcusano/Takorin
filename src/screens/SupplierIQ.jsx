@@ -229,10 +229,10 @@ function LotTicketPanel({ lot, onClose, coaRequested, setCoaRequested }) {
 
 // ── SupplierCard ─────────────────────────────────────────────────────────────
 function SupplierCard({ tone = 'warn', title, desc, evidence, children, actions, delay = 0 }) {
-  const leftCls = tone === 'danger' ? 'border-l-danger' : tone === 'warn' ? 'border-l-warn' : 'border-l-rule'
   return (
-    <div className={`row-in bg-stone2 border border-rule border-l-[3px] ${leftCls} mb-2.5`} style={{ animationDelay: `${delay}ms` }}>
+    <div className="row-in bg-stone2 border border-rule mb-2.5" style={{ animationDelay: `${delay}ms` }}>
       <div className="px-4 pt-3.5 pb-2.5">
+        {(tone === 'danger' || tone === 'warn') && <div className="mb-1.5"><StatusPill tone={tone}>{tone === 'danger' ? 'Critical' : 'Attention'}</StatusPill></div>}
         <div className="font-display font-semibold text-sub text-ink leading-snug mb-2">{title}</div>
         {desc && <p className="font-body text-body text-ink leading-relaxed m-0">{desc}</p>}
       </div>
@@ -298,10 +298,9 @@ function SupplyChainMap({ onViewHold }) {
       <div className="flex items-stretch gap-3 overflow-x-auto pb-2">
         {[...net.tiers].sort((a, b) => b.tier - a.tier).map((t, i, arr) => {
           const vis = VISIBILITY_CFG[t.visibility]
-          const leftCls = t.status === 'danger' ? 'border-l-danger' : t.status === 'warn' ? 'border-l-warn' : 'border-l-rule'
           return (
             <div key={t.tier} className="flex items-stretch gap-3 flex-shrink-0">
-              <div className={`row-in w-[240px] bg-stone2 border border-rule border-l-[3px] ${leftCls} px-4 py-3.5`} style={{ animationDelay: `${i * 80}ms` }}>
+              <div className="row-in w-[240px] bg-stone2 border border-rule px-4 py-3.5" style={{ animationDelay: `${i * 80}ms` }}>
                 <div className="flex items-center justify-between mb-1.5">
                   <span className="font-body text-label text-muted">Tier {t.tier}</span>
                   <StatusPill tone={vis.tone}>{vis.label}</StatusPill>

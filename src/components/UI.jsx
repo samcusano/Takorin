@@ -249,15 +249,18 @@ export function SPRow({ label, sub, value, valueColor = 'text-ink' }) {
  )
 }
 
-// ── Action banner — muted tonal style
-export function ActionBanner({ tone = 'warn', headline, body, children, footer }) {
+// ── Action banner — soft tonal fill + labelled status pill (status on badge, not border)
+const ACTION_BANNER_LABEL = { danger: 'Critical', warn: 'Warning', ok: 'Clear', signal: 'Active' }
+export function ActionBanner({ tone = 'warn', label, headline, body, children, footer }) {
  const s = tone === 'muted'
   ? 'bg-stone3 border-b border-rule2'
-  : `${toneStyle(tone, 'bg')} border-b-2 ${toneStyle(tone, 'borderBottom')}`
+  : `${toneStyle(tone, 'bg')} border-b border-rule2`
+ const pillLabel = label !== undefined ? label : (tone !== 'muted' ? ACTION_BANNER_LABEL[tone] : null)
  return (
  <div className={`flex-shrink-0 ${s}`}>
  <div className="px-5 py-4 flex items-start gap-4">
  <div className="flex-1">
+ {pillLabel && <div className="mb-1.5"><StatusPill tone={tone}>{pillLabel}</StatusPill></div>}
  <div className="font-display font-semibold text-ink text-sub leading-tight">{headline}</div>
  {body && <div className="font-display text-muted text-body mt-1 leading-relaxed">{body}</div>}
  </div>
@@ -333,7 +336,7 @@ export function Tabs({ tabs, active, onChange, flush = false, className = '' }) 
    {tabs.map(t => (
     <button key={t.id} type="button" onClick={() => onChange(t.id)}
      className={`font-body text-label px-4 py-2.5 border-b-2 transition-colors flex-shrink-0 flex items-center gap-1.5 ${
-      active === t.id ? 'border-b-signal text-ink' : 'border-b-transparent text-muted hover:text-muted'
+      active === t.id ? 'border-b-signal text-ink' : 'border-b-transparent text-muted hover:text-ink'
      }`}>
      {t.label}
      {t.dot && active !== t.id && <span className="w-1.5 h-1.5 rounded-full bg-danger flex-shrink-0" />}
@@ -356,7 +359,7 @@ export function SegmentedControl({ options, value, onChange }) {
     return (
      <button key={o.value} type="button" onClick={() => onChange(o.value)}
       className={`inline-flex items-center gap-1.5 font-body text-label px-3 py-1.5 transition-colors ${
-       active ? 'bg-stone4 text-ink' : 'text-muted hover:text-muted'
+       active ? 'bg-stone4 text-ink' : 'text-muted hover:text-ink'
       }`}>
       {Icon && <Icon size={12} strokeWidth={2} className="flex-shrink-0" />}
       {o.label}
@@ -709,43 +712,9 @@ export function HoldButton({ label, holdLabel, doneLabel, duration = 1500, onCon
  )
 }
 
-// ── AcceptanceGate — Sticky top bar for shift handoff acceptance
-// Persistent accountability framing: incoming supervisor name + carry-forward count + acceptance status
-export function AcceptanceGate({ incomingSupervisor, shiftTime, carryForwardCount, acknowledgedCount, allAcknowledged, onAccept, disabled = false }) {
- const bannerTone = carryForwardCount > 0 ? (allAcknowledged ? 'ok' : 'warn') : 'ok'
- const statusText = carryForwardCount > 0 ? `${acknowledgedCount} of ${carryForwardCount} acknowledged` : 'All clear'
- const bannerColor = {
-  ok: 'bg-ok/[0.05] border-b-ok',
-  warn: 'bg-warn/[0.05] border-b-warn',
-  danger: 'bg-danger/[0.05] border-b-danger',
- }[bannerTone]
-
- return (
-  <div className={`sticky top-0 z-40 flex items-center justify-between gap-4 px-4 py-3 border-b-2 ${bannerColor} flex-shrink-0`}>
-   <div className="flex-1">
-    <div className="flex items-baseline gap-2 mb-0.5">
-     <span className="font-body font-medium text-ink text-body">{incomingSupervisor}</span>
-     <span className="font-body text-muted text-label">{shiftTime}</span>
-    </div>
-    <div className={`font-body text-label ${carryForwardCount > 0 && !allAcknowledged ? 'text-warn' : 'text-muted'}`}>
-     {carryForwardCount > 0 ? `${carryForwardCount} item${carryForwardCount !== 1 ? 's' : ''} require acknowledgment` : 'No carry-forward items'}
-    </div>
-   </div>
-   <Btn
-    variant="primary"
-    onClick={onAccept}
-    disabled={!allAcknowledged || disabled}
-   >
-    Accept shift
-   </Btn>
-  </div>
- )
-}
-
 // ── CarryForwardItem — Scan-first row: title + one-liner, details in drawer
 export function CarryForwardItem({ item, acknowledged, onAcknowledge, onView }) {
- const borderColor = item.resolvedInShift ? 'border-l-ok'
-  : { danger: 'border-l-danger', warn: 'border-l-warn', watch: 'border-l-rule2' }[item.urgency] || 'border-l-rule2'
+ const urgencyPill = { danger: { tone: 'danger', label: 'Critical' }, warn: { tone: 'warn', label: 'Watch' }, watch: { tone: 'muted', label: 'Monitor' } }[item.urgency]
 
  const isClickable = onView && !item.resolvedInShift
 
@@ -755,7 +724,7 @@ export function CarryForwardItem({ item, acknowledged, onAcknowledge, onView }) 
    tabIndex={isClickable ? 0 : undefined}
    onClick={isClickable ? onView : undefined}
    onKeyDown={isClickable ? (e) => { if (e.key === 'Enter' || e.key === ' ') onView() } : undefined}
-   className={`relative overflow-hidden border-l-[3px] ${borderColor} border-b border-rule2 px-4 py-3 flex items-center gap-3 ${
+   className={`relative overflow-hidden border-b border-rule2 px-4 py-3 flex items-center gap-3 ${
     item.resolvedInShift ? 'bg-ok/[0.03]' : acknowledged ? 'bg-ok/[0.03]' : 'bg-stone'
    } ${isClickable ? 'cursor-pointer hover:bg-stone2 transition-colors' : ''}`}>
    {acknowledged && !item.resolvedInShift && <span className="flash-success" aria-hidden="true" />}
@@ -763,6 +732,7 @@ export function CarryForwardItem({ item, acknowledged, onAcknowledge, onView }) 
    {/* Title + one-liner */}
    <div className="flex-1 min-w-0">
     <div className="flex items-center gap-2 mb-0.5">
+     {!item.resolvedInShift && urgencyPill && <StatusPill tone={urgencyPill.tone}>{urgencyPill.label}</StatusPill>}
      <span className={`font-body font-medium text-body leading-snug ${item.resolvedInShift ? 'text-muted line-through' : 'text-ink'}`}>
       {item.title}
      </span>
@@ -1215,31 +1185,6 @@ export function EmptyState({ icon: Icon, message, sub, action }) {
     {sub && <div className="font-body text-muted text-label mt-1 opacity-60">{sub}</div>}
     {action && <div className="mt-4">{action}</div>}
    </div>
-  </div>
- )
-}
-
-// ── AccentRow — border-left tone row with optional background tint ───────────────
-// tone: 'danger' | 'warn' | 'ok' | 'signal' | 'muted'
-// bg: true adds a subtle tone-matched background fill
-export function AccentRow({ tone = 'muted', bg = false, className = '', children }) {
- const border = {
-  danger: 'border-l-danger',
-  warn:   'border-l-warn',
-  ok:     'border-l-ok',
-  signal:  'border-l-signal',
-  muted:  'border-l-rule2',
- }[tone] || 'border-l-rule2'
- const fill = bg ? {
-  danger: 'bg-danger/[0.03]',
-  warn:   'bg-warn/[0.02]',
-  ok:     'bg-ok/[0.03]',
-  signal:  'bg-signal/[0.03]',
-  muted:  '',
- }[tone] || '' : ''
- return (
-  <div className={`border-l-[3px] ${border} border-b border-rule2 ${fill} ${className}`}>
-   {children}
   </div>
  )
 }

@@ -811,8 +811,9 @@ function PrepareView({ forecast = [], onStartShift }) {
        {actionRows.map((row, i) => {
         const done = !!confirmed[i]
         return (
-         <div key={i} className={`border-l-[3px] ${row.urgent ? 'border-l-danger' : 'border-l-rule2'} border-t border-rule2/50 px-4 py-3 flex items-center gap-3 ${done ? 'opacity-50' : ''}`}>
+         <div key={i} className={`border-t border-rule2/50 px-4 py-3 flex items-center gap-3 ${done ? 'opacity-50' : ''}`}>
           <div className="flex-1 min-w-0">
+           {row.urgent && !done && <div className="mb-1"><StatusPill tone="danger">Urgent</StatusPill></div>}
            <div className={`font-body font-medium text-body leading-snug ${done ? 'line-through text-muted' : row.urgent ? 'text-danger' : 'text-ink'}`}>
             {row.action}
            </div>
@@ -915,7 +916,7 @@ function SleepPickerDropdown({ triggerRef, onClose, onSelect }) {
       ].map(opt => (
        <button key={opt.value} type="button"
         onClick={() => { onSelect(opt.value); onClose() }}
-        className="flex items-center w-full py-2 font-body text-label text-ink hover:text-muted transition-colors">
+        className="flex items-center w-full -mx-4 px-4 py-2 font-body text-label text-ink hover:bg-stone2 transition-colors">
         {opt.label}
        </button>
       ))}

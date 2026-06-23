@@ -262,9 +262,8 @@ function MiniSparkline({ data, color }) {
 }
 
 function pressureCls(score) {
-  if (score >= 75) return 'border-l-[5px] border-l-danger bg-danger/[0.025]'
-  if (score >= 60) return 'border-l-[3px] border-l-warn'
-  return 'border-l-[2px] border-l-ok/50'
+  if (score >= 75) return 'bg-danger/[0.025]'
+  return ''
 }
 
 function pressureClass(score) {
@@ -346,7 +345,7 @@ function DigitalMaturityMap({ plantId }) {
             const laggingReason = data.laggingReasons?.[i]
             const isLagging     = score === minScore
             return (
-              <div key={dim} className={`border border-rule2 bg-stone px-5 py-4 ${isLagging ? 'border-l-[3px] border-l-warn' : ''}`}>
+              <div key={dim} className="border border-rule2 bg-stone px-5 py-4">
                 <div className="flex items-start justify-between gap-4 mb-2.5">
                   <div>
                     <span className="font-body font-medium text-ink text-body">{dim}</span>
@@ -1132,7 +1131,7 @@ export default function PlantOverview() {
               {SHIFT_QUEUE.filter(q => q.urgency === 'ok').length > 0 && (
                 <div className="border-t border-rule2/50">
                   <div className="px-4 pt-2.5 pb-1">
-                    <span className="font-body text-label text-muted font-semibold tracking-wide">Watch</span>
+                    <span className="font-body text-label text-muted tracking-wide">Watch</span>
                   </div>
                   {SHIFT_QUEUE.filter(q => q.urgency === 'ok').map((item, i) => {
                     const visited = visitedQueue.has(item.action)

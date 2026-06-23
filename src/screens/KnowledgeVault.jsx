@@ -15,23 +15,23 @@ import { StatusPill, SlidePanel, StatGrid, EmptyState, Btn, SegmentedControl } f
 // ── Operational Memory Domains ───────────────────────────────────────────────
 
 const DOMAINS = [
-  { id: 'active-deviations',    label: 'Active Deviations',    icon: Zap,           color: 'text-danger', bg: 'bg-danger/[0.04]', border: 'border-l-danger', badge: 'bg-danger/[0.04] text-danger' },
-  { id: 'sensory-drift',        label: 'Sensory Drift',        icon: Waves,         color: 'text-signal',  bg: 'bg-signal/[0.05]',  border: 'border-l-signal',  badge: 'bg-signal/10 text-signal'  },
-  { id: 'supplier-deviation',   label: 'Supplier Deviation',   icon: Truck,         color: 'text-warn',   bg: 'bg-warn/[0.04]',   border: 'border-l-warn',   badge: 'bg-warn/10 text-warn'    },
-  { id: 'yield-loss',           label: 'Yield Loss',           icon: TrendingDown,  color: 'text-warn',   bg: 'bg-warn/[0.04]',   border: 'border-l-warn',   badge: 'bg-warn/10 text-warn'    },
-  { id: 'capa-patterns',        label: 'CAPA Patterns',        icon: ClipboardCheck,color: 'text-muted',  bg: '',                  border: 'border-l-muted',  badge: 'bg-stone3 text-muted'    },
-  { id: 'shift-recovery',       label: 'Shift Recovery',       icon: RotateCcw,     color: 'text-muted',  bg: '',                  border: 'border-l-muted',  badge: 'bg-stone3 text-muted'    },
-  { id: 'regulatory-findings',  label: 'Regulatory Findings',  icon: Shield,        color: 'text-danger', bg: 'bg-danger/[0.04]', border: 'border-l-danger', badge: 'bg-danger/[0.04] text-danger' },
-  { id: 'recipes',              label: 'Recipes',              icon: FlaskConical,  color: 'text-ok',     bg: 'bg-ok/[0.03]',     border: 'border-l-ok',     badge: 'bg-ok/10 text-ok'        },
+  { id: 'active-deviations',    label: 'Active Deviations',    icon: Zap,           color: 'text-danger', bg: 'bg-danger/[0.04]', badge: 'bg-danger/[0.04] text-danger' },
+  { id: 'sensory-drift',        label: 'Sensory Drift',        icon: Waves,         color: 'text-signal',  bg: 'bg-signal/[0.05]',  badge: 'bg-signal/10 text-signal'  },
+  { id: 'supplier-deviation',   label: 'Supplier Deviation',   icon: Truck,         color: 'text-warn',   bg: 'bg-warn/[0.04]',   badge: 'bg-warn/10 text-warn'    },
+  { id: 'yield-loss',           label: 'Yield Loss',           icon: TrendingDown,  color: 'text-warn',   bg: 'bg-warn/[0.04]',   badge: 'bg-warn/10 text-warn'    },
+  { id: 'capa-patterns',        label: 'CAPA Patterns',        icon: ClipboardCheck,color: 'text-muted',  bg: '',                  badge: 'bg-stone3 text-muted'    },
+  { id: 'shift-recovery',       label: 'Shift Recovery',       icon: RotateCcw,     color: 'text-muted',  bg: '',                  badge: 'bg-stone3 text-muted'    },
+  { id: 'regulatory-findings',  label: 'Regulatory Findings',  icon: Shield,        color: 'text-danger', bg: 'bg-danger/[0.04]', badge: 'bg-danger/[0.04] text-danger' },
+  { id: 'recipes',              label: 'Recipes',              icon: FlaskConical,  color: 'text-ok',     bg: 'bg-ok/[0.03]',     badge: 'bg-ok/10 text-ok'        },
 ]
 
 const MEMORY_TYPES = [
-  { id: 'variance',     label: 'Variance memory',    dot: 'bg-warn',   border: 'border-l-warn'   },
-  { id: 'intervention', label: 'Intervention memory', dot: 'bg-ok',    border: 'border-l-ok'     },
-  { id: 'sensory',      label: 'Sensory memory',     dot: 'bg-signal',  border: 'border-l-signal'  },
-  { id: 'seasonal',     label: 'Seasonal memory',    dot: 'bg-muted',  border: 'border-l-muted'  },
-  { id: 'judgment',     label: 'Operator judgment',  dot: 'bg-ink',    border: 'border-l-ink'    },
-  { id: 'causality',    label: 'Process causality',  dot: 'bg-muted',  border: 'border-l-muted'  },
+  { id: 'variance',     label: 'Variance memory',    dot: 'bg-warn'   },
+  { id: 'intervention', label: 'Intervention memory', dot: 'bg-ok'    },
+  { id: 'sensory',      label: 'Sensory memory',     dot: 'bg-signal'  },
+  { id: 'seasonal',     label: 'Seasonal memory',    dot: 'bg-muted'  },
+  { id: 'judgment',     label: 'Operator judgment',  dot: 'bg-ink'    },
+  { id: 'causality',    label: 'Process causality',  dot: 'bg-muted'  },
 ]
 
 const RECALL_MODES = [
@@ -281,10 +281,10 @@ function EntryDetail({ entry, isPromoted, onPromote }) {
           </div>
         )}
         {entry.institutionalRisk && (
-          <div className={`px-4 py-3 border-l-[3px] ${
-            entry.institutionalRisk.startsWith('HIGH')   ? 'border-l-danger bg-danger/[0.04]' :
-            entry.institutionalRisk.startsWith('MEDIUM') ? 'border-l-warn bg-warn/[0.03]'     :
-            'border-l-muted bg-stone2'
+          <div className={`px-4 py-3 ${
+            entry.institutionalRisk.startsWith('HIGH')   ? 'bg-danger/[0.04]' :
+            entry.institutionalRisk.startsWith('MEDIUM') ? 'bg-warn/[0.03]'   :
+            'bg-stone2'
           }`}>
             <div className="font-body text-muted text-label mb-1">Institutional risk</div>
             <p className={`font-body text-body leading-snug ${entry.institutionalRisk.startsWith('HIGH') ? 'text-danger/80' : entry.institutionalRisk.startsWith('MEDIUM') ? 'text-warn/80' : 'text-muted'}`}>{entry.institutionalRisk}</p>
@@ -299,7 +299,7 @@ function EntryDetail({ entry, isPromoted, onPromote }) {
         )}
 
         {/* Cross-plant propagation */}
-        <div className={`border border-rule2 px-4 py-4 ${isPromoted ? 'bg-ok/[0.04] border-ok/20' : 'bg-stone2'}`}>
+        <div className={`border border-rule2 px-4 py-4 ${isPromoted ? 'bg-ok/[0.04]' : 'bg-stone2'}`}>
           {isPromoted ? (
             <div className="flex items-center gap-2">
               <Check size={12} strokeWidth={2} className="text-ok flex-shrink-0" />
@@ -642,10 +642,9 @@ function OperationalMemoryVault() {
               <div className="w-[280px] flex-shrink-0 border-r border-rule2 overflow-y-auto">
                 {processMemory.map(m => {
                   const ocColor = { exceptional: 'text-ok', excellent: 'text-ok', underperformed: 'text-danger' }[m.outcome] ?? 'text-muted'
-                  const border = m.outcome === 'underperformed' ? 'border-l-danger' : m.grade === 'Premium' ? 'border-l-signal' : 'border-l-muted'
                   return (
                     <button key={m.id} type="button" onClick={() => setSlideEntry({ _pm: true, ...m })}
-                      className={`w-full text-left px-4 py-4 border-b border-rule2 border-l-4 ${border} hover:bg-stone2/50 transition-colors`}>
+                      className="w-full text-left px-4 py-4 border-b border-rule2 hover:bg-stone2/50 transition-colors">
                       <div className="flex items-baseline justify-between mb-1">
                         <span className="font-body font-bold text-ink text-body">{m.batchId}</span>
                         <span className={`display-num text-sub ${m.grade === 'Premium' ? 'text-signal' : 'text-muted'}`}>{m.grade}</span>

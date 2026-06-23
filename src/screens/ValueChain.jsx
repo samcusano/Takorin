@@ -53,12 +53,10 @@ function OrderCard({ order, selected, onClick }) {
   const leadOver = order.leadTimeDays != null && order.leadTimeDays > order.leadTimeTarget
   return (
     <button type="button" onClick={onClick}
-      className={`w-full text-left border transition-colors border-l-[3px] ${
+      className={`w-full text-left border transition-colors ${
         selected
-          ? 'bg-stone3 border-rule border-l-signal'
-          : isLate
-          ? 'bg-stone border-rule2 border-l-warn hover:bg-stone2'
-          : 'bg-stone border-rule2 border-l-transparent hover:bg-stone2'
+          ? 'bg-stone3 border-rule'
+          : 'bg-stone border-rule2 hover:bg-stone2'
       }`}>
       {/* Header */}
       <div className="flex items-start justify-between gap-2 px-4 pt-3 pb-2">

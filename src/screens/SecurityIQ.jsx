@@ -232,7 +232,6 @@ const FINDINGS = [
 const SEV_ORDER  = { critical: 0, high: 1, medium: 2, low: 3 }
 const SORTED     = [...FINDINGS].sort((a, b) => (SEV_ORDER[a.severity] ?? 3) - (SEV_ORDER[b.severity] ?? 3))
 const SEV_TONE   = { critical: 'danger', high: 'danger', medium: 'warn', low: 'muted' }
-const SEV_BORDER = { critical: 'border-l-danger', high: 'border-l-danger', medium: 'border-l-warn', low: 'border-l-muted' }
 
 const CAT_OPTIONS = [
   { value: 'all',           label: 'All categories' },
@@ -256,7 +255,7 @@ function FindingRow({ finding, selected, onClick }) {
   const isSelected = selected?.id === finding.id
   return (
     <button type="button" onClick={onClick}
-      className={`w-full text-left flex items-start gap-4 px-5 py-4 border-b border-rule2 border-l-[3px] ${SEV_BORDER[finding.severity]} transition-colors ${
+      className={`w-full text-left flex items-start gap-4 px-5 py-4 border-b border-rule2 transition-colors ${
         isSelected ? 'bg-stone3' : 'hover:bg-stone2/50'
       }`}>
       <div className="flex-1 min-w-0">
