@@ -166,6 +166,16 @@ Prefer these over palette tokens for maximum theme-independence.
 | `--ease-inout` | `cubic-bezier(0.42,0,0.58,1)` | Symmetric |
 | `--ease-spring` | `cubic-bezier(0.16,1,0.3,1)` | Spring/bounce |
 
+## Dither texture
+
+| Token | Value | Use |
+|-------|-------|-----|
+| `--dither-cell` | `3px` | Dot grid pitch for chart dither fills (SVG + CSS bar backgrounds) |
+| `--dither-fill` | `0.55` | Base dot opacity for dithered chart fills |
+| `--dither-fill-min` | `0.30` | Opacity trough of the breathing animation |
+
+Breathing motion reuses `--dur-atmo` (9000ms) and `--ease-inout`. Disabled under `prefers-reduced-motion`.
+
 ## Z-index
 
 | Variable | Value | Usage |

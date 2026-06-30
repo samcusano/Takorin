@@ -130,6 +130,12 @@
   --prim-dur-live:     6000ms;
   --prim-dur-atmo:     9000ms;
 
+  /* ── Dither / texture primitives ─────────────────────────────────────────
+     Cell = dot grid pitch; fill = base dot opacity; fill-min = breathing trough. */
+  --prim-dither-cell:      3px;
+  --prim-dither-fill:      0.55;
+  --prim-dither-fill-min:  0.30;
+
   --prim-ease-linear:   cubic-bezier(0, 0, 1, 1);
   --prim-ease-standard: cubic-bezier(0.25, 0.1, 0.25, 1);
   --prim-ease-enter:    cubic-bezier(0.19, 0.91, 0.38, 1);
@@ -289,6 +295,11 @@
   --dur-data:      var(--prim-dur-data,      500ms);
   --dur-live:      var(--prim-dur-live,     6000ms);
   --dur-atmo:      var(--prim-dur-atmo,     9000ms);
+
+  /* ── Dither texture ──────────────────────────────────────────────────── */
+  --dither-cell:     var(--prim-dither-cell,     3px);
+  --dither-fill:     var(--prim-dither-fill,     0.55);
+  --dither-fill-min: var(--prim-dither-fill-min, 0.30);
 
   --ease-linear:   var(--prim-ease-linear,   cubic-bezier(0, 0, 1, 1));
   --ease-standard: var(--prim-ease-standard, cubic-bezier(0.25, 0.1, 0.25, 1));
