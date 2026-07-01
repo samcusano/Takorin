@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useId } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import ProcessHierarchy from './ProcessHierarchy'
 import { shiftData, line6Data, wichitaData, denverData, facility, supplierData } from '../data'
@@ -10,6 +10,7 @@ import {
 } from 'lucide-react'
 import { interventionSummary, interventions } from '../data/interventions'
 import { FilterDropdown, SlidePanel, Btn, SegmentedControl, Checkbox, AnimatedScore, Tabs, SceneHeader, StatusPill } from '../components/UI'
+import { computeDitherDots } from '../lib/dither'
 import NetworkView from './NetworkView'
 
 // ─── Before-narratives — one sentence per line describing normal baseline ─────
@@ -242,20 +243,35 @@ function fmtMinutes(m) {
   return h > 0 ? `${h}h ${min}m` : `${min}m`
 }
 
-function MiniSparkline({ data, color }) {
+function MiniSparkline({ data, color, live = false }) {
   if (!data || data.length < 2) return null
+  const clipId = useId()
   const min = Math.min(...data)
   const max = Math.max(...data)
   const range = max - min || 1
   const w = 44, h = 18
-  const pts = data.map((v, i) => {
-    const x = (i / (data.length - 1)) * w
-    const y = h - ((v - min) / range) * h
-    return `${x},${y}`
-  }).join(' ')
+  const points = data.map((v, i) => ({
+    x: (i / (data.length - 1)) * w,
+    y: h - ((v - min) / range) * h,
+  }))
+  const linePts = points.map(p => `${p.x},${p.y}`).join(' ')
+  const areaPath = `M${points[0].x},${points[0].y} ` +
+    points.slice(1).map(p => `L${p.x},${p.y}`).join(' ') +
+    ` L${w},${h} L0,${h} Z`
+  const dots = computeDitherDots({ width: w, height: h, points, baselineY: h, cell: 2.5 })
   return (
     <svg width={w} height={h} aria-hidden="true" className="flex-shrink-0">
-      <polyline points={pts} fill="none" stroke={color} strokeWidth="1.5"
+      <clipPath id={clipId}><path d={areaPath} /></clipPath>
+      <g clipPath={`url(#${clipId})`} style={{ fillOpacity: 'var(--dither-fill)' }}>
+        {dots.map(dot => (
+          <circle
+            key={dot.key} cx={dot.cx} cy={dot.cy} r={dot.r} fill={color}
+            className={live ? 'dither-breathe' : undefined}
+            style={live ? { animationDelay: `calc(var(--dur-atmo) * -${dot.delayFrac.toFixed(3)})` } : undefined}
+          />
+        ))}
+      </g>
+      <polyline points={linePts} fill="none" stroke={color} strokeWidth="1.5"
         strokeLinecap="round" strokeLinejoin="round" opacity="0.7" />
     </svg>
   )
