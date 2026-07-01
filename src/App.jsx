@@ -40,6 +40,7 @@ const ImpactLoop            = lazy(() => import('./screens/ImpactLoop'))
 const SecurityIQ            = lazy(() => import('./screens/SecurityIQ'))
 const QualityIQ             = lazy(() => import('./screens/QualityIQ'))
 const OpLab                 = lazy(() => import('./screens/__OpLab'))
+const DitherLab             = import.meta.env.DEV ? lazy(() => import('./screens/__DitherLab')) : null
 function ScreenLoader() {
  return <div className="flex-1 flex items-center justify-center font-body text-muted text-label">Loading…</div>
 }
@@ -116,6 +117,7 @@ export default function App() {
   <Route path="/plant-map"      element={<Guard k="hierarchy"><ErrorBoundary><ProcessHierarchy /></ErrorBoundary></Guard>} />
   {import.meta.env.DEV && <Route path="/__design_lab"   element={<Suspense fallback={<ScreenLoader />}><DesignLabBrand /></Suspense>} />}
   <Route path="/__op_lab"       element={<Suspense fallback={<ScreenLoader />}><OpLab /></Suspense>} />
+  {import.meta.env.DEV && <Route path="/__dither_lab" element={<Suspense fallback={<ScreenLoader />}><DitherLab /></Suspense>} />}
   <Route path="/data"           element={<Guard k="readiness"><ErrorBoundary><DataReadiness /></ErrorBoundary></Guard>} />
   <Route path="/security"       element={<Guard k="security"><ErrorBoundary><SecurityIQ /></ErrorBoundary></Guard>} />
   <Route path="/delivery"       element={<Guard k="delivery"><ErrorBoundary><ValueChain /></ErrorBoundary></Guard>} />
