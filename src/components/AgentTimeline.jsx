@@ -1,4 +1,5 @@
 import React from 'react'
+import { ditherBarStyle } from '../lib/dither'
 
 const DOT_COLORS = {
  now: 'bg-danger',
@@ -16,13 +17,19 @@ function renderBold(text) {
  )
 }
 
-function SparkBar({ height, active, title }) {
+const BAR_STYLE = ditherBarStyle()
+
+function SparkBar({ height, active, live, title }) {
  return (
- <div
- title={title}
- className={`spark-bar ${active ? 'bg-signal' : 'bg-rule'}`}
- style={{ height }}
- />
+  <div
+   title={title}
+   className={`spark-bar ${active && live ? 'dither-breathe-bar' : ''}`}
+   style={{
+    height,
+    color: active ? 'var(--color-signal)' : 'var(--color-rule)',
+    ...BAR_STYLE,
+   }}
+  />
  )
 }
 
@@ -36,6 +43,7 @@ export default function AgentTimeline({ events, sparkData }) {
  key={i}
  height={d.height}
  active={i === sparkData.length - 1}
+ live={i === sparkData.length - 1}
  title={d.label}
  />
  ))}
