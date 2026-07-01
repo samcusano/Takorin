@@ -59,7 +59,7 @@ function AgentTimeline({ timeline, sparkline, score }) {
     <div className={`font-body font-medium text-label mt-1.5 ${scoreTextColor}`}>{zone}</div>
    </div>
    <div className="pt-5 flex-shrink-0">
-    <WaveformSparkline data={sparkline} color={scoreColor} width={64} height={44} />
+    <WaveformSparkline data={sparkline} color={scoreColor} width={64} height={44} live />
    </div>
   </div>
   <div className="font-body text-muted text-label mt-3 pt-2.5 border-t border-rule2">

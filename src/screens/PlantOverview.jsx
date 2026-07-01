@@ -244,8 +244,8 @@ function fmtMinutes(m) {
 }
 
 function MiniSparkline({ data, color, live = false }) {
-  if (!data || data.length < 2) return null
   const clipId = useId()
+  if (!data || data.length < 2) return null
   const min = Math.min(...data)
   const max = Math.max(...data)
   const range = max - min || 1

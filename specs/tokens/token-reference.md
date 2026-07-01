@@ -172,7 +172,7 @@ Prefer these over palette tokens for maximum theme-independence.
 |-------|-------|-----|
 | `--dither-cell` | `3px` | Dot grid pitch for chart dither fills (SVG + CSS bar backgrounds) |
 | `--dither-fill` | `0.55` | Base dot opacity for dithered chart fills |
-| `--dither-fill-min` | `0.30` | Opacity trough of the breathing animation |
+| `--dither-fill-min` | `0.30` | Per-dot opacity trough of the breathing pulse; combined multiplicatively with `--dither-fill` (group fill-opacity) for the effective rendered alpha (≈ 0.55 × 0.30 ≈ 0.165 at trough) |
 
 Breathing motion reuses `--dur-atmo` (9000ms) and `--ease-inout`. Disabled under `prefers-reduced-motion`.
 

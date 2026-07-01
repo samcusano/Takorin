@@ -432,14 +432,27 @@ export function RightRail({ children }) {
 
 // ── Mini spark plot — smooth bezier curve, Google Finance style
 export function WaveformSparkline({ data, color = 'var(--color-signal)', height = 44, live = false, dither = true }) {
- if (!data || data.length < 2) return null
  const clipId = useId()
+ const svgRef = useRef(null)
+ const [w, setW] = useState(100)
+ useEffect(() => {
+  const el = svgRef.current
+  if (!el) return
+  const ro = new ResizeObserver(entries => {
+   const width = Math.round(entries[0].contentRect.width)
+   if (width > 0) setW(width)
+  })
+  ro.observe(el)
+  return () => ro.disconnect()
+ }, [])
  const { d, fillPath, points } = useMemo(() => {
-  const W = 100, pad = 3
+  const valid = !!(data && data.length >= 2)
+  if (!valid) return { d: '', fillPath: '', points: [] }
+  const pad = 3
   const max = Math.max(...data), min = Math.min(...data)
   const range = max - min || 1
   const points = data.map((v, i) => ({
-   x: pad + (i / (data.length - 1)) * (W - pad * 2),
+   x: pad + (i / (data.length - 1)) * (w - pad * 2),
    y: height - pad - ((v - min) / range) * (height - pad * 2),
   }))
   const d = points.reduce((acc, p, i) => {
@@ -453,11 +466,12 @@ export function WaveformSparkline({ data, color = 'var(--color-signal)', height 
   }, '')
   const last = points.at(-1)
   return { d, fillPath: `${d} L${last.x},${height} L${points[0].x},${height} Z`, points }
- }, [data, height])
- const W = 100
- const dots = dither ? computeDitherDots({ width: W, height, points, baselineY: height }) : []
+ }, [data, height, w])
+ const valid = !!(data && data.length >= 2)
+ if (!valid) return null
+ const dots = dither ? computeDitherDots({ width: w, height, points, baselineY: height }) : []
  return (
-  <svg viewBox={`0 0 ${W} ${height}`} style={{ width: '100%', height }} preserveAspectRatio="none">
+  <svg ref={svgRef} viewBox={`0 0 ${w} ${height}`} style={{ width: '100%', height }} preserveAspectRatio="none">
    {dither ? (
     <>
      <clipPath id={clipId}><path d={fillPath} /></clipPath>
