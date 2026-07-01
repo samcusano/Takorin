@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { AlertTriangle, CheckCircle2, Cpu, Gamepad2, Pause, Route, LifeBuoy, ChevronDown, ChevronRight } from 'lucide-react'
-import { SlidePanel, Btn } from '../components/UI'
+import { SlidePanel, Btn, DitherMeter } from '../components/UI'
 import { robotFleetData } from '../data'
 
 // ─── Extended per-unit data ────────────────────────────────────────────────────
@@ -192,12 +192,12 @@ const INTERVENTION_LABEL = { none: 'No action required', monitoring: 'Monitoring
 const INTERVENTION_COLOR = { none: 'text-muted', monitoring: 'text-warn', recommended: 'text-warn', active: 'text-danger' }
 
 function ConfBar({ value }) {
-  const clr = value >= 85 ? 'bg-ok' : value >= 65 ? 'bg-warn' : 'bg-danger'
+  const clrVar = value >= 85 ? 'var(--color-ok)' : value >= 65 ? 'var(--color-warn)' : 'var(--color-danger)'
   const txt = value >= 85 ? 'text-ok' : value >= 65 ? 'text-warn' : 'text-danger'
   return (
     <div className="flex items-center gap-2 mt-1.5">
       <div className="h-[3px] flex-1 bg-stone3 overflow-hidden">
-        <div className={`h-full ${clr} transition-[width] duration-500`} style={{ width: `${value}%` }} />
+        <DitherMeter value={value} color={clrVar} />
       </div>
       <span className={`display-num text-label w-7 text-right flex-shrink-0 tabular-nums ${txt}`}>{value}%</span>
     </div>

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAppState } from '../context/AppState'
+import { computeDitherDots } from '../lib/dither'
 import { openCases, benchmarks } from '../data/capa.js'
 import { goalsData, facility, networkData } from '../data'
 import { interventionSummary, interventions } from '../data/interventions'
@@ -279,7 +280,13 @@ export function WaterfallChart({ attr }) {
         const opacity = isBase ? 0.22 : isTotal ? 0.85 : 0.7
         return (
           <g key={step.id}>
-            <rect x={x} y={barY} width={barW} height={Math.max(1.5, barH)} fill={color} opacity={opacity} rx="1.5" />
+            {/* Faint base block keeps the bar's extent legible; dithered dots add the texture, dense at the value edge. */}
+            <rect x={x} y={barY} width={barW} height={Math.max(1.5, barH)} fill={color} opacity={opacity * 0.34} rx="1.5" />
+            <g transform={`translate(${x},${barY})`} style={{ fillOpacity: 'var(--dither-fill)' }}>
+              {computeDitherDots({ width: barW, height: Math.max(1.5, barH), points: [{ x: 0, y: 0 }, { x: barW, y: 0 }], baselineY: Math.max(1.5, barH) }).map(dot => (
+                <circle key={dot.key} cx={dot.cx} cy={dot.cy} r={dot.r} fill={color} />
+              ))}
+            </g>
             {step.delta !== null && (
               <text x={x + barW / 2} y={isNeg ? barY + barH + 9 : barY - 3} fontSize="7.5" fill={color} textAnchor="middle" fontWeight="600">
                 {step.delta > 0 ? '+' : ''}{step.delta}

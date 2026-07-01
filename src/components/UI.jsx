@@ -493,6 +493,25 @@ export function WaveformSparkline({ data, color = 'var(--color-signal)', height 
  )
 }
 
+// ── Progress meter — clean solid fill that dissolves into a dithered edge at
+// the leading end (the value tip). The solid body reads instantly; the dither
+// only textures the last few px where the fill "runs out". `color` is a token.
+const METER_SOLID_MASK = 'linear-gradient(to right, currentColor, currentColor calc(100% - 28px), transparent 100%)'
+const METER_DOTS_MASK  = 'linear-gradient(to right, transparent calc(100% - 34px), currentColor calc(100% - 20px), transparent 100%)'
+const METER_DOT_SIZE   = 'calc(var(--dither-cell) * 0.6)'  // ~1.8px — fine scatter for thin meters
+export function DitherMeter({ value, color }) {
+ return (
+  <div className="relative h-full" style={{ width: `${value}%`, color }}>
+   <div className="absolute inset-0" style={{ background: 'currentColor', WebkitMaskImage: METER_SOLID_MASK, maskImage: METER_SOLID_MASK }} />
+   <div className="absolute inset-0" style={{
+    backgroundImage: 'radial-gradient(currentColor 40%, transparent 44%)',
+    backgroundSize: `${METER_DOT_SIZE} ${METER_DOT_SIZE}`,
+    WebkitMaskImage: METER_DOTS_MASK, maskImage: METER_DOTS_MASK,
+   }} />
+  </div>
+ )
+}
+
 // ── Metric card — large number + waveform + metadata (inspired by precision instrument displays)
 export function MetricCard({ title, value, valueColor = 'text-ink', waveformData, waveformColor, waveformHeight, live = false, meta }) {
  return (

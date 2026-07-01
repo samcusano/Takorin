@@ -6,7 +6,7 @@ import { ACCEPTANCE_RANKING } from '../data/findingPrecedents'
 import { useAppState } from '../context/AppState'
 import { ATTR, GRAINS, PLANTS_META, buildSteps, WaterfallChart } from './Analytics'
 import { AlertTriangle, CheckCircle2, ArrowRight, RotateCcw, AlertCircle, TrendingUp, TrendingDown, Zap, Clock, ChevronDown, ChevronRight, User } from 'lucide-react'
-import { StatusPill, SceneHeader, Tabs, Btn, AnimatedScore, StatGrid, EmptyState, FilterDropdown, SlidePanel } from '../components/UI'
+import { StatusPill, SceneHeader, Tabs, Btn, AnimatedScore, StatGrid, EmptyState, FilterDropdown, SlidePanel, DitherMeter } from '../components/UI'
 
 const OUTCOME_CFG = {
   positive: { label: 'Positive',     tone: 'ok',     accent: 'bg-ok'     },
@@ -163,7 +163,6 @@ function InterventionDetail({ entry }) {
   const isImprovement = entry.kpiDelta?.direction === 'improvement'
   const confPct       = entry.attributionConfidence != null ? Math.round(entry.attributionConfidence * 100) : null
   const confColor     = confPct >= 80 ? 'text-ok' : confPct >= 60 ? 'text-warn' : 'text-danger'
-  const confBar       = confPct >= 80 ? 'bg-ok'   : confPct >= 60 ? 'bg-warn'   : 'bg-danger'
   const staleSignals  = entry.sourceSignals?.filter(s => s.stale) ?? []
   const dwellSecs     = Math.round((entry.dwellTimeMs ?? 0) / 1000)
 
@@ -300,7 +299,7 @@ function InterventionDetail({ entry }) {
               </div>
               <div className="flex-1">
                 <div className="h-1.5 bg-rule2 overflow-hidden">
-                  <div className={`h-full ${confBar}`} style={{ width: `${confPct}%` }} />
+                  <DitherMeter value={confPct} color={confPct >= 80 ? 'var(--color-ok)' : confPct >= 60 ? 'var(--color-warn)' : 'var(--color-danger)'} />
                 </div>
                 <div className="font-body text-label text-muted mt-1.5">
                   {confPct >= 80 ? 'High — treat as a validated pattern'
@@ -553,7 +552,7 @@ function BenchmarksTab() {
                     </div>
                   </div>
                   <div className="h-1.5 bg-rule2 overflow-hidden">
-                    <div className={`h-full ${atRisk ? 'bg-warn' : 'bg-ok'}`} style={{ width: `${pct}%` }} />
+                    <DitherMeter value={pct} color={atRisk ? 'var(--color-warn)' : 'var(--color-ok)'} />
                   </div>
                   {w.warning && <p className="font-body text-label text-warn mt-1.5 leading-snug">{w.warning}</p>}
                 </div>

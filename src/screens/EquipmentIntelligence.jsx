@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { equipment, spcData, batchTrace, runHistory } from '../data/equipment'
 import { AlertTriangle, CheckCircle2, Wrench, Activity, Clock, TrendingDown, CalendarClock, Zap, Target, ChevronDown, ChevronRight } from 'lucide-react'
-import { SceneHeader, StatusPill, Btn, SlidePanel, AnimatedScore, EmptyState, StatGrid, HoldButton, Tabs } from '../components/UI'
+import { SceneHeader, StatusPill, Btn, SlidePanel, AnimatedScore, EmptyState, StatGrid, HoldButton, Tabs, DitherMeter } from '../components/UI'
 import { useAppState } from '../context/AppState'
 import RobotFleet from './RobotFleet'
 import ResourceAllocation from './ResourceAllocation'
@@ -157,11 +157,11 @@ const SPC_CFG = {
 }
 
 function HealthBar({ score }) {
-  const tone = score >= 90 ? 'bg-ok' : score >= 75 ? 'bg-signal' : 'bg-warn'
+  const toneVar = score >= 90 ? 'var(--color-ok)' : score >= 75 ? 'var(--color-signal)' : 'var(--color-warn)'
   return (
     <div className="flex items-center gap-2">
       <div className="flex-1 h-1.5 bg-rule2">
-        <div className={`h-full ${tone}`} style={{ width: `${score}%` }} />
+        <DitherMeter value={score} color={toneVar} />
       </div>
       <span className={`font-body text-label tabular-nums w-6 text-right ${score >= 90 ? 'text-ok' : score >= 75 ? 'text-signal' : 'text-warn'}`}>
         {score}
