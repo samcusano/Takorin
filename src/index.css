@@ -376,3 +376,25 @@
     .card-lift, .card-lift:hover, .card-lift:active { transform: none; box-shadow: none; }
   }
 }
+
+/* ── Dither breathing ──────────────────────────────────────────────────────
+   Slow ambient shimmer for live charts. Per-dot animation-delay (set inline as
+   a fraction of --dur-atmo) makes the pulse travel horizontally. */
+@keyframes dither-pulse {
+  0%, 100% { opacity: var(--dither-fill-min); }
+  50%      { opacity: 1; }
+}
+@keyframes dither-bar-drift {
+  0%, 100% { background-position: 0 0; }
+  50%      { background-position: var(--dither-cell) var(--dither-cell); }
+}
+.dither-breathe {
+  animation: dither-pulse var(--dur-atmo) var(--ease-inout) infinite;
+}
+.dither-breathe-bar {
+  animation: dither-bar-drift var(--dur-atmo) var(--ease-inout) infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .dither-breathe,
+  .dither-breathe-bar { animation: none; }
+}
