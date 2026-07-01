@@ -4,6 +4,13 @@ import { Btn, AnimatedScore, SlidePanel, StatusPill, ScoreExplainer, DitherMeter
 import { Link } from 'react-router-dom'
 import { useAppState } from '../context/AppState'
 import { crew, agentEvents } from '../data/shift'
+import { computeDitherDots } from '../lib/dither'
+
+// Header score-trend sparkline — static ascending shape; dithered area fill
+// under the line to match the Overview spark plots.
+const TREND_POINTS = [{ x: 0, y: 30 }, { x: 15, y: 25 }, { x: 30, y: 21 }, { x: 45, y: 18 }, { x: 60, y: 14 }, { x: 75, y: 10 }, { x: 90, y: 7 }]
+const TREND_AREA = 'M0,30 L15,25 L30,21 L45,18 L60,14 L75,10 L90,7 L90,36 L0,36 Z'
+const TREND_DOTS = computeDitherDots({ width: 90, height: 36, points: TREND_POINTS, baselineY: 36, cell: 2.5 })
 import { shiftData, robotFleetData } from '../data'
 import { driftSignals } from '../data/driftWatch'
 import { FINDING_TYPE_MAP, FINDING_PRECEDENTS } from '../data/findingPrecedents'
@@ -693,6 +700,12 @@ export default function ShiftLinePanel({ score = 78, lineLabel = 'Line 4 · AM S
 
             <div className="flex-shrink-0 ml-auto" style={{ opacity: 0.65 }}>
               <svg width="90" height="36" viewBox="0 0 90 36" aria-hidden="true">
+                <clipPath id="shift-trend-dither"><path d={TREND_AREA} /></clipPath>
+                <g clipPath="url(#shift-trend-dither)" style={{ fillOpacity: 'var(--dither-fill)' }}>
+                  {TREND_DOTS.map(dot => (
+                    <circle key={dot.key} cx={dot.cx} cy={dot.cy} r={dot.r} fill={riskC} />
+                  ))}
+                </g>
                 <polyline points="0,30 15,25 30,21 45,18 60,14 75,10 90,7" fill="none" stroke={riskC} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                 <circle cx="90" cy="7" r="3" fill={riskC} />
               </svg>
