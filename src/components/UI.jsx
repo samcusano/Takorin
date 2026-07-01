@@ -4,6 +4,7 @@ import NumberFlow from '@number-flow/react'
 import { X, ArrowRight, ChevronRight, ChevronDown, ChevronUp, Check, Brain, AlertTriangle, InspectionPanel } from 'lucide-react'
 import BoringAvatar from 'boring-avatars'
 import { useFocusTrap, useExitAnimation } from '../lib/utils'
+import { computeDitherDots } from '../lib/dither'
 import { toneStyle } from '../lib/styles'
 const AVATAR_PALETTE = ['#4B9CE4', '#7C86E8', '#5FA877', '#C98E2A', '#C4844E']
 
@@ -430,9 +431,10 @@ export function RightRail({ children }) {
 }
 
 // ── Mini spark plot — smooth bezier curve, Google Finance style
-export function WaveformSparkline({ data, color = 'var(--color-signal)', height = 44 }) {
+export function WaveformSparkline({ data, color = 'var(--color-signal)', height = 44, live = false, dither = true }) {
  if (!data || data.length < 2) return null
- const { d, fillPath } = useMemo(() => {
+ const clipId = useId()
+ const { d, fillPath, points } = useMemo(() => {
   const W = 100, pad = 3
   const max = Math.max(...data), min = Math.min(...data)
   const range = max - min || 1
@@ -450,19 +452,35 @@ export function WaveformSparkline({ data, color = 'var(--color-signal)', height 
    return `${acc} C${cp1x},${cp1y} ${cp2x},${cp2y} ${p.x},${p.y}`
   }, '')
   const last = points.at(-1)
-  return { d, fillPath: `${d} L${last.x},${height} L${points[0].x},${height} Z` }
+  return { d, fillPath: `${d} L${last.x},${height} L${points[0].x},${height} Z`, points }
  }, [data, height])
  const W = 100
+ const dots = dither ? computeDitherDots({ width: W, height, points, baselineY: height }) : []
  return (
   <svg viewBox={`0 0 ${W} ${height}`} style={{ width: '100%', height }} preserveAspectRatio="none">
-   <path d={fillPath} fill={color} fillOpacity="0.08" stroke="none" />
+   {dither ? (
+    <>
+     <clipPath id={clipId}><path d={fillPath} /></clipPath>
+     <g clipPath={`url(#${clipId})`} style={{ fillOpacity: 'var(--dither-fill)' }}>
+      {dots.map(dot => (
+       <circle
+        key={dot.key} cx={dot.cx} cy={dot.cy} r={dot.r} fill={color}
+        className={live ? 'dither-breathe' : undefined}
+        style={live ? { animationDelay: `calc(var(--dur-atmo) * -${dot.delayFrac.toFixed(3)})` } : undefined}
+       />
+      ))}
+     </g>
+    </>
+   ) : (
+    <path d={fillPath} fill={color} fillOpacity="0.08" stroke="none" />
+   )}
    <path d={d} fill="none" stroke={color} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
  )
 }
 
 // ── Metric card — large number + waveform + metadata (inspired by precision instrument displays)
-export function MetricCard({ title, value, valueColor = 'text-ink', waveformData, waveformColor, waveformHeight, meta }) {
+export function MetricCard({ title, value, valueColor = 'text-ink', waveformData, waveformColor, waveformHeight, live = false, meta }) {
  return (
  <div className="px-4 pt-4 pb-3 border-b border-rule2">
  <div className="flex items-baseline justify-between gap-2 mb-3">
@@ -471,7 +489,7 @@ export function MetricCard({ title, value, valueColor = 'text-ink', waveformData
  </div>
  {waveformData && (
  <div className="mb-2.5">
- <WaveformSparkline data={waveformData} color={waveformColor} height={waveformHeight} />
+ <WaveformSparkline data={waveformData} color={waveformColor} height={waveformHeight} live={live} />
  </div>
  )}
  {meta && (
