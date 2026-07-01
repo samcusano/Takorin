@@ -15,7 +15,7 @@ const CATEGORY_ICON = {
   'Compliance':           Shield,
   'Maintenance':          Wrench,
 }
-import { Tabs, StatusPill, Btn, AnimatedScore, EmptyState, FilterDropdown, SceneHeader } from '../components/UI'
+import { Tabs, StatusPill, Btn, AnimatedScore, EmptyState, FilterDropdown, SceneHeader, DitherMeter } from '../components/UI'
 
 const STATUS_CFG = {
   active:    { label: 'Active',      dot: 'bg-ok',     text: 'text-ok',     badge: 'bg-ok/10 text-ok' },
@@ -54,8 +54,7 @@ function ConnectorCard({ c, selected, onClick }) {
         <div className="flex items-center gap-2">
           {c.quality != null && (
             <div className="h-1.5 bg-rule2 flex-1">
-              <div className={`h-full ${c.quality >= 95 ? 'bg-ok' : c.quality >= 85 ? 'bg-signal' : 'bg-warn'}`}
-                style={{ width: `${c.quality}%` }} />
+              <DitherMeter value={c.quality} colorClass={c.quality >= 95 ? 'bg-ok' : c.quality >= 85 ? 'bg-signal' : 'bg-warn'} />
             </div>
           )}
           <span className={`font-body text-label tabular-nums flex-shrink-0 ${c.quality >= 95 ? 'text-ok' : c.quality >= 85 ? 'text-signal' : 'text-warn'}`}>
@@ -258,7 +257,7 @@ function AIReadinessTab() {
                 </div>
               </div>
               <div className="h-1.5 bg-rule2">
-                <div className={`h-full ${d.score >= 80 ? 'bg-ok' : d.score >= 65 ? 'bg-warn' : 'bg-danger'}`} style={{ width: `${d.score}%` }} />
+                <DitherMeter value={d.score} colorClass={d.score >= 80 ? 'bg-ok' : d.score >= 65 ? 'bg-warn' : 'bg-danger'} />
               </div>
               <div className="font-body text-muted text-label mt-0.5 leading-snug">{d.note}</div>
             </div>

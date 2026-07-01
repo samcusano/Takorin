@@ -6,7 +6,7 @@ import { batches } from '../data/batches'
 import { recipes } from '../data/equipment'
 import { CheckCircle, AlertTriangle, TrendingUp, TrendingDown, Minus, ChevronDown, Zap } from 'lucide-react'
 import { sensoryReadings, expertAnnotations } from '../data/quality'
-import { StatusPill, AnimatedScore } from '../components/UI'
+import { StatusPill, AnimatedScore, DitherMeter } from '../components/UI'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -80,7 +80,7 @@ function BatchListCard({ batch: b, selected, onClick }) {
       </div>
       <div className="font-body text-muted text-label mb-2">{b.vessel} · {b.daysElapsed}/{b.totalDays}d</div>
       <div className="h-1 bg-rule2 mb-1.5">
-        <div className={`h-full ${isComplete ? 'bg-ok' : 'bg-signal'} transition-[width]`} style={{ width: `${pctDone}%` }} />
+        <DitherMeter value={pctDone} colorClass={isComplete ? 'bg-ok' : 'bg-signal'} />
       </div>
       <div className="flex items-center justify-between">
         <span className="font-body text-muted text-label">{isComplete ? 'Complete' : b.stage.replace(/-/g, ' ')}</span>
@@ -331,7 +331,7 @@ function ActiveStageBody({ batch, stage }) {
               <div key={label} className="flex items-center gap-3 px-5 py-2.5">
                 <span className="font-body text-muted text-label w-24 flex-shrink-0">{label}</span>
                 <div className="flex-1 h-1.5 bg-rule2">
-                  <div className={`h-full ${val >= 85 ? 'bg-ok' : val >= 70 ? 'bg-signal' : 'bg-warn'}`} style={{ width: `${val}%` }} />
+                  <DitherMeter value={val} colorClass={val >= 85 ? 'bg-ok' : val >= 70 ? 'bg-signal' : 'bg-warn'} />
                 </div>
                 <span className="display-num text-sub tabular-nums w-7 text-right text-muted flex-shrink-0">{val}</span>
               </div>

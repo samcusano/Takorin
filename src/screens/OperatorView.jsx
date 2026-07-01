@@ -3,7 +3,7 @@ import { Flag, ShieldCheck, Check, Lock, AlertTriangle, Activity, CheckCircle2, 
 import { operatorContextData, fatigueData } from '../data'
 import { integrationSummary, connectors } from '../data/integrations'
 import { useAppState } from '../context/AppState'
-import { SectionHeader, StatusPill, PersonAvatar, Btn, Modal, AnimatedScore, ExpandableSection } from '../components/UI'
+import { SectionHeader, StatusPill, PersonAvatar, Btn, Modal, AnimatedScore, ExpandableSection, DitherMeter } from '../components/UI'
 import { OBSERVATION_CATEGORIES, OBSERVATION_STATIONS } from '../data/observations'
 
 // ── Static operator data ──────────────────────────────────────────────────────
@@ -194,7 +194,7 @@ function MyProgress({ operator, op }) {
      <span className="display-num text-title leading-none" style={{ color: certC }}>{op.certPct}%</span>
     </div>
     <div className="h-1.5 bg-rule2 mb-1">
-     <div className="h-full transition-all duration-500" style={{ width: `${op.certPct}%`, background: certC }} />
+     <DitherMeter value={op.certPct} color={certC} />
     </div>
    </div>
    {steps.length > 0 && (() => {

@@ -7,7 +7,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { processHierarchy } from '../data/hierarchy'
 import { AlertTriangle, ChevronRight, ChevronDown, ArrowRight, ArrowDown, Activity, Zap, TrendingDown, Info } from 'lucide-react'
-import { SlidePanel, SegmentedControl, SectionHeader, Tabs, AnimatedScore, StatGrid, EmptyState } from '../components/UI'
+import { SlidePanel, SegmentedControl, SectionHeader, Tabs, AnimatedScore, StatGrid, EmptyState, DitherMeter } from '../components/UI'
 import ShiftHero from '../components/ShiftHero'
 
 const scoreColor  = (s) => s >= 90 ? 'text-ok'     : s >= 80 ? 'text-signal'   : s >= 70 ? 'text-warn'   : 'text-danger'
@@ -180,7 +180,7 @@ function ScoreBar({ score, width = 60 }) {
   return (
     <div className="flex items-center gap-2">
       <div className="h-0.5 bg-rule2 flex-shrink-0" style={{ width }}>
-        <div className={`h-full ${color}`} style={{ width: `${score}%` }} />
+        <DitherMeter value={score} colorClass={color} />
       </div>
       <span className={`display-num text-body tabular-nums ${textColor}`}>{score}</span>
     </div>
@@ -210,8 +210,7 @@ function VesselGrid({ vessels }) {
             </div>
             <div className="font-body text-muted text-label truncate">{v.batch}</div>
             <div className="h-0.5 bg-rule2 mt-1.5 mb-1">
-              <div className={`h-full ${isComplete ? 'bg-ok' : 'bg-signal/60'}`}
-                style={{ width: `${Math.min(100, (v.daysElapsed / 185) * 100)}%` }} />
+              <DitherMeter value={Math.min(100, (v.daysElapsed / 185) * 100)} colorClass={isComplete ? 'bg-ok' : 'bg-signal'} />
             </div>
             <div className="flex items-center justify-between">
               <span className="font-body text-muted text-label">{v.daysElapsed}d</span>
@@ -328,7 +327,7 @@ function CausalPanel({ zone, building }) {
         <div className="flex items-center gap-2">
           <span className="font-body text-muted text-label">Confidence</span>
           <div className="flex-1 h-0.5 bg-rule2">
-            <div className={`h-full ${causal.confidence >= 70 ? 'bg-ok' : causal.confidence >= 50 ? 'bg-warn' : 'bg-danger'}`} style={{ width: `${causal.confidence}%` }} />
+            <DitherMeter value={causal.confidence} colorClass={causal.confidence >= 70 ? 'bg-ok' : causal.confidence >= 50 ? 'bg-warn' : 'bg-danger'} />
           </div>
           <span className={`font-body text-label tabular-nums ${causal.confidence >= 70 ? 'text-ok' : causal.confidence >= 50 ? 'text-warn' : 'text-danger'}`}>{causal.confidence}%</span>
         </div>
@@ -461,7 +460,7 @@ function ReasoningPanel({ zone, building }) {
                 <span className={`font-body text-label font-medium tabular-nums ${confColor}`}>{r.confidence}%</span>
               </div>
               <div className="h-1 bg-rule2 w-[120px]">
-                <div className={`h-full transition-[width] ${confBg}`} style={{ width: `${r.confidence}%` }} />
+                <DitherMeter value={r.confidence} colorClass={confBg} />
               </div>
               <div className="font-body text-muted text-label mt-0.5">{r.confidenceModel}</div>
             </div>
@@ -489,8 +488,8 @@ function ReasoningPanel({ zone, building }) {
                   <div className="w-1.5 h-1.5 rounded-full bg-ok flex-shrink-0" />
                   <div className="flex-1 min-w-0 font-body text-ink text-label leading-snug">{c.label}</div>
                   <div className="flex items-center gap-1.5 flex-shrink-0">
-                    <div className="w-[52px] h-0.5 bg-rule2">
-                      <div className="h-full bg-ok" style={{ width: `${c.pct * (100 / 52)}%`, maxWidth: '100%' }} />
+                    <div className="w-[52px] h-0.5 bg-rule2 overflow-hidden">
+                      <DitherMeter value={Math.min(100, c.pct * (100 / 52))} colorClass="bg-ok" />
                     </div>
                     <span className="font-body text-muted text-label tabular-nums w-7 text-right">+{c.pct}%</span>
                   </div>

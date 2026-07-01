@@ -1,10 +1,11 @@
 import React from 'react'
+import { DitherMeter } from './UI'
 
 const CELL_STYLES = {
- sa: { bar: 'bg-danger', text: 'text-danger' },
- sw: { bar: 'bg-warn', text: 'text-warn' },
- so: { bar: 'bg-ok', text: 'text-ok' },
- sd: { bar: 'bg-danger/30', text: 'text-danger' },
+ sa: { tone: 'danger', text: 'text-danger' },
+ sw: { tone: 'warn', text: 'text-warn' },
+ so: { tone: 'ok', text: 'text-ok' },
+ sd: { tone: 'danger', text: 'text-danger' },
 }
 
 export function StatCell({ type = 'so', label, value, sub, pct }) {
@@ -18,7 +19,7 @@ export function StatCell({ type = 'so', label, value, sub, pct }) {
  {sub && <div className="text-label font-body text-muted truncate">{sub}</div>}
  {pct !== undefined && (
  <div className="h-0.5 bg-rule mt-1">
- <div className={`h-full ${s.bar} transition-[width] duration-500 ease-enter`} style={{ width: `${pct}%` }} />
+ <DitherMeter value={pct} tone={s.tone} />
  </div>
  )}
  </div>

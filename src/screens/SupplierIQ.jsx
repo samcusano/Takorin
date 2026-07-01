@@ -3,7 +3,7 @@ import { Check, AlertTriangle, ArrowRight, History, AlertCircle, Eye, EyeOff, Se
 import { useNavigate, Link } from 'react-router-dom'
 import { supplierData, supplierAudits, empResultsHistory, supplyChainNetwork } from '../data'
 import { useAppState } from '../context/AppState'
-import { StatusPill, SectionHeader, Btn, ActionBanner, Spinner, AnimatedCheck, MetadataRow, ExpandableMetadata, SlidePanel, StatGrid, SectionLabel, Tabs } from '../components/UI'
+import { StatusPill, SectionHeader, Btn, ActionBanner, Spinner, AnimatedCheck, MetadataRow, ExpandableMetadata, SlidePanel, StatGrid, SectionLabel, Tabs, DitherMeter } from '../components/UI'
 import StatBar from '../components/StatBar.jsx'
 import ValueChain from './ValueChain'
 
@@ -266,7 +266,7 @@ function SupplierRow({ s, audit, isDanger, certGap, index, total }) {
       </div>
       <div className="flex-1 flex items-center gap-2.5">
         <div className="flex-1 h-0.5 bg-rule">
-          <div className="bar-grow h-full" style={{ width: `${s.score}%`, background: scoreColor }} />
+          <DitherMeter value={s.score} color={scoreColor} />
         </div>
         <span className={`font-body text-label min-w-[28px] text-right ${scoreCls}`}>{s.score}</span>
       </div>

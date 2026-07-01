@@ -5,7 +5,7 @@ import {
 } from 'lucide-react'
 import { networkData } from '../data'
 import { useAppState } from '../context/AppState'
-import { ActionBanner, Btn, HoldButton, StatusPill } from '../components/UI'
+import { ActionBanner, Btn, HoldButton, StatusPill, DitherMeter } from '../components/UI'
 import { useFocusTrap } from '../lib/utils'
 
 // ── Intelligence signals ───────────────────────────────────────────────────────
@@ -215,7 +215,7 @@ function RiskBar({ value }) {
  return (
   <div className="flex items-center gap-2 mt-1.5">
    <div className="h-[3px] flex-1 bg-stone3 overflow-hidden">
-    <div className={`h-full ${clr} transition-[width] duration-500`} style={{ width: `${value}%` }} />
+    <DitherMeter value={value} colorClass={clr} />
    </div>
    <span className={`display-num text-label w-7 text-right flex-shrink-0 tabular-nums ${txt}`}>{value}</span>
   </div>

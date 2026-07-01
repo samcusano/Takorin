@@ -10,7 +10,7 @@ import {
 } from 'lucide-react'
 import {
   StatusPill, AnimatedScore, ExpandableSection, StatGrid,
-  FilterDropdown, Tabs, SectionHeader,
+  FilterDropdown, Tabs, SectionHeader, DitherMeter,
 } from '../components/UI'
 
 // ─── Shared helpers ───────────────────────────────────────────────────────────
@@ -84,7 +84,7 @@ function MonitorCard({ line, selected, onClick }) {
         )}
       </div>
       <div className="h-1 bg-rule2 overflow-hidden">
-        <div className={`h-full ${statusDot}`} style={{ width: `${pct}%` }} />
+        <DitherMeter value={pct} colorClass={statusDot} />
       </div>
     </button>
   )
@@ -479,7 +479,7 @@ function AccuracyView({ highlightSku }) {
                       </span>
                     </div>
                     <div className="h-1.5 bg-rule2 overflow-hidden">
-                      <div className={`h-full ${barTone}`} style={{ width: `${pct}%` }} />
+                      <DitherMeter value={pct} colorClass={barTone} />
                     </div>
                     <div className="flex items-center justify-between gap-3 mt-1.5 font-body text-label text-muted">
                       <span className="leading-snug">{s.note}</span>
@@ -520,7 +520,7 @@ function AccuracyView({ highlightSku }) {
                       </span>
                     </div>
                     <div className="relative h-1.5 bg-rule2 overflow-hidden">
-                      <div className={`h-full ${barTone}`} style={{ width: `${pct}%` }} />
+                      <DitherMeter value={pct} colorClass={barTone} />
                       <div className="absolute top-0 bottom-0 w-px bg-ink/40" style={{ left: `${avgPct}%` }} />
                     </div>
                     <div className="font-body text-label text-muted leading-snug mt-1.5">{d.note}</div>

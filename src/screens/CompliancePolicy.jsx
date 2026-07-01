@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { compliancePolicies, multiRegulatoryCoverage } from '../data/compliance'
 import { CheckCircle2, XCircle, AlertCircle, User, Calendar, Scale, Eye, FileClock, AlarmClock, ShieldAlert } from 'lucide-react'
-import { SceneHeader, StatusPill, Btn, SlidePanel, AnimatedScore, Tabs } from '../components/UI'
+import { SceneHeader, StatusPill, Btn, SlidePanel, AnimatedScore, Tabs, DitherMeter } from '../components/UI'
 import RecordVault from './RecordVault'
 
 // ─── FDA Inspection Simulation data ──────────────────────────────────────────
@@ -305,7 +305,7 @@ function AuditBand({ onSimulate }) {
         <span className="font-body text-warn text-label">{atRisk} at risk</span>
         <span className="font-body text-ok text-label">{passes} pass</span>
         <div className="flex-1 h-1 bg-rule2 ml-2 overflow-hidden">
-          <div className={`h-full ${barC}`} style={{ width: `${score}%` }} />
+          <DitherMeter value={score} colorClass={barC} />
         </div>
       </div>
       <div className="px-4 py-2.5 flex-shrink-0">

@@ -5,7 +5,7 @@ import {
   CheckCircle2, AlertTriangle, Clock, XCircle,
   Lock, Shield, AlertCircle, ChevronDown, Zap, ExternalLink,
 } from 'lucide-react'
-import { StatusPill, Btn, EmptyState } from '../components/UI'
+import { StatusPill, Btn, EmptyState, DitherMeter } from '../components/UI'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -58,7 +58,7 @@ function LotTraceCard({ lot, selected, onClick }) {
       </div>
       <div className="flex items-center gap-2 mt-2">
         <div className="h-0.5 bg-rule2 flex-1">
-          <div className={`h-full ${postureBg(lot.posture)}`} style={{ width: `${lot.posture}%` }} />
+          <DitherMeter value={lot.posture} colorClass={postureBg(lot.posture)} />
         </div>
         <span className={`font-body text-label tabular-nums ${postureColor(lot.posture)}`}>{lot.posture}%</span>
       </div>

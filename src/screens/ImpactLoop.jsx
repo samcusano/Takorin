@@ -93,8 +93,7 @@ function InterventionCard({ entry, onClick }) {
       {confPct != null && (
         <div className="flex items-center gap-2 px-4 py-2 border-t border-rule2/60">
           <div className="h-1 flex-1 bg-rule2 overflow-hidden">
-            <div className={`h-full ${confPct >= 85 ? 'bg-ok' : confPct >= 65 ? 'bg-warn' : 'bg-danger'}`}
-              style={{ width: `${confPct}%` }} />
+            <DitherMeter value={confPct} colorClass={confPct >= 85 ? 'bg-ok' : confPct >= 65 ? 'bg-warn' : 'bg-danger'} />
           </div>
           <span className={`font-body text-label tabular-nums flex-shrink-0 ${
             confPct >= 85 ? 'text-ok' : confPct >= 65 ? 'text-warn' : 'text-danger'
@@ -523,7 +522,7 @@ function BenchmarksTab() {
                     </div>
                   </div>
                   <div className="relative h-[4px] bg-rule2">
-                    <div className={`absolute inset-y-0 left-0 ${onTrack ? 'bg-ok' : 'bg-warn'}`} style={{ width: `${pct}%` }} />
+                    <DitherMeter value={pct} colorClass={onTrack ? 'bg-ok' : 'bg-warn'} />
                     <div className="absolute top-1/2 -translate-y-1/2 w-0.5 h-2 bg-ink/30" style={{ left: '85%' }} />
                   </div>
                 </div>
@@ -618,7 +617,7 @@ function MetricRow({ metric }) {
             <div className="flex items-center gap-2 justify-end mb-1">
               <span className="font-body text-label text-muted">{attribPct}% conf.</span>
               <div className="w-16 h-1 bg-rule2 overflow-hidden">
-                <div className={`h-full ${attribColor}`} style={{ width: `${attribPct}%` }} />
+                <DitherMeter value={attribPct} colorClass={attribColor} />
               </div>
             </div>
           </div>
@@ -865,7 +864,7 @@ function AdoptionTab() {
                   {/* Acceptance bar */}
                   <div className="flex items-center gap-3">
                     <div className="flex-1 h-1 bg-rule2 overflow-hidden">
-                      <div className={`h-full ${bar} transition-[width]`} style={{ width: `${pct}%` }} />
+                      <DitherMeter value={pct} colorClass={bar} />
                     </div>
                   </div>
                   <p className="font-body text-label text-muted leading-snug mt-2">{row.insight}</p>

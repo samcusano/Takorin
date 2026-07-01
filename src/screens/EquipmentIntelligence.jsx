@@ -32,7 +32,9 @@ function RULStrip({ eq }) {
         {/* Warn zone */}
         <div className="absolute top-0 h-full bg-warn/10" style={{ left: '25%', width: '35%' }} />
         {/* Current fill */}
-        <div className="absolute left-0 top-0 h-full transition-[width] duration-700" style={{ width: `${pct}%`, background: barColor }} />
+        <div className="absolute left-0 top-0 h-full transition-[width] duration-700" style={{ width: `${pct}%` }}>
+          <DitherMeter value={100} color={barColor} />
+        </div>
         {/* Now marker */}
         <div className="absolute top-0 h-full w-0.5 bg-ink/50" style={{ left: `${pct}%` }} />
       </div>

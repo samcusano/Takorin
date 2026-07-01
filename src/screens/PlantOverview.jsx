@@ -9,7 +9,7 @@ import {
   Activity, CircleDot, ChevronDown, ChevronUp, ArrowRight, ExternalLink, X, Download, Layers,
 } from 'lucide-react'
 import { interventionSummary, interventions } from '../data/interventions'
-import { FilterDropdown, SlidePanel, Btn, SegmentedControl, Checkbox, AnimatedScore, Tabs, SceneHeader, StatusPill } from '../components/UI'
+import { FilterDropdown, SlidePanel, Btn, SegmentedControl, Checkbox, AnimatedScore, Tabs, SceneHeader, StatusPill, DitherMeter } from '../components/UI'
 import { computeDitherDots } from '../lib/dither'
 import NetworkView from './NetworkView'
 
@@ -796,11 +796,7 @@ export default function PlantOverview() {
                             </div>
                           </div>
                           <div className="h-[3px] bg-rule2 overflow-hidden">
-                            <div className="h-full transition-[width] duration-500"
-                              style={{
-                                width: `${line.score}%`,
-                                background: line.score >= 75 ? 'var(--color-danger)' : line.score >= 60 ? 'var(--color-warn)' : 'var(--color-ok)',
-                              }} />
+                            <DitherMeter value={line.score} color={line.score >= 75 ? 'var(--color-danger)' : line.score >= 60 ? 'var(--color-warn)' : 'var(--color-ok)'} />
                           </div>
                         </div>
                       )
@@ -902,9 +898,11 @@ export default function PlantOverview() {
                                       <div className="h-full bg-danger/[0.12]" style={{ width: '25%' }} />
                                     </div>
                                     <div
-                                      className={`absolute left-0 top-0 h-full transition-[width] duration-500 ease-enter ${riskBgColor(eff)}`}
+                                      className="absolute left-0 top-0 h-full transition-[width] duration-500 ease-enter"
                                       style={{ width: `${eff}%` }}
-                                    />
+                                    >
+                                      <DitherMeter value={100} color={riskBgColor(eff)} />
+                                    </div>
                                     <div
                                       className="absolute top-0 h-full w-px bg-muted/50"
                                       style={{ left: `${meta.modelConfidence}%` }}

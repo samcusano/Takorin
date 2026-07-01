@@ -189,7 +189,6 @@ export function SectionHeader({ tone = 'muted', label, sub, title, icon: Icon, a
 
 // ── Stat bar cell
 export function StatCell({ label, value, sub, fill, tone = 'ok', badge }) {
- const toneColor = toneStyle(tone, 'dot')
  const toneBorder = { ok:'border-t-ok', warn:'border-t-warn', danger:'border-t-danger', signal:'border-t-signal' }[tone] || 'border-t-ok'
  return (
  <div className={`px-5 py-4 border-r border-rule2 last:border-r-0 border-t-2 ${toneBorder}`}>
@@ -201,7 +200,7 @@ export function StatCell({ label, value, sub, fill, tone = 'ok', badge }) {
  {sub && <div className="font-body text-muted text-label mt-1">{sub}</div>}
  {fill !== undefined && (
  <div className="h-[2px] bg-rule mt-3">
- <div className={`h-full ${toneColor} transition-[width] duration-500 ease-enter`} style={{ width: `${fill}%` }} />
+ <DitherMeter value={fill} tone={tone} />
  </div>
  )}
  </div>
@@ -495,13 +494,30 @@ export function WaveformSparkline({ data, color = 'var(--color-signal)', height 
 
 // ── Progress meter — clean solid fill that dissolves into a dithered edge at
 // the leading end (the value tip). The solid body reads instantly; the dither
-// only textures the last few px where the fill "runs out". `color` is a token.
-const METER_SOLID_MASK = 'linear-gradient(to right, currentColor, currentColor calc(100% - 28px), transparent 100%)'
-const METER_DOTS_MASK  = 'linear-gradient(to right, transparent calc(100% - 34px), currentColor calc(100% - 20px), transparent 100%)'
+// only textures the last stretch where the fill "runs out". This is the
+// canonical single-value meter — route inline `width:%` bars through it.
+// Pass a token via `color`, or a named `tone` (ok/warn/danger/signal/context/muted).
+// Dissolve widths use min(px, %) so a wide bar shows a small fixed tip while a
+// narrow/low-value bar dissolves proportionally instead of breaking.
+const TONE_VAR = {
+ ok: 'var(--color-ok)', warn: 'var(--color-warn)', danger: 'var(--color-danger)',
+ signal: 'var(--color-signal)', context: 'var(--color-context)', muted: 'var(--color-muted)',
+}
+// Accept a caller's existing Tailwind `bg-*` tone class directly (opacity
+// suffixes like `bg-ok/70` are tolerated) so inline meters convert 1:1.
+function classToVar(cls) {
+ if (!cls) return null
+ const base = cls.trim().split(/\s+/).find(t => t.startsWith('bg-'))
+ if (!base) return null
+ return TONE_VAR[base.replace(/^bg-/, '').split('/')[0]] ?? null
+}
+const METER_SOLID_MASK = 'linear-gradient(to right, currentColor, currentColor calc(100% - min(28px, 22%)), transparent 100%)'
+const METER_DOTS_MASK  = 'linear-gradient(to right, transparent calc(100% - min(36px, 30%)), currentColor calc(100% - min(18px, 14%)), transparent 100%)'
 const METER_DOT_SIZE   = 'calc(var(--dither-cell) * 0.6)'  // ~1.8px — fine scatter for thin meters
-export function DitherMeter({ value, color }) {
+export function DitherMeter({ value, color, tone, colorClass, rounded = false }) {
+ const c = color ?? TONE_VAR[tone] ?? classToVar(colorClass) ?? 'var(--color-signal)'
  return (
-  <div className="relative h-full" style={{ width: `${value}%`, color }}>
+  <div className={`relative h-full transition-[width] duration-500 ease-enter${rounded ? ' rounded-full overflow-hidden' : ''}`} style={{ width: `${value}%`, color: c }}>
    <div className="absolute inset-0" style={{ background: 'currentColor', WebkitMaskImage: METER_SOLID_MASK, maskImage: METER_SOLID_MASK }} />
    <div className="absolute inset-0" style={{
     backgroundImage: 'radial-gradient(currentColor 40%, transparent 44%)',

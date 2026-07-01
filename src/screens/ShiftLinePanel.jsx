@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { Brain, Check, CheckCircle2, Users, TrendingUp, TrendingDown, Eye, RefreshCw, Cpu, ChevronDown, ChevronRight } from 'lucide-react'
-import { Btn, AnimatedScore, SlidePanel, StatusPill, ScoreExplainer } from '../components/UI'
+import { Btn, AnimatedScore, SlidePanel, StatusPill, ScoreExplainer, DitherMeter } from '../components/UI'
 import { Link } from 'react-router-dom'
 import { useAppState } from '../context/AppState'
 import { crew, agentEvents } from '../data/shift'
@@ -178,7 +178,7 @@ function PrecedentCard({ findingId }) {
         {/* Acceptance rate bar */}
         <div className="flex items-center gap-2 flex-shrink-0">
           <div className="w-16 h-1 bg-rule2 overflow-hidden">
-            <div className={`h-full ${bar}`} style={{ width: `${pct}%` }} />
+            <DitherMeter value={pct} colorClass={bar} />
           </div>
           <span className={`font-body text-label font-semibold tabular-nums ${color}`}>{pct}%</span>
         </div>
@@ -384,7 +384,7 @@ function OperatorRow({ op, index, total }) {
       </div>
       <div className="flex-1 flex items-center gap-2.5">
         <div className="flex-1 h-0.5 bg-rule">
-          <div style={{ height: '100%', width: `${cert}%`, background: certColor, transition: `width var(--dur-live) var(--ease-spring)` }} />
+          <DitherMeter value={cert} color={certColor} />
         </div>
         <span className={`font-body text-label min-w-[26px] text-right ${certCls}`}>{cert}%</span>
       </div>
@@ -447,8 +447,8 @@ function TrendWatch() {
               </div>
               <div className="font-body text-label text-muted mb-2 leading-snug" style={{ paddingLeft: 18 }}>{s.currentReading} · {s.note}</div>
               <div style={{ paddingLeft: 18 }}>
-                <div className="h-0.5 bg-rule rounded-sm mb-2">
-                  <div style={{ height: '100%', width: `${pct}%`, background: 'var(--color-context)', borderRadius: 1, transition: `width var(--dur-data) var(--ease-spring)` }} />
+                <div className="h-0.5 bg-rule rounded-sm mb-2 overflow-hidden">
+                  <DitherMeter value={pct} color="var(--color-context)" />
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="font-body text-label text-muted">{s.thresholdBatches - s.consecutiveBatches} batches from threshold</span>

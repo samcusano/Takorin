@@ -6,7 +6,7 @@ import {
   Activity, Network, Settings, Eye, MessageSquare, Zap, RotateCcw,
   Route, Package,
 } from 'lucide-react'
-import { Btn, SlidePanel, Tabs, StatusPill, Checkbox, AnimatedScore, EmptyState, SectionLabel, FilterDropdown, MultiFilterDropdown } from '../components/UI'
+import { Btn, SlidePanel, Tabs, StatusPill, Checkbox, AnimatedScore, EmptyState, SectionLabel, FilterDropdown, MultiFilterDropdown, DitherMeter } from '../components/UI'
 import { agentConfigData, dataSourceHealth, networkData } from '../data'
 import { executionLog, executionSummary, autonomyTiers, rollbackLog } from '../data/execution'
 import { agentPrompts } from '../data/prompts'
@@ -444,9 +444,8 @@ function LedgerRow({ pa, agent, onInvestigate, onApprove, onOverrideRequest, sel
               <div>
                 <div className="font-body text-muted text-label mb-1">Confidence</div>
                 <div className="flex items-center gap-2">
-                  <div className="h-[2px] w-20 bg-stone3 flex-shrink-0 relative">
-                    <div className={`h-full ${pa.confidence >= 85 ? 'bg-ok' : pa.confidence >= 65 ? 'bg-warn' : 'bg-danger'}`}
-                      style={{ width: `${pa.confidence}%` }} />
+                  <div className="h-[2px] w-20 bg-stone3 flex-shrink-0 relative overflow-hidden">
+                    <DitherMeter value={pa.confidence} colorClass={pa.confidence >= 85 ? 'bg-ok' : pa.confidence >= 65 ? 'bg-warn' : 'bg-danger'} />
                     <div className="absolute top-0 bottom-0 w-px bg-ink/30"
                       style={{ left: `${agent.confidenceThreshold ?? 80}%` }} />
                   </div>
@@ -641,8 +640,7 @@ function DecisionReplay({ pa, agent }) {
           <span className="font-body text-muted text-label pb-2">% · step {activeStep + 1} of {STEPS.length}</span>
         </div>
         <div className="h-[3px] bg-rule2 overflow-hidden">
-          <div className={`h-full ${barColor}`}
-            style={{ width: `${displayConf}%`, transition: `width var(--dur-data) var(--ease-enter)` }} />
+          <DitherMeter value={displayConf} colorClass={barColor} />
         </div>
         <div className="font-body text-muted text-label mt-1.5">{step.label} — {step.detail}</div>
       </div>
@@ -1583,7 +1581,7 @@ export default function AgentControl() {
                   </div>
                 </div>
                 <div className="h-1 bg-rule2 overflow-hidden">
-                  <div className={`h-full transition-[width] ${barColor}`} style={{ width: `${pct}%` }} />
+                  <DitherMeter value={pct} colorClass={barColor} />
                 </div>
               </div>
             </div>

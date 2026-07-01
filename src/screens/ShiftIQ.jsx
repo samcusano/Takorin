@@ -9,6 +9,7 @@ import {
  Btn, ConsequenceNotice, PageHead, ActionBanner,
  PersonAvatar, Modal, WaveformSparkline, AnimatedCheck, Spinner,
  VaulDrawer, HoldButton, EmptyState, TriageCard, ScoreExplainer,
+ DitherMeter,
 } from '../components/UI'
 import { Flag, ChevronRight, ChevronDown, AlertTriangle, Check, X, TrendingDown, RotateCcw, Wrench, Package, HelpCircle, ListChecks, Brain, Shield, RefreshCw, ChevronUp, BarChart2, ArrowRight, Moon, Activity, CheckCircle2 } from 'lucide-react'
 import { useAppState } from '../context/AppState'
@@ -233,8 +234,8 @@ function OperatorPanel({ name, onClose, onSelectOperator }) {
  <SectionHeader label="Certification progress" />
  <div className="px-4 py-3">
  <div className="font-body text-muted text-label mb-2">{meta.certLabel}</div>
- <div style={{ height:5, background:'var(--color-rule)', marginBottom:8 }}>
- <div style={{ height:'100%', width:`${meta.certPct}%`, background:certC, transition:`width var(--dur-data) var(--ease-enter)` }} />
+ <div style={{ height:5, background:'var(--color-rule)', marginBottom:8, overflow:'hidden' }}>
+ <DitherMeter value={meta.certPct} color={certC} />
  </div>
  <span className="display-num text-title" style={{ color: certC }}>{meta.certPct}%</span>
  </div>

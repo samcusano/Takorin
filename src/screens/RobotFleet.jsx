@@ -501,7 +501,7 @@ function NominalTable({ units, open, onToggle, onSelect }) {
                     <span className="font-body text-muted text-label truncate max-w-[200px]">{unit.assignedTask}</span>
                     <div className="flex items-center gap-2 w-24 flex-shrink-0">
                       <div className="flex-1 h-[3px] bg-stone3 overflow-hidden">
-                        <div className={`h-full ${conf >= 85 ? 'bg-ok' : 'bg-warn'}`} style={{ width: `${conf}%` }} />
+                        <DitherMeter value={conf} colorClass={conf >= 85 ? 'bg-ok' : 'bg-warn'} />
                       </div>
                       <span className="font-body text-label text-ok tabular-nums w-7 text-right">{conf}%</span>
                     </div>
